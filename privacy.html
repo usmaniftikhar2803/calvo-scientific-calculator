@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Calvo</title>
+<meta name="description" content="Calvo's privacy policy.">
+<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-6621625782538547" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --bg-void:#0d0d0f;
+    --panel:#17171a;
+    --panel-border:#2a2a30;
+    --text:#e8e5db;
+    --text-dim:#9c968a;
+    --rule:#2a2a30;
+    --brand-orange:#ff8a1f;
+    --brand-orange-deep:#d9650c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,138,31,0.07), transparent 60%),
+      var(--bg-void);
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    min-height:100vh;
+    padding:48px 16px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .topbar{
+    width:100%;
+    max-width:680px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:32px;
+    font-family:'Space Mono', monospace;
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--text);
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-decoration:none;
+    font-size:14px;
+  }
+  .brand-dot{
+    width:9px;height:9px;border-radius:2px;
+    background:var(--brand-orange);
+    box-shadow:0 0 8px rgba(255,138,31,0.7);
+  }
+  .topbar a.back{
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:12px;
+    letter-spacing:0.04em;
+    border:1px solid var(--panel-border);
+    padding:6px 12px;
+    border-radius:20px;
+    transition:border-color .15s, color .15s;
+  }
+  .topbar a.back:hover{ color:var(--text); border-color:var(--brand-orange); }
+
+  .doc{
+    width:100%;
+    max-width:680px;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:16px;
+    padding:40px 36px 36px;
+  }
+
+  .doc-head{ margin-bottom:24px; }
+  .doc-title{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:24px;
+    letter-spacing:0.01em;
+    margin:0 0 6px;
+  }
+  .doc-title span{ color:var(--brand-orange); }
+  .doc-meta{
+    font-size:11.5px;
+    color:var(--text-dim);
+    letter-spacing:0.03em;
+  }
+
+  hr.rule{
+    border:none;
+    border-top:1px solid var(--rule);
+    margin:24px 0;
+  }
+
+  h2{
+    font-family:'Space Mono', monospace;
+    font-size:14px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--brand-orange);
+    margin:28px 0 12px;
+  }
+  h2:first-of-type{ margin-top:4px; }
+
+  p{
+    font-size:13px;
+    line-height:1.85;
+    color:var(--text);
+    margin:0 0 12px;
+  }
+  ul{
+    margin:0 0 12px;
+    padding-left:20px;
+  }
+  li{
+    font-size:13px;
+    line-height:1.85;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  li b{ color:#fff; }
+  a{ color:var(--brand-orange); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+
+  .doc-footer{
+    margin-top:32px;
+    padding-top:20px;
+    border-top:1px solid var(--rule);
+    font-size:12px;
+    color:var(--text-dim);
+    text-align:center;
+    line-height:1.8;
+  }
+
+  @media (max-width:480px){
+    .doc{ padding:28px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-dot"></span> CALVO
+    </a>
+    <a class="back" href="index.html">&larr; Back to app</a>
+  </div>
+
+  <div class="doc">
+    <div class="doc-head">
+      <h1 class="doc-title">Privacy <span>Policy</span></h1>
+      <div class="doc-meta">Effective date: <span id="todayDate">August 9, 2026</span></div>
+    </div>
+
+    <p>This Privacy Policy explains how Calvo ("the app", "we", "us") handles information when you use our scientific calculator, unit converter, formula library, GPA/CGPA calculator, and AI math solver. Calvo is designed to run in your browser without requiring an account, and we do not operate any backend server that collects or stores your personal data.</p>
+
+    <h2>1. Information We Collect</h2>
+    <p>Calvo does not require registration, does not collect names, email addresses, or any personally identifiable information, and does not use cookies or third-party analytics or advertising trackers.</p>
+    <p>The only data Calvo handles is stored locally in your browser (localStorage) and never transmitted to us:</p>
+    <ul>
+      <li><b>Theme preference</b> — your chosen calculator theme/appearance.</li>
+      <li><b>Calculation history</b> — a record of your recent calculations, kept on your device.</li>
+      <li><b>Saved results</b> — results you choose to save within the app.</li>
+      <li><b>AI Solver settings</b> — your own Google Gemini API key (if you choose to use the AI Solver) and any questions you save, stored only on your device.</li>
+    </ul>
+    <p>This data stays in your browser and is never sent to Calvo's developers or any server we control. You can remove it at any time by clearing your browser's site data for Calvo.</p>
+
+    <h2>2. Third-Party Services</h2>
+    <p>Certain optional features in Calvo communicate directly with third-party services, from your browser to theirs, without passing through any server we operate:</p>
+    <ul>
+      <li><b>AI Math Solver</b> — uses your own Google Gemini API key, which you provide. Questions you submit are sent directly to Google's Generative Language API. This exchange is governed by <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener">Google's own terms and privacy practices</a>, not by us.</li>
+      <li><b>Voice Input</b> — the microphone button on the AI Solver uses your browser's own built-in speech-recognition feature (the Web Speech API) to turn speech into text in the question box. Depending on your browser, this may send the audio to that browser vendor's own speech-recognition servers (for example, Google's, in Chrome) for transcription — it is never sent to us. If you'd rather not use this, simply type your question instead.</li>
+      <li><b>Currency Converter</b> — fetches public exchange rates from the free ExchangeRate-API service (open.er-api.com). No personal or identifying data is sent with this request.</li>
+    </ul>
+    <p>We encourage you to review the privacy policies of these third-party services, as we have no control over how they process data sent to them.</p>
+
+    <h2>3. How We Use Information</h2>
+    <p>Because Calvo does not collect personal data on any server we operate, we do not use, sell, rent, or share your information for advertising, marketing, or any other purpose. Locally stored data (history, saved results, preferences) is used solely to make the app function the way you left it the last time you opened it.</p>
+
+    <h2>4. Data Security</h2>
+    <p>Since your data stays on your own device, its security depends on your device and browser's own protections. We recommend keeping your browser up to date and not sharing your device or API keys with others.</p>
+
+    <h2>5. Children's Privacy</h2>
+    <p>Calvo is designed for students from 9th class through MS level, including users under the age of 18. Because we do not collect personal data from any user, we do not knowingly collect personal data from children either. If you are a parent or guardian with concerns, please contact us using the details below.</p>
+
+    <h2>6. Your Rights and Choices</h2>
+    <p>Since all Calvo-related data lives in your browser's local storage, you are always in control of it:</p>
+    <ul>
+      <li>Clear your browser's site data/cache for Calvo to delete all locally stored information instantly.</li>
+      <li>Remove your Gemini API key at any time from the AI Solver tab to stop using that feature.</li>
+      <li>Use the app without ever enabling the AI Solver or Currency Converter if you prefer not to contact any third-party service.</li>
+    </ul>
+
+    <h2>7. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time to reflect changes in the app or applicable law. Any changes will be posted on this page with a revised effective date above. Continued use of Calvo after changes are posted means you accept the updated policy.</p>
+
+    <h2>8. Contact Us</h2>
+    <p>If you have questions or concerns about this Privacy Policy, please reach out at <a href="mailto:usmaniftikhar2803@gmail.com">usmaniftikhar2803@gmail.com</a>.</p>
+
+    <div class="doc-footer">
+      Calvo — Scientific Calculator &amp; Formulas<br>
+      This policy is part of the Calvo app and applies to its use on all supported platforms.
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+  </script>
+
+</body>
+</html>

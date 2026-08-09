@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Calvo — Scientific Calculator & Formulas</title>
+
+<!-- Favicon / app icons -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff9500">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<base target="_blank">
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-6621625782538547" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-mark">=x</div>
+    <span class="topbar-name">Calvo</span>
+  </div>
+  <div class="topbar-tabs">
+    <button class="topbar-tab active" data-tab="calc" data-i18n="tab_calculator">Calculator</button>
+    <button class="topbar-tab" data-tab="formulas" data-i18n="tab_formulas">Formulas</button>
+    <button class="topbar-tab" data-tab="history" data-i18n="tab_history">History</button>
+    <button class="topbar-tab" data-tab="convert" data-i18n="tab_convert">Convert</button>
+    <button class="topbar-tab" data-tab="percentage" data-i18n="tab_percentage">Percent/GPA</button>
+    <button class="topbar-tab" data-tab="aisolver" data-i18n="tab_aisolver">AI Solver</button>
+  </div>
+  <div class="topbar-menu-wrap">
+    <button class="topbar-menu-btn" id="topbarMenuBtn" title="More" aria-label="More options">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="12" cy="5" r="2"></circle>
+        <circle cx="12" cy="12" r="2"></circle>
+        <circle cx="12" cy="19" r="2"></circle>
+      </svg>
+    </button>
+    <div class="topbar-menu" id="topbarMenu">
+      <button class="topbar-menu-item" id="menuTheme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <span data-i18n="menu_theme">Theme</span>
+      </button>
+      <button class="topbar-menu-item" id="menuLanguages">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <span data-i18n="menu_languages">Languages</span>
+      </button>
+      <button class="topbar-menu-item" id="menuFeedback">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span data-i18n="menu_feedback">Share Feedback</span>
+      </button>
+      <button class="topbar-menu-item" id="menuAbout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span data-i18n="menu_about">About Us</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Languages Modal -->
+<div class="app-modal-overlay" id="languagesOverlay">
+  <div class="app-modal">
+    <div class="app-modal-header">
+      <span data-i18n="languages_title">Choose Language</span>
+      <button class="theme-close" id="languagesClose">&#10005;</button>
+    </div>
+    <div class="language-list" id="languageList">
+      <button class="language-option active" data-lang="en">
+        <span>English</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+      <button class="language-option" data-lang="ur">
+        <span>&#1575;&#1585;&#1583;&#1608; (Urdu)</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+      <button class="language-option" data-lang="ar">
+        <span>&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577; (Arabic)</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+      <button class="language-option" data-lang="fr">
+        <span>Fran&#231;ais (French)</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+      <button class="language-option" data-lang="es">
+        <span>Espa&#241;ol (Spanish)</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+      <button class="language-option" data-lang="hi">
+        <span>&#2361;&#2367;&#2344;&#2381;&#2342;&#2368; (Hindi)</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+      <button class="language-option" data-lang="zh">
+        <span>&#20013;&#25991; (Chinese)</span>
+        <span class="lang-check">&#10003;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- About Us Modal -->
+<div class="app-modal-overlay" id="aboutOverlay">
+  <div class="app-modal">
+    <div class="app-modal-header">
+      <span data-i18n="about_title">About Calvo</span>
+      <button class="theme-close" id="aboutClose">&#10005;</button>
+    </div>
+    <div class="about-body">
+      <div class="about-brand">
+        <div class="brand-mark">=x</div>
+        <div>
+          <div class="about-name">Calvo</div>
+          <div class="about-tag" data-i18n="about_tag">Scientific Calculator &amp; Formulas</div>
+        </div>
+      </div>
+      <p data-i18n="about_p1">Calvo is a full-featured scientific calculator built for students from 9th class through MS level. It brings together a real calculator engine, a searchable formula library across six subjects, a unit converter, and a percentage / GPA-CGPA calculator — all in one place.</p>
+      <p data-i18n="about_p2">Built with care to make studying and quick calculations faster, our goal is to be the one tool you keep open in a browser tab all semester.</p>
+      <p class="about-contact"><span data-i18n="about_contact">Questions or suggestions? Reach us at</span> <a href="mailto:usmaniftikhar2803@gmail.com">usmaniftikhar2803@gmail.com</a></p>
+      <p class="about-contact"><a href="privacy.html" data-i18n="about_privacy_link">Privacy Policy</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CALCULATOR TAB ========== -->
+<section class="tab-panel active" id="tab-calc">
+  <div class="calc-wrap">
+    <div class="calculator-case">
+      <!-- Solar Panel -->
+      <div class="solar-strip">
+        <div class="solar-cell"></div>
+        <div class="solar-cell"></div>
+        <div class="solar-cell"></div>
+        <div class="solar-cell"></div>
+      </div>
+
+      <!-- Brand Row -->
+      <div class="brand-row">
+        <div class="brand-left">
+          <div class="brand-mark">=x</div>
+          <div class="brand-text">
+            <div class="brand-name">Calvo</div>
+            <div class="brand-tag">Scientific Calculator</div>
+          </div>
+        </div>
+        <div class="brand-right">
+          <div class="model-badge">SC-991</div>
+          <div class="model-tag">Dual Power</div>
+        </div>
+      </div>
+
+      <!-- LCD Display -->
+      <div class="lcd-frame">
+        <div class="lcd-bezel">
+          <div class="lcd-screen">
+            <div class="lcd-top">
+              <div class="lcd-indicators">
+                <span id="angleIndicator" class="indicator active">DEG</span>
+                <span id="shiftIndicator" class="indicator">SHIFT</span>
+                <span id="alphaIndicator" class="indicator">ALPHA</span>
+                <span id="hypIndicator" class="indicator">HYP</span>
+                <span id="memIndicator" class="indicator">M</span>
+              </div>
+              <span id="readyIndicator" class="indicator ready">READY</span>
+            </div>
+            <div class="lcd-sub" id="lcdSub">&nbsp;</div>
+            <div class="lcd-main" id="lcdMain">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode Row -->
+      <div class="mode-row">
+        <button class="mode-btn shift" id="shiftBtn"><span class="mode-icon">&#8679;</span> SHIFT</button>
+        <button class="replay-btn" id="replayBtn">
+          <span class="replay-arrow">&#9650;</span>
+          <span class="replay-text">REPLAY</span>
+          <span class="replay-arrow">&#9660;</span>
+        </button>
+        <button class="mode-btn alpha" id="alphaBtn"><span class="mode-icon">A</span> ALPHA</button>
+      </div>
+
+      <!-- Keypad -->
+      <div class="keypad" id="keypad">
+        <button class="key purple" data-shift="SOLVE" data-main="SHIFT" id="keyShift">SHIFT</button>
+        <button class="key purple" data-shift="" data-main="ALPHA" id="keyAlpha">ALPHA</button>
+        <button class="key black" data-shift="" data-main="MODE" id="keyMode">MODE</button>
+        <button class="key black" data-shift="" data-main="ON" id="keyOn">ON</button>
+        <button class="key black" data-shift="" data-main="&#960;" id="keyPi">&#960;</button>
+        <button class="key black" data-shift="" data-main="e" id="keyE">e</button>
+
+        <button class="key black" data-shift="" data-main="CALC" id="keyCalc">CALC</button>
+        <button class="key black" data-shift="" data-main="&#8747;" id="keyIntegral">&#8747;</button>
+        <button class="key black" data-shift="x&#8730;" data-main="x&#696;" id="keyPow">x&#696;</button>
+        <button class="key black" data-shift="10&#696;" data-main="log" id="keyLog">log</button>
+        <button class="key black" data-shift="e&#696;" data-main="ln" id="keyLn">ln</button>
+        <button class="key black" data-shift="" data-main="abs" id="keyAbs">abs</button>
+
+        <button class="key black" data-shift="" data-main="&#9633;" id="keySquare">&#9633;</button>
+        <button class="key black" data-shift="x&#178;" data-main="&#8730;" id="keySqrt">&#8730;</button>
+        <button class="key black" data-shift="x!" data-main="x&#178;" id="keySquare2">x&#178;</button>
+        <button class="key black" data-shift="&#8731;" data-main="x&#179;" id="keyCube">x&#179;</button>
+        <button class="key black" data-shift="" data-main="%" id="keyPercent">%</button>
+        <button class="key black" data-shift="" data-main="nrt" id="keyNrt">&#8319;&#8730;</button>
+
+        <button class="key black" data-shift="" data-main="(-)" id="keyNeg">(-)</button>
+        <button class="key black" data-shift="" data-main="EXP" id="keyExp">EXP</button>
+        <button class="key black" data-shift="" data-main="hyp" id="keyHyp">hyp</button>
+        <button class="key black" data-shift="sin&#8315;&#185;" data-main="sin" id="keySin">sin</button>
+        <button class="key black" data-shift="cos&#8315;&#185;" data-main="cos" id="keyCos">cos</button>
+        <button class="key black" data-shift="tan&#8315;&#185;" data-main="tan" id="keyTan">tan</button>
+
+        <button class="key black" data-shift="" data-main="RCL" id="keyRcl">RCL</button>
+        <button class="key black" data-shift="" data-main="ENG" id="keyEng">ENG</button>
+        <button class="key black" data-shift="" data-main="(" id="keyLParen">(</button>
+        <button class="key black" data-shift="" data-main=")" id="keyRParen">)</button>
+        <button class="key black" data-shift="" data-main="S&#8660;D" id="keySd">S&#8660;D</button>
+        <button class="key black" data-shift="M&#8722;" data-main="M+" id="keyMplus">M+</button>
+
+        <button class="key dark num" data-shift="" data-main="7" id="key7">7</button>
+        <button class="key dark num" data-shift="" data-main="8" id="key8">8</button>
+        <button class="key dark num" data-shift="" data-main="9" id="key9">9</button>
+        <button class="key orange" data-shift="" data-main="DEL" id="keyDel">DEL</button>
+        <button class="key orange" data-shift="" data-main="AC" id="keyAc">AC</button>
+        <button class="key black" data-shift="MC" data-main="MC" id="keyMc">MC</button>
+
+        <button class="key dark num" data-shift="" data-main="4" id="key4">4</button>
+        <button class="key dark num" data-shift="" data-main="5" id="key5">5</button>
+        <button class="key dark num" data-shift="" data-main="6" id="key6">6</button>
+        <button class="key dark op" data-shift="" data-main="&#215;" id="keyMul">&#215;</button>
+        <button class="key dark op" data-shift="" data-main="&#247;" id="keyDiv">&#247;</button>
+        <button class="key black" data-shift="MR" data-main="MR" id="keyMr">MR</button>
+
+        <button class="key dark num" data-shift="" data-main="1" id="key1">1</button>
+        <button class="key dark num" data-shift="" data-main="2" id="key2">2</button>
+        <button class="key dark num" data-shift="" data-main="3" id="key3">3</button>
+        <button class="key dark op" data-shift="" data-main="+" id="keyAdd">+</button>
+        <button class="key dark op" data-shift="" data-main="&#8722;" id="keySub">&#8722;</button>
+        <button class="key black" data-shift="asin" data-main="asin" id="keyAsin">asin</button>
+
+        <button class="key dark num" data-shift="" data-main="0" id="key0">0</button>
+        <button class="key dark num" data-shift="" data-main="." id="keyDot">.</button>
+        <button class="key dark" data-shift="" data-main="&#215;10&#696;" id="keySci">&#215;10&#696;</button>
+        <button class="key dark" data-shift="" data-main="Ans" id="keyAns">Ans</button>
+        <button class="key equals" data-shift="" data-main="=" id="keyEq">=</button>
+        <button class="key black" data-shift="acos" data-main="acos" id="keyAcos">acos</button>
+      </div>
+
+      <div class="calc-footer">
+        <span>Calvo Scientific</span>
+        <span class="footer-dots">&#8226; &#8226; &#8226;</span>
+        <span>SC-991</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FORMULAS TAB ========== -->
+<section class="tab-panel" id="tab-formulas">
+  <div class="formulas-wrap">
+    <div class="formulas-card">
+      <h2 class="formulas-title" data-i18n="formulas_title">Formula Library</h2>
+      <p class="formulas-subtitle" data-i18n="formulas_subtitle">9th Class to MS Level — All Subjects</p>
+
+      <!-- Search -->
+      <input type="text" class="formula-search" id="formulaSearch" data-i18n-placeholder="formula_search_placeholder" placeholder="Search formulas...">
+
+      <!-- Subject Pills -->
+      <div class="subject-pills" id="subjectPills"></div>
+
+      <!-- Formula List -->
+      <div class="formula-list" id="formulaList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== HISTORY TAB ========== -->
+<section class="tab-panel" id="tab-history">
+  <div class="formulas-wrap">
+    <div class="formulas-card">
+      <div class="app-card-header">
+        <div>
+          <h2 class="formulas-title" data-i18n="history_title">Calculation History</h2>
+          <p class="formulas-subtitle" data-i18n="history_subtitle">Every equal-sign result, saved automatically</p>
+        </div>
+        <button class="pill-btn" id="clearHistoryBtn" data-i18n="clear_all">Clear All</button>
+      </div>
+      <div class="formula-list" id="historyList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CONVERTER TAB ========== -->
+<section class="tab-panel" id="tab-convert">
+  <div class="formulas-wrap">
+    <div class="formulas-card">
+      <h2 class="formulas-title" data-i18n="convert_title">Unit Converter</h2>
+      <p class="formulas-subtitle" data-i18n="convert_subtitle">Length, weight, temperature & more</p>
+
+      <div class="subject-pills" id="convertCategoryPills"></div>
+
+      <div class="convert-row">
+        <div class="convert-field">
+          <input type="number" class="formula-search convert-input" id="convertFrom" data-i18n-placeholder="convert_value_placeholder" placeholder="Value" value="1">
+          <select class="formula-search convert-select" id="convertFromUnit"></select>
+        </div>
+        <button class="pill-btn convert-swap" id="convertSwapBtn" data-i18n-title="convert_swap_title" title="Swap units">&#8646;</button>
+        <div class="convert-field">
+          <input type="text" class="formula-search convert-input" id="convertTo" data-i18n-placeholder="convert_result_placeholder" placeholder="Result" readonly>
+          <select class="formula-search convert-select" id="convertToUnit"></select>
+        </div>
+      </div>
+      <div class="convert-hint" id="convertHint">&nbsp;</div>
+      <div class="convert-attribution" id="convertAttribution" data-i18n="convert_rates_attribution" style="display:none;">Rates by ExchangeRate-API</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PERCENTAGE / GPA TAB ========== -->
+<section class="tab-panel" id="tab-percentage">
+  <div class="formulas-wrap">
+    <div class="formulas-card">
+      <h2 class="formulas-title" data-i18n="percent_title">Percentage &amp; GPA / CGPA</h2>
+      <p class="formulas-subtitle" data-i18n="percent_subtitle">Quick percent math, and a full CGPA calculator</p>
+
+      <div class="subject-pills" id="percentModePills"></div>
+
+      <!-- Percentage tools (subject-wise, like a gradebook) -->
+      <div id="percentPanelBasic" class="percent-panel">
+        <div class="grade-subject-list" id="gradeSubjectList"></div>
+        <button class="pill-btn add-subject-btn" id="gradeAddSubjectBtn" data-i18n="add_subject">+ Add Subject</button>
+        <div class="grade-result-box" id="gradeResultBox">0.00%</div>
+        <button class="pill-btn save-btn" id="savePercentBtn" data-i18n="save_result">&#128190; Save Result</button>
+      </div>
+
+      <!-- CGPA tools -->
+      <div id="percentPanelCgpa" class="percent-panel" style="display:none;">
+        <div class="cgpa-scale-row">
+          <label data-i18n="grade_scale_label">Grade scale:</label>
+          <select class="formula-search convert-select" id="cgpaScale">
+            <option value="4" data-i18n="scale_4">4.0 Scale (A=4.0)</option>
+            <option value="4uet" data-i18n="scale_4uet">4.0 Scale (A+=4.0, UET/HEC style)</option>
+          </select>
+        </div>
+        <div class="cgpa-table" id="cgpaTable"></div>
+        <div class="cgpa-actions">
+          <button class="pill-btn" id="cgpaAddRow" data-i18n="add_subject_row">+ Add Subject</button>
+          <button class="pill-btn" id="cgpaAddSemester" data-i18n="add_semester">+ Add Semester (for overall CGPA)</button>
+        </div>
+        <div class="cgpa-result" id="cgpaResult">GPA: 0.00</div>
+        <button class="pill-btn save-btn" id="saveCgpaBtn" data-i18n="save_result">&#128190; Save Result</button>
+        <button class="pill-btn save-btn" id="saveSemesterHistoryBtn" data-i18n="save_semester_btn">&#128200; Save Semester(s) to History</button>
+
+        <!-- Semester-wise GPA history + running CGPA trend -->
+        <div class="saved-header">
+          <span data-i18n="gpa_history_title">Semester History &amp; CGPA Trend</span>
+          <button class="pill-btn small" id="clearGpaHistoryBtn" data-i18n="clear">Clear</button>
+        </div>
+        <div class="cgpa-trend-result" id="gpaTrendResult" style="display:none;"></div>
+        <div class="formula-list" id="gpaHistoryList"></div>
+      </div>
+
+      <!-- Saved results -->
+      <div class="saved-header">
+        <span data-i18n="saved_results">Saved Results</span>
+        <button class="pill-btn small" id="clearSavedBtn" data-i18n="clear">Clear</button>
+      </div>
+      <div class="formula-list" id="savedResultsList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== AI SOLVER TAB ========== -->
+<section class="tab-panel" id="tab-aisolver">
+  <div class="formulas-wrap">
+    <div class="formulas-card">
+      <h2 class="formulas-title" data-i18n="ai_title">AI Math Solver</h2>
+      <p class="formulas-subtitle" data-i18n="ai_subtitle">Type a question or upload a photo — powered by Google Gemini (free)</p>
+
+      <!-- API key (embedded, collapsible — not a separate gate) -->
+      <div class="ai-key-box" id="aiKeyBox">
+        <div class="ai-key-row">
+          <input type="password" class="formula-search ai-key-input" id="aiApiKeyInput" data-i18n-placeholder="ai_key_placeholder" placeholder="Paste your Gemini API key">
+          <button class="pill-btn" id="aiKeyToggleBtn" type="button" data-i18n="ai_key_show" title="Show/Hide">Show</button>
+        </div>
+        <div class="ai-key-actions">
+          <a class="ai-key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_key_get">Get a free key from Google AI Studio</a>
+        </div>
+        <div class="ai-key-status" id="aiKeyStatus"></div>
+      </div>
+
+      <!-- Solver input -->
+      <div class="ai-solver-box" id="aiSolverBox">
+        <textarea class="ai-question-input" id="aiQuestionInput" rows="3" data-i18n-placeholder="ai_question_placeholder" placeholder="Type your question here... any subject"></textarea>
+
+        <div class="ai-image-row">
+          <input type="file" id="aiImageInput" accept="image/*" capture="environment" style="display:none;">
+          <button class="pill-btn" id="aiImagePickBtn" type="button" data-i18n="ai_add_photo">&#128247; Add Photo</button>
+          <button class="pill-btn" id="aiVoiceBtn" type="button" data-i18n="ai_voice_btn">&#127908; Voice</button>
+          <span class="ai-image-filename" id="aiImageFilename"></span>
+          <button class="pill-btn small" id="aiImageClearBtn" type="button" data-i18n="ai_remove_photo" style="display:none;">&#10005; Remove</button>
+        </div>
+        <img id="aiImagePreview" class="ai-image-preview" style="display:none;" alt="">
+
+        <div class="ai-solver-actions">
+          <button class="pill-btn save-btn" id="aiSolveBtn" data-i18n="ai_solve">&#10024; Solve</button>
+          <button class="pill-btn" id="aiRefreshBtn" type="button" data-i18n="ai_refresh">&#8635; Refresh</button>
+          <button class="pill-btn" id="aiSaveBtn" type="button" data-i18n="ai_save" style="display:none;">&#128190; Save</button>
+        </div>
+
+        <div class="ai-result-box" id="aiResultBox"></div>
+
+        <div class="app-card-header ai-saved-header">
+          <h3 class="ai-saved-title" data-i18n="ai_saved_title">Saved Questions</h3>
+          <button class="pill-btn small" id="aiClearSavedBtn" data-i18n="clear_all">Clear All</button>
+        </div>
+        <div class="formula-list" id="aiSavedList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Theme Panel -->
+<div class="theme-panel" id="themePanel">
+  <div class="theme-panel-header">
+    <span data-i18n="theme_panel_title">Choose Theme</span>
+    <button class="theme-close" id="themeClose">&#10005;</button>
+  </div>
+  <div class="theme-grid" id="themeGrid"></div>
+</div>
+
+<script src="i18n.js"></script>
+<script src="script.js"></script>
+<script src="ai-solver.js"></script>
+<script>
+  // Offline PWA support — registers the service worker that caches
+  // the app shell so Calvo keeps working without an internet connection.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => { /* offline support unavailable, app still works online */ });
+    });
+  }
+</script>
+</body>
+</html>
