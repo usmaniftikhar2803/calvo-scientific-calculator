@@ -22,12 +22,12 @@ const CORE_ASSETS = [
   './manifest.json',
   './privacy.html',
   './favicon.ico',
-  './icons/favicon-16x16.png',
-  './icons/favicon-32x32.png',
-  './icons/favicon-48x48.png',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/apple-touch-icon.png',
+  './favicon-16x16.png',
+  './favicon-32x32.png',
+  './favicon-48x48.png',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
