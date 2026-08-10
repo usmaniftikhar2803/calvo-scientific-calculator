@@ -130,7 +130,7 @@
     aiVoiceBtn.classList.toggle('listening', listening);
     aiVoiceBtn.innerHTML = listening
       ? '&#128308; ' + escapeHtml(tr('ai_voice_listening'))
-      : '&#127908; ' + escapeHtml(tr('ai_voice_btn'));
+      : escapeHtml(tr('ai_voice_btn'));
   }
 
   function stopVoiceInput() {
