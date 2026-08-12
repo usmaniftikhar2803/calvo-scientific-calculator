@@ -85,6 +85,8 @@
     <button class="topbar-tab" data-tab="convert" data-i18n="tab_convert">Convert</button>
     <button class="topbar-tab" data-tab="percentage" data-i18n="tab_percentage">Percent/GPA</button>
     <button class="topbar-tab" data-tab="aisolver" data-i18n="tab_aisolver">AI Solver</button>
+    <button class="topbar-tab" data-tab="quiz" data-i18n="tab_quiz">Quiz</button>
+    <button class="topbar-tab" data-tab="graph" data-i18n="tab_graph">Graph</button>
   </div>
   <div class="topbar-menu-wrap">
     <button class="topbar-menu-btn" id="topbarMenuBtn" title="More" aria-label="More options">
@@ -483,6 +485,98 @@
           <button class="pill-btn small" id="aiClearSavedBtn" data-i18n="clear_all">Clear All</button>
         </div>
         <div class="formula-list" id="aiSavedList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-quiz">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="quizCard">
+      <div class="formulas-title" data-i18n="quiz_title">Formula Quiz</div>
+      <div class="formulas-subtitle" data-i18n="quiz_subtitle">Test yourself on formulas from any subject</div>
+
+      <div id="quizSetupScreen">
+        <div class="subject-pills" id="quizSubjectPills"></div>
+        <div class="quiz-setup-row">
+          <label class="quiz-setup-label" for="quizLengthSelect" data-i18n="quiz_length_label">Number of questions</label>
+          <select class="formula-search convert-select" id="quizLengthSelect">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+          </select>
+        </div>
+        <button class="pill-btn save-btn" id="quizStartBtn" data-i18n="quiz_start">Start Quiz</button>
+        <div class="quiz-empty-note" id="quizEmptyNote" data-i18n="quiz_not_enough" style="display:none;">This subject doesn't have enough formulas for a quiz yet.</div>
+      </div>
+
+      <div id="quizPlayScreen" style="display:none;">
+        <div class="quiz-progress-row">
+          <span id="quizProgressLabel">Question 1/10</span>
+          <span id="quizScoreLabel"></span>
+        </div>
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+
+        <div class="quiz-question-card">
+          <div class="quiz-question-cat" id="quizQuestionCat"></div>
+          <div class="quiz-question-text" id="quizQuestionText"></div>
+        </div>
+
+        <div class="quiz-options" id="quizOptionsList"></div>
+
+        <button class="pill-btn save-btn" id="quizNextBtn" style="display:none;" data-i18n="quiz_next">Next Question</button>
+        <button class="pill-btn" id="quizQuitBtn" data-i18n="quiz_quit">End Quiz</button>
+      </div>
+
+      <div id="quizResultScreen" style="display:none;">
+        <div class="quiz-result-score" id="quizResultScoreText"></div>
+        <div class="quiz-result-msg" id="quizResultMsg"></div>
+        <button class="pill-btn save-btn" id="quizRestartBtn" data-i18n="quiz_restart">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-graph">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="graphCard">
+      <div class="formulas-title" data-i18n="graph_title">Function Grapher</div>
+      <div class="formulas-subtitle" data-i18n="graph_subtitle">Plot functions or explore the unit circle</div>
+
+      <div class="subject-pills">
+        <button class="subject-pill active" data-graphmode="function" id="graphModeFnBtn" data-i18n="graph_mode_function">Function Graph</button>
+        <button class="subject-pill" data-graphmode="unitcircle" id="graphModeCircleBtn" data-i18n="graph_mode_unitcircle">Unit Circle</button>
+      </div>
+
+      <div id="graphFunctionPanel">
+        <input type="text" class="formula-search convert-input" id="graphFnInput" placeholder="e.g. sin(x), x^2, 2x+3" data-i18n-placeholder="graph_fn_placeholder" value="sin(x)">
+        <div class="graph-quick-row" id="graphQuickBtns">
+          <button class="pill-btn small" data-fn="x^2">x²</button>
+          <button class="pill-btn small" data-fn="sin(x)">sin(x)</button>
+          <button class="pill-btn small" data-fn="cos(x)">cos(x)</button>
+          <button class="pill-btn small" data-fn="tan(x)">tan(x)</button>
+          <button class="pill-btn small" data-fn="sqrt(x)">√x</button>
+          <button class="pill-btn small" data-fn="1/x">1/x</button>
+        </div>
+        <div class="graph-range-row">
+          <input type="number" class="formula-search convert-input" id="graphXMin" value="-10">
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphXMax" value="10">
+        </div>
+        <div class="graph-error" id="graphError"></div>
+      </div>
+
+      <div id="graphUnitCirclePanel" style="display:none;">
+        <input type="range" id="graphAngleSlider" min="0" max="360" value="45" class="graph-angle-slider">
+        <div class="graph-angle-readout" id="graphAngleReadout">
+          <span id="graphAngleDeg">45°</span>
+          <span class="graph-angle-values" id="graphAngleValues"></span>
+        </div>
+      </div>
+
+      <div class="graph-canvas-wrap">
+        <canvas id="graphCanvas" width="600" height="380"></canvas>
       </div>
     </div>
   </div>
