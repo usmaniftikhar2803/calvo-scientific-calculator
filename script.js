@@ -3284,3 +3284,434 @@ setTimeout(() => {
   // initial draw once layout settles
   setTimeout(redraw, 200);
 })();
+
+/* ============================================
+   EQUATION SOLVER — offline, step-by-step
+   ============================================ */
+(function () {
+  const eqModeLinearBtn = document.getElementById('eqModeLinearBtn');
+  const eqModeQuadBtn = document.getElementById('eqModeQuadBtn');
+  const eqCGroup = document.getElementById('eqCGroup');
+  const eqA = document.getElementById('eqA');
+  const eqB = document.getElementById('eqB');
+  const eqC = document.getElementById('eqC');
+  const eqSolveBtn = document.getElementById('eqSolveBtn');
+  const eqStepsBox = document.getElementById('eqStepsBox');
+  if (!eqSolveBtn) return;
+
+  let eqMode = 'linear';
+
+  function fmt(n) {
+    if (!isFinite(n)) return '—';
+    const r = Math.round(n * 1e6) / 1e6;
+    return Number.isInteger(r) ? String(r) : String(r);
+  }
+
+  function stepHtml(label, content, isFinal) {
+    return '<div class="eq-step' + (isFinal ? ' eq-final' : '') + '">'
+      + '<span class="eq-step-label">' + label + '</span>' + content + '</div>';
+  }
+
+  function setEqMode(mode) {
+    eqMode = mode;
+    eqModeLinearBtn.classList.toggle('active', mode === 'linear');
+    eqModeQuadBtn.classList.toggle('active', mode === 'quadratic');
+    eqCGroup.style.display = 'flex';
+    eqStepsBox.innerHTML = '';
+  }
+
+  function solveLinear() {
+    const a = parseFloat(eqA.value), b = parseFloat(eqB.value), c = parseFloat(eqC.value);
+    if (!isFinite(a) || !isFinite(b) || !isFinite(c)) {
+      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_input') + '</div>';
+      return;
+    }
+    if (a === 0) {
+      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_a_zero') + '</div>';
+      return;
+    }
+    let html = '';
+    html += stepHtml(t('eq_step_original'), a + 'x + ' + b + ' = ' + c);
+    html += stepHtml(t('eq_step_isolate'), a + 'x = ' + c + ' − (' + b + ') = ' + fmt(c - b));
+    const x = (c - b) / a;
+    html += stepHtml(t('eq_step_divide'), 'x = ' + fmt(c - b) + ' / ' + a);
+    html += stepHtml(t('eq_step_answer'), 'x = ' + fmt(x), true);
+    eqStepsBox.innerHTML = html;
+  }
+
+  function solveQuadratic() {
+    const a = parseFloat(eqA.value), b = parseFloat(eqB.value), c = parseFloat(eqC.value);
+    if (!isFinite(a) || !isFinite(b) || !isFinite(c)) {
+      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_input') + '</div>';
+      return;
+    }
+    if (a === 0) {
+      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_a_zero') + '</div>';
+      return;
+    }
+    let html = '';
+    html += stepHtml(t('eq_step_original'), a + 'x² + ' + b + 'x + ' + c + ' = 0');
+    const D = b * b - 4 * a * c;
+    html += stepHtml(t('eq_step_discriminant'), 'D = b² − 4ac = (' + b + ')² − 4(' + a + ')(' + c + ') = ' + fmt(D));
+
+    if (D > 0) {
+      const sqrtD = Math.sqrt(D);
+      const x1 = (-b + sqrtD) / (2 * a);
+      const x2 = (-b - sqrtD) / (2 * a);
+      html += stepHtml(t('eq_step_formula'), 'x = (−b ± √D) / 2a = (' + (-b) + ' ± √' + fmt(D) + ') / ' + (2 * a));
+      html += stepHtml(t('eq_step_two_roots'), 'x₁ = ' + fmt(x1) + ',  x₂ = ' + fmt(x2), true);
+    } else if (D === 0) {
+      const x = -b / (2 * a);
+      html += stepHtml(t('eq_step_formula'), 'x = −b / 2a = ' + (-b) + ' / ' + (2 * a));
+      html += stepHtml(t('eq_step_one_root'), 'x = ' + fmt(x), true);
+    } else {
+      const real = (-b / (2 * a));
+      const imag = Math.sqrt(-D) / (2 * a);
+      html += stepHtml(t('eq_step_no_real'), t('eq_step_complex_roots'));
+      html += stepHtml(t('eq_step_two_roots'), 'x₁ = ' + fmt(real) + ' + ' + fmt(imag) + 'i,  x₂ = ' + fmt(real) + ' − ' + fmt(imag) + 'i', true);
+    }
+    eqStepsBox.innerHTML = html;
+  }
+
+  eqModeLinearBtn.addEventListener('click', () => setEqMode('linear'));
+  eqModeQuadBtn.addEventListener('click', () => setEqMode('quadratic'));
+  eqSolveBtn.addEventListener('click', () => {
+    if (eqMode === 'linear') solveLinear();
+    else solveQuadratic();
+  });
+})();
+
+/* ============================================
+   MATRIX CALCULATOR
+   ============================================ */
+(function () {
+  const gridA = document.getElementById('matrixGridA');
+  const gridB = document.getElementById('matrixGridB');
+  const bBlock = document.getElementById('matrixBBlock');
+  const size2Btn = document.getElementById('matrixSize2Btn');
+  const size3Btn = document.getElementById('matrixSize3Btn');
+  const opPills = document.getElementById('matrixOpPills');
+  const calcBtn = document.getElementById('matrixCalcBtn');
+  const resultBox = document.getElementById('matrixResultBox');
+  if (!gridA) return;
+
+  let mSize = 2;
+  let mOp = 'add';
+
+  function buildGrid(container, size, seed) {
+    container.dataset.size = size;
+    container.style.gridTemplateColumns = 'repeat(' + size + ', 52px)';
+    let html = '';
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const val = seed ? seed[r][c] : (r === c ? 1 : 0);
+        html += '<input type="number" data-r="' + r + '" data-c="' + c + '" value="' + val + '">';
+      }
+    }
+    container.innerHTML = html;
+  }
+
+  function readMatrix(container, size) {
+    const m = [];
+    for (let r = 0; r < size; r++) {
+      m.push([]);
+      for (let c = 0; c < size; c++) {
+        const inp = container.querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
+        m[r].push(parseFloat(inp.value) || 0);
+      }
+    }
+    return m;
+  }
+
+  function setSize(size) {
+    mSize = size;
+    size2Btn.classList.toggle('active', size === 2);
+    size3Btn.classList.toggle('active', size === 3);
+    buildGrid(gridA, size);
+    buildGrid(gridB, size);
+    resultBox.innerHTML = '';
+  }
+
+  function setOp(op) {
+    mOp = op;
+    opPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p.dataset.mop === op));
+    bBlock.style.display = (op === 'det' || op === 'inv') ? 'none' : 'block';
+    resultBox.innerHTML = '';
+  }
+
+  function matAdd(A, B, sign) {
+    return A.map((row, r) => row.map((v, c) => v + sign * B[r][c]));
+  }
+  function matMul(A, B, n) {
+    const R = [];
+    for (let r = 0; r < n; r++) {
+      R.push([]);
+      for (let c = 0; c < n; c++) {
+        let sum = 0;
+        for (let k = 0; k < n; k++) sum += A[r][k] * B[k][c];
+        R[r].push(sum);
+      }
+    }
+    return R;
+  }
+  function det2(M) { return M[0][0] * M[1][1] - M[0][1] * M[1][0]; }
+  function det3(M) {
+    return (
+      M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) -
+      M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) +
+      M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0])
+    );
+  }
+  function inv2(M) {
+    const d = det2(M);
+    if (d === 0) return null;
+    return [
+      [M[1][1] / d, -M[0][1] / d],
+      [-M[1][0] / d, M[0][0] / d],
+    ];
+  }
+  function inv3(M) {
+    const d = det3(M);
+    if (d === 0) return null;
+    const cof = (r, c) => {
+      const rows = [0, 1, 2].filter(x => x !== r);
+      const cols = [0, 1, 2].filter(x => x !== c);
+      const sub = [
+        [M[rows[0]][cols[0]], M[rows[0]][cols[1]]],
+        [M[rows[1]][cols[0]], M[rows[1]][cols[1]]],
+      ];
+      const sign = ((r + c) % 2 === 0) ? 1 : -1;
+      return sign * det2(sub);
+    };
+    const adjT = [];
+    for (let r = 0; r < 3; r++) {
+      adjT.push([]);
+      for (let c = 0; c < 3; c++) adjT[r].push(cof(c, r) / d); // transposed cofactor = adjugate
+    }
+    return adjT;
+  }
+
+  function fmtNum(n) {
+    const r = Math.round(n * 1e6) / 1e6;
+    return String(r);
+  }
+
+  function renderMatrixResult(M) {
+    let html = '<div class="matrix-result-grid" style="grid-template-columns:repeat(' + M[0].length + ', 60px);">';
+    M.forEach(row => row.forEach(v => { html += '<div class="matrix-result-cell">' + fmtNum(v) + '</div>'; }));
+    html += '</div>';
+    resultBox.innerHTML = html;
+  }
+
+  function calculate() {
+    const A = readMatrix(gridA, mSize);
+    const B = readMatrix(gridB, mSize);
+    if (mOp === 'add') { renderMatrixResult(matAdd(A, B, 1)); return; }
+    if (mOp === 'sub') { renderMatrixResult(matAdd(A, B, -1)); return; }
+    if (mOp === 'mul') { renderMatrixResult(matMul(A, B, mSize)); return; }
+    if (mOp === 'det') {
+      const d = mSize === 2 ? det2(A) : det3(A);
+      resultBox.innerHTML = '<div class="matrix-result-scalar">det(A) = ' + fmtNum(d) + '</div>';
+      return;
+    }
+    if (mOp === 'inv') {
+      const inv = mSize === 2 ? inv2(A) : inv3(A);
+      if (!inv) {
+        resultBox.innerHTML = '<div class="eq-error">' + t('matrix_error_singular') + '</div>';
+        return;
+      }
+      renderMatrixResult(inv);
+    }
+  }
+
+  size2Btn.addEventListener('click', () => setSize(2));
+  size3Btn.addEventListener('click', () => setSize(3));
+  opPills.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mop]');
+    if (btn) setOp(btn.dataset.mop);
+  });
+  calcBtn.addEventListener('click', calculate);
+
+  setSize(2);
+  setOp('add');
+})();
+
+/* ============================================
+   PROGRAMMER MODE — base conversion + bitwise
+   ============================================ */
+(function () {
+  const decInput = document.getElementById('progDecInput');
+  const binInput = document.getElementById('progBinInput');
+  const octInput = document.getElementById('progOctInput');
+  const hexInput = document.getElementById('progHexInput');
+  const errBox = document.getElementById('progError');
+  const opA = document.getElementById('progOpA');
+  const opB = document.getElementById('progOpB');
+  const opPills = document.getElementById('progOpPills');
+  const bitwiseResult = document.getElementById('progBitwiseResult');
+  if (!decInput) return;
+
+  let progOp = 'AND';
+
+  function syncFrom(base) {
+    errBox.textContent = '';
+    let n;
+    try {
+      if (base === 'dec') n = parseInt(decInput.value.trim(), 10);
+      else if (base === 'bin') n = parseInt(binInput.value.trim() || '0', 2);
+      else if (base === 'oct') n = parseInt(octInput.value.trim() || '0', 8);
+      else if (base === 'hex') n = parseInt(hexInput.value.trim() || '0', 16);
+    } catch (e) { n = NaN; }
+
+    if (!Number.isFinite(n) || Number.isNaN(n)) {
+      errBox.textContent = t('prog_error_invalid');
+      return;
+    }
+    const neg = n < 0;
+    const abs = Math.abs(n);
+    if (base !== 'dec') decInput.value = n;
+    if (base !== 'bin') binInput.value = (neg ? '-' : '') + abs.toString(2);
+    if (base !== 'oct') octInput.value = (neg ? '-' : '') + abs.toString(8);
+    if (base !== 'hex') hexInput.value = (neg ? '-' : '') + abs.toString(16).toUpperCase();
+  }
+
+  decInput.addEventListener('input', () => syncFrom('dec'));
+  binInput.addEventListener('input', () => syncFrom('bin'));
+  octInput.addEventListener('input', () => syncFrom('oct'));
+  hexInput.addEventListener('input', () => syncFrom('hex'));
+
+  function computeBitwise() {
+    const a = parseInt(opA.value, 10) || 0;
+    const b = parseInt(opB.value, 10) || 0;
+    let result, label;
+    switch (progOp) {
+      case 'AND': result = a & b; label = 'A AND B'; break;
+      case 'OR': result = a | b; label = 'A OR B'; break;
+      case 'XOR': result = a ^ b; label = 'A XOR B'; break;
+      case 'NOT': result = ~a; label = 'NOT A'; break;
+      case 'SHL': result = a << b; label = 'A << B'; break;
+      case 'SHR': result = a >> b; label = 'A >> B'; break;
+      default: result = 0; label = '';
+    }
+    bitwiseResult.innerHTML = label + ' = ' + result
+      + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + (result < 0 ? '-' + Math.abs(result).toString(2) : result.toString(2)) + '</span>';
+  }
+
+  opPills.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-bop]');
+    if (!btn) return;
+    progOp = btn.dataset.bop;
+    opPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p === btn));
+    computeBitwise();
+  });
+  [opA, opB].forEach(inp => inp.addEventListener('input', computeBitwise));
+
+  computeBitwise();
+})();
+
+/* ============================================
+   STATISTICS MODE
+   ============================================ */
+(function () {
+  const dataInput = document.getElementById('statsDataInput');
+  const calcBtn = document.getElementById('statsCalcBtn');
+  const errBox = document.getElementById('statsError');
+  const resultGrid = document.getElementById('statsResultGrid');
+  if (!calcBtn) return;
+
+  function statCell(label, value) {
+    return '<div class="stats-result-cell"><div class="stats-label">' + label + '</div><div class="stats-value">' + value + '</div></div>';
+  }
+
+  function computeStats() {
+    errBox.textContent = '';
+    resultGrid.innerHTML = '';
+    const raw = dataInput.value.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+    const nums = raw.map(Number);
+    if (nums.length === 0 || nums.some(n => !isFinite(n))) {
+      errBox.textContent = t('stats_error_invalid');
+      return;
+    }
+    const n = nums.length;
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const mean = sum / n;
+    const sorted = nums.slice().sort((a, b) => a - b);
+    const median = n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[(n - 1) / 2];
+
+    const freq = {};
+    nums.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+    let maxFreq = 0;
+    Object.values(freq).forEach(f => { if (f > maxFreq) maxFreq = f; });
+    let modeVals = Object.keys(freq).filter(k => freq[k] === maxFreq).map(Number);
+    const modeStr = maxFreq === 1 ? t('stats_no_mode') : modeVals.join(', ');
+
+    const min = sorted[0], max = sorted[n - 1];
+    const range = max - min;
+    const variancePop = nums.reduce((a, v) => a + Math.pow(v - mean, 2), 0) / n;
+    const varianceSample = n > 1 ? nums.reduce((a, v) => a + Math.pow(v - mean, 2), 0) / (n - 1) : 0;
+    const stdPop = Math.sqrt(variancePop);
+    const stdSample = Math.sqrt(varianceSample);
+
+    const round = (x) => Math.round(x * 1e4) / 1e4;
+
+    let html = '';
+    html += statCell(t('stats_count'), n);
+    html += statCell(t('stats_sum'), round(sum));
+    html += statCell(t('stats_mean'), round(mean));
+    html += statCell(t('stats_median'), round(median));
+    html += statCell(t('stats_mode'), modeStr);
+    html += statCell(t('stats_range'), round(range));
+    html += statCell(t('stats_min'), min);
+    html += statCell(t('stats_max'), max);
+    html += statCell(t('stats_std_pop'), round(stdPop));
+    html += statCell(t('stats_std_sample'), round(stdSample));
+    resultGrid.innerHTML = html;
+  }
+
+  calcBtn.addEventListener('click', computeStats);
+})();
+
+/* ============================================
+   TOPBAR TABS — horizontal scroll affordance
+   (mouse wheel support + click arrows, since the
+   tab strip now holds 12 tabs and doesn't all fit
+   on smaller/laptop screens)
+   ============================================ */
+(function () {
+  const wrap = document.getElementById('topbarTabs');
+  const leftBtn = document.getElementById('topbarTabsLeft');
+  const rightBtn = document.getElementById('topbarTabsRight');
+  if (!wrap || !leftBtn || !rightBtn) return;
+
+  function updateArrows() {
+    const maxScroll = wrap.scrollWidth - wrap.clientWidth;
+    const canScrollLeft = wrap.scrollLeft > 4;
+    const canScrollRight = wrap.scrollLeft < maxScroll - 4;
+    leftBtn.classList.toggle('visible', canScrollLeft);
+    rightBtn.classList.toggle('visible', canScrollRight);
+    wrap.classList.toggle('fade-left', canScrollLeft);
+    wrap.classList.toggle('fade-right', canScrollRight);
+  }
+
+  // Let a normal vertical mouse-wheel/trackpad scroll move the tab strip
+  // horizontally — this is the main desktop discoverability fix, since the
+  // scrollbar itself is intentionally hidden for a cleaner look.
+  wrap.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // already horizontal, let it be
+    if (wrap.scrollWidth <= wrap.clientWidth) return; // nothing to scroll
+    e.preventDefault();
+    wrap.scrollLeft += e.deltaY;
+  }, { passive: false });
+
+  leftBtn.addEventListener('click', () => wrap.scrollBy({ left: -160, behavior: 'smooth' }));
+  rightBtn.addEventListener('click', () => wrap.scrollBy({ left: 160, behavior: 'smooth' }));
+
+  wrap.addEventListener('scroll', updateArrows);
+  window.addEventListener('resize', updateArrows);
+  // Re-check after fonts/layout settle and whenever a tab is clicked
+  // (switching tabs doesn't change scroll width, but harmless to re-check).
+  setTimeout(updateArrows, 300);
+  wrap.querySelectorAll('.topbar-tab').forEach(btn => btn.addEventListener('click', updateArrows));
+
+  updateArrows();
+})();
