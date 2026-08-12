@@ -210,6 +210,7 @@
   const AI_LANG_NAMES = {
     en: 'English', ur: 'Urdu', ar: 'Arabic', fr: 'French',
     es: 'Spanish', hi: 'Hindi', zh: 'Chinese (Simplified)',
+    tr: 'Turkish', de: 'German', ru: 'Russian',
   };
 
   function renderResult(html) {
