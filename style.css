@@ -311,6 +311,21 @@ body {
 .topbar-menu-item svg { flex-shrink: 0; color: var(--accent); }
 .topbar-menu-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
 
+/* ---------- RTL FIX (Urdu/Arabic) ----------
+   In RTL, the flex row order reverses, so .topbar-menu-wrap
+   (the 3-dot button) ends up on the LEFT edge of the topbar
+   instead of the right. The dropdown below was still anchored
+   with "right:0", which made it expand further left and go
+   off-screen. Anchor it to "left:0" in RTL so it opens into
+   the visible area next to the button instead. */
+[dir="rtl"] .topbar-menu {
+  right: auto;
+  left: 0;
+}
+[dir="rtl"] .topbar-menu-item {
+  text-align: right;
+}
+
 /* ---------- GENERIC APP MODAL ---------- */
 .app-modal-overlay {
   position: fixed;
