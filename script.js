@@ -2038,7 +2038,7 @@ function logCalcHistory(exprStr, resultStr) {
   renderCalcHistory();
 }
 
-const LOCALE_MAP = { en: 'en-US', ur: 'ur-PK', ar: 'ar-EG', fr: 'fr-FR', es: 'es-ES', hi: 'hi-IN', zh: 'zh-CN' };
+const LOCALE_MAP = { en: 'en-US', ur: 'ur-PK', ar: 'ar-EG', fr: 'fr-FR', es: 'es-ES', hi: 'hi-IN', zh: 'zh-CN', tr: 'tr-TR', de: 'de-DE', ru: 'ru-RU' };
 
 function formatHistoryTime(ts) {
   const d = new Date(ts);
