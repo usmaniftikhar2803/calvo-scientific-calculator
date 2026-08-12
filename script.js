@@ -2787,6 +2787,9 @@ function onLanguageChange() {
   [clearHistoryBtn, clearGpaHistoryBtn, clearSavedBtn].forEach(btn => {
     if (btn && typeof btn._disarmConfirm === 'function') btn._disarmConfirm();
   });
+
+  // Quiz tab — refresh subject pills / labels for the new language
+  if (typeof window.refreshQuizI18n === 'function') window.refreshQuizI18n();
 }
 
 /* ---------- INIT ---------- */
@@ -2800,3 +2803,484 @@ setTimeout(() => {
     document.querySelector('.lcd-bezel').classList.remove('pulse');
   }, 1500);
 }, 300);
+/* ============================================
+   QUIZ MODE — auto-generated from formulaData
+   ============================================ */
+(function () {
+  const quizSubjectPills = document.getElementById('quizSubjectPills');
+  const quizLengthSelect = document.getElementById('quizLengthSelect');
+  const quizStartBtn = document.getElementById('quizStartBtn');
+  const quizSetupScreen = document.getElementById('quizSetupScreen');
+  const quizPlayScreen = document.getElementById('quizPlayScreen');
+  const quizResultScreen = document.getElementById('quizResultScreen');
+  const quizEmptyNote = document.getElementById('quizEmptyNote');
+  const quizProgressLabel = document.getElementById('quizProgressLabel');
+  const quizScoreLabel = document.getElementById('quizScoreLabel');
+  const quizProgressFill = document.getElementById('quizProgressFill');
+  const quizQuestionCat = document.getElementById('quizQuestionCat');
+  const quizQuestionText = document.getElementById('quizQuestionText');
+  const quizOptionsList = document.getElementById('quizOptionsList');
+  const quizNextBtn = document.getElementById('quizNextBtn');
+  const quizQuitBtn = document.getElementById('quizQuitBtn');
+  const quizRestartBtn = document.getElementById('quizRestartBtn');
+  const quizResultScoreText = document.getElementById('quizResultScoreText');
+  const quizResultMsg = document.getElementById('quizResultMsg');
+
+  if (!quizSubjectPills || typeof formulaData === 'undefined') return;
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  let quizSubject = 'All';
+  let quizQuestions = [];
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function allFormulasFlat() {
+    const out = [];
+    Object.keys(formulaData).forEach(subj => {
+      formulaData[subj].forEach(f => out.push(Object.assign({ subject: subj }, f)));
+    });
+    return out;
+  }
+
+  function pool() {
+    return quizSubject === 'All'
+      ? allFormulasFlat()
+      : (formulaData[quizSubject] || []).map(f => Object.assign({ subject: quizSubject }, f));
+  }
+
+  function buildQuizSubjectPills() {
+    let html = '<button class="subject-pill' + (quizSubject === 'All' ? ' active' : '') + '" data-quizsubj="All">' + t('quiz_all_subjects') + '</button>';
+    Object.keys(formulaData).forEach(subj => {
+      html += '<button class="subject-pill' + (quizSubject === subj ? ' active' : '') + '" data-quizsubj="' + escapeHtml(subj) + '">' + escapeHtml(subj) + '</button>';
+    });
+    quizSubjectPills.innerHTML = html;
+    quizSubjectPills.querySelectorAll('.subject-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        quizSubject = btn.dataset.quizsubj;
+        buildQuizSubjectPills();
+        checkQuizPoolSize();
+      });
+    });
+  }
+
+  function checkQuizPoolSize() {
+    const size = pool().length;
+    const enough = size >= 4;
+    quizStartBtn.disabled = !enough;
+    quizStartBtn.style.opacity = enough ? '1' : '0.5';
+    quizEmptyNote.style.display = enough ? 'none' : 'block';
+  }
+
+  function generateQuestions(n) {
+    const p = pool();
+    const chosen = shuffle(p).slice(0, Math.min(n, p.length));
+    return chosen.map(correct => {
+      const distractorPool = p.filter(f => f.expr !== correct.expr);
+      const distractors = shuffle(distractorPool).slice(0, 3);
+      const options = shuffle([correct, ...distractors]);
+      return { cat: correct.cat, name: correct.name, correctExpr: correct.expr, options: options.map(o => o.expr) };
+    });
+  }
+
+  function startQuiz() {
+    const n = parseInt(quizLengthSelect.value, 10) || 10;
+    quizQuestions = generateQuestions(n);
+    if (quizQuestions.length < 4) return;
+    quizIndex = 0;
+    quizScore = 0;
+    quizSetupScreen.style.display = 'none';
+    quizResultScreen.style.display = 'none';
+    quizPlayScreen.style.display = 'block';
+    renderQuizQuestion();
+  }
+
+  function renderQuizQuestion() {
+    quizAnswered = false;
+    const q = quizQuestions[quizIndex];
+    quizProgressLabel.textContent = t('quiz_question_progress')
+      .replace('{n}', quizIndex + 1).replace('{total}', quizQuestions.length);
+    quizScoreLabel.textContent = t('quiz_score_label') + ' ' + quizScore;
+    quizProgressFill.style.width = ((quizIndex) / quizQuestions.length * 100) + '%';
+    quizQuestionCat.textContent = q.cat;
+    quizQuestionText.textContent = q.name;
+    quizOptionsList.innerHTML = '';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => selectQuizAnswer(btn, opt, q.correctExpr));
+      quizOptionsList.appendChild(btn);
+    });
+    quizNextBtn.style.display = 'none';
+  }
+
+  function selectQuizAnswer(btn, chosen, correct) {
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const isCorrect = chosen === correct;
+    if (isCorrect) quizScore++;
+    quizOptionsList.querySelectorAll('.quiz-option-btn').forEach(b => {
+      b.disabled = true;
+      if (b.textContent === correct) b.classList.add('correct');
+      else if (b === btn && !isCorrect) b.classList.add('wrong');
+    });
+    quizScoreLabel.textContent = t('quiz_score_label') + ' ' + quizScore;
+    quizNextBtn.style.display = 'block';
+    quizNextBtn.textContent = (quizIndex === quizQuestions.length - 1) ? t('quiz_finish') : t('quiz_next');
+  }
+
+  function nextQuizQuestion() {
+    quizIndex++;
+    if (quizIndex >= quizQuestions.length) {
+      finishQuiz();
+    } else {
+      renderQuizQuestion();
+    }
+  }
+
+  function finishQuiz() {
+    quizPlayScreen.style.display = 'none';
+    quizResultScreen.style.display = 'block';
+    quizResultScoreText.textContent = quizScore + ' / ' + quizQuestions.length;
+    const pct = Math.round((quizScore / quizQuestions.length) * 100);
+    let msgKey = 'quiz_msg_good';
+    if (pct === 100) msgKey = 'quiz_msg_perfect';
+    else if (pct < 50) msgKey = 'quiz_msg_practice';
+    quizResultMsg.textContent = t(msgKey);
+  }
+
+  function quitQuiz() {
+    quizPlayScreen.style.display = 'none';
+    quizResultScreen.style.display = 'none';
+    quizSetupScreen.style.display = 'block';
+  }
+
+  quizStartBtn.addEventListener('click', startQuiz);
+  quizNextBtn.addEventListener('click', nextQuizQuestion);
+  quizQuitBtn.addEventListener('click', quitQuiz);
+  quizRestartBtn.addEventListener('click', () => {
+    quizResultScreen.style.display = 'none';
+    quizSetupScreen.style.display = 'block';
+  });
+
+  buildQuizSubjectPills();
+  checkQuizPoolSize();
+
+  window.refreshQuizI18n = function () {
+    buildQuizSubjectPills();
+    checkQuizPoolSize();
+    if (quizPlayScreen.style.display === 'block' && quizQuestions.length) renderQuizQuestion();
+  };
+})();
+
+/* ============================================
+   GRAPHING TOOL + UNIT CIRCLE
+   ============================================ */
+(function () {
+  const canvas = document.getElementById('graphCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const fnInput = document.getElementById('graphFnInput');
+  const xMinInput = document.getElementById('graphXMin');
+  const xMaxInput = document.getElementById('graphXMax');
+  const graphError = document.getElementById('graphError');
+  const quickBtns = document.getElementById('graphQuickBtns');
+  const fnPanel = document.getElementById('graphFunctionPanel');
+  const circlePanel = document.getElementById('graphUnitCirclePanel');
+  const modeFnBtn = document.getElementById('graphModeFnBtn');
+  const modeCircleBtn = document.getElementById('graphModeCircleBtn');
+  const angleSlider = document.getElementById('graphAngleSlider');
+  const angleDeg = document.getElementById('graphAngleDeg');
+  const angleValues = document.getElementById('graphAngleValues');
+
+  let graphMode = 'function';
+
+  // Whitelist-validate the expression before ever handing it to Function(),
+  // so only numbers, x, basic operators, parens, commas, dots and known
+  // function names can appear — nothing else is allowed through.
+  const ALLOWED_FN_NAMES = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'abs', 'log', 'ln', 'exp', 'pow', 'min', 'max'];
+  function compileFn(exprRaw) {
+    let expr = exprRaw.trim();
+    if (!expr) return null;
+    // implicit multiplication: 2x -> 2*x, )x -> )*x, 2( -> 2*(
+    expr = expr.replace(/(\d)(x)/gi, '$1*$2');
+    expr = expr.replace(/\)(\s*)(x|\()/gi, ')*$2');
+    expr = expr.replace(/(\d)(\()/g, '$1*$2');
+    expr = expr.replace(/\^/g, '**');
+    expr = expr.replace(/\bln\(/g, 'log(');
+
+    const safety = expr
+      .replace(/\b(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|pow|min|max|pi|PI)\b/g, '')
+      .replace(/[x\d\s+\-*/().,]/g, '');
+    if (safety.length > 0) return null;
+
+    const funcBody = expr
+      .replace(/\bsin\(/g, 'Math.sin(')
+      .replace(/\bcos\(/g, 'Math.cos(')
+      .replace(/\btan\(/g, 'Math.tan(')
+      .replace(/\basin\(/g, 'Math.asin(')
+      .replace(/\bacos\(/g, 'Math.acos(')
+      .replace(/\batan\(/g, 'Math.atan(')
+      .replace(/\bsqrt\(/g, 'Math.sqrt(')
+      .replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\blog\(/g, 'Math.log(')
+      .replace(/\bexp\(/g, 'Math.exp(')
+      .replace(/\bpow\(/g, 'Math.pow(')
+      .replace(/\bmin\(/g, 'Math.min(')
+      .replace(/\bmax\(/g, 'Math.max(')
+      .replace(/\bpi\b/gi, 'Math.PI');
+
+    try {
+      // eslint-disable-next-line no-new-func
+      const fn = new Function('x', 'return (' + funcBody + ');');
+      fn(1); // sanity call
+      return fn;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function drawAxes(w, h, xmin, xmax, ymin, ymax) {
+    ctx.clearRect(0, 0, w, h);
+    const styles = getComputedStyle(document.documentElement);
+    const gridColor = 'rgba(255,255,255,0.08)';
+    const axisColor = 'rgba(255,255,255,0.35)';
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+
+    const toPx = (x, y) => [
+      (x - xmin) / (xmax - xmin) * w,
+      h - (y - ymin) / (ymax - ymin) * h,
+    ];
+
+    // grid lines
+    const xStep = niceStep(xmax - xmin);
+    const yStep = niceStep(ymax - ymin);
+    for (let gx = Math.ceil(xmin / xStep) * xStep; gx <= xmax; gx += xStep) {
+      const [px] = toPx(gx, 0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+    }
+    for (let gy = Math.ceil(ymin / yStep) * yStep; gy <= ymax; gy += yStep) {
+      const [, py] = toPx(0, gy);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    }
+
+    // axes
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1.5;
+    if (xmin <= 0 && xmax >= 0) {
+      const [px0] = toPx(0, 0);
+      ctx.beginPath(); ctx.moveTo(px0, 0); ctx.lineTo(px0, h); ctx.stroke();
+    }
+    if (ymin <= 0 && ymax >= 0) {
+      const [, py0] = toPx(0, 0);
+      ctx.beginPath(); ctx.moveTo(0, py0); ctx.lineTo(w, py0); ctx.stroke();
+    }
+    return toPx;
+  }
+
+  function niceStep(range) {
+    const rough = range / 10;
+    const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+    const norm = rough / mag;
+    let step;
+    if (norm < 1.5) step = 1;
+    else if (norm < 3.5) step = 2;
+    else if (norm < 7.5) step = 5;
+    else step = 10;
+    return step * mag;
+  }
+
+  function plotFunction() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const xmin = parseFloat(xMinInput.value);
+    const xmax = parseFloat(xMaxInput.value);
+    graphError.textContent = '';
+
+    if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) {
+      graphError.textContent = t('graph_error_range');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    const fn = compileFn(fnInput.value);
+    if (!fn) {
+      graphError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    // Sample to find a sensible y-range
+    const samples = 400;
+    let ymin = Infinity, ymax = -Infinity;
+    const pts = [];
+    for (let i = 0; i <= samples; i++) {
+      const x = xmin + (xmax - xmin) * i / samples;
+      let y;
+      try { y = fn(x); } catch (e) { y = NaN; }
+      pts.push([x, y]);
+      if (isFinite(y)) {
+        if (y < ymin) ymin = y;
+        if (y > ymax) ymax = y;
+      }
+    }
+    if (!isFinite(ymin) || !isFinite(ymax)) {
+      graphError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+    if (ymin === ymax) { ymin -= 1; ymax += 1; }
+    const pad = (ymax - ymin) * 0.1;
+    ymin -= pad; ymax += pad;
+    // clamp extreme spikes (e.g. tan(x), 1/x asymptotes)
+    const yspan = ymax - ymin;
+    const cap = Math.min(yspan, (xmax - xmin) * 4);
+    if (yspan > cap) {
+      const mid = (ymax + ymin) / 2;
+      ymin = mid - cap / 2; ymax = mid + cap / 2;
+    }
+
+    const toPx = drawAxes(w, h, xmin, xmax, ymin, ymax);
+
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let started = false;
+    let prevY = null;
+    pts.forEach(([x, y]) => {
+      const [px, py] = toPx(x, y);
+      const outOfRange = !isFinite(y) || y < ymin - yspan || y > ymax + yspan;
+      const bigJump = prevY !== null && Math.abs(y - prevY) > yspan * 0.6;
+      if (outOfRange || bigJump) {
+        started = false;
+      } else {
+        if (!started) { ctx.moveTo(px, py); started = true; }
+        else ctx.lineTo(px, py);
+      }
+      prevY = isFinite(y) ? y : null;
+    });
+    ctx.stroke();
+  }
+
+  function drawUnitCircle(angleDegVal) {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2;
+    const r = Math.min(w, h) * 0.38;
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+
+    // axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+
+    // circle
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+    const rad = angleDegVal * Math.PI / 180;
+    const px = cx + r * Math.cos(rad);
+    const py = cy - r * Math.sin(rad);
+
+    // radius line
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+
+    // cos projection (x-axis, green)
+    ctx.strokeStyle = '#3fbf6f';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, cy); ctx.stroke();
+
+    // sin projection (y-axis, blue)
+    ctx.strokeStyle = '#5a9ad8';
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx, py); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, py); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // point
+    ctx.fillStyle = accent;
+    ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+
+    const sinV = Math.sin(rad), cosV = Math.cos(rad);
+    angleDeg.textContent = angleDegVal + '°';
+    angleValues.textContent = 'sin=' + sinV.toFixed(3) + '  cos=' + cosV.toFixed(3) + '  tan=' + (Math.abs(cosV) < 1e-6 ? '∞' : (sinV / cosV).toFixed(3));
+  }
+
+  function redraw() {
+    // resize canvas to actual displayed size for crispness
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    if (rect.width > 0 && rect.height > 0) {
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    const w = rect.width || 600, h = rect.height || 380;
+    if (graphMode === 'function') {
+      plotFunctionSized(w, h);
+    } else {
+      drawUnitCircleSized(w, h, parseFloat(angleSlider.value));
+    }
+  }
+
+  // re-bind sized versions so canvas.width/height (CSS px via transform) match
+  function plotFunctionSized(w, h) { canvas.__w = w; canvas.__h = h; plotFunction(); }
+  function drawUnitCircleSized(w, h, a) { canvas.__w = w; canvas.__h = h; drawUnitCircle(a); }
+
+  function setGraphMode(mode) {
+    graphMode = mode;
+    modeFnBtn.classList.toggle('active', mode === 'function');
+    modeCircleBtn.classList.toggle('active', mode === 'unitcircle');
+    fnPanel.style.display = mode === 'function' ? 'block' : 'none';
+    circlePanel.style.display = mode === 'unitcircle' ? 'block' : 'none';
+    redraw();
+  }
+
+  modeFnBtn.addEventListener('click', () => setGraphMode('function'));
+  modeCircleBtn.addEventListener('click', () => setGraphMode('unitcircle'));
+
+  let debounceTimer;
+  function debounceRedraw() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(redraw, 150);
+  }
+  fnInput.addEventListener('input', debounceRedraw);
+  xMinInput.addEventListener('input', debounceRedraw);
+  xMaxInput.addEventListener('input', debounceRedraw);
+  quickBtns.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-fn]');
+    if (!btn) return;
+    fnInput.value = btn.dataset.fn;
+    redraw();
+  });
+  angleSlider.addEventListener('input', () => {
+    drawUnitCircle(parseFloat(angleSlider.value));
+  });
+
+  window.addEventListener('resize', debounceRedraw);
+  document.querySelectorAll('.topbar-tab[data-tab="graph"]').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => setTimeout(redraw, 60));
+  });
+
+  // initial draw once layout settles
+  setTimeout(redraw, 200);
+})();
