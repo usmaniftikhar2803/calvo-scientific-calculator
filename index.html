@@ -78,15 +78,23 @@
     <div class="topbar-mark">=x</div>
     <span class="topbar-name">Calvo</span>
   </div>
-  <div class="topbar-tabs">
-    <button class="topbar-tab active" data-tab="calc" data-i18n="tab_calculator">Calculator</button>
-    <button class="topbar-tab" data-tab="formulas" data-i18n="tab_formulas">Formulas</button>
-    <button class="topbar-tab" data-tab="history" data-i18n="tab_history">History</button>
-    <button class="topbar-tab" data-tab="convert" data-i18n="tab_convert">Convert</button>
-    <button class="topbar-tab" data-tab="percentage" data-i18n="tab_percentage">Percent/GPA</button>
-    <button class="topbar-tab" data-tab="aisolver" data-i18n="tab_aisolver">AI Solver</button>
-    <button class="topbar-tab" data-tab="quiz" data-i18n="tab_quiz">Quiz</button>
-    <button class="topbar-tab" data-tab="graph" data-i18n="tab_graph">Graph</button>
+  <div class="topbar-tabs-wrap">
+    <button class="topbar-tabs-arrow topbar-tabs-arrow-left" id="topbarTabsLeft" aria-label="Scroll tabs left" type="button">&#10094;</button>
+    <div class="topbar-tabs" id="topbarTabs">
+      <button class="topbar-tab active" data-tab="calc" data-i18n="tab_calculator">Calculator</button>
+      <button class="topbar-tab" data-tab="formulas" data-i18n="tab_formulas">Formulas</button>
+      <button class="topbar-tab" data-tab="history" data-i18n="tab_history">History</button>
+      <button class="topbar-tab" data-tab="convert" data-i18n="tab_convert">Convert</button>
+      <button class="topbar-tab" data-tab="percentage" data-i18n="tab_percentage">Percent/GPA</button>
+      <button class="topbar-tab" data-tab="aisolver" data-i18n="tab_aisolver">AI Solver</button>
+      <button class="topbar-tab" data-tab="quiz" data-i18n="tab_quiz">Quiz</button>
+      <button class="topbar-tab" data-tab="graph" data-i18n="tab_graph">Graph</button>
+      <button class="topbar-tab" data-tab="eqsolver" data-i18n="tab_eqsolver">Equations</button>
+      <button class="topbar-tab" data-tab="matrix" data-i18n="tab_matrix">Matrix</button>
+      <button class="topbar-tab" data-tab="programmer" data-i18n="tab_programmer">Programmer</button>
+      <button class="topbar-tab" data-tab="stats" data-i18n="tab_stats">Statistics</button>
+    </div>
+    <button class="topbar-tabs-arrow topbar-tabs-arrow-right" id="topbarTabsRight" aria-label="Scroll tabs right" type="button">&#10095;</button>
   </div>
   <div class="topbar-menu-wrap">
     <button class="topbar-menu-btn" id="topbarMenuBtn" title="More" aria-label="More options">
@@ -578,6 +586,143 @@
       <div class="graph-canvas-wrap">
         <canvas id="graphCanvas" width="600" height="380"></canvas>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-eqsolver">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="eqCard">
+      <div class="formulas-title" data-i18n="eq_title">Equation Solver</div>
+      <div class="formulas-subtitle" data-i18n="eq_subtitle">Step-by-step linear &amp; quadratic solutions — works fully offline</div>
+
+      <div class="subject-pills">
+        <button class="subject-pill active" data-eqmode="linear" id="eqModeLinearBtn" data-i18n="eq_mode_linear">Linear (ax + b = c)</button>
+        <button class="subject-pill" data-eqmode="quadratic" id="eqModeQuadBtn" data-i18n="eq_mode_quadratic">Quadratic (ax² + bx + c = 0)</button>
+      </div>
+
+      <div class="eq-input-row" id="eqInputRow">
+        <div class="eq-input-group">
+          <label data-i18n="eq_label_a">a</label>
+          <input type="number" class="formula-search convert-input" id="eqA" value="1">
+        </div>
+        <div class="eq-input-group">
+          <label data-i18n="eq_label_b">b</label>
+          <input type="number" class="formula-search convert-input" id="eqB" value="0">
+        </div>
+        <div class="eq-input-group" id="eqCGroup">
+          <label data-i18n="eq_label_c">c</label>
+          <input type="number" class="formula-search convert-input" id="eqC" value="0">
+        </div>
+      </div>
+
+      <button class="pill-btn save-btn" id="eqSolveBtn" data-i18n="eq_solve">Solve</button>
+
+      <div class="eq-steps" id="eqStepsBox"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-matrix">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="matrixCard">
+      <div class="formulas-title" data-i18n="matrix_title">Matrix Calculator</div>
+      <div class="formulas-subtitle" data-i18n="matrix_subtitle">Addition, multiplication, determinant &amp; inverse</div>
+
+      <div class="subject-pills">
+        <button class="subject-pill active" data-msize="2" id="matrixSize2Btn">2 × 2</button>
+        <button class="subject-pill" data-msize="3" id="matrixSize3Btn">3 × 3</button>
+      </div>
+
+      <div class="matrix-pair-wrap">
+        <div class="matrix-block">
+          <div class="matrix-block-label" data-i18n="matrix_a_label">Matrix A</div>
+          <div class="matrix-grid" id="matrixGridA"></div>
+        </div>
+        <div class="matrix-block" id="matrixBBlock">
+          <div class="matrix-block-label" data-i18n="matrix_b_label">Matrix B</div>
+          <div class="matrix-grid" id="matrixGridB"></div>
+        </div>
+      </div>
+
+      <div class="subject-pills" id="matrixOpPills">
+        <button class="subject-pill active" data-mop="add" data-i18n="matrix_op_add">A + B</button>
+        <button class="subject-pill" data-mop="sub" data-i18n="matrix_op_sub">A − B</button>
+        <button class="subject-pill" data-mop="mul" data-i18n="matrix_op_mul">A × B</button>
+        <button class="subject-pill" data-mop="det" data-i18n="matrix_op_det">det(A)</button>
+        <button class="subject-pill" data-mop="inv" data-i18n="matrix_op_inv">A⁻¹</button>
+      </div>
+
+      <button class="pill-btn save-btn" id="matrixCalcBtn" data-i18n="matrix_calculate">Calculate</button>
+
+      <div class="matrix-result" id="matrixResultBox"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-programmer">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="programmerCard">
+      <div class="formulas-title" data-i18n="prog_title">Programmer Mode</div>
+      <div class="formulas-subtitle" data-i18n="prog_subtitle">Base conversions &amp; bitwise operations</div>
+
+      <div class="prog-base-row">
+        <input type="text" class="formula-search convert-input" id="progDecInput" placeholder="Decimal" data-i18n-placeholder="prog_dec_placeholder" value="0">
+      </div>
+      <div class="prog-base-grid">
+        <div class="prog-base-item">
+          <span class="prog-base-tag">BIN</span>
+          <input type="text" class="formula-search convert-input" id="progBinInput" value="0">
+        </div>
+        <div class="prog-base-item">
+          <span class="prog-base-tag">OCT</span>
+          <input type="text" class="formula-search convert-input" id="progOctInput" value="0">
+        </div>
+        <div class="prog-base-item">
+          <span class="prog-base-tag">HEX</span>
+          <input type="text" class="formula-search convert-input" id="progHexInput" value="0">
+        </div>
+      </div>
+      <div class="prog-error" id="progError"></div>
+
+      <div class="app-card-header" style="margin-top:18px;">
+        <h3 class="ai-saved-title" data-i18n="prog_bitwise_title">Bitwise Operations</h3>
+      </div>
+      <div class="eq-input-row">
+        <div class="eq-input-group">
+          <label data-i18n="prog_operand_a">A</label>
+          <input type="number" class="formula-search convert-input" id="progOpA" value="12">
+        </div>
+        <div class="eq-input-group">
+          <label data-i18n="prog_operand_b">B</label>
+          <input type="number" class="formula-search convert-input" id="progOpB" value="10">
+        </div>
+      </div>
+      <div class="subject-pills" id="progOpPills">
+        <button class="subject-pill active" data-bop="AND">AND</button>
+        <button class="subject-pill" data-bop="OR">OR</button>
+        <button class="subject-pill" data-bop="XOR">XOR</button>
+        <button class="subject-pill" data-bop="NOT">NOT A</button>
+        <button class="subject-pill" data-bop="SHL">A &lt;&lt; B</button>
+        <button class="subject-pill" data-bop="SHR">A &gt;&gt; B</button>
+      </div>
+      <div class="prog-bitwise-result" id="progBitwiseResult"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-stats">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="statsCard">
+      <div class="formulas-title" data-i18n="stats_title">Statistics</div>
+      <div class="formulas-subtitle" data-i18n="stats_subtitle">Mean, median, mode &amp; standard deviation from your data</div>
+
+      <textarea class="formula-search convert-input" id="statsDataInput" rows="3" placeholder="e.g. 4, 8, 15, 16, 23, 42" data-i18n-placeholder="stats_data_placeholder" style="resize:vertical; padding-left:14px; background-image:none;"></textarea>
+
+      <button class="pill-btn save-btn" id="statsCalcBtn" data-i18n="stats_calculate">Calculate</button>
+
+      <div class="prog-error" id="statsError"></div>
+      <div class="stats-result-grid" id="statsResultGrid"></div>
     </div>
   </div>
 </section>
