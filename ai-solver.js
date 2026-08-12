@@ -147,6 +147,7 @@
 
     voiceBaseText = (aiQuestionInput.value || '').replace(/\s+$/, '');
     let finalTranscript = '';
+    let gotFinalResult = false;
 
     recognition = new SpeechRecognitionCtor();
     recognition.lang = getSpeechLang();
@@ -163,8 +164,12 @@
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) finalTranscript += transcript;
-        else interim += transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+          gotFinalResult = true;
+        } else {
+          interim += transcript;
+        }
       }
       const spoken = (finalTranscript + interim).trim();
       aiQuestionInput.value = voiceBaseText ? (voiceBaseText + ' ' + spoken) : spoken;
@@ -183,6 +188,13 @@
       isListening = false;
       setVoiceButtonState(false);
       recognition = null;
+
+      // Auto-solve: once speech finishes and we actually captured a
+      // final (non-interim) transcript, kick off the solve automatically
+      // instead of waiting for the user to press the Solve button.
+      if (gotFinalResult && (aiQuestionInput.value || '').trim()) {
+        solveWithGemini();
+      }
     };
 
     try {
