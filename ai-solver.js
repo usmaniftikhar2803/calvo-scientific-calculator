@@ -31,11 +31,43 @@
   const aiSavedList = document.getElementById('aiSavedList');
   const aiClearSavedBtn = document.getElementById('aiClearSavedBtn');
 
+  const aiImagePreviewWrap = document.getElementById('aiImagePreviewWrap');
+  const aiEditPhotoBtn = document.getElementById('aiEditPhotoBtn');
+  const aiSavedSearchInput = document.getElementById('aiSavedSearchInput');
+  const aiModeQuickBtn = document.getElementById('aiModeQuickBtn');
+  const aiModeDetailedBtn = document.getElementById('aiModeDetailedBtn');
+
   if (!aiApiKeyInput) return; // AI Solver tab not present
 
   let aiImageBase64 = null;
   let aiImageMimeType = null;
   let aiKeyVisible = false;
+  let aiOriginalImageDataUrl = null; // pristine picked photo, used when re-opening the crop editor
+  let aiSavedSearchQuery = '';
+
+  /* ---- Quick Answer vs Detailed Explanation mode ---- */
+  const AI_MODE_KEY = 'calvo_ai_solve_mode';
+  let aiSolveMode = 'quick';
+  try { aiSolveMode = localStorage.getItem(AI_MODE_KEY) || 'quick'; } catch (e) {}
+
+  function applyAiModeUI() {
+    if (!aiModeQuickBtn || !aiModeDetailedBtn) return;
+    aiModeQuickBtn.classList.toggle('active', aiSolveMode === 'quick');
+    aiModeDetailedBtn.classList.toggle('active', aiSolveMode === 'detailed');
+  }
+  if (aiModeQuickBtn && aiModeDetailedBtn) {
+    applyAiModeUI();
+    aiModeQuickBtn.addEventListener('click', () => {
+      aiSolveMode = 'quick';
+      try { localStorage.setItem(AI_MODE_KEY, aiSolveMode); } catch (e) {}
+      applyAiModeUI();
+    });
+    aiModeDetailedBtn.addEventListener('click', () => {
+      aiSolveMode = 'detailed';
+      try { localStorage.setItem(AI_MODE_KEY, aiSolveMode); } catch (e) {}
+      applyAiModeUI();
+    });
+  }
 
   // Holds the most recently solved question/answer so the Save button
   // knows what to store.
@@ -85,22 +117,49 @@
       aiImageMimeType = file.type || 'image/jpeg';
       const reader = new FileReader();
       reader.onload = () => {
-        aiImageBase64 = String(reader.result).split(',')[1] || null;
-        aiImagePreview.src = String(reader.result);
-        aiImagePreview.style.display = 'block';
+        aiOriginalImageDataUrl = String(reader.result);
         aiImageFilename.textContent = file.name;
-        aiImageClearBtn.style.display = 'inline-flex';
+        if (typeof window.openAiCropModal === 'function') {
+          window.openAiCropModal(aiOriginalImageDataUrl);
+        } else {
+          // Fallback if the crop tool failed to init for some reason —
+          // use the photo as-is, uncropped.
+          aiImageBase64 = aiOriginalImageDataUrl.split(',')[1] || null;
+          setAiImagePreview(aiOriginalImageDataUrl);
+        }
       };
       reader.readAsDataURL(file);
     });
   }
 
+  function setAiImagePreview(dataUrl) {
+    aiImagePreview.src = dataUrl;
+    aiImagePreviewWrap.style.display = 'inline-block';
+    aiImageClearBtn.style.display = 'inline-flex';
+  }
+
+  if (aiEditPhotoBtn) {
+    aiEditPhotoBtn.addEventListener('click', () => {
+      if (aiOriginalImageDataUrl && typeof window.openAiCropModal === 'function') {
+        window.openAiCropModal(aiOriginalImageDataUrl);
+      }
+    });
+  }
+
+  // Called by the crop tool once the user taps "Apply".
+  window.onAiCropApplied = function (croppedDataUrl) {
+    aiImageMimeType = 'image/jpeg';
+    aiImageBase64 = croppedDataUrl.split(',')[1] || null;
+    setAiImagePreview(croppedDataUrl);
+  };
+
   function clearImage() {
     aiImageBase64 = null;
     aiImageMimeType = null;
+    aiOriginalImageDataUrl = null;
     aiImageInput.value = '';
     aiImagePreview.removeAttribute('src');
-    aiImagePreview.style.display = 'none';
+    aiImagePreviewWrap.style.display = 'none';
     aiImageFilename.textContent = '';
     aiImageClearBtn.style.display = 'none';
   }
@@ -332,13 +391,21 @@
 
   function renderSavedList() {
     if (!aiSavedList) return;
-    const list = loadSavedList();
+    let list = loadSavedList();
+    if (aiSavedSearchQuery) {
+      const q = aiSavedSearchQuery.toLowerCase();
+      list = list.filter(item =>
+        (item.question || '').toLowerCase().includes(q) ||
+        (item.answerText || '').toLowerCase().includes(q)
+      );
+    }
     aiSavedList.innerHTML = '';
     if (list.length === 0) {
-      aiSavedList.innerHTML = `<div class="formula-empty">${escapeHtml(tr('ai_no_saved'))}</div>`;
+      const emptyKey = aiSavedSearchQuery ? 'ai_saved_search_empty' : 'ai_no_saved';
+      aiSavedList.innerHTML = `<div class="formula-empty">${escapeHtml(tr(emptyKey))}</div>`;
       return;
     }
-    list.forEach((item, idx) => {
+    list.forEach((item) => {
       const div = document.createElement('div');
       div.className = 'ai-saved-item';
       div.innerHTML =
@@ -348,12 +415,22 @@
         `<div class="ai-saved-time">${escapeHtml(formatSavedTime(item.time))}</div>`;
       div.querySelector('.ai-saved-delete').addEventListener('click', (e) => {
         e.stopPropagation();
+        // Delete by identity (time+question) rather than filtered index,
+        // since `list` here may be a search-filtered subset.
         const current = loadSavedList();
-        current.splice(idx, 1);
+        const idx = current.findIndex(x => x.time === item.time && x.question === item.question);
+        if (idx > -1) current.splice(idx, 1);
         persistSavedList(current);
         renderSavedList();
       });
       aiSavedList.appendChild(div);
+    });
+  }
+
+  if (aiSavedSearchInput) {
+    aiSavedSearchInput.addEventListener('input', () => {
+      aiSavedSearchQuery = aiSavedSearchInput.value.trim();
+      renderSavedList();
     });
   }
 
@@ -450,15 +527,30 @@
       (question || 'Solve the problem shown in the attached photo.') +
       `\n\nFirst, decide whether this is a CALCULATION question (math, physics, or chemistry problem that involves computing a numeric or symbolic result, an equation, or a formula) ` +
       `or a THEORY question (a definition, explanation, comparison, "why/what/describe" question, or any conceptual answer from a subject like Biology, Commerce, Statistics, etc. that is not a numeric computation).\n\n` +
-      `If it is a CALCULATION question:\n` +
-      `- Solve it step by step. Show only the working, no long explanations or teaching commentary.\n` +
-      `- Label each step plainly as "Step 1", "Step 2", etc., with only the calculation on that line — keep each step short, one line if possible.\n` +
-      `- Then give the final answer on its own line starting with "Answer:".\n\n` +
-      `If it is a THEORY question:\n` +
-      `- Do NOT use "Step 1", "Step 2" labels. Instead answer directly in clear, well-organized plain language.\n` +
-      `- Use short paragraphs, and use bullet points (each starting with "-") for lists, features, differences, or multi-part answers.\n` +
-      `- Keep it concise and exam-ready — no filler or repetition.\n` +
-      `- If a short direct definition/answer fits, you may end with one line starting with "Answer:" as a one-line summary — this is optional for theory questions.\n\n` +
+      (aiSolveMode === 'detailed'
+        ? (
+          `If it is a CALCULATION question:\n` +
+          `- Solve it step by step, and for each step also briefly explain WHY that step is done (the reasoning/rule/concept behind it), not just the raw calculation.\n` +
+          `- Label each step plainly as "Step 1", "Step 2", etc.\n` +
+          `- Then give the final answer on its own line starting with "Answer:".\n\n` +
+          `If it is a THEORY question:\n` +
+          `- Do NOT use "Step 1", "Step 2" labels. Answer thoroughly: give background/context, explain the concept in depth, and include an example if it helps understanding.\n` +
+          `- Use short paragraphs, and use bullet points (each starting with "-") for lists, features, differences, or multi-part answers.\n` +
+          `- Prioritize genuine understanding over brevity — this is a detailed, teaching-style explanation, like a tutor walking a student through it.\n` +
+          `- If a short direct definition/answer fits, you may end with one line starting with "Answer:" as a one-line summary — this is optional for theory questions.\n\n`
+        )
+        : (
+          `If it is a CALCULATION question:\n` +
+          `- Solve it step by step. Show only the working, no long explanations or teaching commentary.\n` +
+          `- Label each step plainly as "Step 1", "Step 2", etc., with only the calculation on that line — keep each step short, one line if possible.\n` +
+          `- Then give the final answer on its own line starting with "Answer:".\n\n` +
+          `If it is a THEORY question:\n` +
+          `- Do NOT use "Step 1", "Step 2" labels. Instead answer directly in clear, well-organized plain language.\n` +
+          `- Use short paragraphs, and use bullet points (each starting with "-") for lists, features, differences, or multi-part answers.\n` +
+          `- Keep it concise and exam-ready — no filler or repetition.\n` +
+          `- If a short direct definition/answer fits, you may end with one line starting with "Answer:" as a one-line summary — this is optional for theory questions.\n\n`
+        )
+      ) +
       `In both cases:\n` +
       `- Do NOT use LaTeX or the $ symbol anywhere, and do NOT use Markdown formatting (no **, no #, no backticks).\n` +
       `- Write all math using plain standard symbols only (like x^2, sqrt(x), 3/4, ×, ÷, π).\n` +
@@ -557,4 +649,181 @@
     if (aiVoiceBtn && SpeechRecognitionCtor) setVoiceButtonState(isListening);
     renderSavedList();
   };
+})();
+/* ============================================
+   AI SOLVER: PHOTO CROP / ROTATE TOOL
+   Pure client-side canvas cropping — nothing is
+   uploaded anywhere until "Apply" is pressed and
+   the user hits Solve.
+   ============================================ */
+(function () {
+  const overlay = document.getElementById('aiCropOverlay');
+  const stage = document.getElementById('aiCropStage');
+  const img = document.getElementById('aiCropImg');
+  const box = document.getElementById('aiCropBox');
+  const closeBtn = document.getElementById('aiCropCloseBtn');
+  const cancelBtn = document.getElementById('aiCropCancelBtn');
+  const applyBtn = document.getElementById('aiCropApplyBtn');
+  const resetBtn = document.getElementById('aiCropResetBtn');
+  const rotateLeftBtn = document.getElementById('aiCropRotateLeftBtn');
+  const rotateRightBtn = document.getElementById('aiCropRotateRightBtn');
+  if (!overlay || !img || !box) return;
+
+  let rotation = 0; // 0, 90, 180, 270
+  let rotatedDataUrl = null; // current image after rotation, before crop
+  let cropRect = { x: 0, y: 0, w: 0, h: 0 }; // in CSS px, relative to stage's image box
+
+  function rotateImageDataUrl(dataUrl, deg) {
+    return new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const rad = deg * Math.PI / 180;
+        const swap = deg % 180 !== 0;
+        canvas.width = swap ? image.height : image.width;
+        canvas.height = swap ? image.width : image.height;
+        const c = canvas.getContext('2d');
+        c.translate(canvas.width / 2, canvas.height / 2);
+        c.rotate(rad);
+        c.drawImage(image, -image.width / 2, -image.height / 2);
+        resolve(canvas.toDataURL('image/jpeg', 0.92));
+      };
+      image.src = dataUrl;
+    });
+  }
+
+  function resetCropBoxToDefault() {
+    // Centered box covering 80% of the displayed image.
+    const iw = img.clientWidth, ih = img.clientHeight;
+    const w = iw * 0.8, h = ih * 0.8;
+    cropRect = { x: (iw - w) / 2, y: (ih - h) / 2, w, h };
+    paintCropBox();
+  }
+
+  function paintCropBox() {
+    const imgLeft = img.offsetLeft, imgTop = img.offsetTop;
+    box.style.left = (imgLeft + cropRect.x) + 'px';
+    box.style.top = (imgTop + cropRect.y) + 'px';
+    box.style.width = cropRect.w + 'px';
+    box.style.height = cropRect.h + 'px';
+  }
+
+  window.openAiCropModal = async function (originalDataUrl) {
+    rotation = 0;
+    rotatedDataUrl = originalDataUrl;
+    img.src = rotatedDataUrl;
+    overlay.classList.add('open');
+    await new Promise(r => { img.onload = r; if (img.complete) r(); });
+    resetCropBoxToDefault();
+  };
+
+  function closeModal() { overlay.classList.remove('open'); }
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  resetBtn.addEventListener('click', resetCropBoxToDefault);
+
+  async function rotate(deg) {
+    rotation = (rotation + deg + 360) % 360;
+    rotatedDataUrl = await rotateImageDataUrl(rotatedDataUrl, deg);
+    img.src = rotatedDataUrl;
+    await new Promise(r => { img.onload = r; if (img.complete) r(); });
+    resetCropBoxToDefault();
+  }
+  rotateLeftBtn.addEventListener('click', () => rotate(-90));
+  rotateRightBtn.addEventListener('click', () => rotate(90));
+
+  /* ---- Drag to move / resize the crop box ---- */
+  let dragMode = null; // 'move' | 'nw' | 'ne' | 'sw' | 'se'
+  let dragStart = null;
+
+  function pointerPos(e) {
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX, y: t.clientY };
+  }
+
+  function onDragStart(e, mode) {
+    dragMode = mode;
+    const p = pointerPos(e);
+    dragStart = { x: p.x, y: p.y, rect: Object.assign({}, cropRect) };
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  box.addEventListener('mousedown', (e) => { if (e.target === box) onDragStart(e, 'move'); });
+  box.addEventListener('touchstart', (e) => { if (e.target === box) onDragStart(e, 'move'); }, { passive: false });
+  box.querySelectorAll('.ai-crop-handle').forEach(h => {
+    h.addEventListener('mousedown', (e) => onDragStart(e, h.dataset.handle));
+    h.addEventListener('touchstart', (e) => onDragStart(e, h.dataset.handle), { passive: false });
+  });
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  function onDragMove(e) {
+    if (!dragMode) return;
+    const p = pointerPos(e);
+    const dx = p.x - dragStart.x, dy = p.y - dragStart.y;
+    const iw = img.clientWidth, ih = img.clientHeight;
+    const MIN = 30;
+    let r = Object.assign({}, dragStart.rect);
+
+    if (dragMode === 'move') {
+      r.x = clamp(dragStart.rect.x + dx, 0, iw - r.w);
+      r.y = clamp(dragStart.rect.y + dy, 0, ih - r.h);
+    } else {
+      if (dragMode.includes('w')) {
+        const newX = clamp(dragStart.rect.x + dx, 0, dragStart.rect.x + dragStart.rect.w - MIN);
+        r.w = dragStart.rect.w - (newX - dragStart.rect.x);
+        r.x = newX;
+      }
+      if (dragMode.includes('e')) {
+        r.w = clamp(dragStart.rect.w + dx, MIN, iw - dragStart.rect.x);
+      }
+      if (dragMode.includes('n')) {
+        const newY = clamp(dragStart.rect.y + dy, 0, dragStart.rect.y + dragStart.rect.h - MIN);
+        r.h = dragStart.rect.h - (newY - dragStart.rect.y);
+        r.y = newY;
+      }
+      if (dragMode.includes('s')) {
+        r.h = clamp(dragStart.rect.h + dy, MIN, ih - dragStart.rect.y);
+      }
+    }
+    cropRect = r;
+    paintCropBox();
+    e.preventDefault();
+  }
+
+  function onDragEnd() { dragMode = null; dragStart = null; }
+
+  window.addEventListener('mousemove', onDragMove);
+  window.addEventListener('touchmove', onDragMove, { passive: false });
+  window.addEventListener('mouseup', onDragEnd);
+  window.addEventListener('touchend', onDragEnd);
+
+  applyBtn.addEventListener('click', () => {
+    // Map the on-screen crop box (CSS px, relative to the displayed image)
+    // to the rotated image's natural pixel dimensions.
+    const scaleX = img.naturalWidth / img.clientWidth;
+    const scaleY = img.naturalHeight / img.clientHeight;
+    const sx = cropRect.x * scaleX;
+    const sy = cropRect.y * scaleY;
+    const sw = cropRect.w * scaleX;
+    const sh = cropRect.h * scaleY;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(sw));
+    canvas.height = Math.max(1, Math.round(sh));
+    const c = canvas.getContext('2d');
+    c.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const outDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+    if (typeof window.onAiCropApplied === 'function') window.onAiCropApplied(outDataUrl);
+    closeModal();
+  });
+
+  window.addEventListener('resize', () => {
+    if (overlay.classList.contains('open')) resetCropBoxToDefault();
+  });
 })();
