@@ -93,6 +93,7 @@
       <button class="topbar-tab" data-tab="matrix" data-i18n="tab_matrix">Matrix</button>
       <button class="topbar-tab" data-tab="programmer" data-i18n="tab_programmer">Programmer</button>
       <button class="topbar-tab" data-tab="stats" data-i18n="tab_stats">Statistics</button>
+      <button class="topbar-tab" data-tab="timer" data-i18n="tab_timer">Timer</button>
     </div>
     <button class="topbar-tabs-arrow topbar-tabs-arrow-right" id="topbarTabsRight" aria-label="Scroll tabs right" type="button">&#10095;</button>
   </div>
@@ -732,6 +733,77 @@
 
       <div class="prog-error" id="statsError"></div>
       <div class="stats-result-grid" id="statsResultGrid"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-timer">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="timerCard">
+      <div class="formulas-title" data-i18n="timer_title">Study Timer</div>
+      <div class="formulas-subtitle" data-i18n="timer_subtitle">Exam countdown or Pomodoro focus sessions — with break reminders</div>
+
+      <div class="subject-pills">
+        <button class="subject-pill active" data-timermode="pomodoro" id="timerModePomodoroBtn" data-i18n="timer_mode_pomodoro">Pomodoro</button>
+        <button class="subject-pill" data-timermode="countdown" id="timerModeCountdownBtn" data-i18n="timer_mode_countdown">Exam Countdown</button>
+      </div>
+
+      <div id="timerPomodoroSettings">
+        <div class="eq-input-row">
+          <div class="eq-input-group">
+            <label data-i18n="timer_focus_min">Focus (min)</label>
+            <input type="number" class="formula-search convert-input" id="timerFocusMin" value="25" min="1" max="180">
+          </div>
+          <div class="eq-input-group">
+            <label data-i18n="timer_break_min">Break (min)</label>
+            <input type="number" class="formula-search convert-input" id="timerBreakMin" value="5" min="1" max="60">
+          </div>
+        </div>
+        <div class="eq-input-row">
+          <div class="eq-input-group">
+            <label data-i18n="timer_long_break_min">Long break (min)</label>
+            <input type="number" class="formula-search convert-input" id="timerLongBreakMin" value="15" min="1" max="90">
+          </div>
+          <div class="eq-input-group">
+            <label data-i18n="timer_cycles_label">Cycles before long break</label>
+            <input type="number" class="formula-search convert-input" id="timerCyclesInput" value="4" min="1" max="12">
+          </div>
+        </div>
+      </div>
+
+      <div id="timerCountdownSettings" style="display:none;">
+        <div class="eq-input-group">
+          <label data-i18n="timer_countdown_min">Minutes</label>
+          <input type="number" class="formula-search convert-input" id="timerCountdownMin" value="60" min="1" max="600">
+        </div>
+      </div>
+
+      <div class="timer-display-wrap">
+        <svg class="timer-ring" viewBox="0 0 220 220">
+          <circle class="timer-ring-bg" cx="110" cy="110" r="98"></circle>
+          <circle class="timer-ring-progress" id="timerRingProgress" cx="110" cy="110" r="98"></circle>
+        </svg>
+        <div class="timer-display-text">
+          <div class="timer-time" id="timerTimeDisplay">25:00</div>
+          <div class="timer-phase" id="timerPhaseLabel" data-i18n="timer_phase_focus">Focus</div>
+          <div class="timer-cycle" id="timerCycleLabel"></div>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="pill-btn save-btn" id="timerStartBtn" data-i18n="timer_start">Start</button>
+        <button class="pill-btn" id="timerPauseBtn" style="display:none;" data-i18n="timer_pause">Pause</button>
+        <button class="pill-btn" id="timerResetBtn" data-i18n="timer_reset">Reset</button>
+      </div>
+
+      <div class="timer-options-row">
+        <label class="timer-toggle-label">
+          <input type="checkbox" id="timerSoundToggle" checked>
+          <span data-i18n="timer_sound_alert">Sound alert</span>
+        </label>
+        <button class="pill-btn small" id="timerNotifyPermBtn" data-i18n="timer_enable_notify" style="display:none;">Enable Notifications</button>
+      </div>
+      <div class="timer-notify-note" id="timerNotifyNote"></div>
     </div>
   </div>
 </section>
