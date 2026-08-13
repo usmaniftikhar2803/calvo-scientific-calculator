@@ -2790,6 +2790,7 @@ function onLanguageChange() {
 
   // Quiz tab — refresh subject pills / labels for the new language
   if (typeof window.refreshQuizI18n === 'function') window.refreshQuizI18n();
+  if (typeof window.refreshTimerI18n === 'function') window.refreshTimerI18n();
 }
 
 /* ---------- INIT ---------- */
@@ -3714,4 +3715,262 @@ setTimeout(() => {
   wrap.querySelectorAll('.topbar-tab').forEach(btn => btn.addEventListener('click', updateArrows));
 
   updateArrows();
+})();
+
+/* ============================================
+   EXAM/TEST TIMER + POMODORO MODE
+   Notifications use the browser's built-in
+   Notification API — no server/backend involved.
+   Sound uses the Web Audio API (a short generated
+   beep), so no audio files are needed either.
+   ============================================ */
+(function () {
+  const modePomodoroBtn = document.getElementById('timerModePomodoroBtn');
+  const modeCountdownBtn = document.getElementById('timerModeCountdownBtn');
+  const pomodoroSettings = document.getElementById('timerPomodoroSettings');
+  const countdownSettings = document.getElementById('timerCountdownSettings');
+  const focusMinInput = document.getElementById('timerFocusMin');
+  const breakMinInput = document.getElementById('timerBreakMin');
+  const longBreakMinInput = document.getElementById('timerLongBreakMin');
+  const cyclesInput = document.getElementById('timerCyclesInput');
+  const countdownMinInput = document.getElementById('timerCountdownMin');
+  const ringProgress = document.getElementById('timerRingProgress');
+  const timeDisplay = document.getElementById('timerTimeDisplay');
+  const phaseLabel = document.getElementById('timerPhaseLabel');
+  const cycleLabel = document.getElementById('timerCycleLabel');
+  const startBtn = document.getElementById('timerStartBtn');
+  const pauseBtn = document.getElementById('timerPauseBtn');
+  const resetBtn = document.getElementById('timerResetBtn');
+  const soundToggle = document.getElementById('timerSoundToggle');
+  const notifyPermBtn = document.getElementById('timerNotifyPermBtn');
+  const notifyNote = document.getElementById('timerNotifyNote');
+  if (!startBtn) return;
+
+  const RING_CIRCUMFERENCE = 2 * Math.PI * 98;
+
+  let timerMode = 'pomodoro'; // 'pomodoro' | 'countdown'
+  let phase = 'focus'; // 'focus' | 'break' | 'longbreak' | 'countdown'
+  let cyclesCompleted = 0;
+  let totalSeconds = 25 * 60;
+  let remainingSeconds = 25 * 60;
+  let endAt = null; // timestamp (ms) the current phase should end at, while running
+  let tickInterval = null;
+  let running = false;
+
+  function trT(key) { return (typeof t === 'function') ? t(key) : key; }
+
+  function fmtTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  }
+
+  function updateRing() {
+    const frac = totalSeconds > 0 ? Math.max(0, Math.min(1, remainingSeconds / totalSeconds)) : 0;
+    ringProgress.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - frac));
+    ringProgress.classList.toggle('timer-break-color', phase === 'break' || phase === 'longbreak');
+  }
+
+  function updateDisplay() {
+    timeDisplay.textContent = fmtTime(remainingSeconds);
+    const phaseKey = phase === 'focus' ? 'timer_phase_focus'
+      : phase === 'break' ? 'timer_phase_break'
+      : phase === 'longbreak' ? 'timer_phase_long_break'
+      : 'timer_phase_countdown';
+    phaseLabel.textContent = trT(phaseKey);
+    cycleLabel.textContent = (timerMode === 'pomodoro')
+      ? trT('timer_cycle_label').replace('{n}', cyclesCompleted + 1)
+      : '';
+    updateRing();
+  }
+
+  function setTimerMode(mode) {
+    if (running) stopTicking(); // switching modes cancels any active run
+    running = false;
+    timerMode = mode;
+    modePomodoroBtn.classList.toggle('active', mode === 'pomodoro');
+    modeCountdownBtn.classList.toggle('active', mode === 'countdown');
+    pomodoroSettings.style.display = mode === 'pomodoro' ? 'block' : 'none';
+    countdownSettings.style.display = mode === 'countdown' ? 'block' : 'none';
+    resetTimerState();
+    setControlsRunning(false);
+  }
+
+  function resetTimerState() {
+    cyclesCompleted = 0;
+    if (timerMode === 'pomodoro') {
+      phase = 'focus';
+      totalSeconds = Math.max(1, parseInt(focusMinInput.value, 10) || 25) * 60;
+    } else {
+      phase = 'countdown';
+      totalSeconds = Math.max(1, parseInt(countdownMinInput.value, 10) || 60) * 60;
+    }
+    remainingSeconds = totalSeconds;
+    updateDisplay();
+  }
+
+  function setControlsRunning(isRunning) {
+    startBtn.style.display = isRunning ? 'none' : 'flex';
+    pauseBtn.style.display = isRunning ? 'flex' : 'none';
+  }
+
+  /* ---- Sound: a short generated beep, no audio files needed ---- */
+  let audioCtx = null;
+  function beep() {
+    if (!soundToggle.checked) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      [0, 0.22, 0.44].forEach((delay, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = i === 2 ? 880 : 660;
+        gain.gain.setValueAtTime(0.0001, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + delay + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.18);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + 0.2);
+      });
+    } catch (e) { /* Web Audio unavailable — silently skip */ }
+  }
+
+  /* ---- Notifications: browser Notification API only, no backend ---- */
+  const NotifCtor = window.Notification;
+
+  function updateNotifyUI() {
+    if (!NotifCtor) {
+      notifyPermBtn.style.display = 'none';
+      notifyNote.textContent = trT('timer_notify_unsupported');
+      return;
+    }
+    if (NotifCtor.permission === 'granted') {
+      notifyPermBtn.style.display = 'none';
+      notifyNote.textContent = trT('timer_notify_enabled');
+    } else if (NotifCtor.permission === 'denied') {
+      notifyPermBtn.style.display = 'none';
+      notifyNote.textContent = trT('timer_notify_denied');
+    } else {
+      notifyPermBtn.style.display = 'inline-flex';
+      notifyNote.textContent = trT('timer_notify_hint');
+    }
+  }
+
+  if (notifyPermBtn) {
+    notifyPermBtn.addEventListener('click', () => {
+      if (!NotifCtor) return;
+      NotifCtor.requestPermission().then(updateNotifyUI);
+    });
+  }
+
+  function notify(titleKey, bodyKey) {
+    if (NotifCtor && NotifCtor.permission === 'granted') {
+      try {
+        new NotifCtor(trT(titleKey), { body: trT(bodyKey), icon: './icon-192.png', tag: 'calvo-timer' });
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /* ---- Ticking: computed against wall-clock end time so it stays
+     accurate even if the tab is backgrounded and setInterval is throttled ---- */
+  function stopTicking() {
+    if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+  }
+
+  function tick() {
+    remainingSeconds = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+    updateDisplay();
+    if (remainingSeconds <= 0) {
+      stopTicking();
+      running = false;
+      onPhaseComplete();
+    }
+  }
+
+  function startTicking() {
+    endAt = Date.now() + remainingSeconds * 1000;
+    stopTicking();
+    tickInterval = setInterval(tick, 250);
+    running = true;
+    setControlsRunning(true);
+  }
+
+  function onPhaseComplete() {
+    beep();
+    if (timerMode === 'countdown') {
+      notify('timer_notify_title_done', 'timer_notify_body_done');
+      remainingSeconds = 0;
+      updateDisplay();
+      setControlsRunning(false);
+      return;
+    }
+
+    // Pomodoro: advance to the next phase automatically.
+    if (phase === 'focus') {
+      cyclesCompleted++;
+      const cyclesPerLongBreak = Math.max(1, parseInt(cyclesInput.value, 10) || 4);
+      if (cyclesCompleted % cyclesPerLongBreak === 0) {
+        phase = 'longbreak';
+        totalSeconds = Math.max(1, parseInt(longBreakMinInput.value, 10) || 15) * 60;
+        notify('timer_notify_title_long_break', 'timer_notify_body_long_break');
+      } else {
+        phase = 'break';
+        totalSeconds = Math.max(1, parseInt(breakMinInput.value, 10) || 5) * 60;
+        notify('timer_notify_title_break', 'timer_notify_body_break');
+      }
+    } else {
+      phase = 'focus';
+      totalSeconds = Math.max(1, parseInt(focusMinInput.value, 10) || 25) * 60;
+      notify('timer_notify_title_focus', 'timer_notify_body_focus');
+    }
+    remainingSeconds = totalSeconds;
+    updateDisplay();
+    startTicking(); // auto-continue into the next phase
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (remainingSeconds <= 0) resetTimerState();
+    // Re-sync duration fields in case the user tweaked them before the
+    // very first start of a fresh phase.
+    if (!running && remainingSeconds === totalSeconds) {
+      if (timerMode === 'pomodoro' && phase === 'focus') {
+        totalSeconds = Math.max(1, parseInt(focusMinInput.value, 10) || 25) * 60;
+        remainingSeconds = totalSeconds;
+      } else if (timerMode === 'countdown') {
+        totalSeconds = Math.max(1, parseInt(countdownMinInput.value, 10) || 60) * 60;
+        remainingSeconds = totalSeconds;
+      }
+    }
+    startTicking();
+    updateDisplay();
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    stopTicking();
+    running = false;
+    setControlsRunning(false);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    stopTicking();
+    running = false;
+    resetTimerState();
+    setControlsRunning(false);
+  });
+
+  modePomodoroBtn.addEventListener('click', () => setTimerMode('pomodoro'));
+  modeCountdownBtn.addEventListener('click', () => setTimerMode('countdown'));
+
+  [focusMinInput, countdownMinInput].forEach(inp => {
+    inp.addEventListener('change', () => {
+      if (!running) resetTimerState();
+    });
+  });
+
+  window.refreshTimerI18n = updateDisplay;
+
+  resetTimerState();
+  setControlsRunning(false);
+  updateNotifyUI();
 })();
