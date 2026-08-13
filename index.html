@@ -471,6 +471,11 @@
       <div class="ai-solver-box" id="aiSolverBox">
         <textarea class="ai-question-input" id="aiQuestionInput" rows="3" data-i18n-placeholder="ai_question_placeholder" placeholder="Type your question here... any subject"></textarea>
 
+        <div class="subject-pills" id="aiModePills">
+          <button class="subject-pill active" data-aimode="quick" id="aiModeQuickBtn" data-i18n="ai_mode_quick">Quick Answer</button>
+          <button class="subject-pill" data-aimode="detailed" id="aiModeDetailedBtn" data-i18n="ai_mode_detailed">Detailed Explanation</button>
+        </div>
+
         <div class="ai-image-row">
           <input type="file" id="aiImageInput" accept="image/*" capture="environment" style="display:none;">
           <button class="pill-btn" id="aiImagePickBtn" type="button" data-i18n="ai_add_photo">&#128247; Add Photo</button>
@@ -478,7 +483,10 @@
           <span class="ai-image-filename" id="aiImageFilename"></span>
           <button class="pill-btn small" id="aiImageClearBtn" type="button" data-i18n="ai_remove_photo" style="display:none;">&#10005; Remove</button>
         </div>
-        <img id="aiImagePreview" class="ai-image-preview" style="display:none;" alt="">
+        <div class="ai-image-preview-wrap" id="aiImagePreviewWrap" style="display:none;">
+          <img id="aiImagePreview" class="ai-image-preview" alt="">
+          <button class="pill-btn small ai-edit-photo-btn" id="aiEditPhotoBtn" type="button" data-i18n="ai_edit_photo">&#9986; Crop / Rotate</button>
+        </div>
 
         <div class="ai-solver-actions">
           <button class="pill-btn save-btn" id="aiSolveBtn" data-i18n="ai_solve">&#10024; Solve</button>
@@ -492,6 +500,7 @@
           <h3 class="ai-saved-title" data-i18n="ai_saved_title">Saved Questions</h3>
           <button class="pill-btn small" id="aiClearSavedBtn" data-i18n="clear_all">Clear All</button>
         </div>
+        <input type="text" class="formula-search" id="aiSavedSearchInput" data-i18n-placeholder="ai_saved_search_placeholder" placeholder="Search saved questions...">
         <div class="formula-list" id="aiSavedList"></div>
       </div>
     </div>
@@ -726,6 +735,33 @@
     </div>
   </div>
 </section>
+
+<!-- AI Solver: Photo Crop / Rotate Modal -->
+<div class="ai-crop-overlay" id="aiCropOverlay">
+  <div class="ai-crop-modal">
+    <div class="ai-crop-header">
+      <span data-i18n="ai_crop_title">Crop / Rotate Photo</span>
+      <button class="ai-crop-close" id="aiCropCloseBtn" type="button" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="ai-crop-stage" id="aiCropStage">
+      <img id="aiCropImg" alt="" draggable="false">
+      <div class="ai-crop-box" id="aiCropBox">
+        <div class="ai-crop-handle ai-crop-handle-nw" data-handle="nw"></div>
+        <div class="ai-crop-handle ai-crop-handle-ne" data-handle="ne"></div>
+        <div class="ai-crop-handle ai-crop-handle-sw" data-handle="sw"></div>
+        <div class="ai-crop-handle ai-crop-handle-se" data-handle="se"></div>
+      </div>
+    </div>
+    <div class="ai-crop-toolbar">
+      <button class="pill-btn small" id="aiCropRotateLeftBtn" type="button" title="Rotate left">&#8634;</button>
+      <button class="pill-btn small" id="aiCropRotateRightBtn" type="button" title="Rotate right">&#8635;</button>
+      <button class="pill-btn small" id="aiCropResetBtn" type="button" data-i18n="ai_crop_reset">Reset</button>
+      <span class="ai-crop-spacer"></span>
+      <button class="pill-btn" id="aiCropCancelBtn" type="button" data-i18n="ai_crop_cancel">Cancel</button>
+      <button class="pill-btn save-btn" id="aiCropApplyBtn" type="button" data-i18n="ai_crop_apply">Apply</button>
+    </div>
+  </div>
+</div>
 
 <!-- Theme Panel -->
 <div class="theme-panel" id="themePanel">
