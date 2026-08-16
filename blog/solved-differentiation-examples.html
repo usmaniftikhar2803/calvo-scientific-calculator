@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZGM4SCN6WZ');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 Solved Differentiation (Calculus) Examples | Calvo</title>
+<meta name="description" content="12 fully solved calculus differentiation examples covering the power rule, product rule, quotient rule, and chain rule with clear steps.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/blog/solved-differentiation-examples.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://calvoscientificcalculator.online/blog/solved-differentiation-examples.html">
+<meta property="og:title" content="12 Solved Differentiation (Calculus) Examples | Calvo">
+<meta property="og:description" content="12 fully solved calculus differentiation examples covering the power rule, product rule, quotient rule, and chain rule with clear steps.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/icon-512.png">
+<meta property="og:site_name" content="Calvo">
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-6621625782538547" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --bg-void:#0d0d0f;
+    --panel:#17171a;
+    --panel-border:#2a2a30;
+    --text:#e8e5db;
+    --text-dim:#9c968a;
+    --rule:#2a2a30;
+    --brand-orange:#ff8a1f;
+    --brand-orange-deep:#d9650c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,138,31,0.07), transparent 60%),
+      var(--bg-void);
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    min-height:100vh;
+    padding:48px 16px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .topbar{
+    width:100%; max-width:760px;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:32px; font-family:'Space Mono', monospace;
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:10px; color:var(--text);
+    font-weight:700; letter-spacing:0.06em; text-decoration:none; font-size:14px; }
+  .brand-dot{ width:9px;height:9px;border-radius:2px; background:var(--brand-orange);
+    box-shadow:0 0 8px rgba(255,138,31,0.7); }
+  .topbar-links{ display:flex; gap:10px; }
+  .topbar a.back{ color:var(--text-dim); text-decoration:none; font-size:12px;
+    letter-spacing:0.04em; border:1px solid var(--panel-border); padding:6px 12px;
+    border-radius:20px; transition:border-color .15s, color .15s; }
+  .topbar a.back:hover{ color:var(--text); border-color:var(--brand-orange); }
+  .doc{ width:100%; max-width:760px; background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:16px; padding:40px 36px 36px; }
+  .doc-head{ margin-bottom:24px; }
+  .doc-title{ font-family:'Space Mono', monospace; font-weight:700; font-size:26px;
+    letter-spacing:0.01em; margin:0 0 8px; line-height:1.3; }
+  .doc-title span{ color:var(--brand-orange); }
+  .doc-meta{ font-size:11.5px; color:var(--text-dim); letter-spacing:0.03em; }
+  hr.rule{ border:none; border-top:1px solid var(--rule); margin:24px 0; }
+  h2{ font-family:'Space Mono', monospace; font-size:15px; letter-spacing:0.04em;
+    text-transform:uppercase; color:var(--brand-orange); margin:28px 0 12px; }
+  h2:first-of-type{ margin-top:4px; }
+  p{ font-size:14px; line-height:1.9; color:var(--text); margin:0 0 14px; }
+  ul,ol{ margin:0 0 14px; padding-left:22px; }
+  li{ font-size:14px; line-height:1.9; color:var(--text); margin-bottom:8px; }
+  li b, p b{ color:#fff; }
+  a{ color:var(--brand-orange); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .doc-footer{ margin-top:32px; padding-top:20px; border-top:1px solid var(--rule);
+    font-size:12px; color:var(--text-dim); text-align:center; line-height:1.8; }
+  .cta{ display:inline-block; margin-top:6px; background:var(--brand-orange); color:#17171a;
+    font-weight:700; padding:10px 18px; border-radius:10px; font-size:13px; text-decoration:none; }
+  .cta:hover{ background:var(--brand-orange-deep); text-decoration:none; color:#fff; }
+  .tag{ display:inline-block; font-size:11px; color:var(--brand-orange); border:1px solid var(--panel-border);
+    padding:3px 10px; border-radius:20px; margin:2px 6px 2px 0; }
+  .blog-card{ display:block; padding:22px 24px; border:1px solid var(--panel-border); border-radius:14px;
+    margin-bottom:16px; text-decoration:none; color:var(--text); transition:border-color .15s; }
+  .blog-card:hover{ border-color:var(--brand-orange); text-decoration:none; }
+  .blog-card h3{ font-family:'Space Mono', monospace; color:var(--text); font-size:16px; margin:0 0 8px; }
+  .blog-card p{ margin:0; color:var(--text-dim); font-size:13px; line-height:1.7; }
+  form.contact-form{ display:flex; flex-direction:column; gap:14px; margin-top:10px; }
+  form.contact-form label{ font-size:12px; color:var(--text-dim); letter-spacing:0.03em; margin-bottom:4px; display:block; }
+  form.contact-form input, form.contact-form textarea{
+    width:100%; background:var(--bg-void); border:1px solid var(--panel-border); border-radius:10px;
+    padding:12px 14px; color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:13px; }
+  form.contact-form textarea{ min-height:120px; resize:vertical; }
+  form.contact-form button{ align-self:flex-start; background:var(--brand-orange); color:#17171a; font-weight:700;
+    border:none; padding:12px 22px; border-radius:10px; font-size:13px; cursor:pointer; font-family:'Space Mono', monospace; }
+  form.contact-form button:hover{ background:var(--brand-orange-deep); color:#fff; }
+  @media (max-width:480px){ .doc{ padding:28px 20px 24px; } }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="brand" href="../index.html">
+      <span class="brand-dot"></span> CALVO
+    </a>
+    <div class="topbar-links">
+      <a class="back" href="../index.html">&larr; Calculator</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="doc-head">
+      <h1 class="doc-title">12 Solved <span>Differentiation</span> Examples</h1>
+      <div class="doc-meta">August 2026 · 7 min read</div>
+    </div>
+    <hr class="rule">
+    
+  <p>Differentiation is mostly about correctly identifying which rule applies — once you spot the pattern, the actual calculation is usually quick. Here are 12 worked examples covering the main rules.</p>
+
+  <h2>Power Rule (Examples 1–4)</h2>
+  <p><b>1. Differentiate y = x⁵.</b><br>dy/dx = 5x⁴.</p>
+  <p><b>2. Differentiate y = 3x⁴ − 2x² + 7.</b><br>dy/dx = 12x³ − 4x.</p>
+  <p><b>3. Differentiate y = 1/x² (i.e. x⁻²).</b><br>dy/dx = −2x⁻³ = −2/x³.</p>
+  <p><b>4. Differentiate y = √x (i.e. x^(1/2)).</b><br>dy/dx = (1/2)x^(−1/2) = 1/(2√x).</p>
+
+  <h2>Product Rule (Examples 5–7)</h2>
+  <p>Rule: if y = u·v, then dy/dx = u'v + uv'.</p>
+  <p><b>5. Differentiate y = x²·sinx.</b><br>u=x², v=sinx. dy/dx = 2x·sinx + x²·cosx.</p>
+  <p><b>6. Differentiate y = x·eˣ.</b><br>u=x, v=eˣ. dy/dx = eˣ + x·eˣ = eˣ(1+x).</p>
+  <p><b>7. Differentiate y = (x+1)(x−3).</b><br>Expand first: y = x²−2x−3. dy/dx = 2x−2. (Product rule gives the same result: (1)(x−3)+(x+1)(1) = 2x−2.)</p>
+
+  <h2>Quotient Rule (Examples 8–9)</h2>
+  <p>Rule: if y = u/v, then dy/dx = (u'v − uv') / v².</p>
+  <p><b>8. Differentiate y = x/(x+1).</b><br>u=x, v=x+1. dy/dx = [(1)(x+1) − x(1)] / (x+1)² = 1/(x+1)².</p>
+  <p><b>9. Differentiate y = sinx/x.</b><br>dy/dx = (x·cosx − sinx) / x².</p>
+
+  <h2>Chain Rule (Examples 10–12)</h2>
+  <p>Rule: if y = f(g(x)), then dy/dx = f'(g(x))·g'(x).</p>
+  <p><b>10. Differentiate y = (3x+1)⁴.</b><br>dy/dx = 4(3x+1)³ · 3 = 12(3x+1)³.</p>
+  <p><b>11. Differentiate y = sin(2x).</b><br>dy/dx = cos(2x) · 2 = 2cos(2x).</p>
+  <p><b>12. Differentiate y = e^(x²).</b><br>dy/dx = e^(x²) · 2x = 2x·e^(x²).</p>
+
+  <h2>Practice More</h2>
+  <p>These same rules extend directly to integration and optimization problems later in the syllabus — getting comfortable with them now pays off. Use the <a href="../index.html">Formula Library on Calvo</a> to keep the rules handy while practicing.</p>
+  
+    <div class="doc-footer">
+      Calvo — Scientific Calculator &amp; Formulas<br>
+      <a href="../index.html">Back to Calculator</a> ·
+      <a href="index.html">All Articles</a> ·
+      <a href="../contact.html">Contact</a> ·
+      <a href="../privacy.html">Privacy Policy</a>
+    </div>
+  </div>
+
+</body>
+</html>
