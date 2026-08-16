@@ -118,6 +118,61 @@ const alphaIndicator = document.getElementById('alphaIndicator');
 const hypIndicator = document.getElementById('hypIndicator');
 const memIndicator = document.getElementById('memIndicator');
 
+/* ---------- OFFLINE MODE INDICATOR ---------- */
+(function () {
+  const offlineBadge = document.getElementById('offlineBadge');
+  if (!offlineBadge) return;
+
+  function updateOnlineStatus() {
+    offlineBadge.classList.toggle('visible', !navigator.onLine);
+  }
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+})();
+
+/* ---------- LIGHT / DARK MODE ---------- */
+const menuColorMode = document.getElementById('menuColorMode');
+const colorModeIcon = document.getElementById('colorModeIcon');
+const colorModeLabel = document.getElementById('colorModeLabel');
+const SUN_PATH = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+const MOON_PATH = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+
+function applyColorMode(mode) {
+  if (mode === 'light') {
+    document.documentElement.setAttribute('data-mode', 'light');
+    if (colorModeIcon) colorModeIcon.innerHTML = SUN_PATH;
+    if (colorModeLabel) colorModeLabel.textContent = t('menu_dark_mode') || 'Dark Mode';
+  } else {
+    document.documentElement.removeAttribute('data-mode');
+    if (colorModeIcon) colorModeIcon.innerHTML = MOON_PATH;
+    if (colorModeLabel) colorModeLabel.textContent = t('menu_color_mode') || 'Light Mode';
+  }
+  try { localStorage.setItem('calvo_color_mode', mode); } catch (e) {}
+}
+
+if (menuColorMode) {
+  menuColorMode.addEventListener('click', () => {
+    const isLight = document.documentElement.getAttribute('data-mode') === 'light';
+    applyColorMode(isLight ? 'dark' : 'light');
+    closeTopbarMenu();
+  });
+}
+
+// On first load: use a saved choice if there is one, otherwise fall back
+// to the device's system preference (prefers-color-scheme).
+try {
+  const savedMode = localStorage.getItem('calvo_color_mode');
+  if (savedMode === 'light' || savedMode === 'dark') {
+    applyColorMode(savedMode);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    applyColorMode('light');
+  } else {
+    applyColorMode('dark');
+  }
+} catch (e) {}
+
 /* ---------- 12 THEMES ---------- */
 const themes = [
   { id: 'default', label: 'Dark', case: '#252529', accent: '#ff8a1f', lcd: '#9ab87a', keyDark: '#3a3a42', keyBlack: '#1e1e24', keyOrange: '#d4822a' },
@@ -451,6 +506,102 @@ function clearAll() {
   updateDisplay();
 }
 function clearEntry() { backspace(); }
+
+/* ============================================
+   CALCULATOR VOICE INPUT
+   Speak a math expression instead of tapping keys,
+   e.g. "23 plus 15 divided by 2 equals". Uses the
+   same browser-native Web Speech API as the AI Solver's
+   voice input — nothing is sent to any server.
+   ============================================ */
+(function () {
+  const calcVoiceBtn = document.getElementById('calcVoiceBtn');
+  if (!calcVoiceBtn) return;
+
+  const SpeechCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechCtor) {
+    calcVoiceBtn.style.display = 'none';
+    return;
+  }
+
+  let recognition = null;
+  let listening = false;
+
+  function wordsToExpr(raw) {
+    let s = ' ' + raw.toLowerCase().trim() + ' ';
+    s = s
+      .replace(/\bplus\b/g, ' + ')
+      .replace(/\b(minus)\b/g, ' - ')
+      .replace(/\b(multiplied by|multiply by|multiply|times|into)\b/g, ' * ')
+      .replace(/\b(divided by|divide by|divide|over)\b/g, ' / ')
+      .replace(/\b(open bracket|open parenthesis|left bracket|left parenthesis)\b/g, ' ( ')
+      .replace(/\b(close bracket|close parenthesis|right bracket|right parenthesis)\b/g, ' ) ')
+      .replace(/\bpoint\b/g, '.')
+      .replace(/\bpercent\b/g, '%')
+      .replace(/\bsquare root of\b/g, '√(')
+      .replace(/\bsquared\b/g, '^2')
+      .replace(/\bcubed\b/g, '^3')
+      .replace(/\bpi\b/g, 'π')
+      .replace(/\b(equals to|equals|equal to|is equal to)\b/g, ' = ');
+    // Keep digits, decimal points, and the math symbols we just inserted;
+    // drop anything else the speech engine misheard as a stray word.
+    s = s.replace(/[^0-9+\-*/.()%√π^= ]/g, ' ');
+    s = s.replace(/\s+/g, '');
+    return s;
+  }
+
+  function setListening(on) {
+    listening = on;
+    calcVoiceBtn.classList.toggle('listening', on);
+  }
+
+  function startCalcVoice() {
+    recognition = new SpeechCtor();
+    const lang = (typeof currentLang !== 'undefined' && currentLang && typeof LOCALE_MAP !== 'undefined')
+      ? (LOCALE_MAP[currentLang] || 'en-US') : 'en-US';
+    recognition.lang = lang;
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setListening(true);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const parsed = wordsToExpr(transcript);
+      if (!parsed) {
+        if (typeof showToast === 'function') showToast(t('calc_voice_not_understood') || "Didn't catch a math expression");
+        return;
+      }
+      const hasEquals = parsed.includes('=');
+      const cleanExpr = parsed.replace(/=/g, '');
+      addToExpr(cleanExpr);
+      if (hasEquals) calculate();
+    };
+
+    recognition.onerror = (event) => {
+      setListening(false);
+      if (event.error === 'no-speech' || event.error === 'aborted') return;
+      const msg = (event.error === 'not-allowed' || event.error === 'service-not-allowed')
+        ? (t('ai_voice_mic_denied') || 'Microphone access denied')
+        : (t('ai_voice_error') || 'Voice input error');
+      if (typeof showToast === 'function') showToast(msg);
+    };
+
+    recognition.onend = () => { setListening(false); recognition = null; };
+
+    try { recognition.start(); } catch (e) { setListening(false); }
+  }
+
+  function stopCalcVoice() {
+    if (recognition) { try { recognition.stop(); } catch (e) {} }
+  }
+
+  calcVoiceBtn.addEventListener('click', () => {
+    if (listening) stopCalcVoice();
+    else startCalcVoice();
+  });
+})();
 
 function calculate() {
   try {
@@ -2808,6 +2959,9 @@ setTimeout(() => {
    QUIZ MODE — auto-generated from formulaData
    ============================================ */
 (function () {
+  const quizModeFormulaBtn = document.getElementById('quizModeFormulaBtn');
+  const quizModePracticeBtn = document.getElementById('quizModePracticeBtn');
+  const quizSubtitle = document.getElementById('quizSubtitle');
   const quizSubjectPills = document.getElementById('quizSubjectPills');
   const quizLengthSelect = document.getElementById('quizLengthSelect');
   const quizStartBtn = document.getElementById('quizStartBtn');
@@ -2821,6 +2975,7 @@ setTimeout(() => {
   const quizQuestionCat = document.getElementById('quizQuestionCat');
   const quizQuestionText = document.getElementById('quizQuestionText');
   const quizOptionsList = document.getElementById('quizOptionsList');
+  const quizExplanationBox = document.getElementById('quizExplanationBox');
   const quizNextBtn = document.getElementById('quizNextBtn');
   const quizQuitBtn = document.getElementById('quizQuitBtn');
   const quizRestartBtn = document.getElementById('quizRestartBtn');
@@ -2835,6 +2990,9 @@ setTimeout(() => {
     return div.innerHTML;
   }
 
+  // 'formula' = existing formula-recall quiz (auto-generated from formulaData)
+  // 'practice' = real MCQs with 4 options + explanations, from question-bank.js
+  let quizMode = 'formula';
   let quizSubject = 'All';
   let quizQuestions = [];
   let quizIndex = 0;
@@ -2864,9 +3022,42 @@ setTimeout(() => {
       : (formulaData[quizSubject] || []).map(f => Object.assign({ subject: quizSubject }, f));
   }
 
+  function practiceSubjects() {
+    return (typeof practiceQuestionBank !== 'undefined') ? Object.keys(practiceQuestionBank) : [];
+  }
+
+  function practicePool() {
+    if (typeof practiceQuestionBank === 'undefined') return [];
+    if (quizSubject === 'All') {
+      const out = [];
+      practiceSubjects().forEach(subj => {
+        practiceQuestionBank[subj].forEach(q => out.push(Object.assign({ subject: subj }, q)));
+      });
+      return out;
+    }
+    return (practiceQuestionBank[quizSubject] || []).map(q => Object.assign({ subject: quizSubject }, q));
+  }
+
+  function setQuizMode(mode) {
+    quizMode = mode;
+    quizSubject = 'All';
+    quizModeFormulaBtn.classList.toggle('active', mode === 'formula');
+    quizModePracticeBtn.classList.toggle('active', mode === 'practice');
+    if (quizSubtitle) {
+      quizSubtitle.setAttribute('data-i18n', mode === 'practice' ? 'quiz_practice_subtitle' : 'quiz_subtitle');
+      quizSubtitle.textContent = t(mode === 'practice' ? 'quiz_practice_subtitle' : 'quiz_subtitle');
+    }
+    buildQuizSubjectPills();
+    checkQuizPoolSize();
+  }
+
+  if (quizModeFormulaBtn) quizModeFormulaBtn.addEventListener('click', () => setQuizMode('formula'));
+  if (quizModePracticeBtn) quizModePracticeBtn.addEventListener('click', () => setQuizMode('practice'));
+
   function buildQuizSubjectPills() {
+    const subjects = quizMode === 'practice' ? practiceSubjects() : Object.keys(formulaData);
     let html = '<button class="subject-pill' + (quizSubject === 'All' ? ' active' : '') + '" data-quizsubj="All">' + t('quiz_all_subjects') + '</button>';
-    Object.keys(formulaData).forEach(subj => {
+    subjects.forEach(subj => {
       html += '<button class="subject-pill' + (quizSubject === subj ? ' active' : '') + '" data-quizsubj="' + escapeHtml(subj) + '">' + escapeHtml(subj) + '</button>';
     });
     quizSubjectPills.innerHTML = html;
@@ -2880,7 +3071,7 @@ setTimeout(() => {
   }
 
   function checkQuizPoolSize() {
-    const size = pool().length;
+    const size = quizMode === 'practice' ? practicePool().length : pool().length;
     const enough = size >= 4;
     quizStartBtn.disabled = !enough;
     quizStartBtn.style.opacity = enough ? '1' : '0.5';
@@ -2888,13 +3079,24 @@ setTimeout(() => {
   }
 
   function generateQuestions(n) {
+    if (quizMode === 'practice') {
+      const p = practicePool();
+      const chosen = shuffle(p).slice(0, Math.min(n, p.length));
+      return chosen.map(q => ({
+        cat: q.subject + (q.topic ? ' · ' + q.topic : ''),
+        name: q.question,
+        correctExpr: q.options[q.correct],
+        options: shuffle(q.options.slice()),
+        explanation: q.explanation || ''
+      }));
+    }
     const p = pool();
     const chosen = shuffle(p).slice(0, Math.min(n, p.length));
     return chosen.map(correct => {
       const distractorPool = p.filter(f => f.expr !== correct.expr);
       const distractors = shuffle(distractorPool).slice(0, 3);
       const options = shuffle([correct, ...distractors]);
-      return { cat: correct.cat, name: correct.name, correctExpr: correct.expr, options: options.map(o => o.expr) };
+      return { cat: correct.cat, name: correct.name, correctExpr: correct.expr, options: options.map(o => o.expr), explanation: '' };
     });
   }
 
@@ -2920,17 +3122,18 @@ setTimeout(() => {
     quizQuestionCat.textContent = q.cat;
     quizQuestionText.textContent = q.name;
     quizOptionsList.innerHTML = '';
+    if (quizExplanationBox) { quizExplanationBox.style.display = 'none'; quizExplanationBox.innerHTML = ''; }
     q.options.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'quiz-option-btn';
       btn.textContent = opt;
-      btn.addEventListener('click', () => selectQuizAnswer(btn, opt, q.correctExpr));
+      btn.addEventListener('click', () => selectQuizAnswer(btn, opt, q.correctExpr, q.explanation));
       quizOptionsList.appendChild(btn);
     });
     quizNextBtn.style.display = 'none';
   }
 
-  function selectQuizAnswer(btn, chosen, correct) {
+  function selectQuizAnswer(btn, chosen, correct, explanation) {
     if (quizAnswered) return;
     quizAnswered = true;
     const isCorrect = chosen === correct;
@@ -2940,6 +3143,10 @@ setTimeout(() => {
       if (b.textContent === correct) b.classList.add('correct');
       else if (b === btn && !isCorrect) b.classList.add('wrong');
     });
+    if (explanation && quizExplanationBox) {
+      quizExplanationBox.innerHTML = '<b>' + escapeHtml(t('quiz_explanation_label')) + '</b> ' + escapeHtml(explanation);
+      quizExplanationBox.style.display = 'block';
+    }
     quizScoreLabel.textContent = t('quiz_score_label') + ' ' + quizScore;
     quizNextBtn.style.display = 'block';
     quizNextBtn.textContent = (quizIndex === quizQuestions.length - 1) ? t('quiz_finish') : t('quiz_next');
