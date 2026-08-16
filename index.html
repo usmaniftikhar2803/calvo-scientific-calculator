@@ -106,6 +106,10 @@
       </svg>
     </button>
     <div class="topbar-menu" id="topbarMenu">
+      <button class="topbar-menu-item" id="menuColorMode">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="colorModeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <span id="colorModeLabel" data-i18n="menu_color_mode">Light Mode</span>
+      </button>
       <button class="topbar-menu-item" id="menuTheme">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         <span data-i18n="menu_theme">Theme</span>
@@ -133,6 +137,11 @@
     </div>
   </div>
 </nav>
+
+<div id="offlineBadge" class="offline-badge" role="status" aria-live="polite">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+  <span data-i18n="offline_badge_text">You're offline — Calvo still works</span>
+</div>
 
 <!-- Languages Modal -->
 <div class="app-modal-overlay" id="languagesOverlay">
@@ -249,6 +258,9 @@
                 <span id="memIndicator" class="indicator">M</span>
               </div>
               <span id="readyIndicator" class="indicator ready">READY</span>
+              <button id="calcVoiceBtn" class="calc-voice-btn" type="button" title="Voice input" aria-label="Voice input">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+              </button>
             </div>
             <div class="lcd-sub" id="lcdSub">&nbsp;</div>
             <div class="lcd-main" id="lcdMain">0</div>
@@ -520,7 +532,12 @@
   <div class="formulas-wrap">
     <div class="formulas-card" id="quizCard">
       <div class="formulas-title" data-i18n="quiz_title">Formula Quiz</div>
-      <div class="formulas-subtitle" data-i18n="quiz_subtitle">Test yourself on formulas from any subject</div>
+      <div class="formulas-subtitle" id="quizSubtitle" data-i18n="quiz_subtitle">Test yourself on formulas from any subject</div>
+
+      <div class="subject-pills" id="quizModePills">
+        <button class="subject-pill active" id="quizModeFormulaBtn" data-i18n="quiz_mode_formula">Formula Quiz</button>
+        <button class="subject-pill" id="quizModePracticeBtn" data-i18n="quiz_mode_practice">Practice MCQs</button>
+      </div>
 
       <div id="quizSetupScreen">
         <div class="subject-pills" id="quizSubjectPills"></div>
@@ -550,6 +567,7 @@
         </div>
 
         <div class="quiz-options" id="quizOptionsList"></div>
+        <div class="quiz-explanation" id="quizExplanationBox" style="display:none;"></div>
 
         <button class="pill-btn save-btn" id="quizNextBtn" style="display:none;" data-i18n="quiz_next">Next Question</button>
         <button class="pill-btn" id="quizQuitBtn" data-i18n="quiz_quit">End Quiz</button>
@@ -860,6 +878,7 @@
 </footer>
 <script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
 <script src="i18n.js"></script>
+<script src="question-bank.js"></script>
 <script src="script.js"></script>
 <script src="ai-solver.js"></script>
 <script>
