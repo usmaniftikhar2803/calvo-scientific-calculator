@@ -3653,6 +3653,27 @@ setTimeout(() => {
     const stdPop = Math.sqrt(variancePop);
     const stdSample = Math.sqrt(varianceSample);
 
+    // Coefficient of Variation — how spread out the data is relative to the mean
+    const coefVar = mean !== 0 ? (stdSample / Math.abs(mean)) * 100 : 0;
+
+    // Quartiles (using the median-of-halves method) and Interquartile Range
+    function quartileMedian(arr) {
+      const len = arr.length;
+      if (len === 0) return 0;
+      return len % 2 === 0 ? (arr[len / 2 - 1] + arr[len / 2]) / 2 : arr[(len - 1) / 2];
+    }
+    let q1 = NaN, q3 = NaN, iqr = NaN;
+    if (n >= 4) {
+      const lowerHalf = n % 2 === 0 ? sorted.slice(0, n / 2) : sorted.slice(0, (n - 1) / 2);
+      const upperHalf = n % 2 === 0 ? sorted.slice(n / 2) : sorted.slice((n + 1) / 2);
+      q1 = quartileMedian(lowerHalf);
+      q3 = quartileMedian(upperHalf);
+      iqr = q3 - q1;
+    }
+
+    // Sum of squared deviations from the mean — the raw building block behind variance
+    const sumOfSquares = nums.reduce((a, v) => a + Math.pow(v - mean, 2), 0);
+
     const round = (x) => Math.round(x * 1e4) / 1e4;
 
     let html = '';
@@ -3666,6 +3687,15 @@ setTimeout(() => {
     html += statCell(t('stats_max'), max);
     html += statCell(t('stats_std_pop'), round(stdPop));
     html += statCell(t('stats_std_sample'), round(stdSample));
+    html += statCell(t('stats_var_pop'), round(variancePop));
+    html += statCell(t('stats_var_sample'), round(varianceSample));
+    html += statCell(t('stats_cv'), round(coefVar) + '%');
+    html += statCell(t('stats_sum_squares'), round(sumOfSquares));
+    if (n >= 4) {
+      html += statCell(t('stats_q1'), round(q1));
+      html += statCell(t('stats_q3'), round(q3));
+      html += statCell(t('stats_iqr'), round(iqr));
+    }
     resultGrid.innerHTML = html;
   }
 
