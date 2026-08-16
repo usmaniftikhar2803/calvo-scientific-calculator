@@ -38,7 +38,26 @@
   --accent: #ff8a1f;
 }
 
-/* ---------- 12 THEMES ---------- */
+/* ============================================
+   LIGHT MODE
+   Uses a filter-invert technique instead of
+   remapping hundreds of hardcoded dark colors.
+   This is safe here because html/body are locked
+   to 100vh/100dvh with overflow:hidden (see above),
+   so the filtered box never exceeds the viewport
+   and position:fixed children stay correctly placed.
+   ============================================ */
+html[data-mode="light"] body {
+  filter: invert(1) hue-rotate(180deg);
+}
+/* Re-invert real images, ads, and video so they don't
+   render with inverted colors inside light mode. */
+html[data-mode="light"] img,
+html[data-mode="light"] video,
+html[data-mode="light"] .adsbygoogle,
+html[data-mode="light"] iframe {
+  filter: invert(1) hue-rotate(180deg);
+}
 [data-theme="midnight"] {
   --case-bg: #1a1a20; --case-border: #2a2a34;
   --lcd-bg: #7a9a5a; --lcd-text: #0f1f08; --lcd-dim: #4a6a3a;
@@ -663,6 +682,58 @@ body {
 }
 .indicator.active { color: var(--lcd-text); }
 .indicator.ready { color: var(--lcd-dim); }
+
+.calc-voice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin-left: 6px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lcd-dim);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.calc-voice-btn:hover { color: var(--lcd-text); background: rgba(255,255,255,0.08); }
+.calc-voice-btn.listening {
+  color: #ff4444;
+  background: rgba(255,68,68,0.15);
+  animation: calcVoicePulse 1.1s ease-in-out infinite;
+}
+@keyframes calcVoicePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(255,68,68,0); }
+}
+
+/* ---------- OFFLINE MODE INDICATOR ---------- */
+.offline-badge {
+  position: fixed;
+  top: 52px;
+  left: 0;
+  right: 0;
+  z-index: 190;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: #b8540f;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+  transform: translateY(-120%);
+  transition: transform 0.25s ease;
+}
+.offline-badge.visible {
+  transform: translateY(0);
+}
 .lcd-sub {
   font-size: clamp(0.48rem, 2vw, 0.58rem);
   color: var(--lcd-dim);
@@ -1759,6 +1830,26 @@ body {
   font-size: 0.62rem;
   color: #666;
 }
+.ai-saved-expandable { cursor: pointer; }
+.ai-saved-expandable::after {
+  content: '\25BE';
+  position: absolute;
+  right: 34px;
+  top: 10px;
+  color: #666;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+.ai-saved-expandable.expanded::after { transform: rotate(180deg); }
+.ai-saved-full-steps {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #d8d8e0;
+}
+.ai-saved-full-steps .ai-result-card { background: transparent; padding: 0; }
 .ai-saved-delete {
   position: absolute;
   top: 8px;
@@ -2103,6 +2194,18 @@ body {
   background: rgba(224,90,90,0.15);
   color: #ff9494;
 }
+
+.quiz-explanation {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255,138,31,0.08);
+  border: 1px solid rgba(255,138,31,0.25);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #e0e0e8;
+}
+.quiz-explanation b { color: var(--accent); }
 
 .quiz-result-score {
   text-align: center;
