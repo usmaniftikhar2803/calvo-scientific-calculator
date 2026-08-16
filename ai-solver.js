@@ -501,6 +501,65 @@
   renderSavedList();
 
   /* ============================================
+     FORMULA LIBRARY: "Explain this formula"
+     Exposed globally so the Formula Library code
+     in script.js can call it without duplicating
+     the Gemini request logic. Uses the same saved
+     API key as the AI Solver tab.
+     ============================================ */
+  window.calvoExplainFormula = async function (name, expr, onChunkOrDone) {
+    const apiKey = getSavedKey();
+    if (!apiKey) {
+      onChunkOrDone({ error: tr('ai_key_status_empty') });
+      return;
+    }
+    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
+    const langName = AI_LANG_NAMES[lang] || 'English';
+    const promptText =
+      `Explain the following formula to a student in a clear, exam-ready way: "${name}" — ${expr}\n\n` +
+      `Cover, briefly: (1) what it's used for, (2) what each symbol/variable means, (3) one short worked example with numbers.\n` +
+      `Keep it concise — a few short paragraphs at most. Do NOT use LaTeX, the $ symbol, or Markdown formatting (no **, no #, no backticks). ` +
+      `Write math using plain symbols (x^2, sqrt(x), 3/4, ×, ÷, π). Reply in ${langName}.`;
+
+    try {
+      let response = null, data = null, lastErrText = '';
+      for (let i = 0; i < GEMINI_MODELS.length; i++) {
+        response = await fetch(GEMINI_ENDPOINT_FOR(GEMINI_MODELS[i]), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: promptText }] }] }),
+        });
+        data = await response.json().catch(() => null);
+        if (response.ok) break;
+        const serverMsg = (data && data.error && data.error.message) || '';
+        lastErrText = serverMsg;
+        const isModelGone = response.status === 404 && /no longer available|not found/i.test(serverMsg);
+        if (!isModelGone) break;
+      }
+      if (!response || !response.ok) {
+        const status = response ? response.status : 0;
+        if (status === 400 || status === 401 || status === 403) {
+          onChunkOrDone({ error: tr('ai_error_invalid_key') });
+        } else {
+          onChunkOrDone({ error: lastErrText || tr('ai_error_request') });
+        }
+        return;
+      }
+      const candidate = data && data.candidates && data.candidates[0];
+      const textOut = candidate && candidate.content && candidate.content.parts
+        ? candidate.content.parts.map(p => p.text || '').join('\n')
+        : '';
+      if (!textOut) {
+        onChunkOrDone({ error: tr('ai_error_request') });
+        return;
+      }
+      onChunkOrDone({ html: formatAnswer(textOut) });
+    } catch (err) {
+      onChunkOrDone({ error: tr('ai_error_request') });
+    }
+  };
+
+  /* ============================================
      SOLVE
      ============================================ */
 
