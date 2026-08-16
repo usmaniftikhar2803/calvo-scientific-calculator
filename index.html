@@ -541,6 +541,7 @@
 
       <div id="quizSetupScreen">
         <div class="subject-pills" id="quizSubjectPills"></div>
+        <div class="subject-pills" id="quizDifficultyPills" style="display:none;"></div>
         <div class="quiz-setup-row">
           <label class="quiz-setup-label" for="quizLengthSelect" data-i18n="quiz_length_label">Number of questions</label>
           <select class="formula-search convert-select" id="quizLengthSelect">
@@ -577,6 +578,10 @@
         <div class="quiz-result-score" id="quizResultScoreText"></div>
         <div class="quiz-result-msg" id="quizResultMsg"></div>
         <button class="pill-btn save-btn" id="quizRestartBtn" data-i18n="quiz_restart">Try Again</button>
+        <div id="quizWrongReviewWrap" style="display:none;">
+          <button class="pill-btn" id="quizReviewToggleBtn" data-i18n="quiz_review_wrong">Review Wrong Answers</button>
+          <div id="quizWrongReviewList" class="quiz-wrong-review-list" style="display:none;"></div>
+        </div>
       </div>
     </div>
   </div>
