@@ -367,9 +367,74 @@ activateTab(restoredTab, false);
 
 /* ---------- DISPLAY ---------- */
 function updateDisplay() {
+  fractionDisplayActive = false;
   lcdMain.textContent = expr === '' ? '0' : expr;
   fitText(lcdMain, 1.5, 0.72);
   fitText(lcdSub, 0.58, 0.42);
+}
+
+/* ============================================
+   FRACTION MODE (S<=>D key)
+   Converts the current displayed value to its
+   nearest simple fraction using a continued-
+   fraction expansion, and back again. This only
+   changes what's SHOWN — the underlying value used
+   for further calculation is untouched.
+   ============================================ */
+let fractionDisplayActive = false;
+
+function decimalToFraction(x, maxDen, tolerance) {
+  maxDen = maxDen || 1000000;
+  tolerance = tolerance || 1e-9;
+  if (!isFinite(x)) return null;
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+  if (x === 0) return { num: 0, den: 1 };
+  let h1 = 1, h2 = 0, k1 = 0, k2 = 1, b = x;
+  let num = 1, den = 1;
+  for (let i = 0; i < 40; i++) {
+    const a = Math.floor(b);
+    const h = a * h1 + h2;
+    const k = a * k1 + k2;
+    h2 = h1; h1 = h;
+    k2 = k1; k1 = k;
+    if (k1 > maxDen) { num = h2; den = k2; break; }
+    num = h1; den = k1;
+    if (Math.abs(x - h1 / k1) < tolerance) break;
+    const frac = b - a;
+    if (frac < 1e-12) break;
+    b = 1 / frac;
+  }
+  if (!den) return null;
+  return { num: sign * num, den: den };
+}
+
+function formatAsFraction(value) {
+  const f = decimalToFraction(value);
+  if (!f) return null;
+  if (f.den === 1) return String(f.num);
+  const whole = Math.trunc(f.num / f.den);
+  const remainder = Math.abs(f.num % f.den);
+  if (whole !== 0 && remainder !== 0) return whole + ' ' + remainder + '/' + f.den;
+  return f.num + '/' + f.den;
+}
+
+function toggleFractionView() {
+  if (fractionDisplayActive) {
+    fractionDisplayActive = false;
+    updateDisplay();
+    return;
+  }
+  let val = Number(expr);
+  if (expr === '' || isNaN(val) || !isFinite(val)) {
+    try { val = evaluate(expr); } catch (e) { val = NaN; }
+  }
+  if (isNaN(val) || !isFinite(val)) return;
+  const fracStr = formatAsFraction(val);
+  if (fracStr === null) return;
+  fractionDisplayActive = true;
+  lcdMain.textContent = fracStr;
+  fitText(lcdMain, 1.5, 0.72);
 }
 
 function fitText(el, maxRem, minRem) {
@@ -653,7 +718,7 @@ const keyMap = {
   'keyDel': () => clearEntry(), 'keyAc': () => clearAll(),
   'keyEq': () => { setShift(false); setAlpha(false); setHyp(false); calculate(); },
   'keyRcl': () => { addToExpr('(' + memory + ')'); },
-  'keyEng': () => {}, 'keySd': () => {}, 'keyCalc': () => {},
+  'keyEng': () => {}, 'keySd': () => toggleFractionView(), 'keyCalc': () => {},
   'keyIntegral': () => { addToExpr('\u222B'); }, 'keySquare': () => {},
   'keyAsin': () => addToExpr('asin('), 'keyAcos': () => addToExpr('acos('),
 };
@@ -2058,9 +2123,11 @@ function formulaItemHtml(f, key, subjTag) {
       </div>
       <div class="formula-item-actions">
         <button class="icon-action-btn fav-star-btn${fav ? ' active' : ''}" data-key="${key}" title="${fav ? t('remove_favorite_title') : t('add_favorite_title')}">${fav ? '★' : '☆'}</button>
+        <button class="icon-action-btn formula-explain-btn" data-key="${key}" title="${t('explain_formula_title')}">💡</button>
         <button class="icon-action-btn formula-share-btn" data-key="${key}" title="${t('share_title')}">&#128228;</button>
       </div>
-    </div>`;
+    </div>
+    <div class="formula-explain-box" style="display:none;"></div>`;
 }
 
 function renderFormulas() {
@@ -2161,6 +2228,39 @@ formulaList.addEventListener('click', (e) => {
     const row = shareBtn.closest('.formula-item');
     const exprText = row ? row.querySelector('.formula-expr').textContent : '';
     shareOrCopyText(`${name}: ${exprText}`);
+    return;
+  }
+  const explainBtn = e.target.closest('.formula-explain-btn');
+  if (explainBtn) {
+    const row = explainBtn.closest('.formula-item');
+    const box = row ? row.querySelector('.formula-explain-box') : null;
+    if (!box) return;
+
+    // Toggle closed if already open and already has content
+    if (box.style.display !== 'none' && box.dataset.loaded === '1') {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'block';
+    if (box.dataset.loaded === '1') return; // already fetched once, just re-show
+
+    const name = row.querySelector('.formula-name').textContent;
+    const expr = row.querySelector('.formula-expr').textContent;
+
+    if (typeof window.calvoExplainFormula !== 'function') {
+      box.innerHTML = `<span class="ai-error">${t('explain_unavailable')}</span>`;
+      return;
+    }
+
+    box.innerHTML = `<span class="ai-loading">${t('explain_loading')}</span>`;
+    window.calvoExplainFormula(name, expr, (result) => {
+      if (result.error) {
+        box.innerHTML = `<span class="ai-error">${result.error}</span>`;
+        return;
+      }
+      box.innerHTML = result.html;
+      box.dataset.loaded = '1';
+    });
   }
 });
 
@@ -2981,6 +3081,10 @@ setTimeout(() => {
   const quizRestartBtn = document.getElementById('quizRestartBtn');
   const quizResultScoreText = document.getElementById('quizResultScoreText');
   const quizResultMsg = document.getElementById('quizResultMsg');
+  const quizWrongReviewWrap = document.getElementById('quizWrongReviewWrap');
+  const quizReviewToggleBtn = document.getElementById('quizReviewToggleBtn');
+  const quizWrongReviewList = document.getElementById('quizWrongReviewList');
+  const quizDifficultyPills = document.getElementById('quizDifficultyPills');
 
   if (!quizSubjectPills || typeof formulaData === 'undefined') return;
 
@@ -2994,10 +3098,12 @@ setTimeout(() => {
   // 'practice' = real MCQs with 4 options + explanations, from question-bank.js
   let quizMode = 'formula';
   let quizSubject = 'All';
+  let quizDifficulty = 'All'; // Easy | Medium | Hard | All — only used in practice mode
   let quizQuestions = [];
   let quizIndex = 0;
   let quizScore = 0;
   let quizAnswered = false;
+  let quizWrongAnswers = []; // { cat, name, correctExpr, chosen, explanation }
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -3028,19 +3134,41 @@ setTimeout(() => {
 
   function practicePool() {
     if (typeof practiceQuestionBank === 'undefined') return [];
+    let out = [];
     if (quizSubject === 'All') {
-      const out = [];
       practiceSubjects().forEach(subj => {
         practiceQuestionBank[subj].forEach(q => out.push(Object.assign({ subject: subj }, q)));
       });
-      return out;
+    } else {
+      out = (practiceQuestionBank[quizSubject] || []).map(q => Object.assign({ subject: quizSubject }, q));
     }
-    return (practiceQuestionBank[quizSubject] || []).map(q => Object.assign({ subject: quizSubject }, q));
+    if (quizDifficulty !== 'All') {
+      out = out.filter(q => (q.difficulty || 'Medium') === quizDifficulty);
+    }
+    return out;
+  }
+
+  function buildQuizDifficultyPills() {
+    if (!quizDifficultyPills) return;
+    if (quizMode !== 'practice') { quizDifficultyPills.style.display = 'none'; return; }
+    quizDifficultyPills.style.display = 'flex';
+    const levels = ['All', 'Easy', 'Medium', 'Hard'];
+    quizDifficultyPills.innerHTML = levels.map(lvl =>
+      `<button class="subject-pill diff-pill diff-${lvl.toLowerCase()}${quizDifficulty === lvl ? ' active' : ''}" data-difficulty="${lvl}">${lvl === 'All' ? t('quiz_all_difficulty') : t('quiz_difficulty_' + lvl.toLowerCase())}</button>`
+    ).join('');
+    quizDifficultyPills.querySelectorAll('.diff-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        quizDifficulty = btn.dataset.difficulty;
+        buildQuizDifficultyPills();
+        checkQuizPoolSize();
+      });
+    });
   }
 
   function setQuizMode(mode) {
     quizMode = mode;
     quizSubject = 'All';
+    quizDifficulty = 'All';
     quizModeFormulaBtn.classList.toggle('active', mode === 'formula');
     quizModePracticeBtn.classList.toggle('active', mode === 'practice');
     if (quizSubtitle) {
@@ -3048,6 +3176,7 @@ setTimeout(() => {
       quizSubtitle.textContent = t(mode === 'practice' ? 'quiz_practice_subtitle' : 'quiz_subtitle');
     }
     buildQuizSubjectPills();
+    buildQuizDifficultyPills();
     checkQuizPoolSize();
   }
 
@@ -3084,6 +3213,7 @@ setTimeout(() => {
       const chosen = shuffle(p).slice(0, Math.min(n, p.length));
       return chosen.map(q => ({
         cat: q.subject + (q.topic ? ' · ' + q.topic : ''),
+        difficulty: q.difficulty || 'Medium',
         name: q.question,
         correctExpr: q.options[q.correct],
         options: shuffle(q.options.slice()),
@@ -3106,6 +3236,7 @@ setTimeout(() => {
     if (quizQuestions.length < 4) return;
     quizIndex = 0;
     quizScore = 0;
+    quizWrongAnswers = [];
     quizSetupScreen.style.display = 'none';
     quizResultScreen.style.display = 'none';
     quizPlayScreen.style.display = 'block';
@@ -3119,7 +3250,8 @@ setTimeout(() => {
       .replace('{n}', quizIndex + 1).replace('{total}', quizQuestions.length);
     quizScoreLabel.textContent = t('quiz_score_label') + ' ' + quizScore;
     quizProgressFill.style.width = ((quizIndex) / quizQuestions.length * 100) + '%';
-    quizQuestionCat.textContent = q.cat;
+    quizQuestionCat.innerHTML = escapeHtml(q.cat) +
+      (q.difficulty ? ` <span class="quiz-diff-tag diff-${q.difficulty.toLowerCase()}">${t('quiz_difficulty_' + q.difficulty.toLowerCase())}</span>` : '');
     quizQuestionText.textContent = q.name;
     quizOptionsList.innerHTML = '';
     if (quizExplanationBox) { quizExplanationBox.style.display = 'none'; quizExplanationBox.innerHTML = ''; }
@@ -3127,17 +3259,27 @@ setTimeout(() => {
       const btn = document.createElement('button');
       btn.className = 'quiz-option-btn';
       btn.textContent = opt;
-      btn.addEventListener('click', () => selectQuizAnswer(btn, opt, q.correctExpr, q.explanation));
+      btn.addEventListener('click', () => selectQuizAnswer(btn, opt, q.correctExpr, q.explanation, q));
       quizOptionsList.appendChild(btn);
     });
     quizNextBtn.style.display = 'none';
   }
 
-  function selectQuizAnswer(btn, chosen, correct, explanation) {
+  function selectQuizAnswer(btn, chosen, correct, explanation, q) {
     if (quizAnswered) return;
     quizAnswered = true;
     const isCorrect = chosen === correct;
-    if (isCorrect) quizScore++;
+    if (isCorrect) {
+      quizScore++;
+    } else {
+      quizWrongAnswers.push({
+        cat: q.cat,
+        name: q.name,
+        correctExpr: correct,
+        chosen: chosen,
+        explanation: explanation || ''
+      });
+    }
     quizOptionsList.querySelectorAll('.quiz-option-btn').forEach(b => {
       b.disabled = true;
       if (b.textContent === correct) b.classList.add('correct');
@@ -3170,6 +3312,34 @@ setTimeout(() => {
     if (pct === 100) msgKey = 'quiz_msg_perfect';
     else if (pct < 50) msgKey = 'quiz_msg_practice';
     quizResultMsg.textContent = t(msgKey);
+    renderWrongAnswerReview();
+  }
+
+  function renderWrongAnswerReview() {
+    if (!quizWrongReviewWrap || !quizWrongReviewList || !quizReviewToggleBtn) return;
+    if (quizWrongAnswers.length === 0) {
+      quizWrongReviewWrap.style.display = 'none';
+      return;
+    }
+    quizWrongReviewWrap.style.display = 'block';
+    quizReviewToggleBtn.textContent = t('quiz_review_wrong').replace('{n}', quizWrongAnswers.length);
+    quizWrongReviewList.innerHTML = quizWrongAnswers.map(w => `
+      <div class="quiz-wrong-item">
+        <div class="quiz-wrong-cat">${escapeHtml(w.cat)}</div>
+        <div class="quiz-wrong-q">${escapeHtml(w.name)}</div>
+        <div class="quiz-wrong-your">${escapeHtml(t('quiz_your_answer'))} <span class="wrong-val">${escapeHtml(w.chosen)}</span></div>
+        <div class="quiz-wrong-correct">${escapeHtml(t('quiz_correct_answer'))} <span class="correct-val">${escapeHtml(w.correctExpr)}</span></div>
+        ${w.explanation ? `<div class="quiz-wrong-explain">${escapeHtml(w.explanation)}</div>` : ''}
+      </div>
+    `).join('');
+    quizWrongReviewList.style.display = 'none';
+  }
+
+  if (quizReviewToggleBtn) {
+    quizReviewToggleBtn.addEventListener('click', () => {
+      const open = quizWrongReviewList.style.display !== 'none';
+      quizWrongReviewList.style.display = open ? 'none' : 'block';
+    });
   }
 
   function quitQuiz() {
@@ -3187,10 +3357,12 @@ setTimeout(() => {
   });
 
   buildQuizSubjectPills();
+  buildQuizDifficultyPills();
   checkQuizPoolSize();
 
   window.refreshQuizI18n = function () {
     buildQuizSubjectPills();
+    buildQuizDifficultyPills();
     checkQuizPoolSize();
     if (quizPlayScreen.style.display === 'block' && quizQuestions.length) renderQuizQuestion();
   };
