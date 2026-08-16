@@ -14,6 +14,7 @@ const practiceQuestionBank = {
   "Mathematics": [
     {
       topic: "Algebra",
+      difficulty: "Easy",
       question: "If 2x + 5 = 17, what is the value of x?",
       options: ["4", "5", "6", "7"],
       correct: 2,
@@ -21,6 +22,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Algebra",
+      difficulty: "Easy",
       question: "What are the roots of x² − 5x + 6 = 0?",
       options: ["x = 1, 6", "x = 2, 3", "x = -2, -3", "x = 2, -3"],
       correct: 1,
@@ -28,6 +30,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Sets & Functions",
+      difficulty: "Easy",
       question: "If A = {1, 2, 3} and B = {2, 3, 4}, what is A ∩ B?",
       options: ["{1, 2, 3, 4}", "{2, 3}", "{1, 4}", "{1, 2, 3}"],
       correct: 1,
@@ -35,6 +38,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Trigonometry",
+      difficulty: "Medium",
       question: "What is the value of sin(90°)?",
       options: ["0", "0.5", "1", "Undefined"],
       correct: 2,
@@ -42,6 +46,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Trigonometry",
+      difficulty: "Medium",
       question: "Which identity is always true?",
       options: ["sin²θ + cos²θ = 1", "sin²θ − cos²θ = 1", "sinθ × cosθ = 1", "sinθ + cosθ = 1"],
       correct: 0,
@@ -49,6 +54,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Sequences & Series",
+      difficulty: "Medium",
       question: "What is the 5th term of the arithmetic sequence 3, 7, 11, 15, …?",
       options: ["17", "19", "21", "23"],
       correct: 1,
@@ -56,6 +62,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Calculus",
+      difficulty: "Medium",
       question: "What is the derivative of x³ with respect to x?",
       options: ["x²", "3x", "3x²", "x³/3"],
       correct: 2,
@@ -63,6 +70,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Calculus",
+      difficulty: "Hard",
       question: "What is ∫2x dx?",
       options: ["x²", "x² + C", "2x² + C", "x²/2 + C"],
       correct: 1,
@@ -70,6 +78,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Matrices",
+      difficulty: "Hard",
       question: "For a matrix to have an inverse, its determinant must be:",
       options: ["Equal to 1", "Equal to 0", "Not equal to 0", "A negative number"],
       correct: 2,
@@ -77,6 +86,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Coordinate Geometry",
+      difficulty: "Hard",
       question: "What is the distance between the points (0, 0) and (3, 4)?",
       options: ["5", "6", "7", "12"],
       correct: 0,
@@ -87,6 +97,7 @@ const practiceQuestionBank = {
   "Physics": [
     {
       topic: "Mechanics",
+      difficulty: "Easy",
       question: "What is the SI unit of force?",
       options: ["Joule", "Newton", "Watt", "Pascal"],
       correct: 1,
@@ -94,6 +105,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Mechanics",
+      difficulty: "Easy",
       question: "A car accelerates uniformly from rest to 20 m/s in 4 seconds. What is its acceleration?",
       options: ["4 m/s²", "5 m/s²", "8 m/s²", "80 m/s²"],
       correct: 1,
@@ -101,6 +113,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Mechanics",
+      difficulty: "Easy",
       question: "Which law states that every action has an equal and opposite reaction?",
       options: ["Newton's First Law", "Newton's Second Law", "Newton's Third Law", "Law of Conservation of Energy"],
       correct: 2,
@@ -108,6 +121,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Electrostatics",
+      difficulty: "Medium",
       question: "What is the SI unit of electric charge?",
       options: ["Volt", "Ampere", "Coulomb", "Ohm"],
       correct: 2,
@@ -115,6 +129,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Electrostatics",
+      difficulty: "Medium",
       question: "According to Ohm's Law, if voltage doubles while resistance stays constant, current will:",
       options: ["Double", "Halve", "Stay the same", "Become zero"],
       correct: 0,
@@ -122,6 +137,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Waves",
+      difficulty: "Medium",
       question: "What happens to the wavelength of a wave when its frequency increases, if speed stays constant?",
       options: ["Increases", "Decreases", "Stays the same", "Becomes zero"],
       correct: 1,
@@ -129,6 +145,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Thermodynamics",
+      difficulty: "Medium",
       question: "What is the boiling point of water at standard atmospheric pressure, in Celsius?",
       options: ["0°C", "50°C", "100°C", "212°C"],
       correct: 2,
@@ -136,6 +153,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Optics",
+      difficulty: "Hard",
       question: "Which type of lens is used to correct short-sightedness (myopia)?",
       options: ["Convex lens", "Concave lens", "Bifocal lens", "Cylindrical lens"],
       correct: 1,
@@ -143,6 +161,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Modern Physics",
+      difficulty: "Hard",
       question: "What is the approximate speed of light in a vacuum?",
       options: ["3 × 10⁵ m/s", "3 × 10⁶ m/s", "3 × 10⁷ m/s", "3 × 10⁸ m/s"],
       correct: 3,
@@ -150,6 +169,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Work & Energy",
+      difficulty: "Hard",
       question: "A 2 kg object is lifted 5 meters. Taking g = 10 m/s², how much work is done against gravity?",
       options: ["10 J", "50 J", "100 J", "200 J"],
       correct: 2,
@@ -160,6 +180,7 @@ const practiceQuestionBank = {
   "Chemistry": [
     {
       topic: "Atomic Structure",
+      difficulty: "Easy",
       question: "How many electrons can the second electron shell (n=2) hold at maximum?",
       options: ["2", "4", "8", "18"],
       correct: 2,
@@ -167,6 +188,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Periodic Table",
+      difficulty: "Easy",
       question: "Elements in the same group of the periodic table have the same number of:",
       options: ["Neutrons", "Protons", "Valence electrons", "Total electrons"],
       correct: 2,
@@ -174,6 +196,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Chemical Bonding",
+      difficulty: "Easy",
       question: "What type of bond forms when electrons are shared between atoms?",
       options: ["Ionic bond", "Covalent bond", "Metallic bond", "Hydrogen bond"],
       correct: 1,
@@ -181,6 +204,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Stoichiometry",
+      difficulty: "Medium",
       question: "How many moles are in 44 grams of CO₂? (Molar mass of CO₂ = 44 g/mol)",
       options: ["0.5 mol", "1 mol", "2 mol", "44 mol"],
       correct: 1,
@@ -188,6 +212,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Acids & Bases",
+      difficulty: "Medium",
       question: "What is the pH of a neutral solution at 25°C?",
       options: ["0", "7", "10", "14"],
       correct: 1,
@@ -195,6 +220,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Acids & Bases",
+      difficulty: "Medium",
       question: "Which of these is a strong acid?",
       options: ["Acetic acid", "Carbonic acid", "Hydrochloric acid", "Citric acid"],
       correct: 2,
@@ -202,6 +228,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Organic Chemistry",
+      difficulty: "Medium",
       question: "What is the general formula for alkanes?",
       options: ["CnH2n", "CnH2n+2", "CnH2n-2", "CnHn"],
       correct: 1,
@@ -209,6 +236,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Chemical Reactions",
+      difficulty: "Hard",
       question: "In the reaction Zn + 2HCl → ZnCl₂ + H₂, what type of reaction is this?",
       options: ["Combination", "Decomposition", "Displacement", "Neutralization"],
       correct: 2,
@@ -216,6 +244,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Electrochemistry",
+      difficulty: "Hard",
       question: "In an electrochemical cell, oxidation occurs at the:",
       options: ["Cathode", "Anode", "Salt bridge", "Electrolyte"],
       correct: 1,
@@ -223,6 +252,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "States of Matter",
+      difficulty: "Hard",
       question: "According to the ideal gas law PV = nRT, if temperature increases at constant volume, pressure will:",
       options: ["Increase", "Decrease", "Stay the same", "Become zero"],
       correct: 0,
@@ -233,6 +263,7 @@ const practiceQuestionBank = {
   "Biology": [
     {
       topic: "Cell Biology",
+      difficulty: "Easy",
       question: "Which organelle is known as the 'powerhouse of the cell'?",
       options: ["Nucleus", "Ribosome", "Mitochondrion", "Golgi apparatus"],
       correct: 2,
@@ -240,6 +271,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Cell Biology",
+      difficulty: "Easy",
       question: "Which structure is found in plant cells but not animal cells?",
       options: ["Nucleus", "Cell wall", "Mitochondria", "Ribosomes"],
       correct: 1,
@@ -247,6 +279,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Genetics",
+      difficulty: "Easy",
       question: "In a monohybrid cross between two heterozygous (Aa) parents, what fraction of offspring is expected to show the recessive phenotype?",
       options: ["1/4", "1/2", "3/4", "1"],
       correct: 0,
@@ -254,6 +287,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Genetics",
+      difficulty: "Medium",
       question: "DNA replication is described as semi-conservative because:",
       options: ["Both strands are destroyed", "Each new DNA molecule has one old and one new strand", "Only RNA is produced", "The process only occurs once per cell"],
       correct: 1,
@@ -261,6 +295,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Human Physiology",
+      difficulty: "Medium",
       question: "Which chamber of the human heart pumps oxygenated blood to the body?",
       options: ["Right atrium", "Right ventricle", "Left atrium", "Left ventricle"],
       correct: 3,
@@ -268,6 +303,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Human Physiology",
+      difficulty: "Medium",
       question: "Which enzyme in saliva begins the digestion of starch?",
       options: ["Pepsin", "Amylase", "Lipase", "Trypsin"],
       correct: 1,
@@ -275,6 +311,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Ecology",
+      difficulty: "Medium",
       question: "What is the primary source of energy for almost all ecosystems on Earth?",
       options: ["Geothermal heat", "The Sun", "Wind", "Ocean currents"],
       correct: 1,
@@ -282,6 +319,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Botany",
+      difficulty: "Hard",
       question: "During photosynthesis, plants absorb which gas from the atmosphere?",
       options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"],
       correct: 2,
@@ -289,6 +327,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Evolution",
+      difficulty: "Hard",
       question: "Charles Darwin's theory of evolution is primarily based on the concept of:",
       options: ["Use and disuse of organs", "Natural selection", "Genetic engineering", "Spontaneous generation"],
       correct: 1,
@@ -296,6 +335,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Immunology",
+      difficulty: "Hard",
       question: "Which blood cells are primarily responsible for fighting infections?",
       options: ["Red blood cells", "White blood cells", "Platelets", "Plasma cells only"],
       correct: 1,
@@ -306,6 +346,7 @@ const practiceQuestionBank = {
   "Statistics": [
     {
       topic: "Descriptive Statistics",
+      difficulty: "Easy",
       question: "What is the mean of the data set: 4, 8, 6, 5, 3?",
       options: ["4.6", "5.2", "5.6", "6.0"],
       correct: 1,
@@ -313,6 +354,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Descriptive Statistics",
+      difficulty: "Easy",
       question: "Which measure of central tendency is most affected by extreme outliers?",
       options: ["Mean", "Median", "Mode", "Range"],
       correct: 0,
@@ -320,6 +362,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Probability",
+      difficulty: "Easy",
       question: "A fair six-sided die is rolled once. What is the probability of rolling an even number?",
       options: ["1/6", "1/3", "1/2", "2/3"],
       correct: 2,
@@ -327,6 +370,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Probability",
+      difficulty: "Medium",
       question: "Two coins are tossed. What is the probability of getting exactly two heads?",
       options: ["1/4", "1/2", "3/4", "1"],
       correct: 0,
@@ -334,6 +378,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Dispersion",
+      difficulty: "Medium",
       question: "What does a standard deviation of 0 indicate about a data set?",
       options: ["The data is highly spread out", "All values are identical", "The mean is 0", "There is no data"],
       correct: 1,
@@ -341,6 +386,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Correlation",
+      difficulty: "Medium",
       question: "A correlation coefficient (r) of -0.9 indicates:",
       options: ["A weak positive relationship", "No relationship", "A strong negative relationship", "A strong positive relationship"],
       correct: 2,
@@ -348,6 +394,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Hypothesis Testing",
+      difficulty: "Medium",
       question: "In hypothesis testing, what does the null hypothesis (H₀) typically represent?",
       options: ["The result we expect to prove", "No effect or no difference", "The alternative outcome", "A guaranteed conclusion"],
       correct: 1,
@@ -355,6 +402,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Distributions",
+      difficulty: "Hard",
       question: "In a normal distribution, approximately what percentage of data falls within one standard deviation of the mean?",
       options: ["50%", "68%", "95%", "99.7%"],
       correct: 1,
@@ -362,6 +410,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Sampling",
+      difficulty: "Hard",
       question: "What is the term for selecting a sample where every member of the population has an equal chance of being chosen?",
       options: ["Convenience sampling", "Random sampling", "Judgment sampling", "Quota sampling"],
       correct: 1,
@@ -369,6 +418,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Descriptive Statistics",
+      difficulty: "Hard",
       question: "For the data set 2, 4, 4, 6, 8, what is the mode?",
       options: ["2", "4", "6", "8"],
       correct: 1,
@@ -379,6 +429,7 @@ const practiceQuestionBank = {
   "Computer Science": [
     {
       topic: "Number Systems",
+      difficulty: "Easy",
       question: "What is the binary equivalent of the decimal number 10?",
       options: ["1010", "1100", "1001", "1110"],
       correct: 0,
@@ -386,6 +437,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Number Systems",
+      difficulty: "Easy",
       question: "How many bits make one byte?",
       options: ["4", "8", "16", "32"],
       correct: 1,
@@ -393,6 +445,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Programming Fundamentals",
+      difficulty: "Easy",
       question: "Which of these is NOT a typical data type in most programming languages?",
       options: ["Integer", "Boolean", "Float", "Formula"],
       correct: 3,
@@ -400,6 +453,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Programming Fundamentals",
+      difficulty: "Medium",
       question: "What does a 'for loop' primarily allow a program to do?",
       options: ["Store data permanently", "Repeat a block of code a set number of times", "Connect to the internet", "Compile source code"],
       correct: 1,
@@ -407,6 +461,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Algorithms",
+      difficulty: "Medium",
       question: "What is the time complexity of binary search on a sorted array of n elements?",
       options: ["O(n)", "O(n²)", "O(log n)", "O(1)"],
       correct: 2,
@@ -414,6 +469,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Data Structures",
+      difficulty: "Medium",
       question: "Which data structure follows the Last-In-First-Out (LIFO) principle?",
       options: ["Queue", "Stack", "Array", "Linked List"],
       correct: 1,
@@ -421,6 +477,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Data Structures",
+      difficulty: "Medium",
       question: "Which data structure follows the First-In-First-Out (FIFO) principle?",
       options: ["Stack", "Tree", "Queue", "Graph"],
       correct: 2,
@@ -428,6 +485,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Databases",
+      difficulty: "Hard",
       question: "In a relational database, what is used to uniquely identify each record in a table?",
       options: ["Foreign key", "Primary key", "Index", "Schema"],
       correct: 1,
@@ -435,6 +493,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Networking",
+      difficulty: "Hard",
       question: "What does 'HTTP' stand for?",
       options: ["HyperText Transfer Protocol", "High Transfer Text Program", "Hyperlink Text Transmission Process", "Home Tool Transfer Protocol"],
       correct: 0,
@@ -442,6 +501,7 @@ const practiceQuestionBank = {
     },
     {
       topic: "Logic Gates",
+      difficulty: "Hard",
       question: "An AND gate outputs 1 (true) only when:",
       options: ["At least one input is 1", "All inputs are 0", "All inputs are 1", "Exactly one input is 1"],
       correct: 2,
