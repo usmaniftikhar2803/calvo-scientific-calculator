@@ -412,7 +412,8 @@
         `<button class="ai-saved-delete" type="button" title="&#10005;">&#10005;</button>` +
         `<div class="ai-saved-question">${escapeHtml(item.question)}</div>` +
         (item.answerText ? `<div class="ai-saved-answer">${escapeHtml(item.answerText)}</div>` : '') +
-        `<div class="ai-saved-time">${escapeHtml(formatSavedTime(item.time))}</div>`;
+        `<div class="ai-saved-time">${escapeHtml(formatSavedTime(item.time))}</div>` +
+        (item.answerHtml ? `<div class="ai-saved-full-steps" style="display:none;">${item.answerHtml}</div>` : '');
       div.querySelector('.ai-saved-delete').addEventListener('click', (e) => {
         e.stopPropagation();
         // Delete by identity (time+question) rather than filtered index,
@@ -423,6 +424,18 @@
         persistSavedList(current);
         renderSavedList();
       });
+      // Tapping the card (but not the delete button) expands the full
+      // step-by-step solution saved at the time it was solved.
+      if (item.answerHtml) {
+        div.classList.add('ai-saved-expandable');
+        div.addEventListener('click', () => {
+          const full = div.querySelector('.ai-saved-full-steps');
+          if (!full) return;
+          const open = full.style.display !== 'none';
+          full.style.display = open ? 'none' : 'block';
+          div.classList.toggle('expanded', !open);
+        });
+      }
       aiSavedList.appendChild(div);
     });
   }
@@ -434,21 +447,14 @@
     });
   }
 
-  function saveCurrentSolve() {
-    if (!lastSolved) return;
+  const MAX_HISTORY = 200;
+
+  function autoSaveSolve(item) {
     const list = loadSavedList();
-    list.unshift(lastSolved);
+    list.unshift(item);
+    if (list.length > MAX_HISTORY) list.length = MAX_HISTORY;
     persistSavedList(list);
     renderSavedList();
-    if (aiSaveBtn) {
-      const original = aiSaveBtn.textContent;
-      aiSaveBtn.disabled = true;
-      aiSaveBtn.textContent = '\u2713';
-      setTimeout(() => {
-        aiSaveBtn.disabled = false;
-        aiSaveBtn.textContent = original;
-      }, 900);
-    }
   }
 
   function resetSolver() {
@@ -460,7 +466,9 @@
   }
 
   if (aiSaveBtn) {
-    aiSaveBtn.addEventListener('click', saveCurrentSolve);
+    // Saving is now automatic on every solve — hide the old manual button
+    // entirely rather than leaving a dead control in the UI.
+    aiSaveBtn.style.display = 'none';
   }
   if (aiRefreshBtn) {
     aiRefreshBtn.addEventListener('click', resetSolver);
@@ -618,16 +626,19 @@
 
       renderResult(formatAnswer(textOut));
 
-      // Pull out the "Answer:" line (if any) for a short preview in the
-      // saved list, and remember everything needed to save this solve.
+      // Auto-save every solve to history (full step-by-step answer included)
+      // so past solves can be revisited for revision without needing to
+      // remember to press a separate Save button.
       const answerLineMatch = textOut.match(/^\s*answer\s*[:.\-]?\s*(.*)$/im);
       lastSolved = {
         question: question || tr('ai_add_photo'),
         hadImage: !!aiImageBase64,
         answerText: answerLineMatch ? answerLineMatch[1].trim() : '',
+        answerHtml: formatAnswer(textOut),
         time: Date.now(),
       };
-      if (aiSaveBtn) aiSaveBtn.style.display = '';
+      autoSaveSolve(lastSolved);
+      if (aiSaveBtn) aiSaveBtn.style.display = 'none';
     } catch (err) {
       renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(tr('ai_error_request'))}</span></div>`);
     } finally {
