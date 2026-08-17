@@ -2276,6 +2276,93 @@ body {
   color: #b8b8c0;
 }
 
+/* ---------- SUBJECT TOOLS ---------- */
+.tool-field {
+  margin-bottom: 12px;
+}
+.tool-field label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #999;
+  margin-bottom: 6px;
+}
+.tool-hint {
+  font-size: 0.75rem;
+  color: #888;
+  line-height: 1.6;
+  margin: 4px 0 14px;
+}
+.tool-or {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: -4px 0 12px;
+}
+.tool-error {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(224,90,90,0.12);
+  border: 1px solid rgba(224,90,90,0.3);
+  color: #ff9494;
+  font-size: 0.8rem;
+  margin-top: 10px;
+}
+.tool-balanced-eq {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255,138,31,0.08);
+  border: 1px solid rgba(255,138,31,0.25);
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-top: 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.tool-vector-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.tool-vector-row .tool-field { margin-bottom: 0; }
+
+.punnett-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+}
+.punnett-table th, .punnett-table td {
+  border: 1px solid var(--case-border, #2a2a30);
+  padding: 8px 10px;
+  text-align: center;
+}
+.punnett-table th {
+  background: rgba(255,138,31,0.1);
+  color: var(--accent);
+}
+.punnett-table td { color: #e0e0e8; }
+.punnett-ratio {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.punnett-ratio-item {
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.05);
+  font-size: 0.75rem;
+  color: #ccc;
+}
+
 .quiz-result-score {
   text-align: center;
   font-family: 'Space Mono', monospace;
