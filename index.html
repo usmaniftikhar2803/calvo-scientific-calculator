@@ -93,6 +93,7 @@
       <button class="topbar-tab" data-tab="matrix" data-i18n="tab_matrix">Matrix</button>
       <button class="topbar-tab" data-tab="programmer" data-i18n="tab_programmer">Programmer</button>
       <button class="topbar-tab" data-tab="stats" data-i18n="tab_stats">Statistics</button>
+      <button class="topbar-tab" data-tab="subjecttools" data-i18n="tab_subjecttools">Subject Tools</button>
       <button class="topbar-tab" data-tab="timer" data-i18n="tab_timer">Timer</button>
     </div>
     <button class="topbar-tabs-arrow topbar-tabs-arrow-right" id="topbarTabsRight" aria-label="Scroll tabs right" type="button">&#10095;</button>
@@ -768,6 +769,22 @@
   </div>
 </section>
 
+<section class="tab-panel" id="tab-subjecttools">
+  <div class="formulas-wrap">
+    <div class="formulas-card" id="subjectToolsCard">
+      <div class="formulas-title" data-i18n="subjecttools_title">Subject Tools</div>
+      <div class="formulas-subtitle" data-i18n="subjecttools_subtitle">Chemistry, Physics, Biology & Commerce calculators built for your syllabus</div>
+
+      <div class="subject-pills" id="subjectToolsCategoryPills"></div>
+      <div class="subject-pills" id="subjectToolsToolPills"></div>
+
+      <div id="subjectToolsBody"></div>
+      <button class="pill-btn save-btn" id="subjectToolsCalcBtn" data-i18n="tool_calculate">Calculate</button>
+      <div id="subjectToolsResult" class="stats-result-grid"></div>
+    </div>
+  </div>
+</section>
+
 <section class="tab-panel" id="tab-timer">
   <div class="formulas-wrap">
     <div class="formulas-card" id="timerCard">
@@ -884,6 +901,7 @@
 <script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
 <script src="i18n.js"></script>
 <script src="question-bank.js"></script>
+<script src="subject-tools.js"></script>
 <script src="script.js"></script>
 <script src="ai-solver.js"></script>
 <script>
