@@ -19,6 +19,7 @@ const CORE_ASSETS = [
   './script.js',
   './i18n.js',
   './question-bank.js',
+  './subject-tools.js',
   './ai-solver.js',
   './manifest.json',
   './privacy.html',
