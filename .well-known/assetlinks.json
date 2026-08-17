@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.calvo.calculator",
+        "sha256_cert_fingerprints": ["13:8E:02:4D:8E:D8:2F:0B:AB:30:F1:CE:0B:9A:2C:64:90:EF:9D:DC:71:5C:FF:0E:89:CE:C1:66:1F:92:8B:CC"]
+      }
+    }]
