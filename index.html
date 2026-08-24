@@ -476,16 +476,16 @@
   <div class="formulas-wrap">
     <div class="formulas-card">
       <h2 class="formulas-title" data-i18n="ai_title">AI Math Solver</h2>
-      <p class="formulas-subtitle" data-i18n="ai_subtitle">Type a question or upload a photo — powered by Google Gemini (free)</p>
+      <p class="formulas-subtitle" data-i18n="ai_subtitle">Type a question or upload a photo — powered by Google Gemini (free). No key needed — a few free solves every day, no sign-up.</p>
 
-      <!-- API key (embedded, collapsible — not a separate gate) -->
+      <!-- API key (optional — only needed for unlimited use) -->
       <div class="ai-key-box" id="aiKeyBox">
         <div class="ai-key-row">
-          <input type="password" class="formula-search ai-key-input" id="aiApiKeyInput" data-i18n-placeholder="ai_key_placeholder" placeholder="Paste your Gemini API key">
+          <input type="password" class="formula-search ai-key-input" id="aiApiKeyInput" data-i18n-placeholder="ai_key_placeholder" placeholder="Optional: paste your own Gemini key for unlimited use">
           <button class="pill-btn" id="aiKeyToggleBtn" type="button" data-i18n="ai_key_show" title="Show/Hide">Show</button>
         </div>
         <div class="ai-key-actions">
-          <a class="ai-key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_key_get">Get a free key from Google AI Studio</a>
+          <a class="ai-key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_key_get">Want unlimited solves? Get your own free key from Google AI Studio</a>
         </div>
         <div class="ai-key-status" id="aiKeyStatus"></div>
       </div>
