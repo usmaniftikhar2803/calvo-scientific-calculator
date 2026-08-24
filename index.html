@@ -22,14 +22,14 @@
 <meta property="og:url" content="https://calvoscientificcalculator.online/">
 <meta property="og:title" content="Calvo — Scientific Calculator & Formulas">
 <meta property="og:description" content="Free online scientific calculator with unit converter, formula library, GPA/CGPA calculator, and an AI math solver.">
-<meta property="og:image" content="https://calvoscientificcalculator.online/icon-512.png">
+<meta property="og:image" content="https://calvoscientificcalculator.online/icon-512-padded.png">
 <meta property="og:site_name" content="Calvo">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Calvo — Scientific Calculator & Formulas">
 <meta name="twitter:description" content="Free online scientific calculator with unit converter, formula library, GPA/CGPA calculator, and an AI math solver.">
-<meta name="twitter:image" content="https://calvoscientificcalculator.online/icon-512.png">
+<meta name="twitter:image" content="https://calvoscientificcalculator.online/icon-512-padded.png">
 
 <!-- Structured data for Google -->
 <script type="application/ld+json">
@@ -55,7 +55,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192-padded.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff9500">
@@ -64,7 +64,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<base target="_blank">
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-6621625782538547" crossorigin="anonymous"></script>
@@ -476,16 +475,16 @@
   <div class="formulas-wrap">
     <div class="formulas-card">
       <h2 class="formulas-title" data-i18n="ai_title">AI Math Solver</h2>
-      <p class="formulas-subtitle" data-i18n="ai_subtitle">Type a question or upload a photo — powered by Google Gemini (free). No key needed — a few free solves every day, no sign-up.</p>
+      <p class="formulas-subtitle" data-i18n="ai_subtitle">Type a question or upload a photo — powered by Google Gemini (free)</p>
 
-      <!-- API key (optional — only needed for unlimited use) -->
+      <!-- API key (embedded, collapsible — not a separate gate) -->
       <div class="ai-key-box" id="aiKeyBox">
         <div class="ai-key-row">
-          <input type="password" class="formula-search ai-key-input" id="aiApiKeyInput" data-i18n-placeholder="ai_key_placeholder" placeholder="Optional: paste your own Gemini key for unlimited use">
+          <input type="password" class="formula-search ai-key-input" id="aiApiKeyInput" data-i18n-placeholder="ai_key_placeholder" placeholder="Paste your Gemini API key">
           <button class="pill-btn" id="aiKeyToggleBtn" type="button" data-i18n="ai_key_show" title="Show/Hide">Show</button>
         </div>
         <div class="ai-key-actions">
-          <a class="ai-key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_key_get">Want unlimited solves? Get your own free key from Google AI Studio</a>
+          <a class="ai-key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_key_get">Get a free key from Google AI Studio</a>
         </div>
         <div class="ai-key-status" id="aiKeyStatus"></div>
       </div>
