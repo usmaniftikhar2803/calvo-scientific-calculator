@@ -227,14 +227,12 @@ if (menuColorMode) {
   });
 }
 
-// On first load: use a saved choice if there is one, otherwise fall back
-// to the device's system preference (prefers-color-scheme).
+// On first load: use a saved choice if there is one, otherwise default
+// to dark mode for every new visitor (regardless of device system theme).
 try {
   const savedMode = localStorage.getItem('calvo_color_mode');
   if (savedMode === 'light' || savedMode === 'dark') {
     applyColorMode(savedMode);
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    applyColorMode('light');
   } else {
     applyColorMode('dark');
   }
