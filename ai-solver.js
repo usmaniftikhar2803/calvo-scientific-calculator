@@ -10,8 +10,49 @@
 (function () {
   const GEMINI_MODELS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
   const GEMINI_ENDPOINT_FOR = (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const PROXY_ENDPOINT = 'https://calvo-ai-proxy.YOUR-SUBDOMAIN.workers.dev'; // <-- replace with YOUR Cloudflare Worker URL after setup
   const STORAGE_KEY = 'calvo_gemini_api_key';
   const SAVED_KEY = 'calvo_ai_saved';
+
+  /* ============================================
+     Shared request helper.
+     - If the student has saved their own Gemini key, we call Google
+       directly with it (exactly like before — unlimited, their own quota).
+     - If they have NOT saved a key, we call our own "/api/solve" proxy
+       instead, which uses a shared free key on the server and gives every
+       visitor a small number of free solves per day. No key needed.
+     Returns { ok, status, data } so callers can handle both cases the
+     same way the raw fetch() response used to be handled.
+     ============================================ */
+  async function callAI(parts, apiKeyOverride) {
+    const apiKey = (apiKeyOverride || '').trim();
+
+    if (apiKey) {
+      let response = null, data = null;
+      for (let i = 0; i < GEMINI_MODELS.length; i++) {
+        response = await fetch(GEMINI_ENDPOINT_FOR(GEMINI_MODELS[i]), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({ contents: [{ role: 'user', parts }] }),
+        });
+        data = await response.json().catch(() => null);
+        if (response.ok) break;
+        const serverMsg = (data && data.error && data.error.message) || '';
+        const isModelGone = response.status === 404 && /no longer available|not found/i.test(serverMsg);
+        if (!isModelGone || i === GEMINI_MODELS.length - 1) break;
+      }
+      return { ok: response && response.ok, status: response ? response.status : 0, data, usedOwnKey: true };
+    }
+
+    // No key saved — use the free server proxy instead.
+    const response = await fetch(PROXY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ role: 'user', parts }] }),
+    });
+    const data = await response.json().catch(() => null);
+    return { ok: response.ok, status: response.status, data, usedOwnKey: false };
+  }
 
   const aiApiKeyInput = document.getElementById('aiApiKeyInput');
   const aiKeyToggleBtn = document.getElementById('aiKeyToggleBtn');
@@ -508,11 +549,7 @@
      API key as the AI Solver tab.
      ============================================ */
   window.calvoExplainFormula = async function (name, expr, onChunkOrDone) {
-    const apiKey = getSavedKey();
-    if (!apiKey) {
-      onChunkOrDone({ error: tr('ai_key_status_empty') });
-      return;
-    }
+    const apiKey = getSavedKey(); // optional now — empty string falls back to the free proxy inside callAI()
     const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
     const langName = AI_LANG_NAMES[lang] || 'English';
     const promptText =
@@ -522,26 +559,17 @@
       `Write math using plain symbols (x^2, sqrt(x), 3/4, ×, ÷, π). Reply in ${langName}.`;
 
     try {
-      let response = null, data = null, lastErrText = '';
-      for (let i = 0; i < GEMINI_MODELS.length; i++) {
-        response = await fetch(GEMINI_ENDPOINT_FOR(GEMINI_MODELS[i]), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: promptText }] }] }),
-        });
-        data = await response.json().catch(() => null);
-        if (response.ok) break;
+      const result = await callAI([{ text: promptText }], apiKey);
+      const { ok, status, data } = result;
+
+      if (!ok) {
         const serverMsg = (data && data.error && data.error.message) || '';
-        lastErrText = serverMsg;
-        const isModelGone = response.status === 404 && /no longer available|not found/i.test(serverMsg);
-        if (!isModelGone) break;
-      }
-      if (!response || !response.ok) {
-        const status = response ? response.status : 0;
-        if (status === 400 || status === 401 || status === 403) {
+        if (!result.usedOwnKey && status === 429 && serverMsg === 'DAILY_FREE_LIMIT_REACHED') {
+          onChunkOrDone({ error: tr('ai_error_daily_limit') });
+        } else if (result.usedOwnKey && (status === 400 || status === 401 || status === 403)) {
           onChunkOrDone({ error: tr('ai_error_invalid_key') });
         } else {
-          onChunkOrDone({ error: lastErrText || tr('ai_error_request') });
+          onChunkOrDone({ error: serverMsg || tr('ai_error_request') });
         }
         return;
       }
@@ -571,18 +599,15 @@
     aiKeyStatus.textContent = '';
     aiKeyStatus.classList.remove('ok', 'err');
 
-    if (!apiKey) {
-      aiKeyStatus.textContent = tr('ai_key_status_empty');
-      aiKeyStatus.classList.add('err');
-      aiApiKeyInput.focus();
-      return;
-    }
+    // A key is no longer required — if the student hasn't added one, we
+    // silently fall back to the free server proxy inside callAI(). We only
+    // need to stop them here if there's no question AND no photo at all.
     if (!question && !aiImageBase64) {
       renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(tr('ai_error_no_input'))}</span></div>`);
       return;
     }
 
-    setSavedKey(apiKey);
+    if (apiKey) setSavedKey(apiKey);
 
     if (aiSaveBtn) aiSaveBtn.style.display = 'none';
     lastSolved = null;
@@ -634,41 +659,24 @@
     renderResult(`<div class="ai-result-card"><span class="ai-loading">${escapeHtml(tr('ai_solving'))}</span></div>`);
 
     try {
-      let response = null;
-      let data = null;
-      let lastErrText = '';
+      const result = await callAI(parts, apiKey);
+      const { ok, status, data } = result;
 
-      for (let i = 0; i < GEMINI_MODELS.length; i++) {
-        response = await fetch(GEMINI_ENDPOINT_FOR(GEMINI_MODELS[i]), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey,
-          },
-          body: JSON.stringify({ contents: [{ role: 'user', parts }] }),
-        });
-
-        data = await response.json().catch(() => null);
-
-        if (response.ok) break;
-
+      if (!ok) {
         const serverMsg = (data && data.error && data.error.message) || '';
-        lastErrText = serverMsg;
-        const isModelGone = response.status === 404 && /no longer available|not found/i.test(serverMsg);
 
-        // Only move to the next model if this one is gone; any other
-        // error (bad key, quota, etc.) applies to every model equally.
-        if (!isModelGone || i === GEMINI_MODELS.length - 1) break;
-      }
+        if (!result.usedOwnKey && status === 429 && serverMsg === 'DAILY_FREE_LIMIT_REACHED') {
+          // Free daily quota used up on the shared server key.
+          renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(tr('ai_error_daily_limit'))}</span></div>`);
+          return;
+        }
 
-      if (!response.ok) {
-        const status = response.status;
-        if (status === 400 || status === 401 || status === 403) {
+        if (result.usedOwnKey && (status === 400 || status === 401 || status === 403)) {
           renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(tr('ai_error_invalid_key'))}</span></div>`);
           aiKeyStatus.textContent = tr('ai_error_invalid_key');
           aiKeyStatus.classList.add('err');
         } else {
-          renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(lastErrText || tr('ai_error_request'))}</span></div>`);
+          renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(serverMsg || tr('ai_error_request'))}</span></div>`);
         }
         return;
       }
