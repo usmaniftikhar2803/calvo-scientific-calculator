@@ -2800,6 +2800,7 @@ let cgpaSemesterCount = 1;
 /* Auto-detect the letter grade from a GPA number the user types in,
    using a standard 4.0-scale range table (HEC/UET style). */
 const gpaLetterRanges = [
+  { min: 4.00, letter: 'A+' },
   { min: 3.70, letter: 'A' },
   { min: 3.30, letter: 'B+' },
   { min: 3.00, letter: 'B' },
