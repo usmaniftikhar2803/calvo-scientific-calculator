@@ -403,41 +403,7 @@ if (aboutOverlay) {
 /* ---------- TAB SWITCHING ---------- */
 const ACTIVE_TAB_KEY = 'calvo_active_tab';
 
-// Readable, shareable hash slugs for each tab so tabs are bookmarkable
-// (e.g. calvoscientificcalculator.online/#calculator) and the browser
-// back/forward buttons move between tabs.
-const TAB_HASH_MAP = {
-  calc: 'calculator',
-  formulas: 'formulas',
-  history: 'history',
-  convert: 'converter',
-  percentage: 'percentage-gpa',
-  aisolver: 'ai-solver',
-  quiz: 'quiz',
-  graph: 'graph',
-  eqsolver: 'equations',
-  matrix: 'matrix',
-  programmer: 'programmer',
-  stats: 'statistics',
-  subjecttools: 'subject-tools',
-  timer: 'timer'
-};
-const HASH_TAB_MAP = Object.fromEntries(
-  Object.entries(TAB_HASH_MAP).map(([tabName, hash]) => [hash, tabName])
-);
-
-function getTabFromHash() {
-  const h = window.location.hash.replace('#', '');
-  if (!h) return null;
-  if (HASH_TAB_MAP[h]) return HASH_TAB_MAP[h];
-  // fallback: allow direct tab-name hashes too (e.g. #calc)
-  if (document.getElementById('tab-' + h)) return h;
-  return null;
-}
-
-// updateHash: false when we're reacting to a hash/back-button change
-// (so we don't push a duplicate/looping history entry).
-function activateTab(tabName, remember, updateHash) {
+function activateTab(tabName, remember) {
   const tabBtn = document.querySelector('.topbar-tab[data-tab="' + tabName + '"]');
   const tabPanel = document.getElementById('tab-' + tabName);
   if (!tabBtn || !tabPanel) return;
@@ -448,47 +414,21 @@ function activateTab(tabName, remember, updateHash) {
   if (remember) {
     try { sessionStorage.setItem(ACTIVE_TAB_KEY, tabName); } catch (e) {}
   }
-  if (updateHash !== false) {
-    const newHash = '#' + (TAB_HASH_MAP[tabName] || tabName);
-    if (window.location.hash !== newHash) {
-      try { history.pushState({ tab: tabName }, '', newHash); } catch (e) {}
-    }
-  }
 }
 
 document.querySelectorAll('.topbar-tab').forEach(tab => {
   tab.addEventListener('click', () => activateTab(tab.dataset.tab, true));
 });
 
-// Browser back/forward moves between tabs instead of leaving the page.
-window.addEventListener('popstate', () => {
-  const tabFromHash = getTabFromHash();
-  if (tabFromHash) {
-    activateTab(tabFromHash, true, false);
-  }
-});
-
-// Initial load: URL hash (direct link/bookmark/share) takes priority,
-// then the remembered tab from this browser session, then Calculator.
+// On a page REFRESH (same browser session), reopen on whichever tab was
+// active — sessionStorage survives reloads but is cleared when the tab/
+// browser is closed, so a fresh open of the site always lands on Calculator.
 let restoredTab = 'calc';
-const initialHashTab = getTabFromHash();
-if (initialHashTab) {
-  restoredTab = initialHashTab;
-} else {
-  try {
-    const remembered = sessionStorage.getItem(ACTIVE_TAB_KEY);
-    if (remembered && document.getElementById('tab-' + remembered)) restoredTab = remembered;
-  } catch (e) {}
-}
-activateTab(restoredTab, false, false);
-// Reflect the resolved tab in the URL (without adding a history entry)
-// so the address bar always matches the visible tab, even on first load.
 try {
-  const resolvedHash = '#' + (TAB_HASH_MAP[restoredTab] || restoredTab);
-  if (window.location.hash !== resolvedHash) {
-    history.replaceState({ tab: restoredTab }, '', resolvedHash);
-  }
+  const remembered = sessionStorage.getItem(ACTIVE_TAB_KEY);
+  if (remembered && document.getElementById('tab-' + remembered)) restoredTab = remembered;
 } catch (e) {}
+activateTab(restoredTab, false);
 
 /* ---------- DISPLAY ---------- */
 function updateDisplay() {
@@ -2854,35 +2794,46 @@ if (gradeAddSubjectBtn) {
 
 /* ---- CGPA / GPA calculator ---- */
 const cgpaTableEl = document.getElementById('cgpaTable');
-const cgpaScaleEl = document.getElementById('cgpaScale');
 const cgpaResultEl = document.getElementById('cgpaResult');
 let cgpaSemesterCount = 1;
 
-const gradeScales = {
-  '4': { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.0, 'F': 0.0 },
-  '4uet': { 'A+': 4.0, 'A': 4.0, 'A-': 3.7, 'B+': 3.4, 'B': 3.0, 'B-': 2.7, 'C+': 2.4, 'C': 2.0, 'C-': 1.7, 'D+': 1.4, 'D': 1.0, 'F': 0.0 },
-};
-
-function gradeOptionsHtml(scaleId) {
-  const scale = gradeScales[scaleId];
-  return Object.keys(scale).map(g => `<option value="${g}">${g}</option>`).join('');
+/* Auto-detect the letter grade from a GPA number the user types in,
+   using a standard 4.0-scale range table (HEC/UET style). */
+const gpaLetterRanges = [
+  { min: 3.70, letter: 'A' },
+  { min: 3.30, letter: 'B+' },
+  { min: 3.00, letter: 'B' },
+  { min: 2.70, letter: 'B-' },
+  { min: 2.30, letter: 'C+' },
+  { min: 2.00, letter: 'C' },
+  { min: 1.70, letter: 'C-' },
+  { min: 1.30, letter: 'D+' },
+  { min: 1.00, letter: 'D' },
+  { min: 0.00, letter: 'F' },
+];
+function gpaToLetter(gpa) {
+  if (isNaN(gpa) || gpa < 0) return '—';
+  for (const r of gpaLetterRanges) {
+    if (gpa >= r.min) return r.letter;
+  }
+  return '—';
 }
 
 function addCgpaRow(semester) {
-  const scaleId = cgpaScaleEl.value;
   const row = document.createElement('div');
   row.className = 'cgpa-row';
   row.dataset.semester = semester;
   row.innerHTML = `
     <input type="text" class="cgpa-subject" placeholder="${t('subject_name_placeholder')}">
     <input type="number" class="cgpa-credit" placeholder="${t('credit_hrs_placeholder')}" min="0" step="0.5">
-    <select class="cgpa-grade">${gradeOptionsHtml(scaleId)}</select>
+    <input type="number" class="cgpa-grade" placeholder="${t('gpa_points_placeholder')}" min="0" max="4" step="0.01">
+    <span class="cgpa-points" title="${t('subject_gpa_title')}">—</span>
     <button class="cgpa-del" title="${t('remove_title')}">&#10005;</button>
   `;
   row.querySelector('.cgpa-del').addEventListener('click', () => { row.remove(); calcCgpa(); });
   row.querySelector('.cgpa-subject').addEventListener('input', calcCgpa);
   row.querySelector('.cgpa-credit').addEventListener('input', calcCgpa);
-  row.querySelector('.cgpa-grade').addEventListener('change', calcCgpa);
+  row.querySelector('.cgpa-grade').addEventListener('input', calcCgpa);
   cgpaTableEl.appendChild(row);
 }
 
@@ -2910,10 +2861,12 @@ function calcCgpa() {
   const semesterTotals = {};
   rows.forEach(row => {
     const credit = parseFloat(row.querySelector('.cgpa-credit').value);
-    const grade = row.querySelector('.cgpa-grade').value;
-    const scale = gradeScales[cgpaScaleEl.value];
-    if (isNaN(credit) || credit <= 0 || !(grade in scale)) return;
-    const points = scale[grade] * credit;
+    const grade = parseFloat(row.querySelector('.cgpa-grade').value);
+    const pointsEl = row.querySelector('.cgpa-points');
+    const validGrade = !isNaN(grade) && grade >= 0;
+    if (pointsEl) pointsEl.textContent = gpaToLetter(grade);
+    if (isNaN(credit) || credit <= 0 || !validGrade) return;
+    const points = grade * credit;
     totalPoints += points;
     totalCredits += credit;
     const sem = row.dataset.semester;
@@ -2950,12 +2903,6 @@ if (cgpaTableEl) {
     cgpaSemesterCount++;
     addCgpaSemesterLabel(cgpaSemesterCount);
     addCgpaRow(cgpaSemesterCount);
-    calcCgpa();
-  });
-  cgpaScaleEl.addEventListener('change', () => {
-    cgpaTableEl.querySelectorAll('.cgpa-grade').forEach(sel => {
-      sel.innerHTML = gradeOptionsHtml(cgpaScaleEl.value);
-    });
     calcCgpa();
   });
   calcCgpa();
