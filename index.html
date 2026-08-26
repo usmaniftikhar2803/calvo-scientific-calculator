@@ -435,13 +435,6 @@
 
       <!-- CGPA tools -->
       <div id="percentPanelCgpa" class="percent-panel" style="display:none;">
-        <div class="cgpa-scale-row">
-          <label data-i18n="grade_scale_label">Grade scale:</label>
-          <select class="formula-search convert-select" id="cgpaScale">
-            <option value="4" data-i18n="scale_4">4.0 Scale (A=4.0)</option>
-            <option value="4uet" data-i18n="scale_4uet">4.0 Scale (A+=4.0, UET/HEC style)</option>
-          </select>
-        </div>
         <div class="cgpa-table" id="cgpaTable"></div>
         <div class="cgpa-actions">
           <button class="pill-btn" id="cgpaAddRow" data-i18n="add_subject_row">+ Add Subject</button>
@@ -502,7 +495,6 @@
           <input type="file" id="aiImageInput" accept="image/*" capture="environment" style="display:none;">
           <button class="pill-btn" id="aiImagePickBtn" type="button" data-i18n="ai_add_photo">&#128247; Add Photo</button>
           <button class="pill-btn" id="aiVoiceBtn" type="button" data-i18n="ai_voice_btn">&#127908; Voice</button>
-          <button class="pill-btn small" id="aiVoiceLangBtn" type="button" data-i18n-title="ai_voice_lang_title" title="Voice input language">EN</button>
           <span class="ai-image-filename" id="aiImageFilename"></span>
           <button class="pill-btn small" id="aiImageClearBtn" type="button" data-i18n="ai_remove_photo" style="display:none;">&#10005; Remove</button>
         </div>
@@ -514,22 +506,10 @@
         <div class="ai-solver-actions">
           <button class="pill-btn save-btn" id="aiSolveBtn" data-i18n="ai_solve">&#10024; Solve</button>
           <button class="pill-btn" id="aiRefreshBtn" type="button" data-i18n="ai_refresh">&#8635; Refresh</button>
-          <button class="pill-btn" id="aiExportPdfBtn" type="button" data-i18n="ai_export_pdf" style="display:none;">&#128196; Export PDF</button>
           <button class="pill-btn" id="aiSaveBtn" type="button" data-i18n="ai_save" style="display:none;">&#128190; Save</button>
         </div>
 
         <div class="ai-result-box" id="aiResultBox"></div>
-
-        <!-- Follow-up chat: ask a quick question about the solution just given
-             ("explain the next step", "why did you do that", etc.) without
-             re-typing the whole problem. Only shown once a question has been solved. -->
-        <div class="ai-followup-wrap" id="aiFollowupWrap" style="display:none;">
-          <div class="ai-followup-thread" id="aiFollowupThread"></div>
-          <div class="ai-followup-input-row">
-            <input type="text" class="formula-search ai-followup-input" id="aiFollowupInput" data-i18n-placeholder="ai_followup_placeholder" placeholder="Ask a follow-up… e.g. explain the next step">
-            <button class="pill-btn small ai-followup-send" id="aiFollowupSendBtn" type="button" data-i18n="ai_followup_send">Ask</button>
-          </div>
-        </div>
 
         <div class="app-card-header ai-saved-header">
           <h3 class="ai-saved-title" data-i18n="ai_saved_title">Saved Questions</h3>
