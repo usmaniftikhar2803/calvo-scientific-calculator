@@ -2794,47 +2794,35 @@ if (gradeAddSubjectBtn) {
 
 /* ---- CGPA / GPA calculator ---- */
 const cgpaTableEl = document.getElementById('cgpaTable');
+const cgpaScaleEl = document.getElementById('cgpaScale');
 const cgpaResultEl = document.getElementById('cgpaResult');
 let cgpaSemesterCount = 1;
 
-/* Auto-detect the letter grade from a GPA number the user types in,
-   using a standard 4.0-scale range table (HEC/UET style). */
-const gpaLetterRanges = [
-  { min: 4.00, letter: 'A+' },
-  { min: 3.70, letter: 'A' },
-  { min: 3.30, letter: 'B+' },
-  { min: 3.00, letter: 'B' },
-  { min: 2.70, letter: 'B-' },
-  { min: 2.30, letter: 'C+' },
-  { min: 2.00, letter: 'C' },
-  { min: 1.70, letter: 'C-' },
-  { min: 1.30, letter: 'D+' },
-  { min: 1.00, letter: 'D' },
-  { min: 0.00, letter: 'F' },
-];
-function gpaToLetter(gpa) {
-  if (isNaN(gpa) || gpa < 0) return '—';
-  for (const r of gpaLetterRanges) {
-    if (gpa >= r.min) return r.letter;
-  }
-  return '—';
+const gradeScales = {
+  '4': { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.0, 'F': 0.0 },
+  '4uet': { 'A+': 4.0, 'A': 4.0, 'A-': 3.7, 'B+': 3.4, 'B': 3.0, 'B-': 2.7, 'C+': 2.4, 'C': 2.0, 'C-': 1.7, 'D+': 1.4, 'D': 1.0, 'F': 0.0 },
+};
+
+function gradeOptionsHtml(scaleId) {
+  const scale = gradeScales[scaleId];
+  return Object.keys(scale).map(g => `<option value="${g}">${g}</option>`).join('');
 }
 
 function addCgpaRow(semester) {
+  const scaleId = cgpaScaleEl.value;
   const row = document.createElement('div');
   row.className = 'cgpa-row';
   row.dataset.semester = semester;
   row.innerHTML = `
     <input type="text" class="cgpa-subject" placeholder="${t('subject_name_placeholder')}">
     <input type="number" class="cgpa-credit" placeholder="${t('credit_hrs_placeholder')}" min="0" step="0.5">
-    <input type="number" class="cgpa-grade" placeholder="${t('gpa_points_placeholder')}" min="0" max="4" step="0.01">
-    <span class="cgpa-points" title="${t('subject_gpa_title')}">—</span>
+    <select class="cgpa-grade">${gradeOptionsHtml(scaleId)}</select>
     <button class="cgpa-del" title="${t('remove_title')}">&#10005;</button>
   `;
   row.querySelector('.cgpa-del').addEventListener('click', () => { row.remove(); calcCgpa(); });
   row.querySelector('.cgpa-subject').addEventListener('input', calcCgpa);
   row.querySelector('.cgpa-credit').addEventListener('input', calcCgpa);
-  row.querySelector('.cgpa-grade').addEventListener('input', calcCgpa);
+  row.querySelector('.cgpa-grade').addEventListener('change', calcCgpa);
   cgpaTableEl.appendChild(row);
 }
 
@@ -2862,12 +2850,10 @@ function calcCgpa() {
   const semesterTotals = {};
   rows.forEach(row => {
     const credit = parseFloat(row.querySelector('.cgpa-credit').value);
-    const grade = parseFloat(row.querySelector('.cgpa-grade').value);
-    const pointsEl = row.querySelector('.cgpa-points');
-    const validGrade = !isNaN(grade) && grade >= 0;
-    if (pointsEl) pointsEl.textContent = gpaToLetter(grade);
-    if (isNaN(credit) || credit <= 0 || !validGrade) return;
-    const points = grade * credit;
+    const grade = row.querySelector('.cgpa-grade').value;
+    const scale = gradeScales[cgpaScaleEl.value];
+    if (isNaN(credit) || credit <= 0 || !(grade in scale)) return;
+    const points = scale[grade] * credit;
     totalPoints += points;
     totalCredits += credit;
     const sem = row.dataset.semester;
@@ -2904,6 +2890,12 @@ if (cgpaTableEl) {
     cgpaSemesterCount++;
     addCgpaSemesterLabel(cgpaSemesterCount);
     addCgpaRow(cgpaSemesterCount);
+    calcCgpa();
+  });
+  cgpaScaleEl.addEventListener('change', () => {
+    cgpaTableEl.querySelectorAll('.cgpa-grade').forEach(sel => {
+      sel.innerHTML = gradeOptionsHtml(cgpaScaleEl.value);
+    });
     calcCgpa();
   });
   calcCgpa();
@@ -3159,6 +3151,27 @@ setTimeout(() => {
   const quizReviewToggleBtn = document.getElementById('quizReviewToggleBtn');
   const quizWrongReviewList = document.getElementById('quizWrongReviewList');
   const quizDifficultyPills = document.getElementById('quizDifficultyPills');
+  const quizLengthLabel = document.getElementById('quizLengthLabel');
+
+  // Flashcards mode elements
+  const quizModeFlashcardsBtn = document.getElementById('quizModeFlashcardsBtn');
+  const flashcardDueNote = document.getElementById('flashcardDueNote');
+  const flashcardPlayScreen = document.getElementById('flashcardPlayScreen');
+  const flashcardResultScreen = document.getElementById('flashcardResultScreen');
+  const flashcardProgressLabel = document.getElementById('flashcardProgressLabel');
+  const flashcardDueLabel = document.getElementById('flashcardDueLabel');
+  const flashcardProgressFill = document.getElementById('flashcardProgressFill');
+  const flashcardStage = document.getElementById('flashcardStage');
+  const flashcardInner = document.getElementById('flashcardInner');
+  const flashcardCat = document.getElementById('flashcardCat');
+  const flashcardName = document.getElementById('flashcardName');
+  const flashcardCatBack = document.getElementById('flashcardCatBack');
+  const flashcardExpr = document.getElementById('flashcardExpr');
+  const flashcardRateRow = document.getElementById('flashcardRateRow');
+  const flashcardQuitBtn = document.getElementById('flashcardQuitBtn');
+  const flashcardRestartBtn = document.getElementById('flashcardRestartBtn');
+  const flashcardResultScoreText = document.getElementById('flashcardResultScoreText');
+  const flashcardResultMsg = document.getElementById('flashcardResultMsg');
 
   if (!quizSubjectPills || typeof formulaData === 'undefined') return;
 
@@ -3245,17 +3258,36 @@ setTimeout(() => {
     quizDifficulty = 'All';
     quizModeFormulaBtn.classList.toggle('active', mode === 'formula');
     quizModePracticeBtn.classList.toggle('active', mode === 'practice');
+    if (quizModeFlashcardsBtn) quizModeFlashcardsBtn.classList.toggle('active', mode === 'flashcards');
     if (quizSubtitle) {
-      quizSubtitle.setAttribute('data-i18n', mode === 'practice' ? 'quiz_practice_subtitle' : 'quiz_subtitle');
-      quizSubtitle.textContent = t(mode === 'practice' ? 'quiz_practice_subtitle' : 'quiz_subtitle');
+      const subKey = mode === 'practice' ? 'quiz_practice_subtitle' : (mode === 'flashcards' ? 'flashcard_subtitle' : 'quiz_subtitle');
+      quizSubtitle.setAttribute('data-i18n', subKey);
+      quizSubtitle.textContent = t(subKey);
+    }
+    if (quizLengthLabel) {
+      const lenKey = mode === 'flashcards' ? 'flashcard_length_label' : 'quiz_length_label';
+      quizLengthLabel.setAttribute('data-i18n', lenKey);
+      quizLengthLabel.textContent = t(lenKey);
+    }
+    if (quizStartBtn) {
+      const startKey = mode === 'flashcards' ? 'flashcard_start' : 'quiz_start';
+      quizStartBtn.setAttribute('data-i18n', startKey);
+      quizStartBtn.textContent = t(startKey);
+    }
+    if (quizEmptyNote) {
+      const emptyKey = mode === 'flashcards' ? 'flashcard_not_enough' : 'quiz_not_enough';
+      quizEmptyNote.setAttribute('data-i18n', emptyKey);
+      quizEmptyNote.textContent = t(emptyKey);
     }
     buildQuizSubjectPills();
     buildQuizDifficultyPills();
     checkQuizPoolSize();
+    updateFlashcardDueNote();
   }
 
   if (quizModeFormulaBtn) quizModeFormulaBtn.addEventListener('click', () => setQuizMode('formula'));
   if (quizModePracticeBtn) quizModePracticeBtn.addEventListener('click', () => setQuizMode('practice'));
+  if (quizModeFlashcardsBtn) quizModeFlashcardsBtn.addEventListener('click', () => setQuizMode('flashcards'));
 
   function buildQuizSubjectPills() {
     const subjects = quizMode === 'practice' ? practiceSubjects() : Object.keys(formulaData);
@@ -3269,11 +3301,20 @@ setTimeout(() => {
         quizSubject = btn.dataset.quizsubj;
         buildQuizSubjectPills();
         checkQuizPoolSize();
+        updateFlashcardDueNote();
       });
     });
   }
 
   function checkQuizPoolSize() {
+    if (quizMode === 'flashcards') {
+      const size = pool().length;
+      const enough = size >= 1;
+      quizStartBtn.disabled = !enough;
+      quizStartBtn.style.opacity = enough ? '1' : '0.5';
+      quizEmptyNote.style.display = enough ? 'none' : 'block';
+      return;
+    }
     const size = quizMode === 'practice' ? practicePool().length : pool().length;
     const enough = size >= 4;
     quizStartBtn.disabled = !enough;
@@ -3422,7 +3463,10 @@ setTimeout(() => {
     quizSetupScreen.style.display = 'block';
   }
 
-  quizStartBtn.addEventListener('click', startQuiz);
+  quizStartBtn.addEventListener('click', () => {
+    if (quizMode === 'flashcards') startFlashcards();
+    else startQuiz();
+  });
   quizNextBtn.addEventListener('click', nextQuizQuestion);
   quizQuitBtn.addEventListener('click', quitQuiz);
   quizRestartBtn.addEventListener('click', () => {
@@ -3430,14 +3474,182 @@ setTimeout(() => {
     quizSetupScreen.style.display = 'block';
   });
 
+  /* ============================================
+     FLASHCARDS — Leitner-style spaced repetition
+     over the same formulaData used by Formula Quiz.
+     Progress (box level + due date) is stored per
+     formula in localStorage so due cards resurface
+     across sessions.
+     ============================================ */
+  const FLASHCARD_SRS_KEY = 'calvo_flashcard_srs';
+  const FLASHCARD_BOX_INTERVAL_DAYS = [0, 1, 3, 7, 16, 35]; // box 0..5
+  const FLASHCARD_MAX_BOX = FLASHCARD_BOX_INTERVAL_DAYS.length - 1;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  let flashcardQueue = [];
+  let flashcardIndex = 0;
+  let flashcardSessionTotal = 0;
+  let flashcardFlipped = false;
+  let flashcardStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+
+  function loadSrs() {
+    try { return JSON.parse(localStorage.getItem(FLASHCARD_SRS_KEY) || '{}'); } catch (e) { return {}; }
+  }
+  function saveSrs(map) {
+    try { localStorage.setItem(FLASHCARD_SRS_KEY, JSON.stringify(map)); } catch (e) {}
+  }
+  function flashcardKey(f) { return favKey(f.subject, f); }
+
+  function srsRecordFor(map, key) {
+    return map[key] || { box: 0, due: 0 };
+  }
+
+  function dueCardsIn(list) {
+    const map = loadSrs();
+    const now = Date.now();
+    return list.filter(f => {
+      const rec = srsRecordFor(map, flashcardKey(f));
+      return rec.due <= now;
+    });
+  }
+
+  function updateFlashcardDueNote() {
+    if (!flashcardDueNote) return;
+    if (quizMode !== 'flashcards') { flashcardDueNote.style.display = 'none'; return; }
+    const p = pool();
+    if (p.length === 0) { flashcardDueNote.style.display = 'none'; return; }
+    const due = dueCardsIn(p).length;
+    flashcardDueNote.style.display = 'block';
+    flashcardDueNote.textContent = t('flashcard_due_label').replace('{n}', due) + ' / ' + p.length;
+  }
+
+  function startFlashcards() {
+    const p = pool();
+    if (p.length === 0) return;
+    const n = Math.min(parseInt(quizLengthSelect.value, 10) || 10, p.length);
+
+    const due = shuffle(dueCardsIn(p));
+    let selected = due.slice(0, n);
+    if (selected.length < n) {
+      const remaining = shuffle(p.filter(f => !selected.includes(f)));
+      selected = selected.concat(remaining.slice(0, n - selected.length));
+    }
+
+    flashcardQueue = selected;
+    flashcardSessionTotal = flashcardQueue.length;
+    flashcardIndex = 0;
+    flashcardStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
+
+    quizSetupScreen.style.display = 'none';
+    quizResultScreen.style.display = 'none';
+    flashcardResultScreen.style.display = 'none';
+    flashcardPlayScreen.style.display = 'block';
+    renderFlashcard();
+  }
+
+  function renderFlashcard() {
+    if (flashcardIndex >= flashcardQueue.length) { finishFlashcards(); return; }
+    flashcardFlipped = false;
+    const f = flashcardQueue[flashcardIndex];
+    flashcardInner.classList.remove('flipped');
+    flashcardCat.textContent = f.cat || f.subject;
+    flashcardName.textContent = f.name;
+    flashcardCatBack.textContent = f.cat || f.subject;
+    flashcardExpr.textContent = f.expr;
+    flashcardRateRow.style.display = 'none';
+
+    const displayTotal = flashcardQueue.length;
+    flashcardProgressLabel.textContent = t('flashcard_progress')
+      .replace('{n}', flashcardIndex + 1).replace('{total}', displayTotal);
+    flashcardProgressFill.style.width = (flashcardIndex / displayTotal * 100) + '%';
+    const dueLeft = dueCardsIn(flashcardQueue.slice(flashcardIndex)).length;
+    flashcardDueLabel.textContent = t('flashcard_due_label').replace('{n}', dueLeft);
+  }
+
+  function flipFlashcard() {
+    if (flashcardIndex >= flashcardQueue.length) return;
+    flashcardFlipped = !flashcardFlipped;
+    flashcardInner.classList.toggle('flipped', flashcardFlipped);
+    flashcardRateRow.style.display = flashcardFlipped ? 'flex' : 'none';
+  }
+
+  function rateFlashcard(rating) {
+    const f = flashcardQueue[flashcardIndex];
+    if (!f) return;
+    const key = flashcardKey(f);
+    const map = loadSrs();
+    const rec = srsRecordFor(map, key);
+    let box = rec.box || 0;
+
+    flashcardStats.reviewed++;
+    if (rating === 'again') {
+      flashcardStats.again++;
+      box = 0;
+      map[key] = { box: box, due: Date.now() }; // due immediately -> resurfaces next session too
+      flashcardQueue.push(f); // resurface later in this same session
+    } else if (rating === 'hard') {
+      flashcardStats.hard++;
+      map[key] = { box: box, due: Date.now() + DAY_MS };
+    } else if (rating === 'good') {
+      flashcardStats.good++;
+      box = Math.min(FLASHCARD_MAX_BOX, box + 1);
+      map[key] = { box: box, due: Date.now() + FLASHCARD_BOX_INTERVAL_DAYS[box] * DAY_MS };
+    } else if (rating === 'easy') {
+      flashcardStats.easy++;
+      box = Math.min(FLASHCARD_MAX_BOX, box + 2);
+      map[key] = { box: box, due: Date.now() + FLASHCARD_BOX_INTERVAL_DAYS[box] * DAY_MS };
+    }
+    saveSrs(map);
+
+    flashcardIndex++;
+    renderFlashcard();
+  }
+
+  function finishFlashcards() {
+    flashcardPlayScreen.style.display = 'none';
+    flashcardResultScreen.style.display = 'block';
+    const mastered = flashcardStats.good + flashcardStats.easy;
+    flashcardResultScoreText.textContent = flashcardStats.reviewed + ' \u2705';
+    flashcardResultMsg.textContent =
+      t('flashcard_session_summary').replace('{reviewed}', flashcardStats.reviewed).replace('{mastered}', mastered) +
+      '. ' + t(flashcardStats.again > 0 ? 'flashcard_msg_ok' : 'flashcard_msg_great');
+    updateFlashcardDueNote();
+  }
+
+  function quitFlashcards() {
+    flashcardPlayScreen.style.display = 'none';
+    flashcardResultScreen.style.display = 'none';
+    quizSetupScreen.style.display = 'block';
+    updateFlashcardDueNote();
+  }
+
+  if (flashcardStage) flashcardStage.addEventListener('click', flipFlashcard);
+  if (flashcardRateRow) {
+    flashcardRateRow.addEventListener('click', (e) => {
+      const btn = e.target.closest('.flashcard-rate-btn');
+      if (!btn) return;
+      rateFlashcard(btn.dataset.rate);
+    });
+  }
+  if (flashcardQuitBtn) flashcardQuitBtn.addEventListener('click', quitFlashcards);
+  if (flashcardRestartBtn) {
+    flashcardRestartBtn.addEventListener('click', () => {
+      flashcardResultScreen.style.display = 'none';
+      quizSetupScreen.style.display = 'block';
+      updateFlashcardDueNote();
+    });
+  }
+
   buildQuizSubjectPills();
   buildQuizDifficultyPills();
   checkQuizPoolSize();
+  updateFlashcardDueNote();
 
   window.refreshQuizI18n = function () {
     buildQuizSubjectPills();
     buildQuizDifficultyPills();
     checkQuizPoolSize();
+    updateFlashcardDueNote();
     if (quizPlayScreen.style.display === 'block' && quizQuestions.length) renderQuizQuestion();
   };
 })();
