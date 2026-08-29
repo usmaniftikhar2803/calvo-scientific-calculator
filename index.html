@@ -192,26 +192,6 @@
         <span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081; (Russian)</span>
         <span class="lang-check">&#10003;</span>
       </button>
-      <button class="language-option" data-lang="it">
-        <span>Italiano (Italian)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="id">
-        <span>Bahasa Indonesia (Indonesian)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ja">
-        <span>&#26085;&#26412;&#35486; (Japanese)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ko">
-        <span>&#54620;&#44397;&#50612; (Korean)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="bn">
-        <span>&#2476;&#2494;&#2434;&#2482;&#2494; (Bengali)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
     </div>
   </div>
 </div>
@@ -455,6 +435,13 @@
 
       <!-- CGPA tools -->
       <div id="percentPanelCgpa" class="percent-panel" style="display:none;">
+        <div class="cgpa-scale-row">
+          <label data-i18n="grade_scale_label">Grade scale:</label>
+          <select class="formula-search convert-select" id="cgpaScale">
+            <option value="4" data-i18n="scale_4">4.0 Scale (A=4.0)</option>
+            <option value="4uet" data-i18n="scale_4uet">4.0 Scale (A+=4.0, UET/HEC style)</option>
+          </select>
+        </div>
         <div class="cgpa-table" id="cgpaTable"></div>
         <div class="cgpa-actions">
           <button class="pill-btn" id="cgpaAddRow" data-i18n="add_subject_row">+ Add Subject</button>
@@ -527,9 +514,11 @@
           <button class="pill-btn save-btn" id="aiSolveBtn" data-i18n="ai_solve">&#10024; Solve</button>
           <button class="pill-btn" id="aiRefreshBtn" type="button" data-i18n="ai_refresh">&#8635; Refresh</button>
           <button class="pill-btn" id="aiSaveBtn" type="button" data-i18n="ai_save" style="display:none;">&#128190; Save</button>
+          <button class="pill-btn" id="aiExplainSimpleBtn" type="button" data-i18n="ai_explain_simple" style="display:none;">&#129513; Explain Simply</button>
         </div>
 
         <div class="ai-result-box" id="aiResultBox"></div>
+        <div class="ai-simple-explain-box" id="aiSimpleExplainBox" style="display:none;"></div>
 
         <div class="app-card-header ai-saved-header">
           <h3 class="ai-saved-title" data-i18n="ai_saved_title">Saved Questions</h3>
@@ -551,13 +540,14 @@
       <div class="subject-pills" id="quizModePills">
         <button class="subject-pill active" id="quizModeFormulaBtn" data-i18n="quiz_mode_formula">Formula Quiz</button>
         <button class="subject-pill" id="quizModePracticeBtn" data-i18n="quiz_mode_practice">Practice MCQs</button>
+        <button class="subject-pill" id="quizModeFlashcardsBtn" data-i18n="quiz_mode_flashcards">&#128199; Flashcards</button>
       </div>
 
       <div id="quizSetupScreen">
         <div class="subject-pills" id="quizSubjectPills"></div>
         <div class="subject-pills" id="quizDifficultyPills" style="display:none;"></div>
         <div class="quiz-setup-row">
-          <label class="quiz-setup-label" for="quizLengthSelect" data-i18n="quiz_length_label">Number of questions</label>
+          <label class="quiz-setup-label" for="quizLengthSelect" id="quizLengthLabel" data-i18n="quiz_length_label">Number of questions</label>
           <select class="formula-search convert-select" id="quizLengthSelect">
             <option value="5">5</option>
             <option value="10" selected>10</option>
@@ -565,6 +555,7 @@
             <option value="20">20</option>
           </select>
         </div>
+        <div class="flashcard-due-note" id="flashcardDueNote" style="display:none;"></div>
         <button class="pill-btn save-btn" id="quizStartBtn" data-i18n="quiz_start">Start Quiz</button>
         <div class="quiz-empty-note" id="quizEmptyNote" data-i18n="quiz_not_enough" style="display:none;">This subject doesn't have enough formulas for a quiz yet.</div>
       </div>
@@ -596,6 +587,45 @@
           <button class="pill-btn" id="quizReviewToggleBtn" data-i18n="quiz_review_wrong">Review Wrong Answers</button>
           <div id="quizWrongReviewList" class="quiz-wrong-review-list" style="display:none;"></div>
         </div>
+      </div>
+
+      <!-- Flashcards play screen -->
+      <div id="flashcardPlayScreen" style="display:none;">
+        <div class="quiz-progress-row">
+          <span id="flashcardProgressLabel">Card 1/10</span>
+          <span id="flashcardDueLabel"></span>
+        </div>
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="flashcardProgressFill"></div></div>
+
+        <div class="flashcard-stage" id="flashcardStage">
+          <div class="flashcard-inner" id="flashcardInner">
+            <div class="flashcard-face flashcard-front">
+              <div class="flashcard-cat" id="flashcardCat"></div>
+              <div class="flashcard-name" id="flashcardName"></div>
+              <div class="flashcard-tap-hint" data-i18n="flashcard_tap_hint">Tap card to reveal answer</div>
+            </div>
+            <div class="flashcard-face flashcard-back">
+              <div class="flashcard-cat" id="flashcardCatBack"></div>
+              <div class="flashcard-expr" id="flashcardExpr"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard-rate-row" id="flashcardRateRow" style="display:none;">
+          <button class="flashcard-rate-btn rate-again" data-rate="again" data-i18n="flashcard_again">&#128257; Again</button>
+          <button class="flashcard-rate-btn rate-hard" data-rate="hard" data-i18n="flashcard_hard">&#128528; Hard</button>
+          <button class="flashcard-rate-btn rate-good" data-rate="good" data-i18n="flashcard_good">&#128077; Good</button>
+          <button class="flashcard-rate-btn rate-easy" data-rate="easy" data-i18n="flashcard_easy">&#128526; Easy</button>
+        </div>
+
+        <button class="pill-btn" id="flashcardQuitBtn" data-i18n="quiz_quit">End Quiz</button>
+      </div>
+
+      <!-- Flashcards result screen -->
+      <div id="flashcardResultScreen" style="display:none;">
+        <div class="quiz-result-score" id="flashcardResultScoreText"></div>
+        <div class="quiz-result-msg" id="flashcardResultMsg"></div>
+        <button class="pill-btn save-btn" id="flashcardRestartBtn" data-i18n="quiz_restart">Try Again</button>
       </div>
     </div>
   </div>
