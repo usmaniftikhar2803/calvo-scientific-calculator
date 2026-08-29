@@ -27,6 +27,8 @@
   const aiSolveBtn = document.getElementById('aiSolveBtn');
   const aiRefreshBtn = document.getElementById('aiRefreshBtn');
   const aiSaveBtn = document.getElementById('aiSaveBtn');
+  const aiExplainSimpleBtn = document.getElementById('aiExplainSimpleBtn');
+  const aiSimpleExplainBox = document.getElementById('aiSimpleExplainBox');
   const aiResultBox = document.getElementById('aiResultBox');
   const aiSavedList = document.getElementById('aiSavedList');
   const aiClearSavedBtn = document.getElementById('aiClearSavedBtn');
@@ -36,13 +38,6 @@
   const aiSavedSearchInput = document.getElementById('aiSavedSearchInput');
   const aiModeQuickBtn = document.getElementById('aiModeQuickBtn');
   const aiModeDetailedBtn = document.getElementById('aiModeDetailedBtn');
-
-  const aiVoiceLangBtn = document.getElementById('aiVoiceLangBtn');
-  const aiExportPdfBtn = document.getElementById('aiExportPdfBtn');
-  const aiFollowupWrap = document.getElementById('aiFollowupWrap');
-  const aiFollowupThread = document.getElementById('aiFollowupThread');
-  const aiFollowupInput = document.getElementById('aiFollowupInput');
-  const aiFollowupSendBtn = document.getElementById('aiFollowupSendBtn');
 
   if (!aiApiKeyInput) return; // AI Solver tab not present
 
@@ -79,12 +74,6 @@
   // Holds the most recently solved question/answer so the Save button
   // knows what to store.
   let lastSolved = null; // { question, hadImage, answerText, time }
-
-  // Holds the running Gemini `contents` array (multi-turn) for the
-  // question currently on screen, so follow-up questions ("explain the
-  // next step") keep full context without re-sending the photo/question.
-  let conversationContents = null;
-  let followupBusy = false;
 
   function tr(key) {
     return (typeof t === 'function') ? t(key) : key;
@@ -192,40 +181,7 @@
   let isListening = false;
   let voiceBaseText = '';
 
-  /* ---- Voice input language: independent of the site's UI language ----
-     Many students keep the site in English but want to *speak* their
-     question in Urdu (or vice versa). This small toggle overrides just
-     the speech-recognition language, cycling: follow site language -> EN -> UR. */
-  const VOICE_LANG_KEY = 'calvo_ai_voice_lang';
-  const VOICE_LANG_CYCLE = ['auto', 'en-US', 'ur-PK'];
-  let aiVoiceLangOverride = 'auto';
-  try { aiVoiceLangOverride = localStorage.getItem(VOICE_LANG_KEY) || 'auto'; } catch (e) {}
-  if (VOICE_LANG_CYCLE.indexOf(aiVoiceLangOverride) === -1) aiVoiceLangOverride = 'auto';
-
-  function voiceLangButtonLabel() {
-    if (aiVoiceLangOverride === 'en-US') return 'EN';
-    if (aiVoiceLangOverride === 'ur-PK') return 'اردو';
-    // "auto" — show the site's own language so it's clear what will be used
-    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
-    return lang.toUpperCase();
-  }
-
-  function applyVoiceLangButton() {
-    if (aiVoiceLangBtn) aiVoiceLangBtn.textContent = voiceLangButtonLabel();
-  }
-
-  if (aiVoiceLangBtn) {
-    applyVoiceLangButton();
-    aiVoiceLangBtn.addEventListener('click', () => {
-      const idx = VOICE_LANG_CYCLE.indexOf(aiVoiceLangOverride);
-      aiVoiceLangOverride = VOICE_LANG_CYCLE[(idx + 1) % VOICE_LANG_CYCLE.length];
-      try { localStorage.setItem(VOICE_LANG_KEY, aiVoiceLangOverride); } catch (e) {}
-      applyVoiceLangButton();
-    });
-  }
-
   function getSpeechLang() {
-    if (aiVoiceLangOverride === 'en-US' || aiVoiceLangOverride === 'ur-PK') return aiVoiceLangOverride;
     const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
     return (typeof LOCALE_MAP !== 'undefined' && LOCALE_MAP[lang]) || 'en-US';
   }
@@ -508,10 +464,7 @@
     clearImage();
     renderResult('');
     lastSolved = null;
-    conversationContents = null;
     if (aiSaveBtn) aiSaveBtn.style.display = 'none';
-    if (aiExportPdfBtn) aiExportPdfBtn.style.display = 'none';
-    hideFollowupUI();
   }
 
   if (aiSaveBtn) {
@@ -521,207 +474,6 @@
   }
   if (aiRefreshBtn) {
     aiRefreshBtn.addEventListener('click', resetSolver);
-  }
-
-  /* ============================================
-     FOLLOW-UP CHAT
-     Lets a student ask a quick follow-up ("explain step 2 more",
-     "why did you divide there?") about the question just solved,
-     without retyping the question or re-attaching the photo.
-     Keeps the whole exchange as context for Gemini.
-     ============================================ */
-
-  function showFollowupUI() {
-    if (!aiFollowupWrap) return;
-    aiFollowupWrap.style.display = 'block';
-    if (aiFollowupThread) aiFollowupThread.innerHTML = '';
-  }
-
-  function hideFollowupUI() {
-    if (!aiFollowupWrap) return;
-    aiFollowupWrap.style.display = 'none';
-    if (aiFollowupThread) aiFollowupThread.innerHTML = '';
-    if (aiFollowupInput) aiFollowupInput.value = '';
-  }
-
-  function appendFollowupBubble(role, html) {
-    if (!aiFollowupThread) return null;
-    const div = document.createElement('div');
-    div.className = role === 'user' ? 'ai-followup-msg ai-followup-msg-user' : 'ai-followup-msg ai-followup-msg-model';
-    div.innerHTML = html;
-    aiFollowupThread.appendChild(div);
-    aiFollowupThread.scrollTop = aiFollowupThread.scrollHeight;
-    return div;
-  }
-
-  async function askFollowup() {
-    if (followupBusy) return;
-    const question = (aiFollowupInput.value || '').trim();
-    if (!question || !conversationContents) return;
-
-    const apiKey = getSavedKey();
-    if (!apiKey) {
-      if (typeof showToast === 'function') showToast(tr('ai_key_status_empty'));
-      return;
-    }
-
-    followupBusy = true;
-    aiFollowupInput.value = '';
-    aiFollowupSendBtn.disabled = true;
-    appendFollowupBubble('user', escapeHtml(question));
-    const thinkingBubble = appendFollowupBubble('model', `<span class="ai-loading">${escapeHtml(tr('ai_followup_thinking'))}</span>`);
-
-    // Append this turn to the running conversation so Gemini keeps the
-    // original question/photo/answer as context.
-    const updatedContents = conversationContents.concat([{ role: 'user', parts: [{ text: question }] }]);
-
-    try {
-      let response = null, data = null, lastErrText = '';
-      for (let i = 0; i < GEMINI_MODELS.length; i++) {
-        response = await fetch(GEMINI_ENDPOINT_FOR(GEMINI_MODELS[i]), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify({ contents: updatedContents }),
-        });
-        data = await response.json().catch(() => null);
-        if (response.ok) break;
-        const serverMsg = (data && data.error && data.error.message) || '';
-        lastErrText = serverMsg;
-        const isModelGone = response.status === 404 && /no longer available|not found/i.test(serverMsg);
-        if (!isModelGone || i === GEMINI_MODELS.length - 1) break;
-      }
-
-      if (!response || !response.ok) {
-        if (thinkingBubble) thinkingBubble.innerHTML = `<span class="ai-error">${escapeHtml(tr('ai_followup_error'))}</span>`;
-        return;
-      }
-
-      const candidate = data && data.candidates && data.candidates[0];
-      const textOut = candidate && candidate.content && candidate.content.parts
-        ? candidate.content.parts.map(p => p.text || '').join('\n')
-        : '';
-
-      if (!textOut) {
-        if (thinkingBubble) thinkingBubble.innerHTML = `<span class="ai-error">${escapeHtml(tr('ai_followup_error'))}</span>`;
-        return;
-      }
-
-      if (thinkingBubble) thinkingBubble.innerHTML = formatAnswer(textOut);
-
-      // Grow the conversation so a second/third follow-up still has
-      // full context of everything asked and answered so far.
-      conversationContents = updatedContents.concat([{ role: 'model', parts: [{ text: textOut }] }]);
-    } catch (err) {
-      if (thinkingBubble) thinkingBubble.innerHTML = `<span class="ai-error">${escapeHtml(tr('ai_followup_error'))}</span>`;
-    } finally {
-      followupBusy = false;
-      aiFollowupSendBtn.disabled = false;
-    }
-  }
-
-  if (aiFollowupSendBtn) {
-    aiFollowupSendBtn.addEventListener('click', askFollowup);
-  }
-  if (aiFollowupInput) {
-    aiFollowupInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); askFollowup(); }
-    });
-  }
-
-  /* ============================================
-     EXPORT SOLUTION AS PDF
-     Uses the browser's native print-to-PDF (no external library, works
-     offline in the installed PWA too) rather than a client-side PDF
-     generator library, which would need a CDN fetch.
-     ============================================ */
-
-  function exportSolutionAsPDF() {
-    if (!lastSolved) return;
-    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
-    const isRtl = (typeof RTL_LANGS !== 'undefined') && RTL_LANGS.indexOf(lang) !== -1;
-
-    let bodyHtml = `<div class="pdf-question-label">${escapeHtml(tr('ai_pdf_question_label'))}</div>` +
-      `<div class="pdf-question">${escapeHtml(lastSolved.question)}</div>`;
-
-    if (aiOriginalImageDataUrl || (aiImagePreview && aiImagePreview.src)) {
-      const imgSrc = (aiImagePreview && aiImagePreview.src) ? aiImagePreview.src : aiOriginalImageDataUrl;
-      if (imgSrc) bodyHtml += `<img class="pdf-photo" src="${imgSrc}">`;
-    }
-
-    bodyHtml += lastSolved.answerHtml || '';
-
-    // Include any follow-up Q&A the student had on screen.
-    if (aiFollowupThread && aiFollowupThread.children.length) {
-      bodyHtml += `<div class="pdf-followup-heading">${escapeHtml(tr('ai_pdf_followup_label'))}</div>`;
-      Array.from(aiFollowupThread.children).forEach(bubble => {
-        const isUser = bubble.classList.contains('ai-followup-msg-user');
-        bodyHtml += `<div class="pdf-followup-bubble ${isUser ? 'pdf-followup-q' : 'pdf-followup-a'}">${bubble.innerHTML}</div>`;
-      });
-    }
-
-    const dateStr = new Date().toLocaleDateString(lang) + ' ' + new Date().toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
-
-    const doc = `<!DOCTYPE html><html dir="${isRtl ? 'rtl' : 'ltr'}"><head><meta charset="utf-8">
-      <title>Calvo — ${escapeHtml(lastSolved.question).slice(0, 60)}</title>
-      <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 28px; max-width: 720px; margin: 0 auto; }
-        .pdf-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #ff8a1f; padding-bottom: 10px; margin-bottom: 18px; }
-        .pdf-brand { font-weight: 800; font-size: 1.3rem; color: #ff8a1f; }
-        .pdf-tag { font-size: 0.75rem; color: #777; }
-        .pdf-question-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #ff8a1f; font-weight: 700; margin-top: 10px; }
-        .pdf-question { font-size: 1.05rem; font-weight: 700; margin: 4px 0 14px; }
-        .pdf-photo { display: block; max-width: 100%; max-height: 320px; margin: 10px 0 16px; border: 1px solid #ddd; border-radius: 8px; }
-        .ai-result-card { border: 1px solid #e2e2e2; border-radius: 10px; padding: 14px 16px; margin: 10px 0; font-size: 0.92rem; line-height: 1.6; }
-        .ai-step { padding: 8px 0; border-top: 1px solid #eee; }
-        .ai-step:first-child { border-top: none; padding-top: 0; }
-        .ai-step-label { font-weight: 700; color: #ff8a1f; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.06em; margin-bottom: 3px; }
-        .ai-answer { margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: #ff8a1f; color: #fff; font-weight: 700; }
-        .ai-answer-label { text-transform: uppercase; font-size: 0.68rem; margin-right: 4px; opacity: 0.9; }
-        .ai-list { margin: 6px 0 10px 18px; }
-        .pdf-followup-heading { margin-top: 20px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: #777; border-top: 1px solid #eee; padding-top: 12px; }
-        .pdf-followup-bubble { margin: 8px 0; padding: 8px 12px; border-radius: 8px; font-size: 0.88rem; }
-        .pdf-followup-q { background: #fff2e2; font-weight: 600; }
-        .pdf-followup-a { background: #f4f4f4; }
-        .pdf-footer { margin-top: 26px; padding-top: 10px; border-top: 1px solid #eee; font-size: 0.7rem; color: #999; display: flex; justify-content: space-between; }
-        @media print { body { padding: 10px; } }
-      </style></head>
-      <body>
-        <div class="pdf-header">
-          <div class="pdf-brand">Calvo</div>
-          <div class="pdf-tag">${escapeHtml(tr('ai_pdf_solved_by'))}</div>
-        </div>
-        ${bodyHtml}
-        <div class="pdf-footer"><span>${escapeHtml(dateStr)}</span><span>calvo.pk</span></div>
-      </body></html>`;
-
-    const printFrame = document.createElement('iframe');
-    printFrame.style.position = 'fixed';
-    printFrame.style.right = '0';
-    printFrame.style.bottom = '0';
-    printFrame.style.width = '0';
-    printFrame.style.height = '0';
-    printFrame.style.border = '0';
-    document.body.appendChild(printFrame);
-
-    const frameDoc = printFrame.contentWindow.document;
-    frameDoc.open();
-    frameDoc.write(doc);
-    frameDoc.close();
-
-    const cleanup = () => { if (printFrame.parentNode) printFrame.parentNode.removeChild(printFrame); };
-    printFrame.onload = () => {
-      setTimeout(() => {
-        try {
-          printFrame.contentWindow.focus();
-          printFrame.contentWindow.print();
-        } catch (e) {}
-        setTimeout(cleanup, 1000);
-      }, 200);
-    };
-  }
-
-  if (aiExportPdfBtn) {
-    aiExportPdfBtn.addEventListener('click', exportSolutionAsPDF);
   }
   if (aiClearSavedBtn) {
     let clearArmed = false;
@@ -835,10 +587,9 @@
     setSavedKey(apiKey);
 
     if (aiSaveBtn) aiSaveBtn.style.display = 'none';
-    if (aiExportPdfBtn) aiExportPdfBtn.style.display = 'none';
+    if (aiExplainSimpleBtn) aiExplainSimpleBtn.style.display = 'none';
+    if (aiSimpleExplainBox) { aiSimpleExplainBox.style.display = 'none'; aiSimpleExplainBox.innerHTML = ''; }
     lastSolved = null;
-    conversationContents = null;
-    hideFollowupUI();
 
     const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
     const langName = AI_LANG_NAMES[lang] || 'English';
@@ -947,20 +698,12 @@
         hadImage: !!aiImageBase64,
         answerText: answerLineMatch ? answerLineMatch[1].trim() : '',
         answerHtml: formatAnswer(textOut),
+        rawText: textOut,
         time: Date.now(),
       };
       autoSaveSolve(lastSolved);
       if (aiSaveBtn) aiSaveBtn.style.display = 'none';
-      if (aiExportPdfBtn) aiExportPdfBtn.style.display = 'inline-block';
-
-      // Remember the full exchange (including the photo, if any) so a
-      // follow-up question ("explain step 2 in more detail") can be sent
-      // with complete context, without re-uploading anything.
-      conversationContents = [
-        { role: 'user', parts },
-        { role: 'model', parts: [{ text: textOut }] },
-      ];
-      showFollowupUI();
+      if (aiExplainSimpleBtn) aiExplainSimpleBtn.style.display = 'inline-block';
     } catch (err) {
       renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(tr('ai_error_request'))}</span></div>`);
     } finally {
@@ -973,6 +716,91 @@
     aiSolveBtn.addEventListener('click', solveWithGemini);
   }
 
+  /* ============================================
+     "EXPLAIN LIKE I'M CONFUSED" — takes the last
+     solved question + solution and asks Gemini to
+     re-explain the core idea with one simple,
+     everyday-life analogy instead of raw steps.
+     ============================================ */
+  async function explainLastSolvedSimply() {
+    if (!lastSolved || !aiSimpleExplainBox) return;
+    const apiKey = getSavedKey();
+    if (!apiKey) {
+      aiKeyStatus.textContent = tr('ai_key_status_empty');
+      aiKeyStatus.classList.add('err');
+      aiApiKeyInput.focus();
+      return;
+    }
+
+    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
+    const langName = AI_LANG_NAMES[lang] || 'English';
+
+    const promptText =
+      `A student looked at the solution below and is still confused. Re-explain just the core idea/concept ` +
+      `behind it in a simple, friendly way using ONE relatable everyday-life analogy (e.g. cooking, sports, money, travel, games) ` +
+      `so a beginner can intuitively understand it. Do not repeat the full step-by-step math or redo the calculation.\n\n` +
+      `Keep it short: 3-5 short sentences, warm conversational tone, like explaining to a friend.\n` +
+      `Do NOT use LaTeX, the $ symbol, or Markdown formatting (no **, no #, no backticks). Use plain math symbols only if needed. ` +
+      `Reply in ${langName}.\n\n` +
+      `Question: ${lastSolved.question}\n\n` +
+      `Original solution:\n${lastSolved.rawText || lastSolved.answerText || ''}`;
+
+    aiExplainSimpleBtn.disabled = true;
+    const originalLabel = aiExplainSimpleBtn.textContent;
+    aiExplainSimpleBtn.textContent = tr('ai_explain_simple_loading');
+    aiSimpleExplainBox.style.display = 'block';
+    aiSimpleExplainBox.innerHTML = `<span class="ai-loading">${escapeHtml(tr('ai_explain_simple_loading'))}</span>`;
+
+    try {
+      let response = null, data = null, lastErrText = '';
+      for (let i = 0; i < GEMINI_MODELS.length; i++) {
+        response = await fetch(GEMINI_ENDPOINT_FOR(GEMINI_MODELS[i]), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: promptText }] }] }),
+        });
+        data = await response.json().catch(() => null);
+        if (response.ok) break;
+        const serverMsg = (data && data.error && data.error.message) || '';
+        lastErrText = serverMsg;
+        const isModelGone = response.status === 404 && /no longer available|not found/i.test(serverMsg);
+        if (!isModelGone || i === GEMINI_MODELS.length - 1) break;
+      }
+
+      if (!response || !response.ok) {
+        const status = response ? response.status : 0;
+        const errMsg = (status === 400 || status === 401 || status === 403)
+          ? tr('ai_error_invalid_key')
+          : (lastErrText || tr('ai_explain_simple_error'));
+        aiSimpleExplainBox.innerHTML = `<span class="ai-error">${escapeHtml(errMsg)}</span>`;
+        return;
+      }
+
+      const candidate = data && data.candidates && data.candidates[0];
+      const textOut = candidate && candidate.content && candidate.content.parts
+        ? candidate.content.parts.map(p => p.text || '').join('\n')
+        : '';
+
+      if (!textOut) {
+        aiSimpleExplainBox.innerHTML = `<span class="ai-error">${escapeHtml(tr('ai_explain_simple_error'))}</span>`;
+        return;
+      }
+
+      aiSimpleExplainBox.innerHTML =
+        `<div class="ai-simple-explain-label">&#129513; ${escapeHtml(tr('ai_explain_simple_label'))}</div>` +
+        formatAnswer(textOut);
+    } catch (err) {
+      aiSimpleExplainBox.innerHTML = `<span class="ai-error">${escapeHtml(tr('ai_explain_simple_error'))}</span>`;
+    } finally {
+      aiExplainSimpleBtn.disabled = false;
+      aiExplainSimpleBtn.textContent = originalLabel;
+    }
+  }
+
+  if (aiExplainSimpleBtn) {
+    aiExplainSimpleBtn.addEventListener('click', explainLastSolvedSimply);
+  }
+
   /* Re-apply labels when the UI language changes (hooks into the same
      mechanism script.js uses, without overwriting an existing handler). */
   const previousOnLanguageChange = (typeof window.onLanguageChange === 'function') ? window.onLanguageChange : null;
@@ -980,7 +808,6 @@
     if (previousOnLanguageChange) previousOnLanguageChange();
     if (aiKeyToggleBtn) aiKeyToggleBtn.textContent = tr(aiKeyVisible ? 'ai_key_hide' : 'ai_key_show');
     if (aiVoiceBtn && SpeechRecognitionCtor) setVoiceButtonState(isListening);
-    applyVoiceLangButton();
     renderSavedList();
   };
 })();
