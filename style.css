@@ -536,11 +536,14 @@ body {
   background: var(--case-bg);
   border-radius: 16px;
   padding: 14px 12px 10px;
-  /* Contain-fit: browser picks the largest size that respects the aspect
-     ratio while staying within BOTH the width and height limits, so the
-     calculator can never spill off any screen (phone, tablet, laptop). */
-  width: min(400px, 92vw);
-  height: min(760px, calc(100vh - 76px), calc(100dvh - 76px));
+  /* Contain-fit: only WIDTH is ever set explicitly, and it is bounded by
+     both the viewport width AND (via the aspect-ratio math baked into the
+     vh-based terms) the viewport height. Height is left to "aspect-ratio"
+     to compute automatically. This is what actually guarantees the
+     calculator can never spill off or get clipped on any screen — setting
+     both width and height explicitly (as before) silently disables
+     aspect-ratio and let short/narrow phones crop the keypad. */
+  width: min(400px, 92vw, calc((100vh - 76px) * 0.535), calc((100dvh - 76px) * 0.535));
   aspect-ratio: 0.535;
   max-width: 92vw;
   max-height: min(calc(100vh - 76px), calc(100dvh - 76px));
@@ -2068,7 +2071,10 @@ body {
    let the aspect ratio relax so the case gets wider/shorter instead of
    the height constraint squeezing it into an unreadably thin sliver. */
 @media (max-height: 480px) {
-  .calculator-case { aspect-ratio: 0.85; width: min(560px, 92vw); }
+  .calculator-case {
+    aspect-ratio: 0.85;
+    width: min(560px, 92vw, calc((100vh - 76px) * 0.85), calc((100dvh - 76px) * 0.85));
+  }
 }
 
 /* Animations */
