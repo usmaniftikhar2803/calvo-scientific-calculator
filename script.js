@@ -70,6 +70,22 @@ function shareOrCopyText(text) {
   else showToast(t('share_failed_toast'));
 }
 
+/* ---- Direct "Share to WhatsApp" — a dedicated one-tap button (separate
+   from the generic OS share-sheet button above) since WhatsApp is the
+   primary group-study tool for our students and shouldn't be buried a
+   tap deeper inside the native share sheet, and this also works on
+   desktop browsers where navigator.share isn't available at all. ---- */
+const CALVO_SHARE_URL = 'https://calvoscientificcalculator.online/';
+const WHATSAPP_ICON_SVG = '<svg viewBox="0 0 32 32" width="15" height="15" fill="#25D366" aria-hidden="true"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.646.86 5.098 2.317 7.087L5 29l7.127-2.272A11.94 11.94 0 0 0 16.001 27C22.628 27 28 21.627 28 15S22.628 3 16.001 3zm0 21.818c-1.94 0-3.79-.52-5.39-1.5l-.386-.23-4.232 1.35 1.372-4.127-.25-.4A9.79 9.79 0 0 1 5.818 15c0-5.615 4.568-10.182 10.183-10.182S26.183 9.385 26.183 15 21.616 24.818 16.001 24.818zm5.646-7.633c-.31-.155-1.83-.902-2.113-1.005-.283-.104-.489-.155-.695.155-.207.31-.797 1.005-.977 1.212-.18.207-.36.233-.67.078-.31-.155-1.31-.483-2.494-1.54-.922-.822-1.545-1.837-1.726-2.147-.18-.31-.02-.478.136-.633.14-.14.31-.36.464-.54.155-.18.207-.31.31-.517.104-.207.052-.388-.026-.543-.078-.155-.695-1.677-.953-2.297-.25-.6-.505-.52-.695-.53-.18-.008-.388-.01-.596-.01-.207 0-.543.078-.828.388-.283.31-1.084 1.06-1.084 2.582 0 1.522 1.11 2.994 1.265 3.2.155.207 2.183 3.33 5.29 4.672.74.32 1.317.512 1.767.655.742.236 1.418.203 1.952.123.596-.089 1.83-.748 2.088-1.47.258-.72.258-1.34.18-1.47-.078-.13-.283-.207-.594-.362z"/></svg>';
+function shareToWhatsApp(text) {
+  const full = `${text}\n\n_${t('shared_via_calvo')}_\n${CALVO_SHARE_URL}`;
+  const url = 'https://wa.me/?text=' + encodeURIComponent(full);
+  window.open(url, '_blank', 'noopener');
+}
+function whatsappBtnHtml(extraClass, extraAttrs) {
+  return `<button class="icon-action-btn whatsapp-btn ${extraClass || ''}" ${extraAttrs || ''} title="${t('share_whatsapp_title')}">${WHATSAPP_ICON_SVG}</button>`;
+}
+
 /* Wires a destructive button (Clear All, etc.) to a "tap again to confirm"
    pattern instead of the browser's native confirm() dialog — native confirm
    boxes show the page's own address/origin in their title bar, which looks
@@ -2190,6 +2206,7 @@ function formulaItemHtml(f, key, subjTag) {
         <button class="icon-action-btn fav-star-btn${fav ? ' active' : ''}" data-key="${key}" title="${fav ? t('remove_favorite_title') : t('add_favorite_title')}">${fav ? '★' : '☆'}</button>
         <button class="icon-action-btn formula-explain-btn" data-key="${key}" title="${t('explain_formula_title')}">💡</button>
         <button class="icon-action-btn formula-share-btn" data-key="${key}" title="${t('share_title')}">&#128228;</button>
+        ${whatsappBtnHtml('formula-whatsapp-btn', `data-key="${key}"`)}
       </div>
     </div>
     <div class="formula-explain-box" style="display:none;"></div>`;
@@ -2295,6 +2312,15 @@ formulaList.addEventListener('click', (e) => {
     shareOrCopyText(`${name}: ${exprText}`);
     return;
   }
+  const waBtn = e.target.closest('.formula-whatsapp-btn');
+  if (waBtn) {
+    const parts = waBtn.dataset.key.split('||');
+    const name = parts[2] || '';
+    const row = waBtn.closest('.formula-item');
+    const exprText = row ? row.querySelector('.formula-expr').textContent : '';
+    shareToWhatsApp(`${name}: ${exprText}`);
+    return;
+  }
   const explainBtn = e.target.closest('.formula-explain-btn');
   if (explainBtn) {
     const row = explainBtn.closest('.formula-item');
@@ -2379,6 +2405,7 @@ function renderCalcHistory() {
           <div class="history-time">${formatHistoryTime(h.time)}</div>
         </div>
         <button class="icon-action-btn history-share-btn" title="${t('share_title')}">&#128228;</button>
+        ${whatsappBtnHtml('history-whatsapp-btn')}
       </div>`;
     div.querySelector('.history-item-text').addEventListener('click', () => {
       lastAns = parseFloat(h.result);
@@ -2389,6 +2416,10 @@ function renderCalcHistory() {
     div.querySelector('.history-share-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       shareOrCopyText(`${h.expr} = ${h.result}`);
+    });
+    div.querySelector('.history-whatsapp-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      shareToWhatsApp(`${h.expr} = ${h.result}`);
     });
     historyListEl.appendChild(div);
   });
@@ -2921,9 +2952,12 @@ function renderSavedResults() {
   savedResults.forEach((r, idx) => {
     const div = document.createElement('div');
     div.className = 'saved-item';
-    div.innerHTML = `<span>${r.label}</span><span style="display:flex;align-items:center;gap:8px;"><b style="color:var(--accent);">${r.value}</b><button class="icon-action-btn saved-share-btn" title="${t('share_title')}">&#128228;</button><button class="saved-del" title="${t('delete_title')}">&#10005;</button></span>`;
+    div.innerHTML = `<span>${r.label}</span><span style="display:flex;align-items:center;gap:8px;"><b style="color:var(--accent);">${r.value}</b><button class="icon-action-btn saved-share-btn" title="${t('share_title')}">&#128228;</button>${whatsappBtnHtml('saved-whatsapp-btn')}<button class="saved-del" title="${t('delete_title')}">&#10005;</button></span>`;
     div.querySelector('.saved-share-btn').addEventListener('click', () => {
       shareOrCopyText(`${r.label}: ${r.value}`);
+    });
+    div.querySelector('.saved-whatsapp-btn').addEventListener('click', () => {
+      shareToWhatsApp(`${r.label}: ${r.value}`);
     });
     div.querySelector('.saved-del').addEventListener('click', () => {
       savedResults.splice(idx, 1);
@@ -3030,9 +3064,12 @@ function renderGpaHistory() {
     }
     const div = document.createElement('div');
     div.className = 'saved-item';
-    div.innerHTML = `<span>${rec.label}</span><span style="display:flex;align-items:center;gap:8px;">${trend}<b style="color:var(--accent);">${rec.gpa.toFixed(2)}</b><button class="icon-action-btn gpa-share-btn" title="${t('share_title')}">&#128228;</button><button class="saved-del" title="${t('delete_title')}">&#10005;</button></span>`;
+    div.innerHTML = `<span>${rec.label}</span><span style="display:flex;align-items:center;gap:8px;">${trend}<b style="color:var(--accent);">${rec.gpa.toFixed(2)}</b><button class="icon-action-btn gpa-share-btn" title="${t('share_title')}">&#128228;</button>${whatsappBtnHtml('gpa-whatsapp-btn')}<button class="saved-del" title="${t('delete_title')}">&#10005;</button></span>`;
     div.querySelector('.gpa-share-btn').addEventListener('click', () => {
       shareOrCopyText(`${rec.label}: GPA ${rec.gpa.toFixed(2)}`);
+    });
+    div.querySelector('.gpa-whatsapp-btn').addEventListener('click', () => {
+      shareToWhatsApp(`${rec.label}: GPA ${rec.gpa.toFixed(2)}`);
     });
     div.querySelector('.saved-del').addEventListener('click', () => {
       gpaHistory.splice(idx, 1);
