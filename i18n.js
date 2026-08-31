@@ -406,6 +406,8 @@ const translations = {
     add_favorite_title: "Add to favorites",
     remove_favorite_title: "Remove from favorites",
     share_title: "Share",
+    share_whatsapp_title: "Share on WhatsApp",
+    shared_via_calvo: "Shared via Calvo Scientific Calculator",
     copied_toast: "Copied to clipboard",
     share_failed_toast: "Couldn't share or copy",
     recent_pill: "\uD83D\uDD52 Recent",
