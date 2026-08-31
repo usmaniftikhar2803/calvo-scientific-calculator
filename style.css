@@ -36,7 +36,21 @@
   --brand-orange: #ff8a1f;
   --brand-orange-deep: #d9650c;
   --accent: #ff8a1f;
+  --app-text-zoom: 1;
 }
+
+/* ============================================
+   TEXT SIZE SETTING (accessibility)
+   Scales the reading text across Formulas, Quiz,
+   AI Solver, History, Converter, GPA, Subject Tools
+   etc. — NOT the calculator tab, whose key sizes were
+   deliberately tuned separately. Uses `zoom` (not
+   transform) so the tab reflows properly at every size
+   instead of just visually stretching/clipping.
+   ============================================ */
+body[data-textsize="small"] { --app-text-zoom: 0.88; }
+body[data-textsize="large"] { --app-text-zoom: 1.18; }
+.tab-panel:not(#tab-calc) { zoom: var(--app-text-zoom); }
 
 /* ============================================
    LIGHT MODE
@@ -2078,6 +2092,50 @@ body {
   margin-top: 2px;
   font-weight: 600;
   color: #888;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- TEXT SIZE PANEL ---------- */
+.text-size-hint {
+  font-size: 0.66rem;
+  color: #888;
+  line-height: 1.5;
+  margin: -4px 0 12px;
+}
+.text-size-options {
+  display: flex;
+  gap: 8px;
+}
+.text-size-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px 10px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: #1a1a1e;
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.text-size-option:hover { transform: scale(1.04); }
+.text-size-option.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--case-bg), 0 0 0 3px var(--accent);
+  color: #fff;
+}
+.text-size-preview {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  color: #e8e8f0;
+}
+.text-size-name {
+  font-size: 0.62rem;
+  font-weight: 600;
   letter-spacing: 0.3px;
 }
 
