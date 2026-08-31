@@ -313,6 +313,7 @@ if (menuTheme) {
   menuTheme.addEventListener('click', (e) => {
     e.stopPropagation();
     closeTopbarMenu();
+    if (typeof textSizePanel !== 'undefined' && textSizePanel) textSizePanel.classList.remove('open');
     themePanel.classList.toggle('open');
   });
 }
@@ -333,6 +334,58 @@ try {
 } catch(e) {}
 
 buildThemeGrid();
+
+/* ---------- TEXT SIZE (accessibility) ----------
+   Scales the reading text in Formulas/Quiz/AI Solver/History/etc via a
+   CSS `zoom` custom property (see style.css) — the calculator tab is
+   explicitly excluded there since its key sizes are tuned separately. */
+const TEXT_SIZES = ['small', 'medium', 'large'];
+const textSizePanel = document.getElementById('textSizePanel');
+const menuTextSize = document.getElementById('menuTextSize');
+const textSizeClose = document.getElementById('textSizeClose');
+const textSizeOptions = document.getElementById('textSizeOptions');
+
+function applyTextSize(size) {
+  if (!TEXT_SIZES.includes(size)) size = 'medium';
+  if (size === 'medium') {
+    document.body.removeAttribute('data-textsize');
+  } else {
+    document.body.setAttribute('data-textsize', size);
+  }
+  if (textSizeOptions) {
+    textSizeOptions.querySelectorAll('.text-size-option').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.size === size);
+    });
+  }
+  try { localStorage.setItem('calvo_text_size', size); } catch (e) {}
+}
+
+if (textSizeOptions) {
+  textSizeOptions.querySelectorAll('.text-size-option').forEach(btn => {
+    btn.addEventListener('click', () => applyTextSize(btn.dataset.size));
+  });
+}
+
+if (menuTextSize && textSizePanel) {
+  menuTextSize.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeTopbarMenu();
+    themePanel.classList.remove('open');
+    textSizePanel.classList.toggle('open');
+  });
+}
+if (textSizeClose) {
+  textSizeClose.addEventListener('click', () => textSizePanel.classList.remove('open'));
+}
+document.addEventListener('click', (e) => {
+  if (textSizePanel && !textSizePanel.contains(e.target) && e.target !== menuTextSize && !(menuTextSize && menuTextSize.contains(e.target))) {
+    textSizePanel.classList.remove('open');
+  }
+});
+
+try {
+  applyTextSize(localStorage.getItem('calvo_text_size') || 'medium');
+} catch (e) { applyTextSize('medium'); }
 
 /* ---------- TOPBAR 3-DOT MENU ---------- */
 const topbarMenuBtn = document.getElementById('topbarMenuBtn');
