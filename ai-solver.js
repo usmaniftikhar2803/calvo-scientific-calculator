@@ -29,6 +29,7 @@
   const aiSaveBtn = document.getElementById('aiSaveBtn');
   const aiExplainSimpleBtn = document.getElementById('aiExplainSimpleBtn');
   const aiSimpleExplainBox = document.getElementById('aiSimpleExplainBox');
+  const aiWhatsappBtn = document.getElementById('aiWhatsappBtn');
   const aiResultBox = document.getElementById('aiResultBox');
   const aiSavedList = document.getElementById('aiSavedList');
   const aiClearSavedBtn = document.getElementById('aiClearSavedBtn');
@@ -410,8 +411,12 @@
     list.forEach((item) => {
       const div = document.createElement('div');
       div.className = 'ai-saved-item';
+      const shareText = item.answerText
+        ? `${item.question}\n\n${tr('ai_answer_label')}: ${item.answerText}`
+        : item.question;
       div.innerHTML =
         `<button class="ai-saved-delete" type="button" title="&#10005;">&#10005;</button>` +
+        (typeof whatsappBtnHtml === 'function' ? whatsappBtnHtml('ai-saved-whatsapp-btn') : '') +
         `<div class="ai-saved-question">${escapeHtml(item.question)}</div>` +
         (item.answerText ? `<div class="ai-saved-answer">${escapeHtml(item.answerText)}</div>` : '') +
         `<div class="ai-saved-time">${escapeHtml(formatSavedTime(item.time))}</div>` +
@@ -426,6 +431,13 @@
         persistSavedList(current);
         renderSavedList();
       });
+      const savedWaBtn = div.querySelector('.ai-saved-whatsapp-btn');
+      if (savedWaBtn) {
+        savedWaBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (typeof shareToWhatsApp === 'function') shareToWhatsApp(shareText);
+        });
+      }
       // Tapping the card (but not the delete button) expands the full
       // step-by-step solution saved at the time it was solved.
       if (item.answerHtml) {
@@ -589,6 +601,7 @@
     if (aiSaveBtn) aiSaveBtn.style.display = 'none';
     if (aiExplainSimpleBtn) aiExplainSimpleBtn.style.display = 'none';
     if (aiSimpleExplainBox) { aiSimpleExplainBox.style.display = 'none'; aiSimpleExplainBox.innerHTML = ''; }
+    if (aiWhatsappBtn) aiWhatsappBtn.style.display = 'none';
     lastSolved = null;
 
     const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
@@ -704,6 +717,12 @@
       autoSaveSolve(lastSolved);
       if (aiSaveBtn) aiSaveBtn.style.display = 'none';
       if (aiExplainSimpleBtn) aiExplainSimpleBtn.style.display = 'inline-block';
+      if (aiWhatsappBtn) {
+        aiWhatsappBtn.style.display = 'inline-block';
+        if (typeof WHATSAPP_ICON_SVG !== 'undefined') {
+          aiWhatsappBtn.innerHTML = WHATSAPP_ICON_SVG + ' ' + escapeHtml(tr('share_whatsapp_title'));
+        }
+      }
     } catch (err) {
       renderResult(`<div class="ai-result-card"><span class="ai-error">${escapeHtml(tr('ai_error_request'))}</span></div>`);
     } finally {
@@ -799,6 +818,16 @@
 
   if (aiExplainSimpleBtn) {
     aiExplainSimpleBtn.addEventListener('click', explainLastSolvedSimply);
+  }
+
+  if (aiWhatsappBtn) {
+    aiWhatsappBtn.addEventListener('click', () => {
+      if (!lastSolved || typeof shareToWhatsApp !== 'function') return;
+      const text = lastSolved.answerText
+        ? `${lastSolved.question}\n\n${tr('ai_answer_label')}: ${lastSolved.answerText}`
+        : lastSolved.question;
+      shareToWhatsApp(text);
+    });
   }
 
   /* Re-apply labels when the UI language changes (hooks into the same
