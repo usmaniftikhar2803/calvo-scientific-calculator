@@ -1181,6 +1181,7 @@ body {
 }
 .icon-action-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
 .icon-action-btn:active { transform: translateY(1px); }
+.icon-action-btn.whatsapp-btn:hover { background: rgba(37,211,102,0.15); }
 
 .formula-explain-box {
   margin: 4px 0 8px;
@@ -1257,6 +1258,16 @@ body {
   font-weight: 700;
   padding: 10px;
 }
+.pill-btn.whatsapp-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: rgba(37,211,102,0.35);
+  background: rgba(37,211,102,0.08);
+  color: #25D366;
+}
+.pill-btn.whatsapp-pill-btn:hover { background: rgba(37,211,102,0.16); color: #25D366; }
+.pill-btn.whatsapp-pill-btn svg { flex-shrink: 0; }
 
 /* ---------- HISTORY TAB ---------- */
 .history-item {
@@ -1741,12 +1752,15 @@ body {
 
 .ai-solver-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 4px;
 }
 .ai-solver-actions .save-btn { margin: 0; flex: 1 1 auto; }
 .ai-solver-actions #aiRefreshBtn,
-.ai-solver-actions #aiSaveBtn { flex-shrink: 0; }
+.ai-solver-actions #aiSaveBtn,
+.ai-solver-actions #aiExplainSimpleBtn,
+.ai-solver-actions #aiWhatsappBtn { flex-shrink: 0; }
 
 .ai-result-box:empty { display: none; }
 .ai-result-card {
@@ -1860,7 +1874,7 @@ body {
 }
 .ai-saved-item {
   position: relative;
-  padding: 10px 34px 10px 12px;
+  padding: 10px 60px 10px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   border-radius: 8px;
   transition: background 0.15s;
@@ -1887,7 +1901,7 @@ body {
 .ai-saved-expandable::after {
   content: '\25BE';
   position: absolute;
-  right: 34px;
+  right: 60px;
   top: 10px;
   color: #666;
   font-size: 0.8rem;
@@ -1921,6 +1935,23 @@ body {
   transition: all 0.15s ease;
 }
 .ai-saved-delete:hover { background: rgba(255,80,80,0.15); color: #ff6b6b; }
+.ai-saved-whatsapp-btn {
+  position: absolute;
+  top: 8px;
+  right: 34px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.ai-saved-whatsapp-btn:hover { background: rgba(37,211,102,0.15); }
 
 .confirm-armed {
   background: rgba(255,80,80,0.15) !important;
