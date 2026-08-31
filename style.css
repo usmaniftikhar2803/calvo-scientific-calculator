@@ -836,7 +836,7 @@ body {
 .keypad {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(8, 1fr);
+  grid-template-rows: repeat(7, 1fr) 1.3fr;
   gap: 4px;
   width: 100%;
   flex: 1;
@@ -847,7 +847,7 @@ body {
   border: none;
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: clamp(0.42rem, 2.6vw, 0.62rem);
+  font-size: clamp(0.5rem, 3vw, 0.72rem);
   cursor: pointer;
   position: relative;
   display: flex;
@@ -882,14 +882,14 @@ body {
   box-shadow: 0 3px 0 var(--key-dark-shadow), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 .key.dark:active { box-shadow: 0 1px 0 var(--key-dark-shadow), inset 0 2px 6px rgba(0,0,0,0.3); }
-.key.dark.num { font-size: clamp(0.55rem, 3.4vw, 0.8rem); }
-.key.dark.op { font-size: clamp(0.6rem, 3.6vw, 0.88rem); }
+.key.dark.num { font-size: clamp(0.65rem, 4vw, 0.92rem); }
+.key.dark.op { font-size: clamp(0.7rem, 4.2vw, 1rem); }
 
 .key.black {
   background: linear-gradient(180deg, var(--key-black-top) 0%, var(--key-black-bot) 100%);
   color: var(--key-black-text);
   box-shadow: 0 3px 0 var(--key-black-shadow), inset 0 1px 0 rgba(255,255,255,0.06);
-  font-size: clamp(0.4rem, 2.4vw, 0.58rem);
+  font-size: clamp(0.48rem, 2.8vw, 0.68rem);
 }
 .key.black:active { box-shadow: 0 1px 0 var(--key-black-shadow), inset 0 2px 6px rgba(0,0,0,0.4); }
 
@@ -897,7 +897,7 @@ body {
   background: linear-gradient(180deg, var(--key-orange-top) 0%, var(--key-orange-bot) 100%);
   color: var(--key-orange-text);
   box-shadow: 0 3px 0 var(--key-orange-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
-  font-size: clamp(0.42rem, 2.5vw, 0.6rem);
+  font-size: clamp(0.5rem, 2.9vw, 0.7rem);
 }
 .key.orange:active { box-shadow: 0 1px 0 var(--key-orange-shadow), inset 0 2px 6px rgba(0,0,0,0.2); }
 
@@ -905,7 +905,7 @@ body {
   background: linear-gradient(180deg, var(--key-purple-top) 0%, var(--key-purple-bot) 100%);
   color: var(--key-purple-text);
   box-shadow: 0 3px 0 var(--key-purple-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
-  font-size: clamp(0.36rem, 2.2vw, 0.52rem);
+  font-size: clamp(0.44rem, 2.6vw, 0.62rem);
 }
 .key.purple:active { box-shadow: 0 1px 0 var(--key-purple-shadow), inset 0 2px 6px rgba(0,0,0,0.3); }
 
@@ -913,12 +913,25 @@ body {
   background: linear-gradient(180deg, var(--key-eq-top) 0%, var(--key-eq-bot) 100%);
   color: var(--key-eq-text);
   box-shadow: 0 3px 0 var(--key-eq-shadow), inset 0 1px 0 rgba(255,255,255,0.08);
-  font-size: clamp(0.65rem, 4vw, 0.92rem);
+  font-size: clamp(0.74rem, 4.6vw, 1.04rem);
 }
 .key.equals:active { box-shadow: 0 1px 0 var(--key-eq-shadow), inset 0 2px 6px rgba(0,0,0,0.3); }
 
+/* Bottom row (0, ., x10^x, Ans, =, acos) gets a slightly taller grid row
+   (see .keypad grid-template-rows above) plus a bit more text/tap size,
+   since these are some of the most-tapped keys on mobile. */
+.keypad > .key:nth-last-child(-n+6) {
+  font-size: clamp(0.58rem, 3.4vw, 0.82rem);
+}
+.keypad > .key.dark.num:nth-last-child(-n+6) {
+  font-size: clamp(0.72rem, 4.4vw, 1.02rem);
+}
+.keypad > .key.equals:nth-last-child(-n+6) {
+  font-size: clamp(0.84rem, 5.2vw, 1.18rem);
+}
+
 .shift-label {
-  font-size: 0.36rem;
+  font-size: 0.4rem;
   color: #ffd700;
   position: absolute;
   top: 2px;
