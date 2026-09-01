@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZGM4SCN6WZ');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Use — Button Guide | Calvo Scientific Calculator</title>
+<meta name="description" content="Learn what every button on Calvo's scientific calculator does — SHIFT/ALPHA functions, trigonometry, memory keys, and more, explained simply for students.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/how-to-use.html">
+<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-6621625782538547" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --bg-void:#0d0d0f;
+    --panel:#17171a;
+    --panel-border:#2a2a30;
+    --text:#e8e5db;
+    --text-dim:#9c968a;
+    --rule:#2a2a30;
+    --brand-orange:#ff8a1f;
+    --brand-orange-deep:#d9650c;
+    --key-bg:#1e1e22;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,138,31,0.07), transparent 60%),
+      var(--bg-void);
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    min-height:100vh;
+    padding:48px 16px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .topbar{
+    width:100%;
+    max-width:720px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:32px;
+    font-family:'Space Mono', monospace;
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--text);
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-decoration:none;
+    font-size:14px;
+  }
+  .brand-dot{
+    width:9px;height:9px;border-radius:2px;
+    background:var(--brand-orange);
+    box-shadow:0 0 8px rgba(255,138,31,0.7);
+  }
+  .topbar a.back{
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:12px;
+    letter-spacing:0.04em;
+    border:1px solid var(--panel-border);
+    padding:6px 12px;
+    border-radius:20px;
+    transition:border-color .15s, color .15s;
+  }
+  .topbar a.back:hover{ color:var(--text); border-color:var(--brand-orange); }
+
+  .doc{
+    width:100%;
+    max-width:720px;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:16px;
+    padding:40px 36px 36px;
+  }
+
+  .doc-head{ margin-bottom:24px; }
+  .doc-title{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:24px;
+    letter-spacing:0.01em;
+    margin:0 0 6px;
+  }
+  .doc-title span{ color:var(--brand-orange); }
+  .doc-meta{
+    font-size:11.5px;
+    color:var(--text-dim);
+    letter-spacing:0.03em;
+  }
+
+  hr.rule{
+    border:none;
+    border-top:1px solid var(--rule);
+    margin:24px 0;
+  }
+
+  h2{
+    font-family:'Space Mono', monospace;
+    font-size:14px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--brand-orange);
+    margin:28px 0 12px;
+  }
+  h2:first-of-type{ margin-top:4px; }
+
+  p{
+    font-size:13px;
+    line-height:1.85;
+    color:var(--text);
+    margin:0 0 12px;
+  }
+  ul{
+    margin:0 0 12px;
+    padding-left:20px;
+  }
+  li{
+    font-size:13px;
+    line-height:1.85;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  li b{ color:#fff; }
+  a{ color:var(--brand-orange); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+
+  /* Button guide table */
+  .btn-table{
+    width:100%;
+    border-collapse:collapse;
+    margin:0 0 12px;
+    font-size:12.5px;
+  }
+  .btn-table th{
+    text-align:left;
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    padding:8px 10px;
+    border-bottom:1px solid var(--rule);
+  }
+  .btn-table td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--rule);
+    line-height:1.6;
+    vertical-align:top;
+  }
+  .btn-table tr:last-child td{ border-bottom:none; }
+  .keycap{
+    display:inline-block;
+    min-width:28px;
+    text-align:center;
+    background:var(--key-bg);
+    border:1px solid var(--panel-border);
+    border-radius:6px;
+    padding:3px 8px;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:#fff;
+    white-space:nowrap;
+  }
+  .keycap.orange{ border-color:var(--brand-orange-deep); color:var(--brand-orange); }
+  .keycap.shift-tag{
+    font-size:10px;
+    color:var(--text-dim);
+    display:block;
+    margin-top:3px;
+  }
+
+  .tip-box{
+    background:rgba(255,138,31,0.06);
+    border:1px solid rgba(255,138,31,0.25);
+    border-radius:10px;
+    padding:14px 16px;
+    margin:0 0 12px;
+    font-size:12.5px;
+    line-height:1.8;
+  }
+  .tip-box b{ color:var(--brand-orange); }
+
+  .doc-footer{
+    margin-top:32px;
+    padding-top:20px;
+    border-top:1px solid var(--rule);
+    font-size:12px;
+    color:var(--text-dim);
+    text-align:center;
+    line-height:1.8;
+  }
+
+  @media (max-width:480px){
+    .doc{ padding:28px 20px 24px; }
+    .btn-table{ font-size:11.5px; }
+    .btn-table th, .btn-table td{ padding:7px 6px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-dot"></span> CALVO
+    </a>
+    <a class="back" href="index.html">&larr; Back to app</a>
+  </div>
+
+  <div class="doc">
+    <div class="doc-head">
+      <h1 class="doc-title">How to <span>Use</span> — Button Guide</h1>
+      <div class="doc-meta">A complete walkthrough of every button on Calvo's scientific calculator.</div>
+    </div>
+
+    <p>Calvo's calculator is modeled on a real scientific calculator (Casio-style), so every button has a <b>main function</b> printed on it, and many buttons also have a <b>second (shift) function</b> printed above them in a smaller color. This guide explains what every key does and how to access both functions.</p>
+
+    <div class="tip-box">
+      <b>Golden Rule:</b> To use a key's normal (white) function, just tap it. To use a key's shift (upper) function, first tap the <span class="keycap">SHIFT</span> key — the display will show a "SHIFT" indicator — then tap the key you want. For example, pressing <span class="keycap">SHIFT</span> then <span class="keycap">√</span> gives you x² instead of the square root.
+    </div>
+
+    <h2>1. Mode &amp; Control Keys</h2>
+    <table class="btn-table">
+      <tr><th>Button</th><th>What it does</th></tr>
+      <tr>
+        <td><span class="keycap orange">SHIFT</span></td>
+        <td>Activates the second (upper) function of the next key you press. Tap it once, the SHIFT indicator lights up on screen, then tap any key to use its shift function.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap orange">ALPHA</span></td>
+        <td>Switches into letter-input mode, used for storing values into memory variables (like A, B, C) and for the CALC/SOLVE features.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">MODE</span></td>
+        <td>Opens the calculator's mode/settings options (used to switch calculation settings).</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">ON</span></td>
+        <td>Resets the calculator — clears the current calculation and starts fresh, similar to a power-on reset.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">REPLAY</span> (&#9650; / &#9660;)</td>
+        <td>Moves the cursor left/right or up/down through a previous calculation so you can review or edit it before recalculating.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap orange">AC</span></td>
+        <td>All Clear — wipes the entire screen and starts a brand-new calculation.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap orange">DEL</span></td>
+        <td>Deletes the last character/digit you entered (like backspace).</td>
+      </tr>
+    </table>
+
+    <h2>2. Numbers &amp; Basic Operations</h2>
+    <table class="btn-table">
+      <tr><th>Button</th><th>What it does</th></tr>
+      <tr>
+        <td><span class="keycap">0</span>–<span class="keycap">9</span></td>
+        <td>Enter digits for your number.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">.</span></td>
+        <td>Adds a decimal point to enter fractional numbers (e.g. 3.14).</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">+</span> <span class="keycap">&#8722;</span> <span class="keycap">&#215;</span> <span class="keycap">&#247;</span></td>
+        <td>Basic arithmetic — addition, subtraction, multiplication and division.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">(-)</span></td>
+        <td>Enters a negative sign before a number (different from the subtraction key), e.g. (-)5 gives &minus;5.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">(</span> <span class="keycap">)</span></td>
+        <td>Open and close brackets, used to control the order of operations in longer expressions.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">=</span></td>
+        <td>Calculates and shows the final result of your expression.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">Ans</span></td>
+        <td>Recalls the result of your last calculation, so you can reuse it in a new expression.</td>
+      </tr>
+    </table>
+
+    <h2>3. Scientific &amp; Trigonometric Functions</h2>
+    <table class="btn-table">
+      <tr><th>Button</th><th>What it does</th></tr>
+      <tr>
+        <td><span class="keycap">sin</span> <span class="keycap">cos</span> <span class="keycap">tan</span><span class="keycap shift-tag">SHIFT &rarr; sin&#8315;&#185; / cos&#8315;&#185; / tan&#8315;&#185;</span></td>
+        <td>Trigonometric functions (sine, cosine, tangent). Press SHIFT first to get the inverse functions (arcsin, arccos, arctan), which are also directly available as separate <span class="keycap">asin</span>/<span class="keycap">acos</span> keys.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">hyp</span></td>
+        <td>Switches sin/cos/tan into their hyperbolic versions (sinh, cosh, tanh) — the HYP indicator lights up on screen.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">log</span><span class="keycap shift-tag">SHIFT &rarr; 10&#697;</span></td>
+        <td>Base-10 logarithm. With SHIFT, it becomes 10 raised to a power (the inverse of log).</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">ln</span><span class="keycap shift-tag">SHIFT &rarr; e&#697;</span></td>
+        <td>Natural logarithm (base e). With SHIFT, it becomes e raised to a power.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">&#960;</span> &nbsp; <span class="keycap">e</span></td>
+        <td>Instantly inserts the constants pi (3.14159&hellip;) and Euler's number e (2.71828&hellip;).</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">&#8730;</span><span class="keycap shift-tag">SHIFT &rarr; x&#178;</span></td>
+        <td>Square root. With SHIFT, squares the number instead (x&#178;). x&#178; is also its own direct key.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">x&#179;</span><span class="keycap shift-tag">SHIFT &rarr; &#8731;</span></td>
+        <td>Cubes the number (x&#179;). With SHIFT, gives the cube root instead.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">x&#696;</span><span class="keycap shift-tag">SHIFT &rarr; x&#8730;</span></td>
+        <td>Raises a number to any power you type (e.g. 2^5). With SHIFT, calculates the nth-root the other way round.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">&#8319;&#8730;</span> (nrt)</td>
+        <td>Calculates the nth root of a number directly (e.g. cube root, 4th root, etc.).</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">x&#178;</span><span class="keycap shift-tag">SHIFT &rarr; x!</span></td>
+        <td>Squares a number. With SHIFT, calculates the factorial (x!) instead — e.g. 5! = 120.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">abs</span></td>
+        <td>Gives the absolute (positive) value of a number, ignoring its sign.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">%</span></td>
+        <td>Percentage calculations — turns a number into a percentage or applies a percent operation directly.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">EXP</span></td>
+        <td>Enters scientific notation quickly — lets you type a number like 5 EXP 3 to mean 5&times;10&sup3;.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">&#215;10&#696;</span></td>
+        <td>Shortcut to multiply the current number by 10 raised to a power you choose — handy for scientific notation.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">ENG</span></td>
+        <td>Switches the displayed result into engineering notation (powers of 10 in steps of 3), commonly used in physics and engineering.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">&#8747;</span></td>
+        <td>Opens integral calculation input, for definite integrals in calculus.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">S&#8660;D</span></td>
+        <td>Toggles the displayed answer between fraction form and decimal form.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">CALC</span></td>
+        <td>Used together with ALPHA to evaluate an expression containing a variable (like x) after you enter a value for it.</td>
+      </tr>
+    </table>
+
+    <h2>4. Memory Keys</h2>
+    <table class="btn-table">
+      <tr><th>Button</th><th>What it does</th></tr>
+      <tr>
+        <td><span class="keycap">M+</span><span class="keycap shift-tag">SHIFT &rarr; M&#8722;</span></td>
+        <td>Adds the current result to the calculator's memory. With SHIFT, subtracts it from memory instead. The "M" indicator lights up on screen once memory holds a value.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">MR</span></td>
+        <td>Memory Recall — brings back whatever value is stored in memory.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">MC</span></td>
+        <td>Memory Clear — wipes the stored memory value back to zero.</td>
+      </tr>
+      <tr>
+        <td><span class="keycap">RCL</span></td>
+        <td>Recalls the value stored in a specific variable (used together with ALPHA and a letter, e.g. A, B, C).</td>
+      </tr>
+    </table>
+
+    <h2>5. Display Indicators</h2>
+    <p>At the top of the calculator screen, small labels light up to tell you the current status:</p>
+    <ul>
+      <li><b>DEG</b> — angles are being calculated in degrees (this can be changed to radians/gradians from MODE).</li>
+      <li><b>SHIFT</b> — SHIFT is active; the next key press will use its upper function.</li>
+      <li><b>ALPHA</b> — ALPHA is active; the next key press will input a letter/variable.</li>
+      <li><b>HYP</b> — hyperbolic trig mode is active for sin/cos/tan.</li>
+      <li><b>M</b> — a value is currently stored in memory.</li>
+      <li><b>READY</b> — the calculator is idle and ready for your next input.</li>
+    </ul>
+
+    <div class="tip-box">
+      <b>Beyond the calculator:</b> Calvo also has dedicated tabs at the top for Formulas, Past Papers, History, Unit Convert, Percentage/GPA, AI Solver, Quiz, Graph, Equations, Matrix, Programmer, Statistics, Subject Tools and a Study Timer — each works like its own mini-tool, just tap the tab to switch.
+    </div>
+
+    <h2>6. Need More Help?</h2>
+    <p>Still confused about a specific function or calculation? Reach out anytime at <a href="mailto:usmaniftikhar2803@gmail.com">usmaniftikhar2803@gmail.com</a> and we'll be happy to help.</p>
+
+    <div class="doc-footer">
+      Calvo — Scientific Calculator &amp; Formulas<br>
+      This guide covers the calculator's on-screen keypad and applies across all supported platforms.
+    </div>
+  </div>
+
+</body>
+</html>
