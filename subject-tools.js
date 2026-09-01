@@ -135,9 +135,10 @@
   /* ---------- UI helpers ---------- */
   function field(id, labelKey, placeholder, type) {
     type = type || 'text';
+    const inputmode = type === 'number' ? ' inputmode="decimal"' : '';
     return `<div class="tool-field">
       <label for="${id}">${t(labelKey)}</label>
-      <input type="${type}" inputmode="decimal" id="${id}" class="formula-search convert-input tool-input" placeholder="${placeholder || ''}" style="padding-left:14px;background-image:none;">
+      <input type="${type}"${inputmode} id="${id}" class="formula-search convert-input tool-input" placeholder="${placeholder || ''}" style="padding-left:14px;background-image:none;">
     </div>`;
   }
   function selectField(id, labelKey, options) {
