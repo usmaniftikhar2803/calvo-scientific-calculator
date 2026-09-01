@@ -10,7 +10,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v1';
+const CACHE_VERSION = 'calvo-cache-v2';
 
 const CORE_ASSETS = [
   './',
@@ -23,6 +23,7 @@ const CORE_ASSETS = [
   './ai-solver.js',
   './manifest.json',
   './privacy.html',
+  './how-to-use.html',
   './favicon.ico',
   './favicon-16x16.png',
   './favicon-32x32.png',
