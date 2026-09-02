@@ -50,6 +50,63 @@
 }
 </script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Calvo free to use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, Calvo is completely free. There's no sign-up, no subscription, and no hidden charges — you can use the scientific calculator, formula library, unit converter and every other tool right away."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Calvo work offline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Calvo is a Progressive Web App (PWA), so once you've visited it once, most features keep working even without an internet connection."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Calvo available as an Android app?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, Calvo is available on the Google Play Store as an Android app, alongside this website which you can also add to your home screen directly from your browser."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What subjects and tools does Calvo support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Calvo covers a scientific calculator, graphing, programmer and statistics modes, a formula library with 600+ formulas across math, physics, chemistry, biology and commerce, a GPA/CGPA calculator, unit converter, AI math solver, and subject-specific tools for Chemistry, Physics, Biology and Commerce."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to create an account to use Calvo?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No sign-up is required. Just open the website or app and start calculating right away."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Calvo store or share my calculations?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your calculations stay on your own device. Calvo doesn't require an account and doesn't collect your calculation history on its servers."
+      }
+    }
+  ]
+}
+</script>
+
 <!-- Favicon / app icons -->
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -67,6 +124,27 @@
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-6621625782538547" crossorigin="anonymous"></script>
+
+<!-- Google Funding Choices (GDPR/CCPA consent messaging) -->
+<script async src="https://fundingchoicesmessages.google.com/i/pub-6621625782538547?ers=1"></script>
+<script>
+  (function() {
+    function signalGooglefcPresent() {
+      if (!window.frames['googlefcPresent']) {
+        if (document.body) {
+          const iframe = document.createElement('iframe');
+          iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';
+          iframe.style.display = 'none';
+          iframe.name = 'googlefcPresent';
+          document.body.appendChild(iframe);
+        } else {
+          setTimeout(signalGooglefcPresent, 0);
+        }
+      }
+    }
+    signalGooglefcPresent();
+  })();
+</script>
 </head>
 <body>
 
@@ -284,6 +362,7 @@
       <p class="about-contact"><span data-i18n="about_contact">Questions or suggestions? Reach us at</span> <a href="mailto:usmaniftikhar2803@gmail.com">usmaniftikhar2803@gmail.com</a></p>
       <p class="about-contact"><a href="how-to-use.html">How to Use — Button Guide</a></p>
       <p class="about-contact"><a href="privacy.html" data-i18n="about_privacy_link">Privacy Policy</a></p>
+      <p class="about-contact"><a href="terms.html">Terms &amp; Conditions</a></p>
     </div>
   </div>
 </div>
@@ -1028,11 +1107,47 @@
   </div>
 </div>
 
+<!-- FAQ Section -->
+<section style="width:100%;max-width:900px;margin:32px auto 0;padding:0 16px;font-family:'IBM Plex Mono',monospace;">
+  <h2 style="font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:#ff8a1f;margin:0 0 14px;text-align:center;">Frequently Asked Questions</h2>
+
+  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
+    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Is Calvo free to use?</summary>
+    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Yes, Calvo is completely free. There's no sign-up, no subscription, and no hidden charges — you can use the scientific calculator, formula library, unit converter and every other tool right away.</p>
+  </details>
+
+  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
+    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Does Calvo work offline?</summary>
+    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Yes. Calvo is a Progressive Web App (PWA), so once you've visited it once, most features keep working even without an internet connection.</p>
+  </details>
+
+  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
+    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Is Calvo available as an Android app?</summary>
+    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Yes, Calvo is available on the Google Play Store as an Android app, alongside this website which you can also add to your home screen directly from your browser.</p>
+  </details>
+
+  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
+    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">What subjects and tools does Calvo support?</summary>
+    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Calvo covers a scientific calculator, graphing, programmer and statistics modes, a formula library with 600+ formulas across math, physics, chemistry, biology and commerce, a GPA/CGPA calculator, unit converter, AI math solver, and subject-specific tools for Chemistry, Physics, Biology and Commerce.</p>
+  </details>
+
+  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
+    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Do I need to create an account to use Calvo?</summary>
+    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">No sign-up is required. Just open the website or app and start calculating right away.</p>
+  </details>
+
+  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;">
+    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Does Calvo store or share my calculations?</summary>
+    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Your calculations stay on your own device. Calvo doesn't require an account and doesn't collect your calculation history on its servers. See our <a href="privacy.html" style="color:#ff8a1f;">Privacy Policy</a> for full details.</p>
+  </details>
+</section>
+
 <footer style="width:100%;max-width:900px;margin:40px auto 0;padding:20px 16px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#9c968a;border-top:1px solid #2a2a30;">
   <a href="blog/index.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Blog</a> ·
   <a href="contact.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Contact Us</a> ·
   <a href="how-to-use.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">How to Use</a> ·
-  <a href="privacy.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Privacy Policy</a>
+  <a href="privacy.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Privacy Policy</a> ·
+  <a href="terms.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Terms &amp; Conditions</a>
   <div style="margin-top:10px;">&copy; <span id="footerYear"></span> Calvo — Scientific Calculator &amp; Formulas</div>
 </footer>
 <script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
