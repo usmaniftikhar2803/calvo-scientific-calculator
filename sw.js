@@ -10,7 +10,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v2';
+const CACHE_VERSION = 'calvo-cache-v3';
 
 const CORE_ASSETS = [
   './',
