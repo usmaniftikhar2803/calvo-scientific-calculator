@@ -136,15 +136,23 @@ const memIndicator = document.getElementById('memIndicator');
 
 /* ---------- SUBJECT TOOLS (Chemistry/Physics/Biology/Commerce/Math) ---------- */
 (function () {
-  const catPills = document.getElementById('subjectToolsCategoryPills');
+  const categoryGrid = document.getElementById('subjectToolsCategoryGrid');
+  const categoryView = document.getElementById('subjectToolsCategoryView');
+  const detailView = document.getElementById('subjectToolsDetailView');
+  const detailTitle = document.getElementById('subjectToolsDetailTitle');
+  const backBtn = document.getElementById('subjectToolsBackBtn');
   const toolPills = document.getElementById('subjectToolsToolPills');
   const body = document.getElementById('subjectToolsBody');
   const calcBtn = document.getElementById('subjectToolsCalcBtn');
   const resultBox = document.getElementById('subjectToolsResult');
 
-  if (!catPills || typeof window.CalvoSubjectTools === 'undefined') return;
+  if (!categoryGrid || typeof window.CalvoSubjectTools === 'undefined') return;
   const TOOLS = window.CalvoSubjectTools.TOOLS;
   const CATEGORIES = Object.keys(TOOLS);
+
+  const CATEGORY_ICONS = {
+    Chemistry: '⚗', Physics: '⚛', Biology: '🧬', Commerce: '💰', Math: '∑'
+  };
 
   let activeCat = CATEGORIES[0];
   let activeToolId = TOOLS[activeCat][0].id;
@@ -153,18 +161,35 @@ const memIndicator = document.getElementById('memIndicator');
     return TOOLS[activeCat].find(tl => tl.id === activeToolId);
   }
 
-  function renderCatPills() {
-    catPills.innerHTML = CATEGORIES.map(cat =>
-      `<button class="subject-pill${cat === activeCat ? ' active' : ''}" data-cat="${cat}">${t('subjecttools_cat_' + cat.toLowerCase())}</button>`
-    ).join('');
-    catPills.querySelectorAll('.subject-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeCat = btn.dataset.cat;
-        activeToolId = TOOLS[activeCat][0].id;
-        renderCatPills();
-        renderToolPills();
-        renderToolBody();
-      });
+  function renderCategoryGrid() {
+    categoryGrid.innerHTML = CATEGORIES.map(cat => {
+      const icon = CATEGORY_ICONS[cat] || 'ƒ';
+      const label = t('subjecttools_cat_' + cat.toLowerCase());
+      return `<div class="subject-tile" data-cat="${cat}">
+        <div class="subject-tile-icon">${icon}</div>
+        <div class="subject-tile-name">${label}</div>
+        <div class="subject-tile-count">${TOOLS[cat].length} tools</div>
+      </div>`;
+    }).join('');
+    categoryGrid.querySelectorAll('.subject-tile').forEach(tile => {
+      tile.addEventListener('click', () => openCategoryDetail(tile.dataset.cat));
+    });
+  }
+
+  function openCategoryDetail(cat) {
+    activeCat = cat;
+    activeToolId = TOOLS[activeCat][0].id;
+    detailTitle.textContent = t('subjecttools_cat_' + cat.toLowerCase());
+    categoryView.style.display = 'none';
+    detailView.style.display = '';
+    renderToolPills();
+    renderToolBody();
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      detailView.style.display = 'none';
+      categoryView.style.display = '';
     });
   }
 
@@ -190,14 +215,15 @@ const memIndicator = document.getElementById('memIndicator');
     currentTool().calc(resultBox);
   });
 
-  renderCatPills();
-  renderToolPills();
-  renderToolBody();
+  renderCategoryGrid();
 
   window.refreshSubjectToolsI18n = function () {
-    renderCatPills();
-    renderToolPills();
-    renderToolBody();
+    renderCategoryGrid();
+    if (detailView.style.display !== 'none') {
+      detailTitle.textContent = t('subjecttools_cat_' + activeCat.toLowerCase());
+      renderToolPills();
+      renderToolBody();
+    }
   };
 })();
 
@@ -2205,45 +2231,54 @@ function toggleFavByKey(key) {
   persistFavFormulas();
 }
 
+const formulaSubjectView = document.getElementById('formulaSubjectView');
+const formulaDetailView = document.getElementById('formulaDetailView');
+const formulaDetailTitle = document.getElementById('formulaDetailTitle');
+const formulaBackBtn = document.getElementById('formulaBackBtn');
+
+const SUBJECT_ICONS = {
+  Mathematics: '∑', Physics: '⚛', Chemistry: '⚗', Biology: '🧬', Statistics: '📊', Commerce: '💰'
+};
+
+function openSubjectDetail(subj, label) {
+  activeSubject = subj;
+  formulaDetailTitle.textContent = label;
+  formulaSubjectView.style.display = 'none';
+  formulaDetailView.style.display = '';
+  formulaSearch.value = '';
+  renderFormulas();
+  formulaList.scrollTop = 0;
+}
+
+if (formulaBackBtn) {
+  formulaBackBtn.addEventListener('click', () => {
+    formulaDetailView.style.display = 'none';
+    formulaSubjectView.style.display = '';
+  });
+}
+
 function buildSubjectPills() {
-  subjectPills.innerHTML = '';
+  subjectGrid.innerHTML = '';
 
-  const favBtn = document.createElement('button');
-  favBtn.className = 'subject-pill fav-pill' + (activeSubject === FAV_SUBJECT_KEY ? ' active' : '');
-  favBtn.textContent = t('favorites_pill');
-  favBtn.addEventListener('click', () => {
-    activeSubject = FAV_SUBJECT_KEY;
-    document.querySelectorAll('.subject-pill').forEach(b => b.classList.remove('active'));
-    favBtn.classList.add('active');
-    renderFormulas();
-    formulaList.scrollTop = 0;
-  });
-  subjectPills.appendChild(favBtn);
+  const favTile = document.createElement('div');
+  favTile.className = 'subject-tile fav-tile';
+  favTile.innerHTML = `<div class="subject-tile-icon">★</div><div class="subject-tile-name">${t('favorites_pill')}</div><div class="subject-tile-count">${favFormulas.length}</div>`;
+  favTile.addEventListener('click', () => openSubjectDetail(FAV_SUBJECT_KEY, t('favorites_pill')));
+  subjectGrid.appendChild(favTile);
 
-  const recentBtn = document.createElement('button');
-  recentBtn.className = 'subject-pill recent-pill' + (activeSubject === RECENT_SUBJECT_KEY ? ' active' : '');
-  recentBtn.textContent = t('recent_pill');
-  recentBtn.addEventListener('click', () => {
-    activeSubject = RECENT_SUBJECT_KEY;
-    document.querySelectorAll('.subject-pill').forEach(b => b.classList.remove('active'));
-    recentBtn.classList.add('active');
-    renderFormulas();
-    formulaList.scrollTop = 0;
-  });
-  subjectPills.appendChild(recentBtn);
+  const recentTile = document.createElement('div');
+  recentTile.className = 'subject-tile recent-tile';
+  recentTile.innerHTML = `<div class="subject-tile-icon">🕐</div><div class="subject-tile-name">${t('recent_pill')}</div><div class="subject-tile-count">${recentFormulas.length}</div>`;
+  recentTile.addEventListener('click', () => openSubjectDetail(RECENT_SUBJECT_KEY, t('recent_pill')));
+  subjectGrid.appendChild(recentTile);
 
   Object.keys(formulaData).forEach(subj => {
-    const btn = document.createElement('button');
-    btn.className = 'subject-pill' + (subj === activeSubject ? ' active' : '');
-    btn.textContent = subj;
-    btn.addEventListener('click', () => {
-      activeSubject = subj;
-      document.querySelectorAll('.subject-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderFormulas();
-      formulaList.scrollTop = 0;
-    });
-    subjectPills.appendChild(btn);
+    const tile = document.createElement('div');
+    tile.className = 'subject-tile';
+    const icon = SUBJECT_ICONS[subj] || 'ƒ';
+    tile.innerHTML = `<div class="subject-tile-icon">${icon}</div><div class="subject-tile-name">${subj}</div><div class="subject-tile-count">${formulaData[subj].length} formulas</div>`;
+    tile.addEventListener('click', () => openSubjectDetail(subj, subj));
+    subjectGrid.appendChild(tile);
   });
 }
 
