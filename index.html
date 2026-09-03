@@ -509,17 +509,24 @@
 <section class="tab-panel" id="tab-formulas">
   <div class="formulas-wrap">
     <div class="formulas-card">
-      <h2 class="formulas-title" data-i18n="formulas_title">Formula Library</h2>
-      <p class="formulas-subtitle" data-i18n="formulas_subtitle">9th Class to MS Level — All Subjects</p>
 
-      <!-- Search -->
-      <input type="text" class="formula-search" id="formulaSearch" data-i18n-placeholder="formula_search_placeholder" placeholder="Search formulas...">
+      <!-- SUBJECT GRID VIEW (default) -->
+      <div id="formulaSubjectView">
+        <h2 class="formulas-title" data-i18n="formulas_title">Formula Library</h2>
+        <p class="formulas-subtitle" data-i18n="formulas_subtitle">9th Class to MS Level — All Subjects</p>
+        <div class="subject-grid" id="subjectGrid"></div>
+      </div>
 
-      <!-- Subject Pills -->
-      <div class="subject-pills" id="subjectPills"></div>
+      <!-- SUBJECT DETAIL VIEW (shown after clicking a subject) -->
+      <div id="formulaDetailView" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="formulaBackBtn">&larr; <span data-i18n="back_to_subjects">All Subjects</span></button>
+        </div>
+        <h2 class="formulas-title" id="formulaDetailTitle"></h2>
+        <input type="text" class="formula-search" id="formulaSearch" data-i18n-placeholder="formula_search_placeholder" placeholder="Search formulas...">
+        <div class="formula-list" id="formulaList"></div>
+      </div>
 
-      <!-- Formula List -->
-      <div class="formula-list" id="formulaList"></div>
     </div>
   </div>
 </section>
@@ -966,15 +973,28 @@
 <section class="tab-panel" id="tab-subjecttools">
   <div class="formulas-wrap">
     <div class="formulas-card" id="subjectToolsCard">
-      <div class="formulas-title" data-i18n="subjecttools_title">Subject Tools</div>
-      <div class="formulas-subtitle" data-i18n="subjecttools_subtitle">Chemistry, Physics, Biology & Commerce calculators built for your syllabus</div>
 
-      <div class="subject-pills" id="subjectToolsCategoryPills"></div>
-      <div class="subject-pills" id="subjectToolsToolPills"></div>
+      <!-- CATEGORY GRID VIEW (default) -->
+      <div id="subjectToolsCategoryView">
+        <div class="formulas-title" data-i18n="subjecttools_title">Subject Tools</div>
+        <div class="formulas-subtitle" data-i18n="subjecttools_subtitle">Chemistry, Physics, Biology & Commerce calculators built for your syllabus</div>
+        <div class="subject-grid" id="subjectToolsCategoryGrid"></div>
+      </div>
 
-      <div id="subjectToolsBody"></div>
-      <button class="pill-btn save-btn" id="subjectToolsCalcBtn" data-i18n="tool_calculate">Calculate</button>
-      <div id="subjectToolsResult" class="stats-result-grid"></div>
+      <!-- CATEGORY DETAIL VIEW (shown after clicking a category) -->
+      <div id="subjectToolsDetailView" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="subjectToolsBackBtn">&larr; <span data-i18n="back_to_subjects">All Subjects</span></button>
+        </div>
+        <div class="formulas-title" id="subjectToolsDetailTitle"></div>
+
+        <div class="subject-pills" id="subjectToolsToolPills"></div>
+
+        <div id="subjectToolsBody"></div>
+        <button class="pill-btn save-btn" id="subjectToolsCalcBtn" data-i18n="tool_calculate">Calculate</button>
+        <div id="subjectToolsResult" class="stats-result-grid"></div>
+      </div>
+
     </div>
   </div>
 </section>
