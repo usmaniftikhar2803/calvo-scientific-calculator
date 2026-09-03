@@ -184,6 +184,7 @@ const translations = {
     about_privacy_link: "Privacy Policy",
     formulas_title: "Formula Library",
     formulas_subtitle: "9th Class to MS Level — All Subjects",
+    back_to_subjects: "Back",
     formula_search_placeholder: "Search formulas...",
     no_formulas_found: "No formulas found",
     history_title: "Calculation History",
