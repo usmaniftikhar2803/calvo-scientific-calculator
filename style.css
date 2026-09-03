@@ -1053,6 +1053,73 @@ body {
   background-image: none;
 }
 
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+.subject-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 20px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--case-border);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.subject-tile:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.subject-tile-icon {
+  font-size: 1.6rem;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+}
+.subject-tile-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #eee;
+}
+.subject-tile-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #999;
+}
+.subject-tile.fav-tile .subject-tile-icon { background: #e8548b; }
+.subject-tile.recent-tile .subject-tile-icon { background: #3a9dff; }
+
+.formula-detail-header {
+  margin-bottom: 6px;
+}
+.subject-back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 6px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.subject-back-btn:hover { text-decoration: underline; }
+
 .subject-pills {
   display: flex;
   flex-wrap: wrap;
