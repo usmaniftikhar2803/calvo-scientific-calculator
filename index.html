@@ -116,6 +116,8 @@
 <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192-padded.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Calvo Scientific Calculator">
+<meta name="application-name" content="Calvo Scientific Calculator">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff9500">
 
@@ -981,14 +983,22 @@
         <div class="subject-grid" id="subjectToolsCategoryGrid"></div>
       </div>
 
-      <!-- CATEGORY DETAIL VIEW (shown after clicking a category) -->
+      <!-- TOOL LIST VIEW (shown after clicking a category — each tool on its own line) -->
+      <div id="subjectToolsListView" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="subjectToolsListBackBtn">&larr; <span data-i18n="back_to_subjects">Back</span></button>
+        </div>
+        <div class="formulas-title" id="subjectToolsListTitle"></div>
+
+        <div class="subject-tool-list" id="subjectToolsList"></div>
+      </div>
+
+      <!-- TOOL DETAIL VIEW (shown after clicking a tool — its own page) -->
       <div id="subjectToolsDetailView" style="display:none;">
         <div class="formula-detail-header">
-          <button class="subject-back-btn" id="subjectToolsBackBtn">&larr; <span data-i18n="back_to_subjects">Back</span></button>
+          <button class="subject-back-btn" id="subjectToolsBackBtn">&larr; <span data-i18n="back_to_tools">Back to tools</span></button>
         </div>
         <div class="formulas-title" id="subjectToolsDetailTitle"></div>
-
-        <div class="subject-pills" id="subjectToolsToolPills"></div>
 
         <div id="subjectToolsBody"></div>
         <button class="pill-btn save-btn" id="subjectToolsCalcBtn" data-i18n="tool_calculate">Calculate</button>
