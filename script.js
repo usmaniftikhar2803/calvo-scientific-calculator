@@ -138,10 +138,13 @@ const memIndicator = document.getElementById('memIndicator');
 (function () {
   const categoryGrid = document.getElementById('subjectToolsCategoryGrid');
   const categoryView = document.getElementById('subjectToolsCategoryView');
+  const listView = document.getElementById('subjectToolsListView');
+  const listTitle = document.getElementById('subjectToolsListTitle');
+  const toolList = document.getElementById('subjectToolsList');
+  const listBackBtn = document.getElementById('subjectToolsListBackBtn');
   const detailView = document.getElementById('subjectToolsDetailView');
   const detailTitle = document.getElementById('subjectToolsDetailTitle');
   const backBtn = document.getElementById('subjectToolsBackBtn');
-  const toolPills = document.getElementById('subjectToolsToolPills');
   const body = document.getElementById('subjectToolsBody');
   const calcBtn = document.getElementById('subjectToolsCalcBtn');
   const resultBox = document.getElementById('subjectToolsResult');
@@ -172,37 +175,54 @@ const memIndicator = document.getElementById('memIndicator');
       </div>`;
     }).join('');
     categoryGrid.querySelectorAll('.subject-tile').forEach(tile => {
-      tile.addEventListener('click', () => openCategoryDetail(tile.dataset.cat));
+      tile.addEventListener('click', () => openCategoryList(tile.dataset.cat));
     });
   }
 
-  function openCategoryDetail(cat) {
+  // STEP 1 -> STEP 2: clicking a subject opens the list of its tools,
+  // one tool per line (name shown, nothing to fill in yet).
+  function openCategoryList(cat) {
     activeCat = cat;
-    activeToolId = TOOLS[activeCat][0].id;
-    detailTitle.textContent = t('subjecttools_cat_' + cat.toLowerCase());
+    listTitle.textContent = t('subjecttools_cat_' + cat.toLowerCase());
     categoryView.style.display = 'none';
+    detailView.style.display = 'none';
+    listView.style.display = '';
+    renderToolList();
+  }
+
+  function renderToolList() {
+    toolList.innerHTML = TOOLS[activeCat].map(tl =>
+      `<div class="subject-tool-row" data-tool="${tl.id}">
+        <span class="subject-tool-row-name">${t(tl.label)}</span>
+        <span class="subject-tool-row-arrow">&rarr;</span>
+      </div>`
+    ).join('');
+    toolList.querySelectorAll('.subject-tool-row').forEach(row => {
+      row.addEventListener('click', () => openToolDetail(row.dataset.tool));
+    });
+  }
+
+  if (listBackBtn) {
+    listBackBtn.addEventListener('click', () => {
+      listView.style.display = 'none';
+      categoryView.style.display = '';
+    });
+  }
+
+  // STEP 2 -> STEP 3: clicking one tool's line opens its own page,
+  // where the input fields and Calculate button live.
+  function openToolDetail(toolId) {
+    activeToolId = toolId;
+    detailTitle.textContent = t(currentTool().label);
+    listView.style.display = 'none';
     detailView.style.display = '';
-    renderToolPills();
     renderToolBody();
   }
 
   if (backBtn) {
     backBtn.addEventListener('click', () => {
       detailView.style.display = 'none';
-      categoryView.style.display = '';
-    });
-  }
-
-  function renderToolPills() {
-    toolPills.innerHTML = TOOLS[activeCat].map(tl =>
-      `<button class="subject-pill${tl.id === activeToolId ? ' active' : ''}" data-tool="${tl.id}">${t(tl.label)}</button>`
-    ).join('');
-    toolPills.querySelectorAll('.subject-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeToolId = btn.dataset.tool;
-        renderToolPills();
-        renderToolBody();
-      });
+      listView.style.display = '';
     });
   }
 
@@ -219,9 +239,12 @@ const memIndicator = document.getElementById('memIndicator');
 
   window.refreshSubjectToolsI18n = function () {
     renderCategoryGrid();
+    if (listView.style.display !== 'none') {
+      listTitle.textContent = t('subjecttools_cat_' + activeCat.toLowerCase());
+      renderToolList();
+    }
     if (detailView.style.display !== 'none') {
-      detailTitle.textContent = t('subjecttools_cat_' + activeCat.toLowerCase());
-      renderToolPills();
+      detailTitle.textContent = t(currentTool().label);
       renderToolBody();
     }
   };
