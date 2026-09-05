@@ -1120,6 +1120,43 @@ body {
 }
 .subject-back-btn:hover { text-decoration: underline; }
 
+/* Subject tools: 15 tools per category, one full-width line per tool.
+   Tapping a line navigates to a dedicated page for that single tool. */
+.subject-tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.subject-tool-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--case-border);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.subject-tool-row:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+.subject-tool-row-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #eee;
+}
+.subject-tool-row-arrow {
+  color: var(--accent);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
 .subject-pills {
   display: flex;
   flex-wrap: wrap;
