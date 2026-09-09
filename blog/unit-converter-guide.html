@@ -150,8 +150,21 @@
   <h2>Volume Conversions</h2>
   <p>1 liter = 1.057 US quarts, and 1 US gallon = 3.785 liters. Cooking recipes from different countries often mix these units, which is one of the most common real-world reasons people reach for a converter.</p>
 
+  <h2>Worked Example: Converting a Recipe</h2>
+  <p>Suppose a recipe calls for 350°F oven temperature and 2 cups of liquid, but your oven and measuring cups are calibrated in metric units. First, convert temperature: (350 − 32) × 5/9 = 318 × 5/9 ≈ <b>177°C</b>. Then convert volume: 2 US cups ≈ 473 ml, so you'd measure roughly <b>475 ml</b> of liquid. This kind of two-step conversion (temperature and volume together) is exactly the sort of task where doing the arithmetic by hand is slow and error-prone, but a converter tool handles it in seconds.</p>
+
+  <h2>Why Some Conversions Aren't Exact Round Numbers</h2>
+  <p>Conversion factors like 2.54 cm per inch or 1.609 km per mile look oddly specific because the metric and imperial systems were developed independently, based on entirely different historical reference points (a metre was originally defined as a fraction of the Earth's meridian, while an inch has roots in old English body-measurement traditions). There's no clean whole-number relationship between them, which is exactly why manual conversion is so error-prone — small rounding differences compound quickly across multi-step calculations.</p>
+
+  <h2>Common Mistakes People Make</h2>
+  <ul>
+    <li><b>Applying a length conversion factor to weight, or vice versa.</b> Each unit type (length, weight, volume, temperature) has its own distinct set of conversion factors — there's no shortcut that works across categories.</li>
+    <li><b>Forgetting the +32 offset in temperature conversion.</b> Since Celsius-to-Fahrenheit involves both a multiplication and an addition, skipping the offset step gives a plausible-looking but incorrect answer.</li>
+    <li><b>Rounding too early in multi-step conversions.</b> Rounding an intermediate result before completing all the steps can introduce a noticeable error by the final answer — it's best to round only the very last step.</li>
+  </ul>
+
   <h2>Skip the Manual Math</h2>
-  <p>Calvo's <a href="../index.html">unit converter</a> handles all of these conversions instantly, covering length, weight, temperature, volume, and more — no memorized formulas required.</p>
+  <p>Calvo's <a href="../index.html">unit converter</a> handles all of these conversions instantly, covering length, weight, temperature, volume, and more — no memorized formulas required, and no risk of an early-rounding error creeping into a multi-step calculation.</p>
   
     <div class="doc-footer">
       Calvo — Scientific Calculator &amp; Formulas<br>
