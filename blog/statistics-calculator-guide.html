@@ -148,8 +148,26 @@
   <h2>Why These Measures Matter Together</h2>
   <p>No single statistic tells the whole story on its own. The mean gives a central value, the median checks whether that mean is being skewed by outliers, and the standard deviation shows how reliable the mean is as a summary of the whole data set.</p>
 
+  <h2>Worked Example</h2>
+  <p>Consider the data set: 4, 8, 6, 5, 3, 9, 8. <b>Mean</b> = (4+8+6+5+3+9+8)/7 = 43/7 ≈ 6.14. Arranged in order (3, 4, 5, 6, 8, 8, 9), the <b>median</b> is the middle value, 6. The <b>mode</b> is 8, since it appears twice while every other value appears once. The <b>range</b> is 9 − 3 = 6. For standard deviation, you'd find each value's difference from the mean (6.14), square those differences, average them, and take the square root — a process that's fast by hand for small data sets but quickly becomes tedious for larger ones.</p>
+
+  <h2>Population vs Sample Standard Deviation</h2>
+  <p>There are actually two slightly different formulas for standard deviation, depending on whether your data represents an entire population or just a sample drawn from a larger population. The sample version divides by (n−1) instead of n, which slightly increases the result — this correction (called Bessel's correction) accounts for the fact that a sample tends to underestimate the true spread of the full population. Most exam questions specify which one to use, so it's worth checking the wording carefully.</p>
+
+  <h2>Common Mistakes Students Make</h2>
+  <ul>
+    <li><b>Forgetting to sort the data before finding the median.</b> The median only works correctly on ordered data — applying the "middle value" rule to unsorted data gives a wrong answer.</li>
+    <li><b>Assuming every data set has exactly one mode.</b> Some data sets are bimodal (two modes) or have no mode at all, and treating them as if they must have exactly one leads to confusion.</li>
+    <li><b>Confusing standard deviation with variance.</b> Variance is the standard deviation squared (before the final square root step) — reporting variance when standard deviation was asked for (or vice versa) is a very common error, since they differ by an entire squaring operation.</li>
+    <li><b>Using the wrong formula (population vs sample).</b> As explained above, using n instead of (n−1), or vice versa, gives a slightly different result — always confirm which is expected.</li>
+  </ul>
+
+  <h2>Frequently Asked Questions</h2>
+  <p><b>Which average should I use — mean, median, or mode?</b><br>Use the mean for data without extreme outliers, the median when outliers or skew could distort the mean (like house prices or income), and the mode when you specifically care about the most frequently occurring value, such as the most common shoe size sold.</p>
+  <p><b>Why does standard deviation use squared differences instead of just averaging the differences directly?</b><br>Because plain differences from the mean always sum to zero by definition (some are positive, some negative, and they cancel out). Squaring first ensures every difference contributes positively before averaging, which is then corrected by the final square root step to return to the original units.</p>
+
   <h2>Calculate Them Instantly</h2>
-  <p>Calvo's <a href="../index.html">statistics tools</a> calculate mean, median, mode, range, and standard deviation automatically from any list of numbers you enter.</p>
+  <p>Calvo's <a href="../index.html">statistics tools</a> calculate mean, median, mode, range, and standard deviation automatically from any list of numbers you enter — including both population and sample standard deviation, so you don't need to remember which formula applies.</p>
   
     <div class="doc-footer">
       Calvo — Scientific Calculator &amp; Formulas<br>
