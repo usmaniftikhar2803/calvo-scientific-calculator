@@ -150,8 +150,25 @@
   <h2>Real-World Uses</h2>
   <p>Logarithms measure things that span huge ranges of scale — earthquake intensity (the Richter scale), sound loudness (decibels), and pH in chemistry are all logarithmic scales. This is precisely because logarithms compress very large or very small numbers into a manageable range.</p>
 
+  <h2>Solving Equations With the Unknown in the Exponent</h2>
+  <p>Logarithms are the standard tool for solving equations where x appears as an exponent, such as 2ˣ = 32. Taking log of both sides gives log(2ˣ) = log(32), and applying the power rule turns this into x·log(2) = log(32), so x = log(32)/log(2) = 5. This same technique — taking log of both sides, then using the power rule to bring the exponent down — is used throughout compound interest, radioactive decay, and population growth problems.</p>
+
+  <h2>Worked Example: Compound Interest</h2>
+  <p>If an investment of Rs. 10,000 grows at 8% annual interest, how many years does it take to double? Using A = P(1+r)ᵗ, we need 20,000 = 10,000(1.08)ᵗ, which simplifies to 2 = (1.08)ᵗ. Taking log of both sides: log(2) = t·log(1.08), so t = log(2)/log(1.08) ≈ <b>9 years</b>. This is essentially the "Rule of 72" shortcut in disguise — 72 divided by the interest rate roughly estimates doubling time.</p>
+
+  <h2>Common Mistakes Students Make</h2>
+  <ul>
+    <li><b>Using log instead of ln (or vice versa) inconsistently.</b> As long as you use the same base of log on both sides of an equation, the answer comes out correctly — but mixing log and ln within the same calculation introduces errors.</li>
+    <li><b>Forgetting that log(a+b) ≠ log(a) + log(b).</b> The log rules apply to multiplication and division inside the log, not addition — this is one of the most common algebraic errors with logarithms.</li>
+    <li><b>Trying to take the log of a negative number or zero.</b> Logarithms are undefined for zero and negative inputs — if a calculation seems to require this, it usually signals an earlier setup mistake.</li>
+  </ul>
+
+  <h2>Frequently Asked Questions</h2>
+  <p><b>Why does log(100) = 2 instead of some other number?</b><br>Because 10 raised to the power of 2 equals 100 — the logarithm is just asking "what exponent do I need?" and the answer here happens to be a whole number since 100 is a clean power of 10.</p>
+  <p><b>When should I use natural log instead of common log?</b><br>Use natural log (ln) whenever a problem involves continuous growth or decay, calculus derivatives/integrals, or any formula that explicitly includes the constant e — these are the contexts where ln simplifies the math, while log base 10 is more common in everyday scale-based measurements like pH.</p>
+
   <h2>Calculate With Confidence</h2>
-  <p>Calvo's <a href="../index.html">scientific calculator</a> includes both log and ln functions, so you can move between exponential and logarithmic calculations without switching tools.</p>
+  <p>Calvo's <a href="../index.html">scientific calculator</a> includes both log and ln functions, so you can move between exponential and logarithmic calculations without switching tools, whether you're solving a compound interest problem or working through a calculus assignment.</p>
   
     <div class="doc-footer">
       Calvo — Scientific Calculator &amp; Formulas<br>
