@@ -1302,8 +1302,9 @@ body {
 .icon-action-btn.whatsapp-btn:hover { background: rgba(37,211,102,0.15); }
 
 .formula-explain-box {
+  position: relative;
   margin: 4px 0 8px;
-  padding: 12px 14px;
+  padding: 12px 34px 12px 14px;
   border-radius: 10px;
   background: rgba(255,138,31,0.06);
   border: 1px solid rgba(255,138,31,0.2);
@@ -1314,6 +1315,26 @@ body {
 .formula-explain-box .ai-result-card { background: transparent; padding: 0; }
 .formula-explain-box .ai-loading { color: var(--accent); }
 .formula-explain-box .ai-error { color: #ff6b6b; }
+.formula-explain-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  color: #d8d8e0;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.formula-explain-close:hover { color: #fff; background: rgba(255,138,31,0.25); }
+.formula-explain-close:active { transform: translateY(1px); }
 .fav-star-btn { font-size: 1.05rem; color: #888; }
 .fav-star-btn.active { color: var(--accent); }
 
