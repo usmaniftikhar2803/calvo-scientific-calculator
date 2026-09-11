@@ -1798,6 +1798,197 @@ const formulaData = {
     { cat: 'Fluid Mechanics (FSc-BS)', name: 'Capillary Rise', expr: 'h = 2Tcosθ/(ρgr)' },
     { cat: 'Vectors (FSc)', name: 'Angle Between Two Vectors', expr: 'cosθ = (A·B)/(|A||B|)' },
     { cat: 'Vectors (FSc)', name: 'Unit Vector (Physics)', expr: 'â = A/|A|' },
+    { cat: 'Acoustics (9th-FSc)', name: 'Speed of Sound in Air', expr: 'v = 331 + 0.6T (T in °C)' },
+    { cat: 'Acoustics (9th-FSc)', name: 'Sound Intensity Level', expr: 'β = 10 log₁₀(I/I₀) dB' },
+    { cat: 'Acoustics (9th-FSc)', name: 'Doppler Effect (Source Moving Toward)', expr: "f' = f(v/(v - vs))" },
+    { cat: 'Acoustics (9th-FSc)', name: 'Doppler Effect (Source Moving Away)', expr: "f' = f(v/(v + vs))" },
+    { cat: 'Acoustics (FSc-BS)', name: 'Fundamental Frequency (Open Pipe)', expr: 'f1 = v/2L' },
+    { cat: 'Acoustics (FSc-BS)', name: 'Fundamental Frequency (Closed Pipe)', expr: 'f1 = v/4L' },
+    { cat: 'Acoustics (FSc-BS)', name: 'Reverberation Time (Sabine)', expr: 'RT60 = 0.161V/A' },
+    { cat: 'Acoustics (BS-MS)', name: 'Acoustic Impedance', expr: 'Z = ρv' },
+
+    { cat: 'Particle Physics (BS-MS)', name: 'Rest Mass Energy', expr: 'E₀ = m₀c²' },
+    { cat: 'Particle Physics (BS-MS)', name: 'Relativistic Total Energy', expr: 'E² = (pc)² + (m₀c²)²' },
+    { cat: 'Particle Physics (MS)', name: 'Cross Section (Scattering)', expr: 'σ = N_scattered/(N_incident × n × t)' },
+    { cat: 'Particle Physics (MS)', name: 'Decay Rate (Mean Lifetime)', expr: 'τ = 1/λ' },
+    { cat: 'Particle Physics (MS)', name: 'Heisenberg Energy-Time Uncertainty', expr: 'ΔE·Δt ≥ ℏ/2' },
+    { cat: 'Particle Physics (MS)', name: 'Heisenberg Position-Momentum Uncertainty', expr: 'Δx·Δp ≥ ℏ/2' },
+    { cat: 'Particle Physics (BS-MS)', name: 'Threshold Energy for Pair Production', expr: 'Eth = 2mₑc² (in nuclear field)' },
+    { cat: 'Particle Physics (MS)', name: 'Yukawa Potential', expr: 'V(r) = -(g²/r)e^(-r/a)' },
+
+    { cat: 'Astrophysics (BS-MS)', name: "Kepler's Third Law", expr: 'T² ∝ a³' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Escape Velocity (Astronomical Body)', expr: 've = √(2GM/R)' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Luminosity (Stefan-Boltzmann for Stars)', expr: 'L = 4πR²σT⁴' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Apparent vs Absolute Magnitude', expr: 'm - M = 5log₁₀(d/10)' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Parallax Distance', expr: 'd(pc) = 1/p(arcsec)' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Hubble\'s Law', expr: 'v = H₀d' },
+    { cat: 'Astrophysics (MS)', name: 'Jeans Mass (Star Formation)', expr: 'Mj ∝ T^(3/2)/√ρ' },
+    { cat: 'Cosmology (MS)', name: 'Friedmann Equation', expr: '(ȧ/a)² = 8πGρ/3 - kc²/a² + Λc²/3' },
+    { cat: 'Cosmology (MS)', name: 'Critical Density of Universe', expr: 'ρc = 3H²/8πG' },
+    { cat: 'Cosmology (MS)', name: 'Redshift Parameter', expr: 'z = (λobs - λemit)/λemit' },
+
+    { cat: 'Plasma Physics (MS)', name: 'Plasma Frequency', expr: 'ωp = √(ne²/ε₀m)' },
+    { cat: 'Plasma Physics (MS)', name: 'Debye Length', expr: 'λD = √(ε₀kT/ne²)' },
+    { cat: 'Plasma Physics (MS)', name: 'Larmor Radius', expr: 'rL = mv⊥/qB' },
+    { cat: 'Plasma Physics (MS)', name: 'Alfvén Speed', expr: 'vA = B/√(μ₀ρ)' },
+    { cat: 'Plasma Physics (MS)', name: 'Magnetic Pressure', expr: 'Pmag = B²/2μ₀' },
+    { cat: 'Plasma Physics (MS)', name: 'Plasma Beta', expr: 'β = Pthermal/Pmagnetic' },
+    { cat: 'Plasma Physics (MS)', name: 'Saha Ionization Equation', expr: 'nᵢnₑ/nₙ = (2πmₑkT/h²)^(3/2) × 2 × e^(-χ/kT)' },
+
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Population Inversion Gain', expr: 'g(ν) ∝ (N2 - N1)' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Laser Cavity Resonance Condition', expr: 'L = mλ/2' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Photon Energy from Wavelength', expr: 'E = hc/λ' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Fiber Optic Acceptance Angle', expr: 'θa = sin⁻¹(√(n1² - n2²))' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Beam Divergence Angle', expr: 'θ ≈ λ/(πw₀)' },
+    { cat: 'Laser Physics & Photonics (MS)', name: 'Malus\'s Law', expr: 'I = I₀cos²θ' },
+    { cat: 'Laser Physics & Photonics (MS)', name: 'Brewster\'s Angle', expr: 'θB = tan⁻¹(n2/n1)' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Diffraction Grating Equation', expr: 'd sinθ = mλ' },
+
+    { cat: 'Medical Physics (BS-MS)', name: 'Radiation Absorbed Dose', expr: 'D = E/m (Gray)' },
+    { cat: 'Medical Physics (BS-MS)', name: 'Equivalent Dose', expr: 'H = D × wR (Sievert)' },
+    { cat: 'Medical Physics (BS-MS)', name: 'Attenuation of X-rays', expr: 'I = I₀e^(-μx)' },
+    { cat: 'Medical Physics (BS-MS)', name: 'Half Value Layer', expr: 'HVL = ln2/μ' },
+    { cat: 'Medical Physics (BS-MS)', name: 'Ultrasound Doppler Shift (Medical)', expr: 'Δf = 2f₀v cosθ/c' },
+    { cat: 'Medical Physics (BS-MS)', name: 'Specific Absorption Rate (MRI)', expr: 'SAR = σE²/2ρ' },
+    { cat: 'Medical Physics (MS)', name: 'Larmor Frequency (MRI)', expr: 'ω = γB₀' },
+
+    { cat: 'Biophysics (BS-MS)', name: 'Nernst Equation (Membrane Potential)', expr: 'E = (RT/zF) ln([ion]out/[ion]in)' },
+    { cat: 'Biophysics (BS-MS)', name: 'Fick\'s First Law of Diffusion', expr: 'J = -D(dc/dx)' },
+    { cat: 'Biophysics (BS-MS)', name: 'Poiseuille\'s Law (Blood Flow)', expr: 'Q = πΔPr⁴/8ηL' },
+    { cat: 'Biophysics (BS-MS)', name: 'Cell Membrane Capacitance', expr: 'C = εA/d' },
+    { cat: 'Biophysics (MS)', name: 'Boltzmann Distribution (Ion Channels)', expr: 'P ∝ e^(-E/kT)' },
+    { cat: 'Biophysics (BS-MS)', name: 'Stokes-Einstein Diffusion Coefficient', expr: 'D = kT/6πηr' },
+
+    { cat: 'Superconductivity (MS)', name: 'BCS Energy Gap', expr: 'Δ(0) ≈ 1.76 kBTc' },
+    { cat: 'Superconductivity (MS)', name: 'London Equation (Current-Field)', expr: 'J = -(ns e²/m)A' },
+    { cat: 'Superconductivity (MS)', name: 'Critical Magnetic Field', expr: 'Hc(T) = Hc(0)[1 - (T/Tc)²]' },
+    { cat: 'Superconductivity (MS)', name: 'Coherence Length', expr: 'ξ₀ = ℏvF/(πΔ)' },
+    { cat: 'Superconductivity (MS)', name: 'Josephson Current', expr: 'I = Ic sinφ' },
+
+    { cat: 'Geophysics (BS-MS)', name: 'Gravitational Acceleration at Depth', expr: 'g(d) = g₀(1 - d/R)' },
+    { cat: 'Geophysics (BS-MS)', name: 'Seismic P-wave Velocity', expr: 'Vp = √((K + 4μ/3)/ρ)' },
+    { cat: 'Geophysics (BS-MS)', name: 'Seismic S-wave Velocity', expr: 'Vs = √(μ/ρ)' },
+    { cat: 'Geophysics (BS-MS)', name: 'Richter Magnitude', expr: 'M = log₁₀(A) - log₁₀(A₀)' },
+    { cat: 'Geophysics (BS-MS)', name: "Earth's Magnetic Dipole Field", expr: 'B = (μ₀m/4πr³)√(1+3cos²θ)' },
+    { cat: 'Geophysics (MS)', name: 'Geothermal Heat Flow', expr: 'Q = -k(dT/dz)' },
+
+    { cat: 'Continuum Mechanics (BS-MS)', name: 'Stress-Strain Relation (Hooke)', expr: 'σ = Eε' },
+    { cat: 'Continuum Mechanics (BS-MS)', name: "Poisson's Ratio", expr: 'ν = -εlateral/εaxial' },
+    { cat: 'Continuum Mechanics (BS-MS)', name: 'Torsional Stress in Shaft', expr: 'τ = Tr/J' },
+    { cat: 'Continuum Mechanics (BS-MS)', name: 'Beam Bending Stress', expr: 'σ = My/I' },
+    { cat: 'Continuum Mechanics (BS-MS)', name: 'Euler Buckling Load', expr: 'Pcr = π²EI/(KL)²' },
+    { cat: 'Continuum Mechanics (MS)', name: 'Navier-Stokes Equation (Incompressible)', expr: 'ρ(∂v/∂t + v·∇v) = -∇P + μ∇²v + ρg' },
+
+    { cat: 'AC Circuits (FSc-BS)', name: 'Impedance of RLC Series Circuit', expr: 'Z = √(R² + (XL - Xc)²)' },
+    { cat: 'AC Circuits (FSc-BS)', name: 'Power Factor', expr: 'cosφ = R/Z' },
+    { cat: 'AC Circuits (FSc-BS)', name: 'RMS Voltage', expr: 'Vrms = V₀/√2' },
+    { cat: 'AC Circuits (FSc-BS)', name: 'Average AC Power', expr: 'P = VrmsIrms cosφ' },
+    { cat: 'AC Circuits (FSc-BS)', name: 'Q Factor of RLC Circuit', expr: 'Q = (1/R)√(L/C)' },
+    { cat: 'AC Circuits (BS)', name: 'Transformer Turns Ratio', expr: 'Vs/Vp = Ns/Np' },
+    { cat: 'AC Circuits (BS)', name: 'Time Constant (RC Circuit)', expr: 'τ = RC' },
+
+    { cat: 'Semiconductor Devices (FSc-BS)', name: 'Diode Current Equation', expr: 'I = I₀(e^(V/ηVT) - 1)' },
+    { cat: 'Semiconductor Devices (FSc-BS)', name: 'Transistor Current Gain (Beta)', expr: 'β = Ic/Ib' },
+    { cat: 'Semiconductor Devices (FSc-BS)', name: 'Fermi Level (Intrinsic Semiconductor)', expr: 'EF = (Ec + Ev)/2' },
+    { cat: 'Semiconductor Devices (FSc-BS)', name: 'Carrier Concentration Product', expr: 'n·p = ni²' },
+    { cat: 'Semiconductor Devices (FSc-BS)', name: 'Depletion Width (p-n Junction)', expr: 'W = √(2ε(Vbi - V)/q × (1/Na + 1/Nd))' },
+    { cat: 'Semiconductor Devices (BS)', name: 'MOSFET Drain Current (Saturation)', expr: 'ID = ½μnCox(W/L)(VGS - Vt)²' },
+
+    { cat: 'Vibrations & Damping (FSc-BS)', name: 'Damped Oscillation Amplitude', expr: 'A(t) = A₀e^(-bt/2m)' },
+    { cat: 'Vibrations & Damping (FSc-BS)', name: 'Damped Angular Frequency', expr: "ω' = √(ω₀² - (b/2m)²)" },
+    { cat: 'Vibrations & Damping (FSc-BS)', name: 'Quality Factor (Damped Oscillator)', expr: 'Q = ω₀m/b' },
+    { cat: 'Vibrations & Damping (FSc-BS)', name: 'Resonance Condition (Driven Oscillator)', expr: 'ωdriving = ω₀' },
+    { cat: 'Vibrations & Damping (FSc-BS)', name: 'Logarithmic Decrement', expr: 'δ = ln(A₁/A₂)' },
+    { cat: 'Vibrations & Damping (BS)', name: 'Critical Damping Coefficient', expr: 'bc = 2√(mk)' },
+
+    { cat: 'Statistical Thermodynamics (MS)', name: 'Boltzmann Entropy Formula', expr: 'S = kB lnΩ' },
+    { cat: 'Statistical Thermodynamics (MS)', name: 'Helmholtz Free Energy (Statistical)', expr: 'F = -kT lnZ' },
+
+    { cat: 'Acoustics (FSc-BS)', name: 'Sound Wave Pressure Amplitude', expr: 'ΔP = ρvωs₀' },
+    { cat: 'Particle Physics (BS-MS)', name: 'Compton Wavelength', expr: 'λc = h/(mc)' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Wien\'s Displacement Law (Stellar Temp)', expr: 'λmaxT = 2.898×10⁻³ m·K' },
+    { cat: 'Astrophysics (BS-MS)', name: 'Orbital Period from Semi-Major Axis', expr: 'T² = 4π²a³/GM' },
+    { cat: 'Cosmology (MS)', name: 'Cosmological Scale Factor Relation', expr: '1 + z = a(t₀)/a(t)' },
+    { cat: 'Plasma Physics (MS)', name: 'Ion Acoustic Speed', expr: 'cs = √(kTe/mi)' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Optical Path Length', expr: 'OPL = nL' },
+    { cat: 'Laser Physics & Photonics (BS-MS)', name: 'Resolving Power of Grating', expr: 'R = λ/Δλ = mN' },
+    { cat: 'Medical Physics (BS-MS)', name: 'Linear Attenuation Coefficient Relation', expr: 'μ = μm × ρ' },
+    { cat: 'Biophysics (BS-MS)', name: 'Osmotic Pressure', expr: 'π = MRT' },
+    { cat: 'Superconductivity (MS)', name: 'London Penetration Depth (Temp Dependence)', expr: 'λ(T) = λ(0)/√(1 - (T/Tc)⁴)' },
+    { cat: 'Geophysics (BS-MS)', name: 'Free-Air Gravity Correction', expr: 'Δg = 0.3086h (mGal, h in m)' },
+    { cat: 'Continuum Mechanics (BS-MS)', name: 'Young\'s Modulus (Stress-Strain)', expr: 'E = σ/ε' },
+    { cat: 'AC Circuits (BS)', name: 'Apparent Power', expr: 'S = VrmsIrms' },
+    { cat: 'AC Circuits (BS)', name: 'Reactive Power', expr: 'Q = VrmsIrms sinφ' },
+    { cat: 'Semiconductor Devices (BS)', name: 'Diffusion Current Density', expr: 'Jdiff = qD(dn/dx)' },
+    { cat: 'Vibrations & Damping (BS)', name: 'Coupled Oscillator Normal Modes (concept)', expr: 'two masses/springs oscillating at characteristic in-phase and out-of-phase frequencies' },
+    { cat: 'Statistical Thermodynamics (MS)', name: 'Gibbs Free Energy (Statistical)', expr: 'G = -kT ln(Ξ) + μN' },
+    { cat: 'Kinematics (9th-10th)', name: 'Relative Velocity (1D)', expr: 'vAB = vA - vB' },
+    { cat: 'Forces (9th-10th)', name: 'Tension in a String (Equilibrium)', expr: 'T = mg (for hanging mass at rest)' },
+    { cat: 'Pressure (9th-10th)', name: "Pascal's Principle", expr: 'F1/A1 = F2/A2' },
+    { cat: 'Pressure (9th-10th)', name: 'Gauge Pressure', expr: 'Pgauge = Pabsolute - Patm' },
+    { cat: 'Simple Machines (9th-10th)', name: 'Velocity Ratio of a Lever', expr: 'VR = Effort Arm/Load Arm' },
+    { cat: 'Sound (9th-10th)', name: 'Echo Distance', expr: 'd = vt/2' },
+    { cat: 'Heat & Temperature (9th-10th)', name: 'Linear Thermal Expansion', expr: 'ΔL = LαΔT' },
+    { cat: 'Errors & Measurements (9th-FSc)', name: 'Fractional Error', expr: 'Δx/x' },
+
+    { cat: 'Projectile Motion (FSc)', name: 'Range of Projectile', expr: 'R = u²sin2θ/g' },
+    { cat: 'Rotational Motion (FSc)', name: 'Rotational Kinetic Energy', expr: 'KE = ½Iω²' },
+    { cat: 'Work & Energy (FSc)', name: 'Power Delivered by a Force', expr: 'P = Fv cosθ' },
+    { cat: 'Work & Energy (FSc)', name: 'Efficiency of a Machine', expr: 'η = (Output Energy/Input Energy) × 100%' },
+    { cat: 'Elasticity (FSc)', name: "Young's Modulus (Wire)", expr: 'Y = (F/A)/(ΔL/L)' },
+    { cat: 'Elasticity (FSc)', name: 'Elastic Potential Energy', expr: 'U = ½kx²' },
+    { cat: 'Gravitation (FSc)', name: "Kepler's Third Law (Simple Form)", expr: 'T²/R³ = constant' },
+    { cat: 'Gravitation (FSc)', name: 'Gravitational Potential Energy (General)', expr: 'U = -GMm/r' },
+
+    { cat: 'Electrostatics (FSc)', name: 'Electric Potential Energy', expr: 'U = kq1q2/r' },
+    { cat: 'Electrostatics (FSc)', name: 'Capacitance of Parallel Plate Capacitor', expr: 'C = ε₀A/d' },
+    { cat: 'Current Electricity (FSc)', name: "Kirchhoff's Current Law (concept)", expr: 'sum of currents entering a junction equals sum leaving' },
+    { cat: 'Current Electricity (FSc)', name: "Kirchhoff's Voltage Law (concept)", expr: 'sum of voltage drops around a closed loop equals zero' },
+    { cat: 'Current Electricity (FSc)', name: 'Terminal Voltage of a Cell', expr: 'V = ε - Ir' },
+    { cat: 'Magnetism (FSc-BS)', name: 'Force on Moving Charge in Magnetic Field', expr: 'F = qvB sinθ' },
+    { cat: 'Magnetism (FSc-BS)', name: 'Magnetic Field of a Long Straight Wire', expr: 'B = μ₀I/(2πr)' },
+    { cat: 'Magnetism (FSc-BS)', name: 'Magnetic Field inside a Solenoid', expr: 'B = μ₀nI' },
+    { cat: 'Electromagnetism (FSc-BS)', name: "Faraday's Law of Induction", expr: 'ε = -N(dΦ/dt)' },
+    { cat: 'Electromagnetism (FSc-BS)', name: "Lenz's Law (concept)", expr: 'induced current opposes the change in magnetic flux that produced it' },
+
+    { cat: 'Waves & Sound (FSc)', name: 'Wave Speed Equation', expr: 'v = fλ' },
+    { cat: 'Waves & Sound (FSc)', name: 'Mach Number', expr: 'M = v_object/v_sound' },
+    { cat: 'Wave Optics (FSc)', name: "Young's Double Slit Fringe Spacing", expr: 'Δy = λD/d' },
+    { cat: 'Optics (FSc)', name: 'Lens Maker Equation', expr: '1/f = (n-1)(1/R1 - 1/R2)' },
+    { cat: 'Optics (FSc)', name: 'Magnification (Lens)', expr: 'm = v/u = hi/ho' },
+    { cat: 'Oscillations (FSc)', name: 'Spring-Mass System Period', expr: 'T = 2π√(m/k)' },
+
+    { cat: 'Thermodynamics (FSc-BS)', name: 'Efficiency of Carnot Engine', expr: 'η = 1 - Tc/Th' },
+    { cat: 'Thermodynamics (FSc-BS)', name: 'Work Done in Isothermal Process', expr: 'W = nRT ln(Vf/Vi)' },
+
+    { cat: 'Modern Physics (FSc-BS)', name: 'Uncertainty Principle (Simplified)', expr: 'Δx·Δp ≥ h/4π' },
+    { cat: 'Quantum Mechanics (BS-MS)', name: 'Particle in a Box Energy Levels', expr: 'En = n²h²/(8mL²)' },
+    { cat: 'Quantum Mechanics (MS)', name: 'Expectation Value of Position', expr: '⟨x⟩ = ∫ψ* x ψ dx' },
+
+    { cat: 'Nuclear Physics (BS)', name: 'Nuclear Fission Energy Release (concept)', expr: 'Efission = (Σm_products − m_parent)c²' },
+    { cat: 'Solid State Physics (BS-MS)', name: 'Lattice Constant Relation (Cubic)', expr: 'a = (nM/ρNA)^(1/3)' },
+    { cat: 'Condensed Matter (MS)', name: 'Debye Temperature (concept)', expr: 'temperature above which all vibrational modes of a crystal are excited' },
+    { cat: 'Classical Mechanics (BS-MS)', name: "Lagrangian Function", expr: 'L = T - V' },
+
+    { cat: 'Kinematics (9th-10th)', name: 'Uniform Acceleration from v-t Graph', expr: 'a = slope of v-t graph' },
+    { cat: 'Forces (9th-10th)', name: 'Weight vs Mass Relation', expr: 'W = mg' },
+    { cat: 'Pressure (9th-10th)', name: 'Pressure in a Fluid Column', expr: 'P = hρg' },
+    { cat: 'Rotational Motion (FSc)', name: 'Moment of Inertia (Point Mass)', expr: 'I = mr²' },
+    { cat: 'Current Electricity (FSc)', name: 'Power Dissipated in Resistor', expr: 'P = I²R' },
+    { cat: 'Magnetism (FSc-BS)', name: 'Torque on Current Loop in Magnetic Field', expr: 'τ = NIAB sinθ' },
+    { cat: 'Optics (FSc)', name: 'Critical Angle for Total Internal Reflection', expr: 'θc = sin⁻¹(n2/n1)' },
+    { cat: 'Oscillations (FSc)', name: 'Angular Frequency of SHM', expr: 'ω = 2π/T = √(k/m)' },
+    { cat: 'Nuclear Physics (BS)', name: 'Binding Energy per Nucleon', expr: 'BE/A' },
+    { cat: 'Fluid Mechanics (FSc-BS)', name: 'Equation of Continuity', expr: 'A1v1 = A2v2' },
+
+    { cat: 'Pressure (9th-10th)', name: 'Atmospheric Pressure (Barometer)', expr: 'P = hρg (mercury column)' },
+    { cat: 'Electrostatics (FSc)', name: 'Energy Stored in a Capacitor', expr: 'U = ½CV²' },
+    { cat: 'Fluid Mechanics (FSc-BS)', name: 'Stokes\' Law (Terminal Velocity)', expr: 'vt = 2r²(ρ - σ)g/9η' },
+
+    { cat: 'Kinematics (9th-10th)', name: 'Deceleration in Braking', expr: 'a = (v² - u²)/2s' },
+
+    { cat: 'Optics (FSc)', name: 'Power of a Lens', expr: 'P = 1/f (in Diopters)' },
+
   ],
 
   Chemistry: [
@@ -4666,6 +4857,12 @@ function renderFormulas() {
 
 /* ---- Event delegation: favorite toggle + share/copy, for every formula item ---- */
 formulaList.addEventListener('click', (e) => {
+  const closeExplainBtn = e.target.closest('.formula-explain-close');
+  if (closeExplainBtn) {
+    const box = closeExplainBtn.closest('.formula-explain-box');
+    if (box) box.style.display = 'none';
+    return;
+  }
   const starBtn = e.target.closest('.fav-star-btn');
   if (starBtn) {
     toggleFavByKey(starBtn.dataset.key);
@@ -4708,18 +4905,20 @@ formulaList.addEventListener('click', (e) => {
     const name = row.querySelector('.formula-name').textContent;
     const expr = row.querySelector('.formula-expr').textContent;
 
+    const closeBtnHtml = `<button class="formula-explain-close" title="Close">&#10005;</button>`;
+
     if (typeof window.calvoExplainFormula !== 'function') {
-      box.innerHTML = `<span class="ai-error">${t('explain_unavailable')}</span>`;
+      box.innerHTML = `${closeBtnHtml}<span class="ai-error">${t('explain_unavailable')}</span>`;
       return;
     }
 
-    box.innerHTML = `<span class="ai-loading">${t('explain_loading')}</span>`;
+    box.innerHTML = `${closeBtnHtml}<span class="ai-loading">${t('explain_loading')}</span>`;
     window.calvoExplainFormula(name, expr, (result) => {
       if (result.error) {
-        box.innerHTML = `<span class="ai-error">${result.error}</span>`;
+        box.innerHTML = `${closeBtnHtml}<span class="ai-error">${result.error}</span>`;
         return;
       }
-      box.innerHTML = result.html;
+      box.innerHTML = `${closeBtnHtml}${result.html}`;
       box.dataset.loaded = '1';
     });
   }
