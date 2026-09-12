@@ -2465,6 +2465,138 @@
           const q10 = Math.pow(R2 / R1, 10 / (T2 - T1));
           out.innerHTML = resultCell(t('tool_q10_result'), round(q10, 4));
         }
+      },
+      {
+        id: 'markRecapture',
+        label: 'tool_mark_recapture',
+        render: () => `
+          <p class="tool-hint">${t('tool_mark_recapture_hint')}</p>
+          ${field('mrMarked', 'tool_marked_first_catch', '', 'number')}
+          ${field('mrTotalSecond', 'tool_total_second_catch', '', 'number')}
+          ${field('mrRecaptured', 'tool_recaptured_marked', '', 'number')}
+        `,
+        calc: (out) => {
+          const M = num('mrMarked'), C = num('mrTotalSecond'), R = num('mrRecaptured');
+          if (M === null || C === null || R === null || M <= 0 || C <= 0 || R <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          if (R > C || R > M) { out.innerHTML = errorBox(t('tool_err_mark_recapture')); return; }
+          const N = (M * C) / R;
+          out.innerHTML = resultCell(t('tool_estimated_population'), Math.round(N));
+        }
+      },
+      {
+        id: 'atpYield',
+        label: 'tool_atp_yield',
+        render: () => `
+          <p class="tool-hint">${t('tool_atp_yield_hint')}</p>
+          ${field('atpGlucose', 'tool_glucose_moles', 'mol', 'number')}
+          ${selectField('atpType', 'tool_respiration_type', [
+            { value: 'aerobic', label: t('tool_aerobic') },
+            { value: 'anaerobic', label: t('tool_anaerobic') }
+          ])}
+        `,
+        calc: (out) => {
+          const glucose = num('atpGlucose');
+          const type = str('atpType');
+          if (glucose === null || glucose <= 0) { out.innerHTML = errorBox(t('tool_err_glucose')); return; }
+          const perGlucose = type === 'anaerobic' ? 2 : 36;
+          const total = glucose * perGlucose;
+          out.innerHTML =
+            resultCell(t('tool_atp_per_glucose'), perGlucose + ' ATP') +
+            resultCell(t('tool_total_atp'), round(total, 3) + ' ATP');
+        }
+      },
+      {
+        id: 'predictedVitalCapacity',
+        label: 'tool_vital_capacity',
+        render: () => `
+          <p class="tool-hint">${t('tool_vital_capacity_hint')}</p>
+          ${field('vcAge', 'tool_age_years', 'years', 'number')}
+          ${field('vcHeight', 'tool_height_cm', 'cm', 'number')}
+          ${selectField('vcGender', 'tool_gender', [
+            { value: 'male', label: t('tool_male') },
+            { value: 'female', label: t('tool_female') }
+          ])}
+        `,
+        calc: (out) => {
+          const age = num('vcAge'), height = num('vcHeight');
+          const gender = str('vcGender');
+          if (age === null || height === null || age <= 0 || height <= 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const factor = gender === 'female' ? (21.78 - 0.101 * age) : (27.63 - 0.112 * age);
+          const vcML = factor * height;
+          out.innerHTML =
+            resultCell(t('tool_predicted_vc'), round(vcML, 1) + ' mL') +
+            resultCell(t('tool_predicted_vc_liters'), round(vcML / 1000, 3) + ' L');
+        }
+      },
+      {
+        id: 'bloodTypeInheritance',
+        label: 'tool_blood_type_inheritance',
+        render: () => `
+          <p class="tool-hint">${t('tool_blood_type_hint')}</p>
+          ${selectField('btParent1', 'tool_parent1_genotype', [
+            { value: 'AA', label: t('tool_genotype_aa') },
+            { value: 'AO', label: t('tool_genotype_ao') },
+            { value: 'BB', label: t('tool_genotype_bb') },
+            { value: 'BO', label: t('tool_genotype_bo') },
+            { value: 'AB', label: t('tool_genotype_ab') },
+            { value: 'OO', label: t('tool_genotype_oo') }
+          ])}
+          ${selectField('btParent2', 'tool_parent2_genotype', [
+            { value: 'AA', label: t('tool_genotype_aa') },
+            { value: 'AO', label: t('tool_genotype_ao') },
+            { value: 'BB', label: t('tool_genotype_bb') },
+            { value: 'BO', label: t('tool_genotype_bo') },
+            { value: 'AB', label: t('tool_genotype_ab') },
+            { value: 'OO', label: t('tool_genotype_oo') }
+          ])}
+        `,
+        calc: (out) => {
+          const alleleMap = {
+            AA: ['A', 'A'], AO: ['A', 'O'], BB: ['B', 'B'],
+            BO: ['B', 'O'], AB: ['A', 'B'], OO: ['O', 'O']
+          };
+          const g1 = alleleMap[str('btParent1')];
+          const g2 = alleleMap[str('btParent2')];
+          if (!g1 || !g2) { out.innerHTML = errorBox(t('tool_err_blood_type')); return; }
+          function phenotype(pair) {
+            const s = pair.slice().sort().join('');
+            if (s === 'AA' || s === 'AO') return 'A';
+            if (s === 'BB' || s === 'BO') return 'B';
+            if (s === 'AB') return 'AB';
+            return 'O';
+          }
+          const counts = {};
+          g1.forEach(a => g2.forEach(b => {
+            const p = phenotype([a, b]);
+            counts[p] = (counts[p] || 0) + 1;
+          }));
+          const order = ['A', 'B', 'AB', 'O'];
+          out.innerHTML = order
+            .filter(p => counts[p])
+            .map(p => resultCell(t('tool_blood_type') + ' ' + p, counts[p] + '/4'))
+            .join('');
+        }
+      },
+      {
+        id: 'karvonenHeartRate',
+        label: 'tool_karvonen_hr',
+        render: () => `
+          <p class="tool-hint">${t('tool_karvonen_hint')}</p>
+          ${field('khrAge', 'tool_age_years', 'years', 'number')}
+          ${field('khrResting', 'tool_resting_heart_rate', 'bpm', 'number')}
+        `,
+        calc: (out) => {
+          const age = num('khrAge'), resting = num('khrResting');
+          if (age === null || resting === null || age <= 0 || resting <= 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const maxHR = 220 - age;
+          const hrr = maxHR - resting;
+          const low = hrr * 0.5 + resting;
+          const high = hrr * 0.85 + resting;
+          out.innerHTML =
+            resultCell(t('tool_max_hr'), round(maxHR, 0)) +
+            resultCell(t('tool_heart_rate_reserve'), round(hrr, 0)) +
+            resultCell(t('tool_karvonen_target_range'), round(low, 0) + ' - ' + round(high, 0));
+        }
       }
     ],
 
@@ -2840,6 +2972,240 @@
           const income = num('roeIncome'), equity = num('roeEquity');
           if (income === null || equity === null || equity === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
           out.innerHTML = resultCell(t('tool_roe_result'), round((income / equity) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'returnOnAssets',
+        label: 'tool_return_on_assets',
+        render: () => `
+          <p class="tool-hint">${t('tool_roa_hint')}</p>
+          ${field('roaIncome', 'tool_net_income', '', 'number')}
+          ${field('roaAssets', 'tool_total_assets', '', 'number')}
+        `,
+        calc: (out) => {
+          const income = num('roaIncome'), assets = num('roaAssets');
+          if (income === null || assets === null || assets === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_roa_result'), round((income / assets) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'grossProfitMargin',
+        label: 'tool_gross_profit_margin',
+        render: () => `
+          <p class="tool-hint">${t('tool_gpm_hint')}</p>
+          ${field('gpmSales', 'tool_net_sales', '', 'number')}
+          ${field('gpmCogs', 'tool_cogs', '', 'number')}
+        `,
+        calc: (out) => {
+          const sales = num('gpmSales'), cogs = num('gpmCogs');
+          if (sales === null || cogs === null || sales === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const gp = sales - cogs;
+          out.innerHTML =
+            resultCell(t('tool_gross_profit'), round(gp, 2)) +
+            resultCell(t('tool_gpm_result'), round((gp / sales) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'netProfitMargin',
+        label: 'tool_net_profit_margin',
+        render: () => `
+          <p class="tool-hint">${t('tool_npm_hint')}</p>
+          ${field('npmIncome', 'tool_net_income', '', 'number')}
+          ${field('npmSales', 'tool_net_sales', '', 'number')}
+        `,
+        calc: (out) => {
+          const income = num('npmIncome'), sales = num('npmSales');
+          if (income === null || sales === null || sales === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_npm_result'), round((income / sales) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'workingCapital',
+        label: 'tool_working_capital',
+        render: () => `
+          <p class="tool-hint">${t('tool_working_capital_hint')}</p>
+          ${field('wcAssets', 'tool_current_assets', '', 'number')}
+          ${field('wcLiabilities', 'tool_current_liabilities', '', 'number')}
+        `,
+        calc: (out) => {
+          const assets = num('wcAssets'), liabilities = num('wcLiabilities');
+          if (assets === null || liabilities === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_working_capital_result'), round(assets - liabilities, 2));
+        }
+      },
+      {
+        id: 'earningsPerShare',
+        label: 'tool_eps',
+        render: () => `
+          <p class="tool-hint">${t('tool_eps_hint')}</p>
+          ${field('epsIncome', 'tool_net_income', '', 'number')}
+          ${field('epsPreferred', 'tool_preferred_dividends', 'optional', 'number')}
+          ${field('epsShares', 'tool_shares_outstanding', '', 'number')}
+        `,
+        calc: (out) => {
+          const income = num('epsIncome'), shares = num('epsShares');
+          let preferred = num('epsPreferred');
+          if (preferred === null) preferred = 0;
+          if (income === null || shares === null || shares === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const eps = (income - preferred) / shares;
+          out.innerHTML = resultCell(t('tool_eps_result'), round(eps, 3));
+        }
+      },
+      {
+        id: 'priceEarningsRatio',
+        label: 'tool_pe_ratio',
+        render: () => `
+          <p class="tool-hint">${t('tool_pe_hint')}</p>
+          ${field('peMarketPrice', 'tool_market_price', '', 'number')}
+          ${field('peEps', 'tool_eps_value', '', 'number')}
+        `,
+        calc: (out) => {
+          const price = num('peMarketPrice'), eps = num('peEps');
+          if (price === null || eps === null || eps === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_pe_result'), round(price / eps, 2));
+        }
+      },
+      {
+        id: 'dividendYield',
+        label: 'tool_dividend_yield',
+        render: () => `
+          <p class="tool-hint">${t('tool_dy_hint')}</p>
+          ${field('dyDividend', 'tool_dividend_per_share', '', 'number')}
+          ${field('dyPrice', 'tool_market_price', '', 'number')}
+        `,
+        calc: (out) => {
+          const div = num('dyDividend'), price = num('dyPrice');
+          if (div === null || price === null || price === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_dy_result'), round((div / price) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'receivablesTurnover',
+        label: 'tool_receivables_turnover',
+        render: () => `
+          <p class="tool-hint">${t('tool_rt_hint')}</p>
+          ${field('rtSales', 'tool_net_credit_sales', '', 'number')}
+          ${field('rtAvgAR', 'tool_avg_receivables', '', 'number')}
+        `,
+        calc: (out) => {
+          const sales = num('rtSales'), avgAR = num('rtAvgAR');
+          if (sales === null || avgAR === null || avgAR === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const turnover = sales / avgAR;
+          out.innerHTML =
+            resultCell(t('tool_turnover_ratio'), round(turnover, 3)) +
+            resultCell(t('tool_dso_result'), round(365 / turnover, 1));
+        }
+      },
+      {
+        id: 'assetTurnover',
+        label: 'tool_asset_turnover',
+        render: () => `
+          <p class="tool-hint">${t('tool_at_hint')}</p>
+          ${field('atSales', 'tool_net_sales', '', 'number')}
+          ${field('atAssets', 'tool_total_assets', '', 'number')}
+        `,
+        calc: (out) => {
+          const sales = num('atSales'), assets = num('atAssets');
+          if (sales === null || assets === null || assets === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_at_result'), round(sales / assets, 3));
+        }
+      },
+      {
+        id: 'contributionMargin',
+        label: 'tool_contribution_margin',
+        render: () => `
+          <p class="tool-hint">${t('tool_cm_hint')}</p>
+          ${field('cmPrice', 'tool_price_per_unit', '', 'number')}
+          ${field('cmVar', 'tool_variable_cost', '', 'number')}
+        `,
+        calc: (out) => {
+          const price = num('cmPrice'), varCost = num('cmVar');
+          if (price === null || varCost === null || price === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const cm = price - varCost;
+          out.innerHTML =
+            resultCell(t('tool_cm_per_unit'), round(cm, 2)) +
+            resultCell(t('tool_cm_ratio'), round((cm / price) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'interestCoverageRatio',
+        label: 'tool_interest_coverage',
+        render: () => `
+          <p class="tool-hint">${t('tool_icr_hint')}</p>
+          ${field('icrEbit', 'tool_ebit', '', 'number')}
+          ${field('icrInterest', 'tool_interest_expense', '', 'number')}
+        `,
+        calc: (out) => {
+          const ebit = num('icrEbit'), interest = num('icrInterest');
+          if (ebit === null || interest === null || interest === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_icr_result'), round(ebit / interest, 3));
+        }
+      },
+      {
+        id: 'ruleOf72',
+        label: 'tool_rule_of_72',
+        render: () => `
+          <p class="tool-hint">${t('tool_rule72_hint')}</p>
+          ${field('r72Rate', 'tool_rate_percent', '%', 'number')}
+        `,
+        calc: (out) => {
+          const rate = num('r72Rate');
+          if (rate === null || rate <= 0) { out.innerHTML = errorBox(t('tool_err_rate')); return; }
+          out.innerHTML = resultCell(t('tool_years_to_double'), round(72 / rate, 2));
+        }
+      },
+      {
+        id: 'perpetuityValue',
+        label: 'tool_perpetuity_value',
+        render: () => `
+          <p class="tool-hint">${t('tool_perpetuity_hint')}</p>
+          ${field('perpPmt', 'tool_payment_amount', '', 'number')}
+          ${field('perpRate', 'tool_discount_rate', '%', 'number')}
+          ${field('perpGrowth', 'tool_perpetuity_growth_rate', 'optional, %', 'number')}
+        `,
+        calc: (out) => {
+          const pmt = num('perpPmt'), ratePct = num('perpRate');
+          let growthPct = num('perpGrowth');
+          if (growthPct === null) growthPct = 0;
+          if (pmt === null || ratePct === null || ratePct <= growthPct) { out.innerHTML = errorBox(t('tool_err_perpetuity')); return; }
+          const r = ratePct / 100, g = growthPct / 100;
+          const pv = pmt / (r - g);
+          out.innerHTML = resultCell(t('tool_present_val'), round(pv, 2));
+        }
+      },
+      {
+        id: 'wacc',
+        label: 'tool_wacc',
+        render: () => `
+          <p class="tool-hint">${t('tool_wacc_hint')}</p>
+          ${field('waccEquity', 'tool_equity_value', '', 'number')}
+          ${field('waccDebt', 'tool_debt_value', '', 'number')}
+          ${field('waccCostEquity', 'tool_cost_of_equity', '%', 'number')}
+          ${field('waccCostDebt', 'tool_cost_of_debt', '%', 'number')}
+          ${field('waccTax', 'tool_tax_rate', '%', 'number')}
+        `,
+        calc: (out) => {
+          const E = num('waccEquity'), D = num('waccDebt'), Re = num('waccCostEquity'), Rd = num('waccCostDebt'), tax = num('waccTax');
+          if (E === null || D === null || Re === null || Rd === null || tax === null || (E + D) === 0) { out.innerHTML = errorBox(t('tool_err_5fields')); return; }
+          const V = E + D;
+          const wacc = (E / V) * Re + (D / V) * Rd * (1 - tax / 100);
+          out.innerHTML = resultCell(t('tool_wacc_result'), round(wacc, 3) + '%');
+        }
+      },
+      {
+        id: 'realInterestRate',
+        label: 'tool_real_interest_rate',
+        render: () => `
+          <p class="tool-hint">${t('tool_rir_hint')}</p>
+          ${field('rirNominal', 'tool_nominal_rate', '%', 'number')}
+          ${field('rirInflation', 'tool_inflation_rate', '%', 'number')}
+        `,
+        calc: (out) => {
+          const nominalPct = num('rirNominal'), inflationPct = num('rirInflation');
+          if (nominalPct === null || inflationPct === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const nominal = nominalPct / 100, inflation = inflationPct / 100;
+          const real = ((1 + nominal) / (1 + inflation) - 1) * 100;
+          out.innerHTML = resultCell(t('tool_rir_result'), round(real, 3) + '%');
         }
       }
     ],
