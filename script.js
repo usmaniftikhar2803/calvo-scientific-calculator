@@ -904,6 +904,17 @@ const keyMap = {
   'keyEng': () => {}, 'keySd': () => toggleFractionView(), 'keyCalc': () => {},
   'keyIntegral': () => { addToExpr('\u222B'); }, 'keySquare': () => {},
   'keyAsin': () => addToExpr('asin('), 'keyAcos': () => addToExpr('acos('),
+  // Basic (mobile-style) keypad — reuses the same underlying functions
+  'keyBasicAc': () => clearAll(), 'keyBasicDel': () => clearEntry(),
+  'keyBasicPercent': () => addToExpr('%'), 'keyBasicDiv': () => addToExpr('/'),
+  'keyBasic7': () => addToExpr('7'), 'keyBasic8': () => addToExpr('8'), 'keyBasic9': () => addToExpr('9'),
+  'keyBasicMul': () => addToExpr('*'),
+  'keyBasic4': () => addToExpr('4'), 'keyBasic5': () => addToExpr('5'), 'keyBasic6': () => addToExpr('6'),
+  'keyBasicSub': () => addToExpr('-'),
+  'keyBasic1': () => addToExpr('1'), 'keyBasic2': () => addToExpr('2'), 'keyBasic3': () => addToExpr('3'),
+  'keyBasicAdd': () => addToExpr('+'),
+  'keyBasicNeg': () => addToExpr('(-'), 'keyBasic0': () => addToExpr('0'), 'keyBasicDot': () => addToExpr('.'),
+  'keyBasicEq': () => { setShift(false); setAlpha(false); setHyp(false); calculate(); },
 };
 
 document.querySelectorAll('.key').forEach(key => {
@@ -916,6 +927,39 @@ document.querySelectorAll('.key').forEach(key => {
     }
   });
 });
+
+/* ---------- BASIC / SCIENTIFIC CALCULATOR VIEW TOGGLE ---------- */
+(function () {
+  const caseEl = document.querySelector('.calculator-case');
+  const basicBtn = document.getElementById('calcViewBasicBtn');
+  const sciBtn = document.getElementById('calcViewSciBtn');
+  const brandTag = document.getElementById('calcBrandTag');
+  const modelBadge = document.getElementById('calcModelBadge');
+  const modelTag = document.getElementById('calcModelTag');
+  const keypadSci = document.getElementById('keypad');
+  const keypadBasic = document.getElementById('keypadBasic');
+  if (!caseEl || !basicBtn || !sciBtn || !keypadSci || !keypadBasic) return;
+
+  function applyCalcView(view) {
+    const isBasic = view === 'basic';
+    caseEl.classList.toggle('basic-view', isBasic);
+    basicBtn.classList.toggle('active', isBasic);
+    sciBtn.classList.toggle('active', !isBasic);
+    keypadSci.style.display = isBasic ? 'none' : 'grid';
+    keypadBasic.style.display = isBasic ? 'grid' : 'none';
+    if (brandTag) brandTag.textContent = isBasic ? 'Basic Calculator' : 'Scientific Calculator';
+    if (modelBadge) modelBadge.textContent = isBasic ? 'B-100' : 'SC-991';
+    if (modelTag) modelTag.textContent = isBasic ? 'Simple Mode' : 'Dual Power';
+    try { localStorage.setItem('calvo_calc_view', view); } catch (e) {}
+  }
+
+  basicBtn.addEventListener('click', () => applyCalcView('basic'));
+  sciBtn.addEventListener('click', () => applyCalcView('scientific'));
+
+  let savedView = 'scientific';
+  try { savedView = localStorage.getItem('calvo_calc_view') || 'scientific'; } catch (e) {}
+  applyCalcView(savedView);
+})();
 
 document.getElementById('replayBtn').addEventListener('click', () => {
   if (historyStack.length === 0) return;
