@@ -653,6 +653,36 @@ body {
   margin-top: 1px;
 }
 
+/* Basic / Scientific calculator view toggle */
+.calc-view-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 0 2px 8px;
+}
+.calc-view-btn {
+  flex: 1;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #9a9aa5;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px 0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.calc-view-btn:hover { color: #fff; }
+.calc-view-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1a1a1a;
+}
+
+/* Hide scientific-only rows (SHIFT/ALPHA/REPLAY) when Basic view is active */
+.calculator-case.basic-view .sci-only { display: none; }
+
 /* LCD Display */
 .lcd-frame {
   background: var(--lcd-frame-bg);
@@ -942,6 +972,25 @@ body {
 }
 .keypad > .key.equals:nth-last-child(-n+6) {
   font-size: clamp(0.84rem, 5.2vw, 1.18rem);
+}
+
+/* Basic (mobile-style) keypad: clean 4-column grid, bigger touch targets.
+   Placed after the rules above so it reliably wins the specificity tie
+   against .keypad > .key:nth-last-child(-n+6) for this keypad's own keys. */
+.keypad.keypad-basic {
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 8px;
+}
+.keypad.keypad-basic .key {
+  border-radius: 12px;
+  font-size: clamp(1.05rem, 5.5vw, 1.4rem);
+}
+.keypad.keypad-basic .key.dark.num {
+  font-size: clamp(1.15rem, 6vw, 1.55rem);
+}
+.keypad.keypad-basic .key.equals {
+  font-size: clamp(1.25rem, 6.5vw, 1.7rem);
 }
 
 .shift-label {
