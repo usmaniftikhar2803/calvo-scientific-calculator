@@ -389,13 +389,19 @@
           <div class="brand-mark">=x</div>
           <div class="brand-text">
             <div class="brand-name">Calvo</div>
-            <div class="brand-tag">Scientific Calculator</div>
+            <div class="brand-tag" id="calcBrandTag">Scientific Calculator</div>
           </div>
         </div>
         <div class="brand-right">
-          <div class="model-badge">SC-991</div>
-          <div class="model-tag">Dual Power</div>
+          <div class="model-badge" id="calcModelBadge">SC-991</div>
+          <div class="model-tag" id="calcModelTag">Dual Power</div>
         </div>
+      </div>
+
+      <!-- Basic / Scientific View Toggle -->
+      <div class="calc-view-toggle" id="calcViewToggle">
+        <button class="calc-view-btn" data-calcview="basic" id="calcViewBasicBtn">Basic</button>
+        <button class="calc-view-btn active" data-calcview="scientific" id="calcViewSciBtn">Scientific</button>
       </div>
 
       <!-- LCD Display -->
@@ -422,7 +428,7 @@
       </div>
 
       <!-- Mode Row -->
-      <div class="mode-row">
+      <div class="mode-row sci-only">
         <button class="mode-btn shift" id="shiftBtn"><span class="mode-icon">&#8679;</span> SHIFT</button>
         <button class="replay-btn" id="replayBtn">
           <span class="replay-arrow">&#9650;</span>
@@ -496,6 +502,34 @@
         <button class="key dark" data-shift="" data-main="Ans" id="keyAns">Ans</button>
         <button class="key equals" data-shift="" data-main="=" id="keyEq">=</button>
         <button class="key black" data-shift="acos" data-main="acos" id="keyAcos">acos</button>
+      </div>
+
+      <!-- Basic Keypad (mobile-calculator style, shown only in Basic view) -->
+      <div class="keypad keypad-basic" id="keypadBasic" style="display:none;">
+        <button class="key orange" id="keyBasicAc">AC</button>
+        <button class="key orange" id="keyBasicDel">DEL</button>
+        <button class="key black" id="keyBasicPercent">%</button>
+        <button class="key dark op" id="keyBasicDiv">&#247;</button>
+
+        <button class="key dark num" id="keyBasic7">7</button>
+        <button class="key dark num" id="keyBasic8">8</button>
+        <button class="key dark num" id="keyBasic9">9</button>
+        <button class="key dark op" id="keyBasicMul">&#215;</button>
+
+        <button class="key dark num" id="keyBasic4">4</button>
+        <button class="key dark num" id="keyBasic5">5</button>
+        <button class="key dark num" id="keyBasic6">6</button>
+        <button class="key dark op" id="keyBasicSub">&#8722;</button>
+
+        <button class="key dark num" id="keyBasic1">1</button>
+        <button class="key dark num" id="keyBasic2">2</button>
+        <button class="key dark num" id="keyBasic3">3</button>
+        <button class="key dark op" id="keyBasicAdd">+</button>
+
+        <button class="key black" id="keyBasicNeg">(-)</button>
+        <button class="key dark num" id="keyBasic0">0</button>
+        <button class="key dark num" id="keyBasicDot">.</button>
+        <button class="key equals" id="keyBasicEq">=</button>
       </div>
 
       <div class="calc-footer">
