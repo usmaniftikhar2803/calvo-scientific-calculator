@@ -2328,6 +2328,512 @@
             resultCell(t('tool_area_result'), round(area, 4)) +
             resultCell(t('tool_perimeter_result'), round(perimeter, 4));
         }
+      },
+      {
+        id: 'percentageCalc',
+        label: 'tool_percentage_calc',
+        render: () => `
+          <p class="tool-hint">${t('tool_percentage_calc_hint')}</p>
+          ${field('pctX', 'tool_percent_x', '%', 'number')}
+          ${field('pctY', 'tool_percent_y', '', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('pctOld', 'tool_old_value', '', 'number')}
+          ${field('pctNew', 'tool_new_value', '', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('pctX'), y = num('pctY'), oldV = num('pctOld'), newV = num('pctNew');
+          let html = '';
+          if (x !== null && y !== null) html += resultCell(t('tool_percent_of_result'), round((x / 100) * y, 4));
+          if (oldV !== null && newV !== null && oldV !== 0) html += resultCell(t('tool_percent_change_result'), round(((newV - oldV) / oldV) * 100, 3) + '%');
+          if (!html) { out.innerHTML = errorBox(t('tool_err_percentage')); return; }
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'fractionCalc',
+        label: 'tool_fraction_calc',
+        render: () => `
+          <p class="tool-hint">${t('tool_fraction_calc_hint')}</p>
+          <div class="tool-vector-row">
+            ${field('fcN1', 'tool_numerator1', '', 'number')}
+            ${field('fcD1', 'tool_denominator1', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('fcN2', 'tool_numerator2', '', 'number')}
+            ${field('fcD2', 'tool_denominator2', '', 'number')}
+          </div>
+          ${selectField('fcOp', 'tool_fraction_operation', [
+            { value: 'add', label: '+' },
+            { value: 'sub', label: '−' },
+            { value: 'mul', label: '×' },
+            { value: 'div', label: '÷' }
+          ])}
+        `,
+        calc: (out) => {
+          const n1 = num('fcN1'), d1 = num('fcD1'), n2 = num('fcN2'), d2 = num('fcD2');
+          const op = str('fcOp');
+          if (n1 === null || d1 === null || n2 === null || d2 === null || d1 === 0 || d2 === 0) {
+            out.innerHTML = errorBox(t('tool_err_fraction')); return;
+          }
+          let rn, rd;
+          if (op === 'add') { rn = n1 * d2 + n2 * d1; rd = d1 * d2; }
+          else if (op === 'sub') { rn = n1 * d2 - n2 * d1; rd = d1 * d2; }
+          else if (op === 'mul') { rn = n1 * n2; rd = d1 * d2; }
+          else { if (n2 === 0) { out.innerHTML = errorBox(t('tool_err_fraction')); return; } rn = n1 * d2; rd = d1 * n2; }
+          const g = gcd(rn, rd) || 1;
+          let sn = rn / g, sd = rd / g;
+          if (sd < 0) { sn = -sn; sd = -sd; }
+          out.innerHTML =
+            resultCell(t('tool_fraction_result'), `${sn}/${sd}`) +
+            resultCell(t('tool_decimal_result'), round(sn / sd, 6));
+        }
+      },
+      {
+        id: 'triangleSolver',
+        label: 'tool_triangle_solver',
+        render: () => `
+          <p class="tool-hint">${t('tool_triangle_solver_hint')}</p>
+          ${field('triA', 'tool_side_a', '', 'number')}
+          ${field('triB', 'tool_side_b', '', 'number')}
+          ${field('triC', 'tool_side_c', '', 'number')}
+          ${field('triAngleC', 'tool_included_angle', '°', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('triA'), b = num('triB');
+          let c = num('triC');
+          const angleCdeg = num('triAngleC');
+          if (a === null || b === null) { out.innerHTML = errorBox(t('tool_err_triangle')); return; }
+          let html = '';
+          if (c === null && angleCdeg !== null) {
+            const C = angleCdeg * Math.PI / 180;
+            c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(C));
+            html += resultCell(t('tool_side_c_result'), round(c, 5));
+          }
+          if (c === null) { out.innerHTML = errorBox(t('tool_err_triangle')); return; }
+          const angleA = Math.acos(Math.max(-1, Math.min(1, (b * b + c * c - a * a) / (2 * b * c)))) * 180 / Math.PI;
+          const angleB = Math.acos(Math.max(-1, Math.min(1, (a * a + c * c - b * b) / (2 * a * c)))) * 180 / Math.PI;
+          const angleC = 180 - angleA - angleB;
+          html +=
+            resultCell(t('tool_angle_a_result'), round(angleA, 3) + '°') +
+            resultCell(t('tool_angle_b_result'), round(angleB, 3) + '°') +
+            resultCell(t('tool_angle_c_result'), round(angleC, 3) + '°');
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'circleEquation',
+        label: 'tool_circle_equation',
+        render: () => `
+          <p class="tool-hint">${t('tool_circle_equation_hint')}</p>
+          ${field('ceH', 'tool_center_h', '', 'number')}
+          ${field('ceK', 'tool_center_k', '', 'number')}
+          ${field('ceR', 'tool_radius', '', 'number')}
+        `,
+        calc: (out) => {
+          const h = num('ceH'), k = num('ceK'), r = num('ceR');
+          if (h === null || k === null || r === null || r <= 0) { out.innerHTML = errorBox(t('tool_err_circle')); return; }
+          const hSign = h >= 0 ? '-' : '+';
+          const kSign = k >= 0 ? '-' : '+';
+          const eq = `(x ${hSign} ${Math.abs(h)})² + (y ${kSign} ${Math.abs(k)})² = ${round(r * r, 4)}`;
+          out.innerHTML =
+            resultCell(t('tool_circle_eq_result'), eq) +
+            resultCell(t('tool_circle_area_result'), round(Math.PI * r * r, 4)) +
+            resultCell(t('tool_circumference_result'), round(2 * Math.PI * r, 4));
+        }
+      },
+      {
+        id: 'polynomialEval',
+        label: 'tool_polynomial_eval',
+        render: () => `
+          <p class="tool-hint">${t('tool_polynomial_eval_hint')}</p>
+          ${field('peCoeffs', 'tool_coefficients', 'e.g. 1,-3,2')}
+          ${field('peX', 'tool_x_value', '', 'number')}
+        `,
+        calc: (out) => {
+          const raw = str('peCoeffs');
+          const coeffs = raw.split(',').map(s => parseFloat(s.trim()));
+          const x = num('peX');
+          if (!raw || coeffs.some(c => isNaN(c)) || x === null) { out.innerHTML = errorBox(t('tool_err_polynomial')); return; }
+          let result = 0;
+          coeffs.forEach(c => { result = result * x + c; });
+          out.innerHTML = resultCell(t('tool_polynomial_result'), round(result, 6));
+        }
+      },
+      {
+        id: 'setOperations',
+        label: 'tool_set_operations',
+        render: () => `
+          <p class="tool-hint">${t('tool_set_operations_hint')}</p>
+          ${field('setA', 'tool_set_a', 'e.g. 1, 2, 3, 4')}
+          ${field('setB', 'tool_set_b', 'e.g. 3, 4, 5, 6')}
+        `,
+        calc: (out) => {
+          const rawA = str('setA'), rawB = str('setB');
+          const a = rawA.split(',').map(s => parseFloat(s.trim())).filter(x => !isNaN(x));
+          const b = rawB.split(',').map(s => parseFloat(s.trim())).filter(x => !isNaN(x));
+          if (!a.length || !b.length) { out.innerHTML = errorBox(t('tool_err_sets')); return; }
+          const setA = [...new Set(a)], setB = [...new Set(b)];
+          const union = [...new Set([...setA, ...setB])].sort((x, y) => x - y);
+          const intersection = setA.filter(x => setB.includes(x)).sort((x, y) => x - y);
+          const difference = setA.filter(x => !setB.includes(x)).sort((x, y) => x - y);
+          out.innerHTML =
+            resultCell(t('tool_union_result'), '{' + union.join(', ') + '}') +
+            resultCell(t('tool_intersection_result'), '{' + intersection.join(', ') + '}') +
+            resultCell(t('tool_difference_result'), '{' + difference.join(', ') + '}');
+        }
+      },
+      {
+        id: 'probabilityCalc',
+        label: 'tool_probability_calc',
+        render: () => `
+          <p class="tool-hint">${t('tool_probability_calc_hint')}</p>
+          ${field('probA', 'tool_prob_a', '0 - 1', 'number')}
+          ${field('probB', 'tool_prob_b', '0 - 1', 'number')}
+        `,
+        calc: (out) => {
+          const pa = num('probA'), pb = num('probB');
+          if (pa === null || pa < 0 || pa > 1) { out.innerHTML = errorBox(t('tool_err_probability')); return; }
+          let html = resultCell('P(A)', round(pa, 4));
+          if (pb !== null && pb >= 0 && pb <= 1) {
+            html += resultCell('P(B)', round(pb, 4));
+            html += resultCell(t('tool_prob_and_result'), round(pa * pb, 4));
+            html += resultCell(t('tool_prob_or_result'), round(pa + pb - pa * pb, 4));
+          }
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'pointLineDistance',
+        label: 'tool_point_line_distance',
+        render: () => `
+          <p class="tool-hint">${t('tool_point_line_distance_hint')}</p>
+          <div class="tool-vector-row">
+            ${field('pldA', 'tool_coeff_a_line', 'A', 'number')}
+            ${field('pldB', 'tool_coeff_b_line', 'B', 'number')}
+            ${field('pldC', 'tool_coeff_c_line', 'C', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('pldX0', 'tool_point_x0', '', 'number')}
+            ${field('pldY0', 'tool_point_y0', '', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const A = num('pldA'), B = num('pldB'), C = num('pldC'), x0 = num('pldX0'), y0 = num('pldY0');
+          if (A === null || B === null || C === null || x0 === null || y0 === null || (A === 0 && B === 0)) {
+            out.innerHTML = errorBox(t('tool_err_pointline')); return;
+          }
+          const dist = Math.abs(A * x0 + B * y0 + C) / Math.sqrt(A * A + B * B);
+          out.innerHTML = resultCell(t('tool_distance_result'), round(dist, 5));
+        }
+      },
+      {
+        id: 'angleBetweenLines',
+        label: 'tool_angle_between_lines',
+        render: () => `
+          <p class="tool-hint">${t('tool_angle_between_lines_hint')}</p>
+          ${field('ablM1', 'tool_slope1', '', 'number')}
+          ${field('ablM2', 'tool_slope2', '', 'number')}
+        `,
+        calc: (out) => {
+          const m1 = num('ablM1'), m2 = num('ablM2');
+          if (m1 === null || m2 === null) { out.innerHTML = errorBox(t('tool_err_slopes')); return; }
+          const denom = 1 + m1 * m2;
+          let angle;
+          if (denom === 0) angle = 90;
+          else angle = Math.atan(Math.abs((m2 - m1) / denom)) * 180 / Math.PI;
+          out.innerHTML = resultCell(t('tool_angle_between'), round(angle, 3) + '°');
+        }
+      },
+      {
+        id: 'distance3D',
+        label: 'tool_distance_3d',
+        render: () => `
+          <p class="tool-hint">${t('tool_distance_3d_hint')}</p>
+          <div class="tool-vector-row">
+            ${field('d3X1', 'tool_x1', '', 'number')}
+            ${field('d3Y1', 'tool_y1', '', 'number')}
+            ${field('d3Z1', 'tool_z1', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('d3X2', 'tool_x2', '', 'number')}
+            ${field('d3Y2', 'tool_y2', '', 'number')}
+            ${field('d3Z2', 'tool_z2', '', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const x1 = num('d3X1'), y1 = num('d3Y1'), z1 = num('d3Z1');
+          const x2 = num('d3X2'), y2 = num('d3Y2'), z2 = num('d3Z2');
+          if ([x1, y1, z1, x2, y2, z2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_coords3d')); return; }
+          const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2) + Math.pow(z2 - z1, 2));
+          out.innerHTML =
+            resultCell(t('tool_distance_result'), round(dist, 5)) +
+            resultCell(t('tool_midpoint_result'), `(${round((x1 + x2) / 2, 4)}, ${round((y1 + y2) / 2, 4)}, ${round((z1 + z2) / 2, 4)})`);
+        }
+      },
+      {
+        id: 'matrixMultiply2x2',
+        label: 'tool_matrix_multiply',
+        render: () => `
+          <p class="tool-hint">${t('tool_matrix_multiply_hint')}</p>
+          <p class="tool-hint">Matrix A</p>
+          <div class="tool-vector-row">
+            ${field('mmA11', 'tool_m11', '', 'number')}
+            ${field('mmA12', 'tool_m12', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('mmA21', 'tool_m21', '', 'number')}
+            ${field('mmA22', 'tool_m22', '', 'number')}
+          </div>
+          <p class="tool-hint">Matrix B</p>
+          <div class="tool-vector-row">
+            ${field('mmB11', 'tool_m11', '', 'number')}
+            ${field('mmB12', 'tool_m12', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('mmB21', 'tool_m21', '', 'number')}
+            ${field('mmB22', 'tool_m22', '', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a11 = num('mmA11'), a12 = num('mmA12'), a21 = num('mmA21'), a22 = num('mmA22');
+          const b11 = num('mmB11'), b12 = num('mmB12'), b21 = num('mmB21'), b22 = num('mmB22');
+          const vals = [a11, a12, a21, a22, b11, b12, b21, b22];
+          if (vals.some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const c11 = a11 * b11 + a12 * b21, c12 = a11 * b12 + a12 * b22;
+          const c21 = a21 * b11 + a22 * b21, c22 = a21 * b12 + a22 * b22;
+          const product = `[${round(c11, 4)}, ${round(c12, 4)}; ${round(c21, 4)}, ${round(c22, 4)}]`;
+          out.innerHTML = resultCell(t('tool_product_matrix'), product);
+        }
+      },
+      {
+        id: 'linearSystem2',
+        label: 'tool_linear_system2',
+        render: () => `
+          <p class="tool-hint">${t('tool_linear_system2_hint')}</p>
+          <div class="tool-vector-row">
+            ${field('lsA1', 'a₁', '', 'number')}
+            ${field('lsB1', 'b₁', '', 'number')}
+            ${field('lsC1', 'c₁', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lsA2', 'a₂', '', 'number')}
+            ${field('lsB2', 'b₂', '', 'number')}
+            ${field('lsC2', 'c₂', '', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a1 = num('lsA1'), b1 = num('lsB1'), c1 = num('lsC1');
+          const a2 = num('lsA2'), b2 = num('lsB2'), c2 = num('lsC2');
+          if ([a1, b1, c1, a2, b2, c2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const D = a1 * b2 - a2 * b1;
+          if (D === 0) { out.innerHTML = errorBox(t('tool_err_nosolution')); return; }
+          const x = (c1 * b2 - c2 * b1) / D;
+          const y = (a1 * c2 - a2 * c1) / D;
+          out.innerHTML = resultCell(t('tool_solution_x'), round(x, 5)) + resultCell(t('tool_solution_y'), round(y, 5));
+        }
+      },
+      {
+        id: 'matrix3x3Det',
+        label: 'tool_matrix3x3',
+        render: () => `
+          <p class="tool-hint">${t('tool_matrix3x3_hint')}</p>
+          <div class="tool-vector-row">
+            ${field('m3_11', 'a₁₁', '', 'number')}
+            ${field('m3_12', 'a₁₂', '', 'number')}
+            ${field('m3_13', 'a₁₃', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('m3_21', 'a₂₁', '', 'number')}
+            ${field('m3_22', 'a₂₂', '', 'number')}
+            ${field('m3_23', 'a₂₃', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('m3_31', 'a₃₁', '', 'number')}
+            ${field('m3_32', 'a₃₂', '', 'number')}
+            ${field('m3_33', 'a₃₃', '', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ids = ['m3_11','m3_12','m3_13','m3_21','m3_22','m3_23','m3_31','m3_32','m3_33'];
+          const v = ids.map(num);
+          if (v.some(x => x === null)) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const [a11,a12,a13,a21,a22,a23,a31,a32,a33] = v;
+          const det = a11 * (a22 * a33 - a23 * a32) - a12 * (a21 * a33 - a23 * a31) + a13 * (a21 * a32 - a22 * a31);
+          out.innerHTML = resultCell(t('tool_determinant'), round(det, 5));
+        }
+      },
+      {
+        id: 'binomialProbability',
+        label: 'tool_binomial_probability',
+        render: () => `
+          <p class="tool-hint">${t('tool_binomial_hint')}</p>
+          ${field('bpN', 'tool_trials_n', '', 'number')}
+          ${field('bpK', 'tool_successes_k', '', 'number')}
+          ${field('bpP', 'tool_success_prob_p', '0 - 1', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('bpN'), k = num('bpK'), p = num('bpP');
+          if (n === null || k === null || p === null || k < 0 || k > n || p < 0 || p > 1 ||
+              !Number.isInteger(n) || !Number.isInteger(k)) {
+            out.innerHTML = errorBox(t('tool_err_binomial')); return;
+          }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const nCk = fact(n) / (fact(k) * fact(n - k));
+          const prob = nCk * Math.pow(p, k) * Math.pow(1 - p, n - k);
+          out.innerHTML =
+            resultCell(t('tool_probability_result'), round(prob, 6)) +
+            resultCell(t('tool_expected_value'), round(n * p, 3));
+        }
+      },
+      {
+        id: 'zScore',
+        label: 'tool_z_score',
+        render: () => `
+          <p class="tool-hint">${t('tool_z_score_hint')}</p>
+          ${field('zX', 'tool_value_x', '', 'number')}
+          ${field('zMean', 'tool_mean_mu', '', 'number')}
+          ${field('zStd', 'tool_stddev_sigma', '', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('zX'), mean = num('zMean'), std = num('zStd');
+          if (x === null || mean === null || std === null || std === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          out.innerHTML = resultCell(t('tool_z_score_result'), round((x - mean) / std, 4));
+        }
+      },
+      {
+        id: 'polynomialDerivative',
+        label: 'tool_polynomial_derivative',
+        render: () => `
+          <p class="tool-hint">${t('tool_poly_deriv_hint')}</p>
+          ${field('pdCoeffs', 'tool_poly_coefficients', 'e.g. 3,2,-5')}
+        `,
+        calc: (out) => {
+          const raw = str('pdCoeffs');
+          const coeffs = raw.split(',').map(c => parseFloat(c.trim()));
+          if (coeffs.length < 2 || coeffs.some(isNaN)) { out.innerHTML = errorBox(t('tool_err_polynomial')); return; }
+          const degree = coeffs.length - 1;
+          const derivCoeffs = coeffs.slice(0, -1).map((c, i) => c * (degree - i));
+          function toPolyStr(cs, startDeg) {
+            const terms = cs.map((c, i) => {
+              const deg = startDeg - i;
+              if (c === 0) return null;
+              const coefStr = (Math.abs(c) === 1 && deg !== 0) ? (c < 0 ? '-' : (i > 0 ? '+' : '')) : (c > 0 && i > 0 ? '+' + c : c.toString());
+              if (deg === 0) return coefStr;
+              if (deg === 1) return coefStr + 'x';
+              return coefStr + 'x^' + deg;
+            }).filter(t => t !== null);
+            return terms.length ? terms.join('').replace(/\+\-/g, '-') : '0';
+          }
+          out.innerHTML = resultCell(t('tool_derivative_result'), toPolyStr(derivCoeffs, degree - 1));
+        }
+      },
+      {
+        id: 'polynomialIntegral',
+        label: 'tool_polynomial_integral',
+        render: () => `
+          <p class="tool-hint">${t('tool_poly_integral_hint')}</p>
+          ${field('piCoeffs', 'tool_poly_coefficients', 'e.g. 3,2,-5')}
+          ${field('piLower', 'tool_lower_bound', '', 'number')}
+          ${field('piUpper', 'tool_upper_bound', '', 'number')}
+        `,
+        calc: (out) => {
+          const raw = str('piCoeffs');
+          const coeffs = raw.split(',').map(c => parseFloat(c.trim()));
+          if (coeffs.length < 1 || coeffs.some(isNaN)) { out.innerHTML = errorBox(t('tool_err_polynomial')); return; }
+          const degree = coeffs.length - 1;
+          const integCoeffs = coeffs.map((c, i) => c / (degree - i + 1));
+          function toPolyStr(cs, startDeg) {
+            const terms = cs.map((c, i) => {
+              const deg = startDeg - i + 1;
+              if (c === 0) return null;
+              const coefStr = (Math.abs(c) === 1 && deg !== 0) ? (c < 0 ? '-' : (i > 0 ? '+' : '')) : (c > 0 && i > 0 ? '+' + round(c, 5) : round(c, 5));
+              if (deg === 0) return coefStr;
+              if (deg === 1) return coefStr + 'x';
+              return coefStr + 'x^' + deg;
+            }).filter(t => t !== null);
+            return (terms.length ? terms.join('').replace(/\+\-/g, '-') : '0') + ' + C';
+          }
+          function evalPoly(cs, deg, xVal) {
+            return cs.reduce((sum, c, i) => sum + c * Math.pow(xVal, deg - i + 1), 0);
+          }
+          let html = resultCell(t('tool_integral_result'), toPolyStr(integCoeffs, degree));
+          const lower = num('piLower'), upper = num('piUpper');
+          if (lower !== null && upper !== null) {
+            const definite = evalPoly(coeffs.map((c, i) => c / (degree - i + 1)), degree, upper) -
+                              evalPoly(coeffs.map((c, i) => c / (degree - i + 1)), degree, lower);
+            html += resultCell(t('tool_definite_integral_result'), round(definite, 5));
+          }
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'modularArithmetic',
+        label: 'tool_modular_arithmetic',
+        render: () => `
+          <p class="tool-hint">${t('tool_modular_hint')}</p>
+          ${field('modA', 'tool_value_a', '', 'number')}
+          ${field('modN', 'tool_modulus_n', '', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('modA'), n = num('modN');
+          if (a === null || n === null || n <= 0 || !Number.isInteger(a) || !Number.isInteger(n)) {
+            out.innerHTML = errorBox(t('tool_err_modular')); return;
+          }
+          const mod = ((a % n) + n) % n;
+          function extGcd(a, b) {
+            if (b === 0) return [a, 1, 0];
+            const [g, x1, y1] = extGcd(b, a % b);
+            return [g, y1, x1 - Math.floor(a / b) * y1];
+          }
+          const [g, x] = extGcd(mod, n);
+          let html = resultCell(t('tool_mod_result'), mod);
+          if (g === 1) html += resultCell(t('tool_mod_inverse_result'), ((x % n) + n) % n);
+          else html += errorBox(t('tool_no_inverse'));
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'polarRectangular',
+        label: 'tool_polar_rectangular',
+        render: () => `
+          <p class="tool-hint">${t('tool_polar_rect_hint')}</p>
+          ${field('prX', 'tool_x_coord', '', 'number')}
+          ${field('prY', 'tool_y_coord', '', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('prR', 'tool_radius_r', '', 'number')}
+          ${field('prTheta', 'tool_angle_theta', '', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('prX'), y = num('prY'), r = num('prR'), thetaDeg = num('prTheta');
+          if (x !== null && y !== null) {
+            const rCalc = Math.sqrt(x * x + y * y);
+            const thetaCalc = Math.atan2(y, x) * 180 / Math.PI;
+            out.innerHTML = resultCell(t('tool_radius_r'), round(rCalc, 5)) + resultCell(t('tool_angle_theta'), round(thetaCalc, 3));
+          } else if (r !== null && thetaDeg !== null) {
+            const rad = thetaDeg * Math.PI / 180;
+            out.innerHTML = resultCell(t('tool_x_coord'), round(r * Math.cos(rad), 5)) + resultCell(t('tool_y_coord'), round(r * Math.sin(rad), 5));
+          } else {
+            out.innerHTML = errorBox(t('tool_err_polarrect'));
+          }
+        }
+      },
+      {
+        id: 'inverseTrig',
+        label: 'tool_inverse_trig',
+        render: () => `
+          <p class="tool-hint">${t('tool_inverse_trig_hint')}</p>
+          ${field('itVal', 'tool_input_value', '', 'number')}
+        `,
+        calc: (out) => {
+          const v = num('itVal');
+          if (v === null) { out.innerHTML = errorBox(t('tool_err_inversetrig')); return; }
+          let html = resultCell(t('tool_arctan_result'), round(Math.atan(v) * 180 / Math.PI, 4));
+          if (v >= -1 && v <= 1) {
+            html += resultCell(t('tool_arcsin_result'), round(Math.asin(v) * 180 / Math.PI, 4));
+            html += resultCell(t('tool_arccos_result'), round(Math.acos(v) * 180 / Math.PI, 4));
+          }
+          out.innerHTML = html;
+        }
       }
     ]
   };
