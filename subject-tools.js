@@ -547,6 +547,126 @@
           const moles = soluteMass / molarMass;
           out.innerHTML = resultCell(t('tool_molality_result'), round(moles / solventKg, 5));
         }
+      },
+      {
+        id: 'titration',
+        label: 'tool_titration',
+        render: () => `
+          <p class="tool-hint">${t('tool_titration_hint')}</p>
+          ${field('titMa', 'tool_acid_molarity', 'mol/L', 'number')}
+          ${field('titVa', 'tool_acid_volume', 'L', 'number')}
+          ${field('titNa', 'tool_acid_valence', 'default 1', 'number')}
+          ${field('titMb', 'tool_base_molarity', 'mol/L', 'number')}
+          ${field('titVb', 'tool_base_volume', 'L', 'number')}
+          ${field('titNb', 'tool_base_valence', 'default 1', 'number')}
+        `,
+        calc: (out) => {
+          let Ma = num('titMa'), Va = num('titVa'), Mb = num('titMb'), Vb = num('titVb');
+          const na = num('titNa') || 1, nb = num('titNb') || 1;
+          const filled = [Ma, Va, Mb, Vb].filter(x => x !== null).length;
+          if (filled !== 3) { out.innerHTML = errorBox(t('tool_err_titration')); return; }
+          if (Ma === null) Ma = (Mb * Vb * nb) / (Va * na);
+          else if (Va === null) Va = (Mb * Vb * nb) / (Ma * na);
+          else if (Mb === null) Mb = (Ma * Va * na) / (Vb * nb);
+          else if (Vb === null) Vb = (Ma * Va * na) / (Mb * nb);
+          out.innerHTML =
+            resultCell(t('tool_acid_molarity'), round(Ma, 5)) +
+            resultCell(t('tool_acid_volume'), round(Va, 5)) +
+            resultCell(t('tool_base_molarity'), round(Mb, 5)) +
+            resultCell(t('tool_base_volume'), round(Vb, 5));
+        }
+      },
+      {
+        id: 'freezingPointDepression',
+        label: 'tool_freezing_point_depression',
+        render: () => `
+          <p class="tool-hint">${t('tool_fpd_hint')}</p>
+          ${field('fpdI', 'tool_vant_hoff_factor', 'default 1', 'number')}
+          ${field('fpdKf', 'tool_kf_constant', '°C·kg/mol', 'number')}
+          ${field('fpdM', 'tool_molality_value', 'mol/kg', 'number')}
+          ${field('fpdT0', 'tool_original_temp', '°C', 'number')}
+        `,
+        calc: (out) => {
+          const i = num('fpdI') || 1, Kf = num('fpdKf'), m = num('fpdM'), T0 = num('fpdT0');
+          if (Kf === null || m === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const deltaTf = i * Kf * m;
+          let html = resultCell(t('tool_delta_tf'), round(deltaTf, 4) + ' °C');
+          if (T0 !== null) html += resultCell(t('tool_new_freezing_point'), round(T0 - deltaTf, 4) + ' °C');
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'boilingPointElevation',
+        label: 'tool_boiling_point_elevation',
+        render: () => `
+          <p class="tool-hint">${t('tool_bpe_hint')}</p>
+          ${field('bpeI', 'tool_vant_hoff_factor', 'default 1', 'number')}
+          ${field('bpeKb', 'tool_kb_constant', '°C·kg/mol', 'number')}
+          ${field('bpeM', 'tool_molality_value', 'mol/kg', 'number')}
+          ${field('bpeT0', 'tool_original_bp', '°C', 'number')}
+        `,
+        calc: (out) => {
+          const i = num('bpeI') || 1, Kb = num('bpeKb'), m = num('bpeM'), T0 = num('bpeT0');
+          if (Kb === null || m === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const deltaTb = i * Kb * m;
+          let html = resultCell(t('tool_delta_tb'), round(deltaTb, 4) + ' °C');
+          if (T0 !== null) html += resultCell(t('tool_new_boiling_point'), round(T0 + deltaTb, 4) + ' °C');
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'arrhenius',
+        label: 'tool_arrhenius',
+        render: () => `
+          <p class="tool-hint">${t('tool_arrhenius_hint')}</p>
+          ${field('arrK', 'tool_rate_constant_k', '1/s', 'number')}
+          ${field('arrA', 'tool_pre_exponential_a', '', 'number')}
+          ${field('arrEa', 'tool_activation_energy', 'J/mol', 'number')}
+          ${field('arrT', 'tool_temp_kelvin', 'K', 'number')}
+        `,
+        calc: (out) => {
+          const R = 8.314;
+          let k = num('arrK'), A = num('arrA'), Ea = num('arrEa'), T = num('arrT');
+          const filled = [k, A, Ea, T].filter(x => x !== null).length;
+          if (filled !== 3) { out.innerHTML = errorBox(t('tool_err_arrhenius')); return; }
+          try {
+            if (k === null) k = A * Math.exp(-Ea / (R * T));
+            else if (A === null) A = k * Math.exp(Ea / (R * T));
+            else if (Ea === null) Ea = -R * T * Math.log(k / A);
+            else if (T === null) T = -Ea / (R * Math.log(k / A));
+            if (!isFinite(k) || !isFinite(A) || !isFinite(Ea) || !isFinite(T)) throw new Error('domain');
+          } catch (e) { out.innerHTML = errorBox(t('tool_err_arrhenius')); return; }
+          out.innerHTML =
+            resultCell(t('tool_rate_constant_k'), k.toExponential(4)) +
+            resultCell(t('tool_pre_exponential_a'), A.toExponential(4)) +
+            resultCell(t('tool_activation_energy'), round(Ea, 2) + ' J/mol') +
+            resultCell(t('tool_temp_kelvin'), round(T, 3) + ' K');
+        }
+      },
+      {
+        id: 'bufferPH',
+        label: 'tool_buffer_ph',
+        render: () => `
+          <p class="tool-hint">${t('tool_buffer_ph_hint')}</p>
+          ${field('bphPka', 'tool_pka', '', 'number')}
+          ${field('bphConcA', 'tool_conjugate_base_conc', 'mol/L', 'number')}
+          ${field('bphConcHA', 'tool_weak_acid_conc', 'mol/L', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('bphPh', 'tool_ph_value', '', 'number')}
+        `,
+        calc: (out) => {
+          const pKa = num('bphPka'), concA = num('bphConcA'), concHA = num('bphConcHA'), ph = num('bphPh');
+          if (pKa === null) { out.innerHTML = errorBox(t('tool_err_buffer')); return; }
+          if (concA !== null && concHA !== null && concHA !== 0) {
+            const pH = pKa + Math.log10(concA / concHA);
+            out.innerHTML = resultCell(t('tool_ph_value'), round(pH, 3));
+          } else if (ph !== null) {
+            const ratio = Math.pow(10, ph - pKa);
+            out.innerHTML = resultCell(t('tool_ratio_result'), round(ratio, 4));
+          } else {
+            out.innerHTML = errorBox(t('tool_err_buffer'));
+          }
+        }
       }
     ],
 
@@ -909,6 +1029,123 @@
           const observed = freq * (v + vo) / (v + vs);
           out.innerHTML = resultCell(t('tool_observed_frequency'), round(observed, 3) + ' Hz');
         }
+      },
+      {
+        id: 'capacitor',
+        label: 'tool_capacitor',
+        render: () => `
+          <p class="tool-hint">${t('tool_capacitor_hint')}</p>
+          ${field('capQ', 'tool_charge_coulomb', 'C', 'number')}
+          ${field('capC', 'tool_capacitance', 'F', 'number')}
+          ${field('capV', 'tool_voltage', 'V', 'number')}
+        `,
+        calc: (out) => {
+          let Q = num('capQ'), C = num('capC'), V = num('capV');
+          const filled = [Q, C, V].filter(x => x !== null).length;
+          if (filled !== 2) { out.innerHTML = errorBox(t('tool_err_exactly2')); return; }
+          if (Q === null) Q = C * V;
+          else if (C === null) C = Q / V;
+          else if (V === null) V = Q / C;
+          const energy = 0.5 * C * V * V;
+          out.innerHTML =
+            resultCell(t('tool_charge_coulomb'), round(Q, 6) + ' C') +
+            resultCell(t('tool_capacitance'), round(C, 6) + ' F') +
+            resultCell(t('tool_voltage'), round(V, 4) + ' V') +
+            resultCell(t('tool_capacitor_energy'), round(energy, 6) + ' J');
+        }
+      },
+      {
+        id: 'electricPower',
+        label: 'tool_electric_power',
+        render: () => `
+          <p class="tool-hint">${t('tool_electric_power_hint')}</p>
+          ${field('epV', 'tool_voltage', 'V', 'number')}
+          ${field('epI', 'tool_current', 'A', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('epP', 'tool_power', 'W', 'number')}
+          ${field('epTime', 'tool_time_hours', 'hours', 'number')}
+          ${field('epRate', 'tool_rate_per_kwh', '', 'number')}
+        `,
+        calc: (out) => {
+          const V = num('epV'), I = num('epI'), time = num('epTime'), rate = num('epRate');
+          let P = num('epP');
+          if (P === null && V !== null && I !== null) P = V * I;
+          if (P === null) { out.innerHTML = errorBox(t('tool_err_electricpower')); return; }
+          let html = resultCell(t('tool_power'), round(P, 4) + ' W');
+          if (time !== null) {
+            const kwh = (P * time) / 1000;
+            html += resultCell(t('tool_energy_kwh'), round(kwh, 5) + ' kWh');
+            if (rate !== null) html += resultCell(t('tool_estimated_cost'), round(kwh * rate, 2));
+          }
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'freeFall',
+        label: 'tool_free_fall',
+        render: () => `
+          <p class="tool-hint">${t('tool_free_fall_hint')}</p>
+          ${field('ffH', 'tool_height_m', 'm', 'number')}
+          ${field('ffT', 'tool_time_s', 's', 'number')}
+          ${field('ffV', 'tool_final_velocity', 'm/s', 'number')}
+          ${field('ffG', 'tool_gravity', 'default 9.8', 'number')}
+        `,
+        calc: (out) => {
+          const g = num('ffG') || 9.8;
+          let h = num('ffH'), time = num('ffT'), v = num('ffV');
+          if (h === null && time === null && v === null) { out.innerHTML = errorBox(t('tool_err_freefall')); return; }
+          if (h !== null) { time = Math.sqrt((2 * h) / g); v = g * time; }
+          else if (time !== null) { h = 0.5 * g * time * time; v = g * time; }
+          else if (v !== null) { time = v / g; h = (v * v) / (2 * g); }
+          out.innerHTML =
+            resultCell(t('tool_height_m'), round(h, 4) + ' m') +
+            resultCell(t('tool_time_s'), round(time, 4) + ' s') +
+            resultCell(t('tool_final_velocity'), round(v, 4) + ' m/s');
+        }
+      },
+      {
+        id: 'buoyancy',
+        label: 'tool_buoyancy',
+        render: () => `
+          <p class="tool-hint">${t('tool_buoyancy_hint')}</p>
+          ${field('buoyRho', 'tool_fluid_density', 'kg/m³', 'number')}
+          ${field('buoyV', 'tool_submerged_volume', 'm³', 'number')}
+          ${field('buoyG', 'tool_gravity', 'default 9.8', 'number')}
+          ${field('buoyW', 'tool_object_weight', 'N', 'number')}
+        `,
+        calc: (out) => {
+          const rho = num('buoyRho'), V = num('buoyV'), g = num('buoyG') || 9.8, W = num('buoyW');
+          if (rho === null || V === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const Fb = rho * V * g;
+          let html = resultCell(t('tool_buoyant_force'), round(Fb, 4) + ' N');
+          if (W !== null) html += resultCell(t('tool_category'), Fb >= W ? t('tool_will_float') : t('tool_will_sink'));
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'springSHM',
+        label: 'tool_spring_shm',
+        render: () => `
+          <p class="tool-hint">${t('tool_spring_shm_hint')}</p>
+          ${field('shmK', 'tool_spring_constant', 'N/m', 'number')}
+          ${field('shmX', 'tool_displacement_m', 'm', 'number')}
+          ${field('shmMass', 'tool_mass_kg', 'kg, optional', 'number')}
+        `,
+        calc: (out) => {
+          const k = num('shmK'), x = num('shmX'), m = num('shmMass');
+          if (k === null || x === null) { out.innerHTML = errorBox(t('tool_err_spring')); return; }
+          const F = k * Math.abs(x);
+          const pe = 0.5 * k * x * x;
+          let html =
+            resultCell(t('tool_restoring_force'), round(F, 4) + ' N') +
+            resultCell(t('tool_elastic_pe'), round(pe, 4) + ' J');
+          if (m !== null && m > 0) {
+            const T = 2 * Math.PI * Math.sqrt(m / k);
+            html += resultCell(t('tool_shm_period'), round(T, 4) + ' s');
+            html += resultCell(t('tool_shm_frequency'), round(1 / T, 4) + ' Hz');
+          }
+          out.innerHTML = html;
+        }
       }
     ],
 
@@ -1225,6 +1462,106 @@
             resultCell(t('tool_volume_result'), round(V, 4)) +
             resultCell(t('tool_sa_vol_ratio_result'), round(SA / V, 5));
         }
+      },
+      {
+        id: 'dnaMeltingTemp',
+        label: 'tool_dna_melting_temp',
+        render: () => `
+          <p class="tool-hint">${t('tool_dna_melting_temp_hint')}</p>
+          ${field('tmSeq', 'tool_dna_sequence', 'e.g. ATGCGCTA')}
+        `,
+        calc: (out) => {
+          const seq = str('tmSeq').toUpperCase().replace(/\s+/g, '');
+          if (!seq || /[^ATGC]/.test(seq)) { out.innerHTML = errorBox(t('tool_err_dna')); return; }
+          const gc = (seq.match(/[GC]/g) || []).length;
+          const at = (seq.match(/[AT]/g) || []).length;
+          const tm = 4 * gc + 2 * at;
+          out.innerHTML =
+            resultCell(t('tool_melting_temp_result'), tm + ' °C') +
+            resultCell(t('tool_total_bases'), seq.length);
+        }
+      },
+      {
+        id: 'trophicEnergy',
+        label: 'tool_trophic_energy',
+        render: () => `
+          <p class="tool-hint">${t('tool_trophic_energy_hint')}</p>
+          ${field('teEnergy', 'tool_producer_energy', '', 'number')}
+          ${field('teEff', 'tool_transfer_efficiency', 'default 10', 'number')}
+        `,
+        calc: (out) => {
+          const energy = num('teEnergy');
+          const eff = (num('teEff') === null ? 10 : num('teEff')) / 100;
+          if (energy === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const l2 = energy * eff, l3 = l2 * eff, l4 = l3 * eff;
+          out.innerHTML =
+            resultCell(t('tool_primary_consumer_energy'), round(l2, 4)) +
+            resultCell(t('tool_secondary_consumer_energy'), round(l3, 4)) +
+            resultCell(t('tool_tertiary_consumer_energy'), round(l4, 4));
+        }
+      },
+      {
+        id: 'bodyFatPercentage',
+        label: 'tool_body_fat_percentage',
+        render: () => `
+          <p class="tool-hint">${t('tool_body_fat_hint')}</p>
+          ${field('bfWaist', 'tool_waist_cm', 'cm', 'number')}
+          ${field('bfNeck', 'tool_neck_cm', 'cm', 'number')}
+          ${field('bfHeight', 'tool_height_cm', 'cm', 'number')}
+          ${field('bfHip', 'tool_hip_cm', 'cm, females only', 'number')}
+          ${selectField('bfGender', 'tool_gender', [
+            { value: 'male', label: t('tool_male') },
+            { value: 'female', label: t('tool_female') }
+          ])}
+        `,
+        calc: (out) => {
+          const waistCm = num('bfWaist'), neckCm = num('bfNeck'), heightCm = num('bfHeight'), hipCm = num('bfHip');
+          const gender = str('bfGender');
+          if (waistCm === null || neckCm === null || heightCm === null || (gender === 'female' && hipCm === null)) {
+            out.innerHTML = errorBox(t('tool_err_bodyfat')); return;
+          }
+          const waist = waistCm / 2.54, neck = neckCm / 2.54, height = heightCm / 2.54, hip = hipCm !== null ? hipCm / 2.54 : null;
+          let bf;
+          try {
+            if (gender === 'female') {
+              bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            } else {
+              bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            }
+            if (!isFinite(bf)) throw new Error('domain');
+          } catch (e) { out.innerHTML = errorBox(t('tool_err_bodyfat')); return; }
+          out.innerHTML = resultCell(t('tool_body_fat_result'), round(bf, 1) + '%');
+        }
+      },
+      {
+        id: 'cardiacOutput',
+        label: 'tool_cardiac_output',
+        render: () => `
+          <p class="tool-hint">${t('tool_cardiac_output_hint')}</p>
+          ${field('coHR', 'tool_heart_rate_bpm', 'bpm', 'number')}
+          ${field('coSV', 'tool_stroke_volume_ml', 'mL', 'number')}
+        `,
+        calc: (out) => {
+          const hr = num('coHR'), sv = num('coSV');
+          if (hr === null || sv === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const co = (hr * sv) / 1000;
+          out.innerHTML = resultCell(t('tool_cardiac_output_result'), round(co, 3) + ' L/min');
+        }
+      },
+      {
+        id: 'meanArterialPressure',
+        label: 'tool_mean_arterial_pressure',
+        render: () => `
+          <p class="tool-hint">${t('tool_map_hint')}</p>
+          ${field('mapSys', 'tool_systolic_bp', 'mmHg', 'number')}
+          ${field('mapDia', 'tool_diastolic_bp', 'mmHg', 'number')}
+        `,
+        calc: (out) => {
+          const sys = num('mapSys'), dia = num('mapDia');
+          if (sys === null || dia === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const map = dia + (sys - dia) / 3;
+          out.innerHTML = resultCell(t('tool_map_result'), round(map, 2) + ' mmHg');
+        }
       }
     ],
 
@@ -1508,6 +1845,98 @@
           const investment = num('ppInvestment'), cashFlow = num('ppCashFlow');
           if (investment === null || cashFlow === null || cashFlow === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
           out.innerHTML = resultCell(t('tool_payback_result'), round(investment / cashFlow, 2));
+        }
+      },
+      {
+        id: 'futureValueAnnuity',
+        label: 'tool_future_value_annuity',
+        render: () => `
+          <p class="tool-hint">${t('tool_fva_hint')}</p>
+          ${field('fvaPmt', 'tool_payment_amount', '', 'number')}
+          ${field('fvaRate', 'tool_rate_per_period', '%', 'number')}
+          ${field('fvaN', 'tool_number_periods', '', 'number')}
+        `,
+        calc: (out) => {
+          const pmt = num('fvaPmt'), ratePct = num('fvaRate'), n = num('fvaN');
+          if (pmt === null || ratePct === null || n === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const r = ratePct / 100;
+          const fv = r === 0 ? pmt * n : pmt * ((Math.pow(1 + r, n) - 1) / r);
+          const contributions = pmt * n;
+          out.innerHTML =
+            resultCell(t('tool_future_value_result'), round(fv, 2)) +
+            resultCell(t('tool_total_contributions'), round(contributions, 2)) +
+            resultCell(t('tool_interest_earned'), round(fv - contributions, 2));
+        }
+      },
+      {
+        id: 'effectiveAnnualRate',
+        label: 'tool_effective_annual_rate',
+        render: () => `
+          <p class="tool-hint">${t('tool_ear_hint')}</p>
+          ${field('earNominal', 'tool_nominal_rate', '%', 'number')}
+          ${field('earN', 'tool_compounding_periods', 'e.g. 12', 'number')}
+        `,
+        calc: (out) => {
+          const nominal = num('earNominal'), n = num('earN');
+          if (nominal === null || n === null || n === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const i = nominal / 100;
+          const ear = (Math.pow(1 + i / n, n) - 1) * 100;
+          out.innerHTML = resultCell(t('tool_ear_result'), round(ear, 4) + '%');
+        }
+      },
+      {
+        id: 'bondValuation',
+        label: 'tool_bond_valuation',
+        render: () => `
+          <p class="tool-hint">${t('tool_bond_valuation_hint')}</p>
+          ${field('bondFace', 'tool_face_value', '', 'number')}
+          ${field('bondCoupon', 'tool_coupon_rate', '%', 'number')}
+          ${field('bondMarket', 'tool_market_rate', '%', 'number')}
+          ${field('bondYears', 'tool_years_maturity', 'years', 'number')}
+        `,
+        calc: (out) => {
+          const F = num('bondFace'), couponPct = num('bondCoupon'), marketPct = num('bondMarket'), n = num('bondYears');
+          if (F === null || couponPct === null || marketPct === null || n === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const C = F * (couponPct / 100);
+          const r = marketPct / 100;
+          const price = r === 0
+            ? C * n + F
+            : C * ((1 - Math.pow(1 + r, -n)) / r) + F / Math.pow(1 + r, n);
+          out.innerHTML = resultCell(t('tool_bond_price_result'), round(price, 2));
+        }
+      },
+      {
+        id: 'netPresentValue',
+        label: 'tool_net_present_value',
+        render: () => `
+          <p class="tool-hint">${t('tool_npv_hint')}</p>
+          ${field('npvInvestment', 'tool_initial_investment', '', 'number')}
+          ${field('npvCashFlow', 'tool_future_cash_flow', '', 'number')}
+          ${field('npvRate', 'tool_discount_rate', '%', 'number')}
+          ${field('npvYears', 'tool_time_years', 'years', 'number')}
+        `,
+        calc: (out) => {
+          const investment = num('npvInvestment'), fv = num('npvCashFlow'), ratePct = num('npvRate'), years = num('npvYears');
+          if (investment === null || fv === null || ratePct === null || years === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const pv = fv / Math.pow(1 + ratePct / 100, years);
+          const npv = pv - investment;
+          out.innerHTML =
+            resultCell(t('tool_present_val'), round(pv, 2)) +
+            resultCell(t('tool_npv_result'), round(npv, 2));
+        }
+      },
+      {
+        id: 'returnOnEquity',
+        label: 'tool_return_on_equity',
+        render: () => `
+          <p class="tool-hint">${t('tool_roe_hint')}</p>
+          ${field('roeIncome', 'tool_net_income', '', 'number')}
+          ${field('roeEquity', 'tool_shareholders_equity', '', 'number')}
+        `,
+        calc: (out) => {
+          const income = num('roeIncome'), equity = num('roeEquity');
+          if (income === null || equity === null || equity === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_roe_result'), round((income / equity) * 100, 2) + '%');
         }
       }
     ],
