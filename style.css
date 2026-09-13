@@ -1406,6 +1406,8 @@ body {
 .formula-explain-close:active { transform: translateY(1px); }
 .fav-star-btn { font-size: 1.05rem; color: #888; }
 .fav-star-btn.active { color: var(--accent); }
+.formula-remove-recent-btn { color: #888; }
+.formula-remove-recent-btn:hover { color: #ff5c5c; background: rgba(255,92,92,0.12); }
 
 .formula-name {
   font-weight: 700;
