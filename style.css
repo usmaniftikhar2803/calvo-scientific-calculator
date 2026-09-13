@@ -1167,19 +1167,27 @@ body {
   margin-bottom: 6px;
 }
 .subject-back-btn {
-  background: none;
-  border: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--case-border, rgba(255,255,255,0.1));
   color: var(--accent);
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 8px 16px 8px 14px;
+  border-radius: 20px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  transition: background .15s, border-color .15s, color .15s, transform .15s;
 }
-.subject-back-btn:hover { text-decoration: underline; }
+.subject-back-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #17171a;
+  transform: translateX(-2px);
+}
+.subject-back-btn:active { transform: translateX(-1px) scale(0.96); }
 
 /* Subject tools: 15 tools per category, one full-width line per tool.
    Tapping a line navigates to a dedicated page for that single tool. */
