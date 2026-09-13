@@ -6865,9 +6865,21 @@ setTimeout(() => {
   const opB = document.getElementById('progOpB');
   const opPills = document.getElementById('progOpPills');
   const bitwiseResult = document.getElementById('progBitwiseResult');
+  const widthPills = document.getElementById('progWidthPills');
+  const toolPills = document.getElementById('progToolPills');
+  const toolResult = document.getElementById('progToolResult');
+  const bitPosN = document.getElementById('progBitPosN');
+  const bitPosPills = document.getElementById('progBitPosPills');
+  const bitPosResult = document.getElementById('progBitPosResult');
+  const toolParamRow = document.getElementById('progToolParamRow');
+  const toolParamLabel = document.getElementById('progToolParamLabel');
+  const toolParam = document.getElementById('progToolParam');
   if (!decInput) return;
 
   let progOp = 'AND';
+  let progWidth = 16;
+  let progTool = 'popcount';
+  let progBitOp = 'SET';
 
   function syncFrom(base) {
     errBox.textContent = '';
@@ -6896,21 +6908,109 @@ setTimeout(() => {
   octInput.addEventListener('input', () => syncFrom('oct'));
   hexInput.addEventListener('input', () => syncFrom('hex'));
 
+  // Mask a signed 32-bit JS int result down to the selected bit width (two's complement)
+  function toWidth(n) {
+    const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+    const masked = n & mask;
+    const signBit = Math.pow(2, progWidth - 1);
+    return masked >= signBit ? masked - Math.pow(2, progWidth) : masked;
+  }
+
+  function binStr(n) {
+    const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+    return ((n & mask) >>> 0).toString(2).padStart(progWidth, '0');
+  }
+
+  function popcount(n) {
+    let x = (n >>> 0), count = 0;
+    while (x) { count += x & 1; x >>>= 1; }
+    return count;
+  }
+
+  function clz(n, width) {
+    const mask = width >= 32 ? 0xFFFFFFFF : (Math.pow(2, width) - 1);
+    const u = (n & mask) >>> 0;
+    if (u === 0) return width;
+    let count = 0;
+    for (let i = width - 1; i >= 0; i--) {
+      if ((u >>> i) & 1) break;
+      count++;
+    }
+    return count;
+  }
+
+  function ctz(n, width) {
+    const mask = width >= 32 ? 0xFFFFFFFF : (Math.pow(2, width) - 1);
+    const u = (n & mask) >>> 0;
+    if (u === 0) return width;
+    let count = 0;
+    for (let i = 0; i < width; i++) {
+      if ((u >>> i) & 1) break;
+      count++;
+    }
+    return count;
+  }
+
+  function bitReverseFn(n, width) {
+    const mask = width >= 32 ? 0xFFFFFFFF : (Math.pow(2, width) - 1);
+    let u = (n & mask) >>> 0;
+    let result = 0;
+    for (let i = 0; i < width; i++) {
+      result = ((result << 1) | (u & 1)) >>> 0;
+      u >>>= 1;
+    }
+    return result >>> 0;
+  }
+
+  function nibbleSwapFn(n, width) {
+    const mask = width >= 32 ? 0xFFFFFFFF : (Math.pow(2, width) - 1);
+    const bytesCount = width / 8;
+    const u = (n & mask) >>> 0;
+    let result = 0;
+    for (let i = 0; i < bytesCount; i++) {
+      const byteVal = (u >>> (8 * i)) & 0xFF;
+      const swappedByte = ((byteVal & 0x0F) << 4) | ((byteVal & 0xF0) >>> 4);
+      result |= swappedByte << (8 * i);
+    }
+    return result >>> 0;
+  }
+
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+  function lcm(a, b) { if (a === 0 || b === 0) return 0; return Math.abs(a * b) / gcd(a, b); }
+
   function computeBitwise() {
     const a = parseInt(opA.value, 10) || 0;
     const b = parseInt(opB.value, 10) || 0;
     let result, label;
     switch (progOp) {
-      case 'AND': result = a & b; label = 'A AND B'; break;
-      case 'OR': result = a | b; label = 'A OR B'; break;
-      case 'XOR': result = a ^ b; label = 'A XOR B'; break;
-      case 'NOT': result = ~a; label = 'NOT A'; break;
-      case 'SHL': result = a << b; label = 'A << B'; break;
-      case 'SHR': result = a >> b; label = 'A >> B'; break;
+      case 'AND': result = toWidth(a & b); label = 'A AND B'; break;
+      case 'OR': result = toWidth(a | b); label = 'A OR B'; break;
+      case 'XOR': result = toWidth(a ^ b); label = 'A XOR B'; break;
+      case 'NAND': result = toWidth(~(a & b)); label = 'A NAND B'; break;
+      case 'NOR': result = toWidth(~(a | b)); label = 'A NOR B'; break;
+      case 'XNOR': result = toWidth(~(a ^ b)); label = 'A XNOR B'; break;
+      case 'NOT': result = toWidth(~a); label = 'NOT A'; break;
+      case 'SHL': result = toWidth(a << b); label = 'A << B'; break;
+      case 'SHR': result = toWidth(a >> b); label = 'A >> B'; break;
+      case 'ROL': {
+        const bits = ((b % progWidth) + progWidth) % progWidth;
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const ua = (a & mask) >>> 0;
+        const rotated = (((ua << bits) | (ua >>> (progWidth - bits))) & mask) >>> 0;
+        result = toWidth(rotated); label = 'ROL(A, B)'; break;
+      }
+      case 'ROR': {
+        const bits = ((b % progWidth) + progWidth) % progWidth;
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const ua = (a & mask) >>> 0;
+        const rotated = (((ua >>> bits) | (ua << (progWidth - bits))) & mask) >>> 0;
+        result = toWidth(rotated); label = 'ROR(A, B)'; break;
+      }
+      case 'MOD': result = b !== 0 ? toWidth(a % b) : 0; label = 'A MOD B'; break;
       default: result = 0; label = '';
     }
     bitwiseResult.innerHTML = label + ' = ' + result
-      + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + (result < 0 ? '-' + Math.abs(result).toString(2) : result.toString(2)) + '</span>';
+      + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
   }
 
   opPills.addEventListener('click', (e) => {
@@ -6920,9 +7020,241 @@ setTimeout(() => {
     opPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p === btn));
     computeBitwise();
   });
-  [opA, opB].forEach(inp => inp.addEventListener('input', computeBitwise));
+
+  if (widthPills) {
+    widthPills.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-width]');
+      if (!btn) return;
+      progWidth = parseInt(btn.dataset.width, 10);
+      widthPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p === btn));
+      computeBitwise();
+      computeTool();
+    });
+  }
+
+  function computeBitPos() {
+    if (!bitPosResult) return;
+    const a = parseInt(opA.value, 10) || 0;
+    const n = parseInt(bitPosN.value, 10);
+    if (!Number.isInteger(n) || n < 0 || n >= progWidth) {
+      bitPosResult.textContent = t('prog_bitpos_error');
+      return;
+    }
+    const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+    const ua = (a & mask) >>> 0;
+    let result, label;
+    switch (progBitOp) {
+      case 'SET': result = toWidth((ua | (1 << n)) >>> 0); label = 'SET bit ' + n; break;
+      case 'CLEAR': result = toWidth((ua & ~(1 << n)) >>> 0); label = 'CLEAR bit ' + n; break;
+      case 'TOGGLE': result = toWidth((ua ^ (1 << n)) >>> 0); label = 'TOGGLE bit ' + n; break;
+      case 'TEST': {
+        const bitVal = (ua >>> n) & 1;
+        bitPosResult.innerHTML = 'TEST bit ' + n + ' = ' + bitVal
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(a) + '</span>';
+        return;
+      }
+      default: result = a; label = '';
+    }
+    bitPosResult.innerHTML = label + ' = ' + result
+      + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
+  }
+
+  if (bitPosPills) {
+    bitPosPills.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-bitop]');
+      if (!btn) return;
+      progBitOp = btn.dataset.bitop;
+      bitPosPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p === btn));
+      computeBitPos();
+    });
+  }
+  if (bitPosN) bitPosN.addEventListener('input', computeBitPos);
+
+  function computeTool() {
+    if (!toolResult) return;
+    const a = parseInt(opA.value, 10) || 0;
+    const b = parseInt(opB.value, 10) || 0;
+    switch (progTool) {
+      case 'popcount': {
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const bits = popcount(a & mask);
+        toolResult.innerHTML = t('prog_tool_popcount') + ' <b>' + bits + '</b>'
+          + '<span class="prog-result-sub">' + binStr(a) + '</span>';
+        break;
+      }
+      case 'twos': {
+        toolResult.innerHTML = t('prog_tool_twos') + ' <b>' + binStr(a) + '</b>'
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + toWidth(a) + ' (' + progWidth + '-bit)</span>';
+        break;
+      }
+      case 'gcdlcm': {
+        toolResult.innerHTML = t('prog_tool_gcdlcm') + ' GCD = <b>' + gcd(a, b) + '</b>, LCM = <b>' + lcm(a, b) + '</b>';
+        break;
+      }
+      case 'ascii': {
+        if (a < 0 || a > 1114111 || !Number.isInteger(a)) {
+          toolResult.innerHTML = t('prog_tool_ascii_invalid');
+        } else {
+          let ch = '';
+          try { ch = String.fromCodePoint(a); } catch (e) { ch = ''; }
+          toolResult.innerHTML = t('prog_tool_ascii') + ' <b>' + (ch || '&mdash;') + '</b>'
+            + '<span class="prog-result-sub">U+' + a.toString(16).toUpperCase().padStart(4, '0') + '</span>';
+        }
+        break;
+      }
+      case 'byteswap': {
+        const bytesCount = progWidth / 8;
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const ua = (a & mask) >>> 0;
+        let swapped = 0;
+        for (let i = 0; i < bytesCount; i++) {
+          const byteVal = (ua >>> (8 * i)) & 0xFF;
+          swapped |= byteVal << (8 * (bytesCount - 1 - i));
+        }
+        swapped = swapped >>> 0;
+        const result = toWidth(swapped);
+        toolResult.innerHTML = t('prog_tool_byteswap') + ' <b>' + result + '</b>'
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
+        break;
+      }
+      case 'pow2': {
+        const isPow2 = a > 0 && (a & (a - 1)) === 0;
+        toolResult.innerHTML = t('prog_tool_pow2') + ' <b>' + (isPow2 ? 'YES' : 'NO') + '</b>';
+        break;
+      }
+      case 'hamming': {
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const dist = popcount((a ^ b) & mask);
+        toolResult.innerHTML = t('prog_tool_hamming') + ' <b>' + dist + '</b>'
+          + '<span class="prog-result-sub">' + binStr(a ^ b) + '</span>';
+        break;
+      }
+      case 'range': {
+        const signedMin = -Math.pow(2, progWidth - 1);
+        const signedMax = Math.pow(2, progWidth - 1) - 1;
+        const unsignedMax = Math.pow(2, progWidth) - 1;
+        toolResult.innerHTML = t('prog_tool_range')
+          + '<span class="prog-result-sub">Signed: ' + signedMin + ' to ' + signedMax
+          + ' &middot; Unsigned: 0 to ' + unsignedMax + '</span>';
+        break;
+      }
+      case 'clz': {
+        const bits = clz(a, progWidth);
+        toolResult.innerHTML = t('prog_tool_clz') + ' <b>' + bits + '</b>'
+          + '<span class="prog-result-sub">' + binStr(a) + '</span>';
+        break;
+      }
+      case 'ctz': {
+        const bits = ctz(a, progWidth);
+        toolResult.innerHTML = t('prog_tool_ctz') + ' <b>' + bits + '</b>'
+          + '<span class="prog-result-sub">' + binStr(a) + '</span>';
+        break;
+      }
+      case 'bitreverse': {
+        const result = toWidth(bitReverseFn(a, progWidth));
+        toolResult.innerHTML = t('prog_tool_bitreverse') + ' <b>' + result + '</b>'
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
+        break;
+      }
+      case 'nibbleswap': {
+        const result = toWidth(nibbleSwapFn(a, progWidth));
+        toolResult.innerHTML = t('prog_tool_nibbleswap') + ' <b>' + result + '</b>'
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
+        break;
+      }
+      case 'parity': {
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const bits = popcount(a & mask);
+        const parityLabel = bits % 2 === 0 ? 'Even' : 'Odd';
+        toolResult.innerHTML = t('prog_tool_parity') + ' <b>' + parityLabel + '</b>'
+          + '<span class="prog-result-sub">' + bits + ' set bits</span>';
+        break;
+      }
+      case 'nextpow2': {
+        let result = a <= 1 ? 1 : Math.pow(2, Math.ceil(Math.log2(a)));
+        toolResult.innerHTML = t('prog_tool_nextpow2') + ' <b>' + result + '</b>';
+        break;
+      }
+      case 'overflow': {
+        const sum = a + b;
+        const min = -Math.pow(2, progWidth - 1), max = Math.pow(2, progWidth - 1) - 1;
+        const overflows = sum < min || sum > max;
+        toolResult.innerHTML = t('prog_tool_overflow') + ' <b>' + (overflows ? 'YES' : 'NO') + '</b>'
+          + '<span class="prog-result-sub">A + B = ' + sum + '</span>';
+        break;
+      }
+      case 'graycode': {
+        const mask = progWidth >= 32 ? 0xFFFFFFFF : (Math.pow(2, progWidth) - 1);
+        const ua = (a & mask) >>> 0;
+        const result = (ua ^ (ua >>> 1)) >>> 0;
+        toolResult.innerHTML = t('prog_tool_graycode') + ' <b>' + result + '</b>'
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
+        break;
+      }
+      case 'signextend': {
+        const fromWidth = parseInt(toolParam.value, 10);
+        if (!Number.isInteger(fromWidth) || fromWidth < 1 || fromWidth > progWidth) {
+          toolResult.textContent = t('prog_param_error');
+          break;
+        }
+        const signBit = Math.pow(2, fromWidth - 1);
+        const rawMask = Math.pow(2, fromWidth) - 1;
+        const x = a & rawMask;
+        const extended = (x ^ signBit) - signBit;
+        const result = toWidth(extended);
+        toolResult.innerHTML = t('prog_tool_signextend') + ' <b>' + result + '</b>'
+          + '<span class="prog-result-sub">' + t('prog_binary_label') + ' ' + binStr(result) + '</span>';
+        break;
+      }
+      case 'custombase': {
+        const base = parseInt(toolParam.value, 10);
+        if (!Number.isInteger(base) || base < 2 || base > 36) {
+          toolResult.textContent = t('prog_param_error');
+          break;
+        }
+        const neg = a < 0;
+        const converted = (neg ? '-' : '') + Math.abs(a).toString(base).toUpperCase();
+        toolResult.innerHTML = t('prog_tool_custombase') + ' <b>' + converted + '</b>'
+          + '<span class="prog-result-sub">Base ' + base + '</span>';
+        break;
+      }
+    }
+  }
+
+  if (toolParamRow) {
+    toolParamRow.addEventListener('input', computeTool);
+  }
+
+  if (toolPills) {
+    toolPills.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-tool]');
+      if (!btn) return;
+      progTool = btn.dataset.tool;
+      toolPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p === btn));
+      if (toolParamRow) {
+        if (progTool === 'signextend') {
+          toolParamRow.style.display = 'flex';
+          toolParamLabel.setAttribute('data-i18n', 'prog_param_from_width');
+          toolParamLabel.textContent = t('prog_param_from_width');
+          if (!toolParam.dataset.userSet) toolParam.value = 8;
+        } else if (progTool === 'custombase') {
+          toolParamRow.style.display = 'flex';
+          toolParamLabel.setAttribute('data-i18n', 'prog_param_base');
+          toolParamLabel.textContent = t('prog_param_base');
+          if (!toolParam.dataset.userSet) toolParam.value = 16;
+        } else {
+          toolParamRow.style.display = 'none';
+        }
+      }
+      computeTool();
+    });
+  }
+
+  [opA, opB].forEach(inp => inp.addEventListener('input', () => { computeBitwise(); computeTool(); computeBitPos(); }));
 
   computeBitwise();
+  computeTool();
+  computeBitPos();
 })();
 
 /* ============================================
