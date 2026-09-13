@@ -534,8 +534,49 @@ function activateTab(tabName, remember) {
   }
 }
 
+/* ---- Mobile/hardware back button: go to Calculator first, exit on next press ----
+   Every tab except "calc" is treated as an "away" screen. Moving away from
+   Calculator pushes one history entry; hopping between other away tabs (or
+   returning to Calculator through the UI) replaces that same entry instead
+   of stacking more, so there's always at most one extra entry to pop. That
+   means: press back once on any tool -> lands on Calculator; press back
+   again on Calculator -> nothing left for our app to intercept, so the
+   phone/browser's normal back action (leaving the site) happens. */
+let currentHistoryTab = 'calc';
+let ignoreNextPopstate = false;
+
+function navigateToTab(tabName, remember) {
+  const wasAway = currentHistoryTab !== 'calc';
+  const goingAway = tabName !== 'calc';
+
+  activateTab(tabName, remember);
+
+  if (goingAway && !wasAway) {
+    history.pushState({ tab: tabName }, '', location.href);
+  } else if (goingAway && wasAway) {
+    history.replaceState({ tab: tabName }, '', location.href);
+  } else if (!goingAway && wasAway) {
+    // Leaving an away tab back to Calculator via the UI (not the back
+    // button) - pop the extra entry so back-button bookkeeping stays clean.
+    ignoreNextPopstate = true;
+    history.back();
+  }
+  currentHistoryTab = tabName;
+}
+
+window.addEventListener('popstate', (e) => {
+  if (ignoreNextPopstate) { ignoreNextPopstate = false; return; }
+  const state = e.state;
+  if (state && state.tab) {
+    activateTab(state.tab, true);
+    currentHistoryTab = state.tab;
+  }
+  // No state left in our app's history -> let the phone/browser handle the
+  // back press normally (this is what actually exits the site/app).
+});
+
 document.querySelectorAll('.topbar-tab').forEach(tab => {
-  tab.addEventListener('click', () => activateTab(tab.dataset.tab, true));
+  tab.addEventListener('click', () => navigateToTab(tab.dataset.tab, true));
 });
 
 // On a page REFRESH (same browser session), reopen on whichever tab was
@@ -547,6 +588,13 @@ try {
   if (remembered && document.getElementById('tab-' + remembered)) restoredTab = remembered;
 } catch (e) {}
 activateTab(restoredTab, false);
+currentHistoryTab = restoredTab;
+history.replaceState({ tab: 'calc' }, '', location.href);
+if (restoredTab !== 'calc') {
+  // Landed straight on a sub-tab after a refresh - still push the one
+  // extra entry so the back button behaves the same as normal in-app nav.
+  history.pushState({ tab: restoredTab }, '', location.href);
+}
 
 /* ---------- DISPLAY ---------- */
 function updateDisplay() {
