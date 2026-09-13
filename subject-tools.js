@@ -135,16 +135,14 @@
   /* ---------- UI helpers ---------- */
   function field(id, labelKey, placeholder, type) {
     type = type || 'text';
-    // Fields marked 'number' still get the mobile decimal keypad as the
-    // default (inputmode="decimal"), but the actual input stays type="text"
-    // so it's never locked to digits only — users can still type a minus
-    // sign, scientific notation ('e'), or letters (e.g. pasting a value)
-    // instead of being stuck with a numbers-only keyboard.
-    const htmlType = type === 'number' ? 'text' : type;
-    const inputmode = type === 'number' ? ' inputmode="decimal"' : '';
+    // All fields use a plain type="text" input with the standard keyboard
+    // (letters + numbers together) rather than a numbers-only inputmode,
+    // so every field — number or text — lets the user type both digits
+    // and letters (e.g. a minus sign, scientific notation 'e', or a
+    // pasted chemical formula) instead of being locked to one or the other.
     return `<div class="tool-field">
       <label for="${id}">${t(labelKey)}</label>
-      <input type="${htmlType}"${inputmode} id="${id}" class="formula-search convert-input tool-input" placeholder="${placeholder || ''}" style="padding-left:14px;background-image:none;">
+      <input type="text" id="${id}" class="formula-search convert-input tool-input" placeholder="${placeholder || ''}" style="padding-left:14px;background-image:none;">
     </div>`;
   }
   function selectField(id, labelKey, options) {
