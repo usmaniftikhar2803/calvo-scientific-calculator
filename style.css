@@ -954,12 +954,12 @@ body {
 .key.purple:active { box-shadow: 0 1px 0 var(--key-purple-shadow), inset 0 2px 6px rgba(0,0,0,0.3); }
 
 .key.equals {
-  background: linear-gradient(180deg, var(--key-eq-top) 0%, var(--key-eq-bot) 100%);
-  color: var(--key-eq-text);
-  box-shadow: 0 3px 0 var(--key-eq-shadow), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, var(--key-orange-top) 0%, var(--key-orange-bot) 100%);
+  color: var(--key-orange-text);
+  box-shadow: 0 3px 0 var(--key-orange-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
   font-size: clamp(0.74rem, 4.6vw, 1.04rem);
 }
-.key.equals:active { box-shadow: 0 1px 0 var(--key-eq-shadow), inset 0 2px 6px rgba(0,0,0,0.3); }
+.key.equals:active { box-shadow: 0 1px 0 var(--key-orange-shadow), inset 0 2px 6px rgba(0,0,0,0.2); }
 
 /* Bottom row (0, ., x10^x, Ans, =, acos) gets a slightly taller grid row
    (see .keypad grid-template-rows above) plus a bit more text/tap size,
