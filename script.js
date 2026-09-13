@@ -4729,6 +4729,15 @@ function logRecentFormula(subj, f) {
   if (activeSubject === RECENT_SUBJECT_KEY) renderFormulas();
 }
 
+/* Removes a single formula from "Recently Viewed" by its key (used by the
+   ✕ button shown only in the Recent list) and re-renders that view. */
+function removeRecentFormula(key) {
+  recentFormulas = recentFormulas.filter(r => r.key !== key);
+  persistRecentFormulas();
+  if (activeSubject === RECENT_SUBJECT_KEY) renderFormulas();
+  buildSubjectPills();
+}
+
 /* Wires up "tap formula to log it as viewed" on a rendered formula row.
    Ignores taps on the star/share buttons, which have their own handlers. */
 function attachFormulaViewLogger(div, subj, f) {
@@ -4799,9 +4808,12 @@ function buildSubjectPills() {
   });
 }
 
-function formulaItemHtml(f, key, subjTag) {
+function formulaItemHtml(f, key, subjTag, isRecent) {
   const fav = isFavByKey(key);
   const tagHtml = subjTag ? `<span class="formula-subj-tag">${subjTag}</span>` : '';
+  const removeBtnHtml = isRecent
+    ? `<button class="icon-action-btn formula-remove-recent-btn" data-key="${key}" title="Remove from recent">&#10005;</button>`
+    : '';
   return `<div class="formula-item-row">
       <div class="formula-item-text">
         <div class="formula-name">${tagHtml}${f.name}</div>
@@ -4812,6 +4824,7 @@ function formulaItemHtml(f, key, subjTag) {
         <button class="icon-action-btn formula-explain-btn" data-key="${key}" title="${t('explain_formula_title')}">💡</button>
         <button class="icon-action-btn formula-share-btn" data-key="${key}" title="${t('share_title')}">&#128228;</button>
         ${whatsappBtnHtml('formula-whatsapp-btn', `data-key="${key}"`)}
+        ${removeBtnHtml}
       </div>
     </div>
     <div class="formula-explain-box" style="display:none;"></div>`;
@@ -4867,7 +4880,7 @@ function renderFormulas() {
       const f = { name: r.name, expr: r.expr, cat: r.cat };
       const div = document.createElement('div');
       div.className = 'formula-item';
-      div.innerHTML = formulaItemHtml(f, r.key, r.subj);
+      div.innerHTML = formulaItemHtml(f, r.key, r.subj, true);
       attachFormulaViewLogger(div, r.subj, f);
       formulaList.appendChild(div);
     });
@@ -4905,6 +4918,11 @@ formulaList.addEventListener('click', (e) => {
   if (closeExplainBtn) {
     const box = closeExplainBtn.closest('.formula-explain-box');
     if (box) box.style.display = 'none';
+    return;
+  }
+  const removeRecentBtn = e.target.closest('.formula-remove-recent-btn');
+  if (removeRecentBtn) {
+    removeRecentFormula(removeRecentBtn.dataset.key);
     return;
   }
   const starBtn = e.target.closest('.fav-star-btn');
