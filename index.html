@@ -998,6 +998,41 @@
 
       <textarea class="formula-search convert-input" id="statsDataInput" rows="3" placeholder="e.g. 4, 8, 15, 16, 23, 42" data-i18n-placeholder="stats_data_placeholder" style="resize:vertical; padding-left:14px; background-image:none;"></textarea>
 
+      <div class="stats-fn-row">
+        <label data-i18n="stats_fn_label">Calculate:</label>
+        <select class="formula-search convert-select" id="statsFunctionSelect">
+          <option value="all" data-i18n="stats_fn_all">All Statistics</option>
+          <option value="count" data-i18n="stats_count">Count</option>
+          <option value="sum" data-i18n="stats_sum">Sum</option>
+          <option value="mean" data-i18n="stats_mean">Mean</option>
+          <option value="median" data-i18n="stats_median">Median</option>
+          <option value="mode" data-i18n="stats_mode">Mode</option>
+          <option value="range" data-i18n="stats_range">Range</option>
+          <option value="minmax" data-i18n="stats_fn_minmax">Min &amp; Max</option>
+          <option value="stdPop" data-i18n="stats_std_pop">Std Dev (Population)</option>
+          <option value="stdSample" data-i18n="stats_std_sample">Std Dev (Sample)</option>
+          <option value="varPop" data-i18n="stats_var_pop">Variance (Population)</option>
+          <option value="varSample" data-i18n="stats_var_sample">Variance (Sample)</option>
+          <option value="cv" data-i18n="stats_cv">Coefficient of Variation</option>
+          <option value="quartiles" data-i18n="stats_fn_quartiles">Quartiles &amp; IQR (Q1, Q3, IQR)</option>
+          <option value="sumSquares" data-i18n="stats_sum_squares">Sum of Squares (Deviations)</option>
+          <option value="geoMean" data-i18n="stats_geo_mean">Geometric Mean</option>
+          <option value="harmMean" data-i18n="stats_harm_mean">Harmonic Mean</option>
+          <option value="midrange" data-i18n="stats_midrange">Midrange</option>
+          <option value="meanAbsDev" data-i18n="stats_mean_abs_dev">Mean Absolute Deviation</option>
+          <option value="medianAbsDev" data-i18n="stats_median_abs_dev">Median Absolute Deviation</option>
+          <option value="skewness" data-i18n="stats_skewness">Skewness</option>
+          <option value="kurtosis" data-i18n="stats_kurtosis">Excess Kurtosis</option>
+          <option value="sem" data-i18n="stats_sem">Standard Error of the Mean</option>
+          <option value="sumSqValues" data-i18n="stats_sum_sq_values">Sum of Squares (Σx²)</option>
+          <option value="rms" data-i18n="stats_rms">Root Mean Square</option>
+          <option value="ci95" data-i18n="stats_ci95">95% Confidence Interval (Mean)</option>
+          <option value="p10" data-i18n="stats_p10">10th Percentile (P10)</option>
+          <option value="p90" data-i18n="stats_p90">90th Percentile (P90)</option>
+          <option value="outlierCount" data-i18n="stats_outlier_count">Outlier Count (1.5×IQR rule)</option>
+        </select>
+      </div>
+
       <button class="pill-btn save-btn" id="statsCalcBtn" data-i18n="stats_calculate">Calculate</button>
 
       <div class="prog-error" id="statsError"></div>
