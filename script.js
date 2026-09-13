@@ -6930,6 +6930,7 @@ setTimeout(() => {
    ============================================ */
 (function () {
   const dataInput = document.getElementById('statsDataInput');
+  const fnSelect = document.getElementById('statsFunctionSelect');
   const calcBtn = document.getElementById('statsCalcBtn');
   const errBox = document.getElementById('statsError');
   const resultGrid = document.getElementById('statsResultGrid');
@@ -6948,6 +6949,7 @@ setTimeout(() => {
       errBox.textContent = t('stats_error_invalid');
       return;
     }
+    const selected = fnSelect ? fnSelect.value : 'all';
     const n = nums.length;
     const sum = nums.reduce((a, b) => a + b, 0);
     const mean = sum / n;
@@ -6989,32 +6991,134 @@ setTimeout(() => {
     // Sum of squared deviations from the mean — the raw building block behind variance
     const sumOfSquares = nums.reduce((a, v) => a + Math.pow(v - mean, 2), 0);
 
+    // Geometric Mean — only defined for strictly positive values
+    const allPositive = nums.every(v => v > 0);
+    const geoMean = allPositive ? Math.exp(nums.reduce((a, v) => a + Math.log(v), 0) / n) : null;
+
+    // Harmonic Mean — only defined when no value is zero
+    const noZero = nums.every(v => v !== 0);
+    const harmMean = noZero ? n / nums.reduce((a, v) => a + 1 / v, 0) : null;
+
+    // Midrange — average of the smallest and largest values
+    const midrange = (min + max) / 2;
+
+    // Mean Absolute Deviation — average distance of each value from the mean
+    const meanAbsDev = nums.reduce((a, v) => a + Math.abs(v - mean), 0) / n;
+
+    // Median Absolute Deviation — average distance of each value from the median (more outlier-resistant)
+    const medianAbsDev = nums.reduce((a, v) => a + Math.abs(v - median), 0) / n;
+
+    // Skewness (sample, Fisher-Pearson adjusted) — needs at least 3 points and non-zero spread
+    let skewness = null;
+    if (n >= 3 && stdSample > 0) {
+      const m3 = nums.reduce((a, v) => a + Math.pow(v - mean, 3), 0) / n;
+      const g1 = m3 / Math.pow(stdPop, 3);
+      skewness = (Math.sqrt(n * (n - 1)) / (n - 2)) * g1;
+    }
+
+    // Excess Kurtosis (sample) — needs at least 4 points and non-zero spread
+    let kurtosis = null;
+    if (n >= 4 && stdSample > 0) {
+      const m4 = nums.reduce((a, v) => a + Math.pow(v - mean, 4), 0) / n;
+      kurtosis = (m4 / Math.pow(stdPop, 4)) - 3;
+    }
+
+    // Standard Error of the Mean — how much the sample mean is expected to vary
+    const sem = n > 1 ? stdSample / Math.sqrt(n) : null;
+
+    // Sum of Squares of the raw values (Σx²) — distinct from the sum of squared deviations above
+    const sumSqValues = nums.reduce((a, v) => a + v * v, 0);
+
+    // Root Mean Square — quadratic mean of the values
+    const rms = Math.sqrt(sumSqValues / n);
+
+    // 95% Confidence Interval for the mean, using the sample std dev (z ≈ 1.96)
+    let ciLow = null, ciHigh = null;
+    if (sem !== null) {
+      ciLow = mean - 1.96 * sem;
+      ciHigh = mean + 1.96 * sem;
+    }
+
+    // Percentile via linear interpolation (distinct method from the median-of-halves Q1/Q3 above)
+    function percentile(sortedArr, p) {
+      const len = sortedArr.length;
+      if (len === 0) return NaN;
+      const idx = (p / 100) * (len - 1);
+      const lo = Math.floor(idx), hi = Math.ceil(idx);
+      if (lo === hi) return sortedArr[lo];
+      return sortedArr[lo] + (sortedArr[hi] - sortedArr[lo]) * (idx - lo);
+    }
+    const p10 = percentile(sorted, 10);
+    const p90 = percentile(sorted, 90);
+
+    // Outlier count using the 1.5×IQR rule
+    let outlierCount = null;
+    if (n >= 4 && !isNaN(iqr)) {
+      const lowerFence = q1 - 1.5 * iqr, upperFence = q3 + 1.5 * iqr;
+      outlierCount = nums.filter(v => v < lowerFence || v > upperFence).length;
+    }
+
     const round = (x) => Math.round(x * 1e4) / 1e4;
 
+    // Each entry maps a dropdown value to the markup it produces. `ok` is false
+    // when the dataset doesn't have enough points for that stat (e.g. quartiles need n>=4).
+    const entries = {
+      count: { ok: true, html: statCell(t('stats_count'), n) },
+      sum: { ok: true, html: statCell(t('stats_sum'), round(sum)) },
+      mean: { ok: true, html: statCell(t('stats_mean'), round(mean)) },
+      median: { ok: true, html: statCell(t('stats_median'), round(median)) },
+      mode: { ok: true, html: statCell(t('stats_mode'), modeStr) },
+      range: { ok: true, html: statCell(t('stats_range'), round(range)) },
+      minmax: { ok: true, html: statCell(t('stats_min'), min) + statCell(t('stats_max'), max) },
+      stdPop: { ok: true, html: statCell(t('stats_std_pop'), round(stdPop)) },
+      stdSample: { ok: true, html: statCell(t('stats_std_sample'), round(stdSample)) },
+      varPop: { ok: true, html: statCell(t('stats_var_pop'), round(variancePop)) },
+      varSample: { ok: true, html: statCell(t('stats_var_sample'), round(varianceSample)) },
+      cv: { ok: true, html: statCell(t('stats_cv'), round(coefVar) + '%') },
+      quartiles: {
+        ok: n >= 4,
+        html: n >= 4
+          ? statCell(t('stats_q1'), round(q1)) + statCell(t('stats_q3'), round(q3)) + statCell(t('stats_iqr'), round(iqr))
+          : ''
+      },
+      sumSquares: { ok: true, html: statCell(t('stats_sum_squares'), round(sumOfSquares)) },
+      geoMean: { ok: geoMean !== null, html: statCell(t('stats_geo_mean'), geoMean !== null ? round(geoMean) : t('stats_na')) },
+      harmMean: { ok: harmMean !== null, html: statCell(t('stats_harm_mean'), harmMean !== null ? round(harmMean) : t('stats_na')) },
+      midrange: { ok: true, html: statCell(t('stats_midrange'), round(midrange)) },
+      meanAbsDev: { ok: true, html: statCell(t('stats_mean_abs_dev'), round(meanAbsDev)) },
+      medianAbsDev: { ok: true, html: statCell(t('stats_median_abs_dev'), round(medianAbsDev)) },
+      skewness: { ok: skewness !== null, html: statCell(t('stats_skewness'), skewness !== null ? round(skewness) : t('stats_na')) },
+      kurtosis: { ok: kurtosis !== null, html: statCell(t('stats_kurtosis'), kurtosis !== null ? round(kurtosis) : t('stats_na')) },
+      sem: { ok: sem !== null, html: statCell(t('stats_sem'), sem !== null ? round(sem) : t('stats_na')) },
+      sumSqValues: { ok: true, html: statCell(t('stats_sum_sq_values'), round(sumSqValues)) },
+      rms: { ok: true, html: statCell(t('stats_rms'), round(rms)) },
+      ci95: { ok: ciLow !== null, html: statCell(t('stats_ci95'), ciLow !== null ? (round(ciLow) + ' – ' + round(ciHigh)) : t('stats_na')) },
+      p10: { ok: true, html: statCell(t('stats_p10'), round(p10)) },
+      p90: { ok: true, html: statCell(t('stats_p90'), round(p90)) },
+      outlierCount: { ok: outlierCount !== null, html: statCell(t('stats_outlier_count'), outlierCount !== null ? outlierCount : t('stats_na')) }
+    };
+
+    const order = ['count', 'sum', 'mean', 'median', 'mode', 'range', 'minmax', 'stdPop', 'stdSample',
+      'varPop', 'varSample', 'cv', 'quartiles', 'sumSquares', 'geoMean', 'harmMean', 'midrange',
+      'meanAbsDev', 'medianAbsDev', 'skewness', 'kurtosis', 'sem', 'sumSqValues', 'rms', 'ci95',
+      'p10', 'p90', 'outlierCount'];
+
     let html = '';
-    html += statCell(t('stats_count'), n);
-    html += statCell(t('stats_sum'), round(sum));
-    html += statCell(t('stats_mean'), round(mean));
-    html += statCell(t('stats_median'), round(median));
-    html += statCell(t('stats_mode'), modeStr);
-    html += statCell(t('stats_range'), round(range));
-    html += statCell(t('stats_min'), min);
-    html += statCell(t('stats_max'), max);
-    html += statCell(t('stats_std_pop'), round(stdPop));
-    html += statCell(t('stats_std_sample'), round(stdSample));
-    html += statCell(t('stats_var_pop'), round(variancePop));
-    html += statCell(t('stats_var_sample'), round(varianceSample));
-    html += statCell(t('stats_cv'), round(coefVar) + '%');
-    html += statCell(t('stats_sum_squares'), round(sumOfSquares));
-    if (n >= 4) {
-      html += statCell(t('stats_q1'), round(q1));
-      html += statCell(t('stats_q3'), round(q3));
-      html += statCell(t('stats_iqr'), round(iqr));
+    if (selected === 'all') {
+      order.forEach(key => { html += entries[key].html; });
+    } else if (entries[selected]) {
+      const entry = entries[selected];
+      html = entry.ok ? entry.html : statCell(t(selected === 'quartiles' ? 'stats_fn_quartiles' : 'stats_' + selected), t('stats_err_min_n'));
     }
     resultGrid.innerHTML = html;
   }
 
   calcBtn.addEventListener('click', computeStats);
+  if (fnSelect) {
+    fnSelect.addEventListener('change', () => {
+      if (dataInput.value.trim() !== '') computeStats();
+    });
+  }
 })();
 
 /* ============================================
