@@ -1519,6 +1519,10 @@ body {
   -webkit-appearance: menulist;
   appearance: menulist;
 }
+.convert-select option {
+  background-color: var(--case-bg, #1e1e24);
+  color: #e8e8f0;
+}
 .convert-input {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
@@ -3040,7 +3044,20 @@ body {
 /* ============================================
    STATISTICS TAB
    ============================================ */
-#statsDataInput { font-family: 'JetBrains Mono', monospace; }
+#statsDataInput { font-family: 'JetBrains Mono', monospace; min-height: 74px; line-height: 1.5; overflow-y: auto; margin-bottom: 14px; }
+.stats-fn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stats-fn-row label {
+  font-size: 0.78rem;
+  color: #aaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.stats-fn-row select { margin-bottom: 0 !important; flex: 1; min-width: 0; }
 .stats-result-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
