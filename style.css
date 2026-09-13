@@ -25,9 +25,9 @@
   --key-purple-bot: #5f4fc0;
   --key-purple-shadow: #3f3390;
   --key-purple-text: #ffffff;
-  --key-orange-top: #3fa89e;
-  --key-orange-bot: #2d8079;
-  --key-orange-shadow: #1c5a54;
+  --key-orange-top: #e8a04a;
+  --key-orange-bot: #d4822a;
+  --key-orange-shadow: #a0601a;
   --key-orange-text: #fff;
   --key-eq-top: #ff9a3d;
   --key-eq-bot: #d9650c;
@@ -327,7 +327,7 @@ body {
 }
 
 .topbar-tab.active {
-  background: #5f4fc0;
+  background: var(--accent);
   color: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
