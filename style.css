@@ -2988,6 +2988,8 @@ body {
 }
 .matrix-grid[data-size="2"] { grid-template-columns: repeat(2, 52px); }
 .matrix-grid[data-size="3"] { grid-template-columns: repeat(3, 52px); }
+.matrix-grid[data-size="4"] { grid-template-columns: repeat(4, 44px); }
+.matrix-grid[data-size="4"] input { width: 44px; height: 38px; font-size: 0.75rem; }
 .matrix-grid input {
   width: 52px;
   height: 42px;
@@ -3060,6 +3062,41 @@ body {
 .matrix-scalar-wrap input:focus {
   border-color: var(--accent);
   background: rgba(255,138,31,0.08);
+}
+.matrix-prop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  background: rgba(255,138,31,0.06);
+}
+.matrix-prop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #e8e8f0;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.matrix-prop-row:last-child { border-bottom: none; }
+.matrix-prop-badge {
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+}
+.matrix-prop-badge.yes {
+  color: #22c55e;
+  background: rgba(34,197,94,0.12);
+}
+.matrix-prop-badge.no {
+  color: #f87171;
+  background: rgba(248,113,113,0.1);
 }
 
 /* ============================================
