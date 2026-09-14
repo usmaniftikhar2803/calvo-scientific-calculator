@@ -1126,6 +1126,191 @@
           const err = Math.abs(exp - theo) / Math.abs(theo) * 100;
           out.innerHTML = resultCell(t('tool_percent_error'), round(err, 3) + '%');
         }
+      },
+      {
+        id: 'gibbsFreeEnergy',
+        label: 'tool_gibbs_free_energy',
+        render: () => `
+          <p class="tool-hint">${t('tool_gibbs_free_energy_hint')}</p>
+          ${field('gibbsDeltaH', 'tool_delta_h', 'kJ/mol', 'number')}
+          ${field('gibbsDeltaS', 'tool_delta_s', 'J/(mol·K)', 'number')}
+          ${field('gibbsTemp', 'tool_temp_k', 'K', 'number')}
+        `,
+        calc: (out) => {
+          const dH = num('gibbsDeltaH'), dS = num('gibbsDeltaS'), T = num('gibbsTemp');
+          if (dH === null || dS === null || T === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const dG = dH - T * (dS / 1000);
+          const spontaneous = dG < 0 ? t('tool_spontaneous') : (dG > 0 ? t('tool_nonspontaneous') : t('tool_equilibrium_state'));
+          out.innerHTML = resultCell(t('tool_delta_g'), round(dG, 4) + ' kJ/mol') + resultCell(t('tool_spontaneity'), spontaneous);
+        }
+      },
+      {
+        id: 'hessLawEnthalpy',
+        label: 'tool_hess_law',
+        render: () => `
+          <p class="tool-hint">${t('tool_hess_law_hint')}</p>
+          ${field('hessH1', 'tool_step_enthalpy_1', 'kJ/mol', 'number')}
+          ${field('hessH2', 'tool_step_enthalpy_2', 'kJ/mol', 'number')}
+          ${field('hessH3', 'tool_step_enthalpy_3', 'kJ/mol (optional)', 'number')}
+        `,
+        calc: (out) => {
+          const h1 = num('hessH1'), h2 = num('hessH2'), h3 = num('hessH3');
+          if (h1 === null || h2 === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const total = h1 + h2 + (h3 || 0);
+          out.innerHTML = resultCell(t('tool_total_reaction_enthalpy'), round(total, 4) + ' kJ/mol');
+        }
+      },
+      {
+        id: 'vanDerWaalsPressure',
+        label: 'tool_van_der_waals',
+        render: () => `
+          <p class="tool-hint">${t('tool_van_der_waals_hint')}</p>
+          ${field('vdwMoles', 'tool_moles', 'mol', 'number')}
+          ${field('vdwVolume', 'tool_volume_l', 'L', 'number')}
+          ${field('vdwTemp', 'tool_temp_k', 'K', 'number')}
+          ${field('vdwA', 'tool_vdw_a', 'L²·atm/mol²', 'number')}
+          ${field('vdwB', 'tool_vdw_b', 'L/mol', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('vdwMoles'), V = num('vdwVolume'), T = num('vdwTemp'), a = num('vdwA'), b = num('vdwB');
+          if ([n, V, T, a, b].some(v => v === null) || V <= n * b) { out.innerHTML = errorBox(t('tool_err_5fields')); return; }
+          const R = 0.0821;
+          const P = (n * R * T) / (V - n * b) - (a * n * n) / (V * V);
+          out.innerHTML = resultCell(t('tool_pressure_atm'), round(P, 4) + ' atm');
+        }
+      },
+      {
+        id: 'idealGasDensity',
+        label: 'tool_ideal_gas_density',
+        render: () => `
+          <p class="tool-hint">${t('tool_ideal_gas_density_hint')}</p>
+          ${field('igdPressure', 'tool_pressure_atm_label', 'atm', 'number')}
+          ${field('igdMolarMass', 'tool_molar_mass', 'g/mol', 'number')}
+          ${field('igdTemp', 'tool_temp_k', 'K', 'number')}
+        `,
+        calc: (out) => {
+          const P = num('igdPressure'), M = num('igdMolarMass'), T = num('igdTemp');
+          if (P === null || M === null || T === null || T <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const R = 0.0821;
+          const density = (P * M) / (R * T);
+          out.innerHTML = resultCell(t('tool_gas_density'), round(density, 4) + ' g/L');
+        }
+      },
+      {
+        id: 'equivalentWeight',
+        label: 'tool_equivalent_weight',
+        render: () => `
+          <p class="tool-hint">${t('tool_equivalent_weight_hint')}</p>
+          ${field('ewMolarMass', 'tool_molar_mass', 'g/mol', 'number')}
+          ${field('ewNFactor', 'tool_n_factor', 'e.g. 1, 2, 3', 'number')}
+        `,
+        calc: (out) => {
+          const M = num('ewMolarMass'), n = num('ewNFactor');
+          if (M === null || n === null || n <= 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_equivalent_weight'), round(M / n, 4) + ' g/eq');
+        }
+      },
+      {
+        id: 'averageReactionRate',
+        label: 'tool_average_reaction_rate',
+        render: () => `
+          <p class="tool-hint">${t('tool_average_reaction_rate_hint')}</p>
+          ${field('arrConcInitial', 'tool_conc_initial', 'mol/L', 'number')}
+          ${field('arrConcFinal', 'tool_conc_final', 'mol/L', 'number')}
+          ${field('arrTime', 'tool_time_interval_s', 's', 'number')}
+        `,
+        calc: (out) => {
+          const c0 = num('arrConcInitial'), c1 = num('arrConcFinal'), dt = num('arrTime');
+          if (c0 === null || c1 === null || dt === null || dt <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const rate = Math.abs(c1 - c0) / dt;
+          out.innerHTML = resultCell(t('tool_average_reaction_rate_result'), rate.toExponential(4) + ' mol/(L·s)');
+        }
+      },
+      {
+        id: 'isotopicAtomicMass',
+        label: 'tool_isotopic_atomic_mass',
+        render: () => `
+          <p class="tool-hint">${t('tool_isotopic_atomic_mass_hint')}</p>
+          ${field('iamMass1', 'tool_isotope_mass_1', 'amu', 'number')}
+          ${field('iamAbund1', 'tool_isotope_abundance_1', '%', 'number')}
+          ${field('iamMass2', 'tool_isotope_mass_2', 'amu', 'number')}
+          ${field('iamAbund2', 'tool_isotope_abundance_2', '%', 'number')}
+          ${field('iamMass3', 'tool_isotope_mass_3', 'amu (optional)', 'number')}
+          ${field('iamAbund3', 'tool_isotope_abundance_3', '% (optional)', 'number')}
+        `,
+        calc: (out) => {
+          const m1 = num('iamMass1'), a1 = num('iamAbund1'), m2 = num('iamMass2'), a2 = num('iamAbund2');
+          const m3 = num('iamMass3'), a3 = num('iamAbund3');
+          if ([m1, a1, m2, a2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          let totalAbund = a1 + a2, weighted = m1 * a1 + m2 * a2;
+          if (m3 !== null && a3 !== null) { totalAbund += a3; weighted += m3 * a3; }
+          const avg = weighted / totalAbund;
+          out.innerHTML = resultCell(t('tool_average_atomic_mass'), round(avg, 4) + ' amu');
+        }
+      },
+      {
+        id: 'electronegativityBondType',
+        label: 'tool_electronegativity_bond',
+        render: () => `
+          <p class="tool-hint">${t('tool_electronegativity_bond_hint')}</p>
+          ${field('enA', 'tool_en_atom_a', 'e.g. 3.44', 'number')}
+          ${field('enB', 'tool_en_atom_b', 'e.g. 2.20', 'number')}
+        `,
+        calc: (out) => {
+          const enA = num('enA'), enB = num('enB');
+          if (enA === null || enB === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const diff = Math.abs(enA - enB);
+          let bondType;
+          if (diff < 0.5) bondType = t('tool_bond_nonpolar');
+          else if (diff < 1.7) bondType = t('tool_bond_polar');
+          else bondType = t('tool_bond_ionic');
+          out.innerHTML = resultCell(t('tool_en_difference'), round(diff, 2)) + resultCell(t('tool_bond_type_result'), bondType);
+        }
+      },
+      {
+        id: 'carbonDating',
+        label: 'tool_carbon_dating',
+        render: () => `
+          <p class="tool-hint">${t('tool_carbon_dating_hint')}</p>
+          ${field('cdPercent', 'tool_percent_c14_remaining', '%', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('cdAge', 'tool_sample_age_years', 'years', 'number')}
+        `,
+        calc: (out) => {
+          const pct = num('cdPercent'), age = num('cdAge');
+          const HALF_LIFE = 5730;
+          if (pct === null && age === null) { out.innerHTML = errorBox(t('tool_err_onefield')); return; }
+          if (pct !== null) {
+            if (pct <= 0 || pct > 100) { out.innerHTML = errorBox(t('tool_err_percent_range')); return; }
+            const t_years = HALF_LIFE * Math.log(100 / pct) / Math.LN2;
+            out.innerHTML = resultCell(t('tool_estimated_age'), Math.round(t_years).toLocaleString() + ' ' + t('tool_years_unit'));
+          } else {
+            const remaining = 100 * Math.pow(0.5, age / HALF_LIFE);
+            out.innerHTML = resultCell(t('tool_percent_c14_remaining'), round(remaining, 4) + '%');
+          }
+        }
+      },
+      {
+        id: 'reactionQuotientQ',
+        label: 'tool_reaction_quotient_kc',
+        render: () => `
+          <p class="tool-hint">${t('tool_reaction_quotient_hint')}</p>
+          ${field('rqA', 'tool_q_conc_a', 'mol/L', 'number')}
+          ${field('rqB', 'tool_q_conc_b', 'mol/L', 'number')}
+          ${field('rqC', 'tool_q_conc_c', 'mol/L', 'number')}
+          ${field('rqD', 'tool_q_conc_d', 'mol/L', 'number')}
+          ${field('rqKc', 'tool_kc_value', '', 'number')}
+        `,
+        calc: (out) => {
+          const A = num('rqA'), B = num('rqB'), C = num('rqC'), D = num('rqD'), Kc = num('rqKc');
+          if ([A, B, C, D, Kc].some(v => v === null) || A <= 0 || B <= 0) { out.innerHTML = errorBox(t('tool_err_5fields')); return; }
+          const Q = (C * D) / (A * B);
+          let direction;
+          if (Q < Kc) direction = t('tool_shifts_forward');
+          else if (Q > Kc) direction = t('tool_shifts_reverse');
+          else direction = t('tool_at_equilibrium');
+          out.innerHTML = resultCell('Q', round(Q, 5)) + resultCell(t('tool_reaction_direction'), direction);
+        }
       }
     ],
 
@@ -2050,6 +2235,191 @@
           }
           out.innerHTML = html;
         }
+      },
+      {
+        id: 'carnotEfficiency',
+        label: 'tool_carnot_efficiency',
+        render: () => `
+          <p class="tool-hint">${t('tool_carnot_efficiency_hint')}</p>
+          ${field('carnotTh', 'tool_hot_reservoir_temp', 'K', 'number')}
+          ${field('carnotTc', 'tool_cold_reservoir_temp', 'K', 'number')}
+          ${field('carnotQh', 'tool_heat_input_qh', 'J (optional)', 'number')}
+        `,
+        calc: (out) => {
+          const Th = num('carnotTh'), Tc = num('carnotTc'), Qh = num('carnotQh');
+          if (Th === null || Tc === null || Th <= 0 || Tc < 0 || Tc >= Th) { out.innerHTML = errorBox(t('tool_err_carnot')); return; }
+          const eff = 1 - Tc / Th;
+          let html = resultCell(t('tool_carnot_efficiency'), round(eff * 100, 3) + '%');
+          if (Qh !== null) {
+            const W = eff * Qh, Qc = Qh - W;
+            html += resultCell(t('tool_work_output'), round(W, 4) + ' J') + resultCell(t('tool_heat_rejected_qc'), round(Qc, 4) + ' J');
+          }
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'refractiveIndex',
+        label: 'tool_refractive_index',
+        render: () => `
+          <p class="tool-hint">${t('tool_refractive_index_hint')}</p>
+          ${field('riSpeed', 'tool_speed_in_medium', 'm/s', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('riIndex', 'tool_refractive_index_n', 'e.g. 1.33', 'number')}
+        `,
+        calc: (out) => {
+          const v = num('riSpeed'), n = num('riIndex');
+          const c = 3e8;
+          if (v === null && n === null) { out.innerHTML = errorBox(t('tool_err_onefield')); return; }
+          if (v !== null) { out.innerHTML = resultCell(t('tool_refractive_index_n'), round(c / v, 4)); }
+          else { out.innerHTML = resultCell(t('tool_speed_in_medium'), (c / n).toExponential(4) + ' m/s'); }
+        }
+      },
+      {
+        id: 'rlcImpedance',
+        label: 'tool_rlc_impedance',
+        render: () => `
+          <p class="tool-hint">${t('tool_rlc_impedance_hint')}</p>
+          ${field('rlcR', 'tool_resistance_ohm', 'Ω', 'number')}
+          ${field('rlcL', 'tool_inductance_h', 'H', 'number')}
+          ${field('rlcC', 'tool_capacitance_f', 'F', 'number')}
+          ${field('rlcF', 'tool_frequency_hz', 'Hz', 'number')}
+        `,
+        calc: (out) => {
+          const R = num('rlcR'), L = num('rlcL'), C = num('rlcC'), f = num('rlcF');
+          if ([R, L, C, f].some(v => v === null) || R < 0 || C <= 0) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          const XL = 2 * Math.PI * f * L;
+          const XC = 1 / (2 * Math.PI * f * C);
+          const Z = Math.sqrt(R * R + Math.pow(XL - XC, 2));
+          const phase = Math.atan2(XL - XC, R) * (180 / Math.PI);
+          out.innerHTML = resultCell('X_L', round(XL, 4) + ' Ω') + resultCell('X_C', round(XC, 4) + ' Ω') +
+            resultCell(t('tool_impedance_z'), round(Z, 4) + ' Ω') + resultCell(t('tool_phase_angle'), round(phase, 2) + '°');
+        }
+      },
+      {
+        id: 'faradaysLawEMF',
+        label: 'tool_faradays_law_emf',
+        render: () => `
+          <p class="tool-hint">${t('tool_faradays_law_emf_hint')}</p>
+          ${field('femfN', 'tool_num_turns', 'turns', 'number')}
+          ${field('femfFlux', 'tool_delta_flux', 'Wb', 'number')}
+          ${field('femfTime', 'tool_delta_time_s', 's', 'number')}
+        `,
+        calc: (out) => {
+          const N = num('femfN'), dPhi = num('femfFlux'), dt = num('femfTime');
+          if (N === null || dPhi === null || dt === null || dt === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const emf = Math.abs(N * dPhi / dt);
+          out.innerHTML = resultCell(t('tool_induced_emf'), round(emf, 5) + ' V');
+        }
+      },
+      {
+        id: 'thermalExpansion',
+        label: 'tool_thermal_expansion',
+        render: () => `
+          <p class="tool-hint">${t('tool_thermal_expansion_hint')}</p>
+          ${field('teLength', 'tool_initial_length', 'm', 'number')}
+          ${field('teAlpha', 'tool_linear_expansion_coeff', 'per °C', 'number')}
+          ${field('teDeltaT', 'tool_delta_temp_c', '°C', 'number')}
+        `,
+        calc: (out) => {
+          const L0 = num('teLength'), alpha = num('teAlpha'), dT = num('teDeltaT');
+          if (L0 === null || alpha === null || dT === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const deltaL = alpha * L0 * dT;
+          out.innerHTML = resultCell(t('tool_change_in_length'), round(deltaL, 6) + ' m') + resultCell(t('tool_new_length'), round(L0 + deltaL, 6) + ' m');
+        }
+      },
+      {
+        id: 'stefanBoltzmannLaw',
+        label: 'tool_stefan_boltzmann',
+        render: () => `
+          <p class="tool-hint">${t('tool_stefan_boltzmann_hint')}</p>
+          ${field('sbEmissivity', 'tool_emissivity', '0 - 1', 'number')}
+          ${field('sbArea', 'tool_surface_area_m2', 'm²', 'number')}
+          ${field('sbTemp', 'tool_temp_k', 'K', 'number')}
+        `,
+        calc: (out) => {
+          const e = num('sbEmissivity'), A = num('sbArea'), T = num('sbTemp');
+          if (e === null || A === null || T === null || e < 0 || e > 1) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const sigma = 5.670374419e-8;
+          const P = e * sigma * A * Math.pow(T, 4);
+          out.innerHTML = resultCell(t('tool_radiated_power'), P.toExponential(4) + ' W');
+        }
+      },
+      {
+        id: 'bernoullisEquation',
+        label: 'tool_bernoullis_equation',
+        render: () => `
+          <p class="tool-hint">${t('tool_bernoullis_equation_hint')}</p>
+          ${field('bqP1', 'tool_pressure_1_pa', 'Pa', 'number')}
+          ${field('bqDensity', 'tool_fluid_density', 'kg/m³', 'number')}
+          ${field('bqV1', 'tool_velocity_1', 'm/s', 'number')}
+          ${field('bqV2', 'tool_velocity_2', 'm/s', 'number')}
+          ${field('bqH1', 'tool_height_1', 'm (optional)', 'number')}
+          ${field('bqH2', 'tool_height_2', 'm (optional)', 'number')}
+        `,
+        calc: (out) => {
+          const P1 = num('bqP1'), rho = num('bqDensity'), v1 = num('bqV1'), v2 = num('bqV2');
+          const h1 = num('bqH1') || 0, h2 = num('bqH2') || 0;
+          if ([P1, rho, v1, v2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          const g = 9.8;
+          const P2 = P1 + 0.5 * rho * (v1 * v1 - v2 * v2) + rho * g * (h1 - h2);
+          out.innerHTML = resultCell(t('tool_pressure_2_pa'), round(P2, 3) + ' Pa');
+        }
+      },
+      {
+        id: 'centerOfMass',
+        label: 'tool_center_of_mass',
+        render: () => `
+          <p class="tool-hint">${t('tool_center_of_mass_hint')}</p>
+          ${field('comM1', 'tool_mass_1_kg', 'kg', 'number')}
+          ${field('comX1', 'tool_position_1', 'm', 'number')}
+          ${field('comM2', 'tool_mass_2_kg', 'kg', 'number')}
+          ${field('comX2', 'tool_position_2', 'm', 'number')}
+        `,
+        calc: (out) => {
+          const m1 = num('comM1'), x1 = num('comX1'), m2 = num('comM2'), x2 = num('comX2');
+          if ([m1, x1, m2, x2].some(v => v === null) || (m1 + m2) === 0) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          const xcm = (m1 * x1 + m2 * x2) / (m1 + m2);
+          out.innerHTML = resultCell(t('tool_center_of_mass_position'), round(xcm, 4) + ' m');
+        }
+      },
+      {
+        id: 'wiensLaw',
+        label: 'tool_wiens_law',
+        render: () => `
+          <p class="tool-hint">${t('tool_wiens_law_hint')}</p>
+          ${field('wienTemp', 'tool_temp_k', 'K', 'number')}
+          <div class="tool-or">${t('tool_or')}</div>
+          ${field('wienLambda', 'tool_peak_wavelength_nm', 'nm', 'number')}
+        `,
+        calc: (out) => {
+          const T = num('wienTemp'), lambdaNm = num('wienLambda');
+          const b = 2.897771955e-3;
+          if (T === null && lambdaNm === null) { out.innerHTML = errorBox(t('tool_err_onefield')); return; }
+          if (T !== null) {
+            if (T <= 0) { out.innerHTML = errorBox(t('tool_err_onefield')); return; }
+            const lambdaMax = (b / T) * 1e9;
+            out.innerHTML = resultCell(t('tool_peak_wavelength_nm'), round(lambdaMax, 2) + ' nm');
+          } else {
+            const T_result = b / (lambdaNm * 1e-9);
+            out.innerHTML = resultCell(t('tool_temp_k'), round(T_result, 2) + ' K');
+          }
+        }
+      },
+      {
+        id: 'massEnergyEquivalence',
+        label: 'tool_mass_energy_equivalence',
+        render: () => `
+          <p class="tool-hint">${t('tool_mass_energy_equivalence_hint')}</p>
+          ${field('meeMass', 'tool_mass_kg_sci', 'kg (e.g. 1e-27)', 'number')}
+        `,
+        calc: (out) => {
+          const m = num('meeMass');
+          if (m === null || m < 0) { out.innerHTML = errorBox(t('tool_err_1field')); return; }
+          const c = 3e8;
+          const E = m * c * c;
+          const eV = E / 1.602176634e-19;
+          out.innerHTML = resultCell(t('tool_energy_joules'), E.toExponential(4) + ' J') + resultCell(t('tool_energy_mev'), (eV / 1e6).toExponential(4) + ' MeV');
+        }
       }
     ],
 
@@ -2889,6 +3259,174 @@
           let bac = (grams / (weight * 1000 * r)) * 100 - (0.015 * hours);
           bac = Math.max(0, bac);
           out.innerHTML = resultCell(t('tool_bac_result'), round(bac, 4) + '%');
+        }
+      },
+      {
+        id: 'alleleFrequency',
+        label: 'tool_allele_frequency',
+        render: () => `
+          <p class="tool-hint">${t('tool_allele_frequency_hint')}</p>
+          ${field('afAA', 'tool_count_aa', 'e.g. 320', 'number')}
+          ${field('afAa', 'tool_count_aa_het', 'e.g. 160', 'number')}
+          ${field('afaa', 'tool_count_lowercase_aa', 'e.g. 20', 'number')}
+        `,
+        calc: (out) => {
+          const AA = num('afAA'), Aa = num('afAa'), aa = num('afaa');
+          if ([AA, Aa, aa].some(v => v === null) || AA < 0 || Aa < 0 || aa < 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const N = AA + Aa + aa;
+          if (N === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const p = (2 * AA + Aa) / (2 * N);
+          const q = (2 * aa + Aa) / (2 * N);
+          out.innerHTML = resultCell(t('tool_allele_freq_p'), round(p, 4)) + resultCell(t('tool_allele_freq_q'), round(q, 4));
+        }
+      },
+      {
+        id: 'dihybridCross',
+        label: 'tool_dihybrid_cross',
+        render: () => `
+          <p class="tool-hint">${t('tool_dihybrid_cross_hint')}</p>
+          ${field('dhcTotal', 'tool_total_offspring', 'e.g. 160', 'number')}
+        `,
+        calc: (out) => {
+          const total = num('dhcTotal');
+          if (total === null || total <= 0) { out.innerHTML = errorBox(t('tool_err_1field')); return; }
+          out.innerHTML =
+            resultCell(t('tool_phenotype_dominant_dominant'), round(total * 9 / 16, 2)) +
+            resultCell(t('tool_phenotype_dominant_recessive'), round(total * 3 / 16, 2)) +
+            resultCell(t('tool_phenotype_recessive_dominant'), round(total * 3 / 16, 2)) +
+            resultCell(t('tool_phenotype_recessive_recessive'), round(total * 1 / 16, 2));
+        }
+      },
+      {
+        id: 'enzymeTurnoverNumber',
+        label: 'tool_enzyme_turnover',
+        render: () => `
+          <p class="tool-hint">${t('tool_enzyme_turnover_hint')}</p>
+          ${field('etnVmax', 'tool_vmax_value', 'e.g. µmol/min', 'number')}
+          ${field('etnEnzyme', 'tool_enzyme_conc', 'e.g. µmol', 'number')}
+        `,
+        calc: (out) => {
+          const vmax = num('etnVmax'), enz = num('etnEnzyme');
+          if (vmax === null || enz === null || enz <= 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_kcat_result'), round(vmax / enz, 4));
+        }
+      },
+      {
+        id: 'ejectionFraction',
+        label: 'tool_ejection_fraction',
+        render: () => `
+          <p class="tool-hint">${t('tool_ejection_fraction_hint')}</p>
+          ${field('efEdv', 'tool_end_diastolic_volume', 'mL', 'number')}
+          ${field('efEsv', 'tool_end_systolic_volume', 'mL', 'number')}
+        `,
+        calc: (out) => {
+          const edv = num('efEdv'), esv = num('efEsv');
+          if (edv === null || esv === null || edv <= 0 || esv > edv) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const sv = edv - esv;
+          const ef = (sv / edv) * 100;
+          out.innerHTML = resultCell(t('tool_stroke_volume'), round(sv, 2) + ' mL') + resultCell(t('tool_ejection_fraction_result'), round(ef, 2) + '%');
+        }
+      },
+      {
+        id: 'netPrimaryProductivity',
+        label: 'tool_net_primary_productivity',
+        render: () => `
+          <p class="tool-hint">${t('tool_net_primary_productivity_hint')}</p>
+          ${field('nppGpp', 'tool_gross_primary_productivity', 'g/m²/yr', 'number')}
+          ${field('nppR', 'tool_respiration_loss', 'g/m²/yr', 'number')}
+        `,
+        calc: (out) => {
+          const gpp = num('nppGpp'), r = num('nppR');
+          if (gpp === null || r === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_npp_result'), round(gpp - r, 3) + ' g/m²/yr');
+        }
+      },
+      {
+        id: 'effectivePopulationSize',
+        label: 'tool_effective_population_size',
+        render: () => `
+          <p class="tool-hint">${t('tool_effective_population_size_hint')}</p>
+          ${field('epsMales', 'tool_num_males', 'e.g. 40', 'number')}
+          ${field('epsFemales', 'tool_num_females', 'e.g. 60', 'number')}
+        `,
+        calc: (out) => {
+          const nm = num('epsMales'), nf = num('epsFemales');
+          if (nm === null || nf === null || nm < 0 || nf < 0 || (nm + nf) === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const ne = (4 * nm * nf) / (nm + nf);
+          out.innerHTML = resultCell(t('tool_effective_population_size_result'), round(ne, 2));
+        }
+      },
+      {
+        id: 'drugHalfLifeClearance',
+        label: 'tool_drug_half_life',
+        render: () => `
+          <p class="tool-hint">${t('tool_drug_half_life_hint')}</p>
+          ${field('dhlVd', 'tool_volume_of_distribution', 'L', 'number')}
+          ${field('dhlCl', 'tool_drug_clearance', 'L/hr', 'number')}
+        `,
+        calc: (out) => {
+          const Vd = num('dhlVd'), CL = num('dhlCl');
+          if (Vd === null || CL === null || CL <= 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const halfLife = 0.693 * Vd / CL;
+          const k = 0.693 / halfLife;
+          out.innerHTML = resultCell(t('tool_drug_half_life_result'), round(halfLife, 3) + ' hr') + resultCell(t('tool_elimination_rate_constant'), round(k, 4) + ' /hr');
+        }
+      },
+      {
+        id: 'magnificationCalculator',
+        label: 'tool_microscope_magnification',
+        render: () => `
+          <p class="tool-hint">${t('tool_microscope_magnification_hint')}</p>
+          ${field('magObjective', 'tool_objective_power', 'e.g. 40', 'number')}
+          ${field('magEyepiece', 'tool_eyepiece_power', 'e.g. 10', 'number')}
+          ${field('magImageSize', 'tool_image_size_um', 'µm (optional)', 'number')}
+        `,
+        calc: (out) => {
+          const obj = num('magObjective'), eye = num('magEyepiece'), imgSize = num('magImageSize');
+          if (obj === null || eye === null || obj <= 0 || eye <= 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const totalMag = obj * eye;
+          let html = resultCell(t('tool_total_magnification'), round(totalMag, 2) + 'x');
+          if (imgSize !== null) html += resultCell(t('tool_actual_size'), round(imgSize / totalMag, 4) + ' µm');
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'totalDailyEnergyExpenditure',
+        label: 'tool_tdee',
+        render: () => `
+          <p class="tool-hint">${t('tool_tdee_hint')}</p>
+          ${field('tdeeBmr', 'tool_bmr_value', 'kcal/day', 'number')}
+          ${selectField('tdeeActivity', 'tool_activity_level', [
+            { value: '1.2', label: t('tool_activity_sedentary') },
+            { value: '1.375', label: t('tool_activity_light') },
+            { value: '1.55', label: t('tool_activity_moderate') },
+            { value: '1.725', label: t('tool_activity_active') },
+            { value: '1.9', label: t('tool_activity_very_active') }
+          ])}
+        `,
+        calc: (out) => {
+          const bmr = num('tdeeBmr'), factor = parseFloat(str('tdeeActivity'));
+          if (bmr === null || bmr <= 0) { out.innerHTML = errorBox(t('tool_err_1field')); return; }
+          out.innerHTML = resultCell(t('tool_tdee_result'), round(bmr * factor, 0) + ' kcal/day');
+        }
+      },
+      {
+        id: 'glycemicLoad',
+        label: 'tool_glycemic_load',
+        render: () => `
+          <p class="tool-hint">${t('tool_glycemic_load_hint')}</p>
+          ${field('glGi', 'tool_glycemic_index', '0 - 100', 'number')}
+          ${field('glCarbs', 'tool_carbs_grams', 'g', 'number')}
+        `,
+        calc: (out) => {
+          const gi = num('glGi'), carbs = num('glCarbs');
+          if (gi === null || carbs === null || gi < 0 || gi > 100 || carbs < 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const gl = (gi * carbs) / 100;
+          let category;
+          if (gl < 10) category = t('tool_gl_low');
+          else if (gl < 20) category = t('tool_gl_medium');
+          else category = t('tool_gl_high');
+          out.innerHTML = resultCell(t('tool_glycemic_load_result'), round(gl, 2)) + resultCell(t('tool_glycemic_load_category'), category);
         }
       }
     ],
