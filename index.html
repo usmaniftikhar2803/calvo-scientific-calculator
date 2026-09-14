@@ -872,32 +872,55 @@
 <section class="tab-panel" id="tab-eqsolver">
   <div class="formulas-wrap">
     <div class="formulas-card" id="eqCard">
-      <div class="formulas-title" data-i18n="eq_title">Equation Solver</div>
-      <div class="formulas-subtitle" data-i18n="eq_subtitle">Step-by-step linear &amp; quadratic solutions — works fully offline</div>
 
-      <div class="subject-pills">
-        <button class="subject-pill active" data-eqmode="linear" id="eqModeLinearBtn" data-i18n="eq_mode_linear">Linear (ax + b = c)</button>
-        <button class="subject-pill" data-eqmode="quadratic" id="eqModeQuadBtn" data-i18n="eq_mode_quadratic">Quadratic (ax² + bx + c = 0)</button>
+      <!-- LIST VIEW (default) — pick which equation to solve -->
+      <div id="eqListView">
+        <div class="formulas-title" data-i18n="eq_title">Equation Solver</div>
+        <div class="formulas-subtitle" data-i18n="eq_subtitle">Step-by-step linear &amp; quadratic solutions — works fully offline</div>
+
+        <div class="subject-pills" id="eqModePills">
+          <button class="subject-pill" data-eqmode="linear" id="eqModeLinearBtn" data-i18n="eq_mode_linear">Linear (ax + b = c)</button>
+          <button class="subject-pill" data-eqmode="quadratic" id="eqModeQuadBtn" data-i18n="eq_mode_quadratic">Quadratic (ax² + bx + c = 0)</button>
+          <button class="subject-pill" data-eqmode="cubic">Cubic (ax³+bx²+cx+d=0)</button>
+          <button class="subject-pill" data-eqmode="biquadratic">Biquadratic (ax⁴+bx²+c=0)</button>
+          <button class="subject-pill" data-eqmode="sys2">System (2 variables)</button>
+          <button class="subject-pill" data-eqmode="sys3">System (3 variables)</button>
+          <button class="subject-pill" data-eqmode="exponential">Exponential (a·bˣ = c)</button>
+          <button class="subject-pill" data-eqmode="logarithmic">Logarithmic (a·log_b(x) = c)</button>
+          <button class="subject-pill" data-eqmode="absolute">Absolute Value (a|x|+b=c)</button>
+          <button class="subject-pill" data-eqmode="radical">Radical (a√x + b = c)</button>
+          <button class="subject-pill" data-eqmode="rational">Rational (a/x + b = c)</button>
+          <button class="subject-pill" data-eqmode="trig">Trigonometric (a·sin x = b)</button>
+          <button class="subject-pill" data-eqmode="quartic">Quartic (ax⁴+bx³+cx²+dx+e=0)</button>
+          <button class="subject-pill" data-eqmode="cosine">Cosine (a·cos x = b)</button>
+          <button class="subject-pill" data-eqmode="tangent">Tangent (a·tan x = b)</button>
+          <button class="subject-pill" data-eqmode="reciprocal">Reciprocal Quad. (ax + b/x = c)</button>
+          <button class="subject-pill" data-eqmode="cuberoot">Cube Root (a·∛x + b = c)</button>
+          <button class="subject-pill" data-eqmode="proportion">Proportion (a/b = c/x)</button>
+          <button class="subject-pill" data-eqmode="linearboth">Linear Both Sides (a(x+b)=c(x+d))</button>
+          <button class="subject-pill" data-eqmode="rationalcross">Rational Cross (a/(x+b)=c/(x+d))</button>
+          <button class="subject-pill" data-eqmode="directvar">Direct Variation (y = kx)</button>
+          <button class="subject-pill" data-eqmode="inversevar">Inverse Variation (y = k/x)</button>
+          <button class="subject-pill" data-eqmode="arithseq">Arithmetic Sequence (aₙ = a₁+(n−1)d)</button>
+          <button class="subject-pill" data-eqmode="geomseq">Geometric Sequence (aₙ = a₁·rⁿ⁻¹)</button>
+          <button class="subject-pill" data-eqmode="sincos">Sine+Cosine (a·sin x + b·cos x = c)</button>
+        </div>
       </div>
 
-      <div class="eq-input-row" id="eqInputRow">
-        <div class="eq-input-group">
-          <label data-i18n="eq_label_a">a</label>
-          <input type="number" class="formula-search convert-input" id="eqA" value="1">
+      <!-- DETAIL VIEW (opens after tapping an equation — its own page) -->
+      <div id="eqDetailView" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="eqDetailBackBtn">&larr; <span data-i18n="back_to_tools">Back</span></button>
         </div>
-        <div class="eq-input-group">
-          <label data-i18n="eq_label_b">b</label>
-          <input type="number" class="formula-search convert-input" id="eqB" value="0">
-        </div>
-        <div class="eq-input-group" id="eqCGroup">
-          <label data-i18n="eq_label_c">c</label>
-          <input type="number" class="formula-search convert-input" id="eqC" value="0">
-        </div>
+        <div class="formulas-title" id="eqDetailTitle"></div>
+
+        <div class="eq-input-row" id="eqDynamicInputs"></div>
+
+        <button class="pill-btn save-btn" id="eqSolveBtn" data-i18n="eq_solve">Solve</button>
+
+        <div class="eq-steps" id="eqStepsBox"></div>
       </div>
 
-      <button class="pill-btn save-btn" id="eqSolveBtn" data-i18n="eq_solve">Solve</button>
-
-      <div class="eq-steps" id="eqStepsBox"></div>
     </div>
   </div>
 </section>
