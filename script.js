@@ -6736,6 +6736,31 @@ setTimeout(() => {
     arithseq:    [{ k: 'a1', l: 'a₁', d: 2 }, { k: 'd', l: 'd', d: 3 }, { k: 'n', l: 'n', d: 5 }, { k: 'an', l: 'aₙ', d: '', ph: 'blank = solve' }],
     geomseq:     [{ k: 'a1', l: 'a₁', d: 3 }, { k: 'r', l: 'r', d: 2 }, { k: 'n', l: 'n', d: 4 }, { k: 'an', l: 'aₙ', d: '', ph: 'blank = solve' }],
     sincos:      [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 1 }, { k: 'c', l: 'c', d: 1 }],
+    pythagorean:      [{ k: 'a', l: 'a', d: 3 }, { k: 'b', l: 'b', d: 4 }, { k: 'c', l: 'c', d: '', ph: 'blank = solve' }],
+    slopeintercept:   [{ k: 'y', l: 'y', d: '', ph: 'blank = solve' }, { k: 'm', l: 'm', d: 2 }, { k: 'x', l: 'x', d: 3 }, { k: 'c', l: 'c', d: 1 }],
+    percentage:       [{ k: 'p', l: 'p (%)', d: 20 }, { k: 'x', l: 'x', d: 50 }, { k: 'y', l: 'y', d: '', ph: 'blank = solve' }],
+    simpleinterest:   [{ k: 'I', l: 'I', d: '', ph: 'blank = solve' }, { k: 'P', l: 'P', d: 1000 }, { k: 'R', l: 'R (%)', d: 5 }, { k: 'T', l: 'T (yrs)', d: 2 }],
+    compoundinterest: [{ k: 'A', l: 'A', d: '', ph: 'blank = solve' }, { k: 'P', l: 'P', d: 1000 }, { k: 'r', l: 'r (%)', d: 10 }, { k: 't', l: 't (yrs)', d: 2 }],
+    ohmslaw:      [{ k: 'V', l: 'V', d: '', ph: 'blank = solve' }, { k: 'I', l: 'I', d: 2 }, { k: 'R', l: 'R', d: 5 }],
+    electricpower:[{ k: 'P', l: 'P', d: '', ph: 'blank = solve' }, { k: 'I', l: 'I', d: 2 }, { k: 'R', l: 'R', d: 10 }],
+    workdone:     [{ k: 'W', l: 'W', d: '', ph: 'blank = solve' }, { k: 'F', l: 'F', d: 10 }, { k: 'd', l: 'd', d: 5 }],
+    power:        [{ k: 'P', l: 'P', d: '', ph: 'blank = solve' }, { k: 'W', l: 'W', d: 100 }, { k: 't', l: 't', d: 20 }],
+    newton2:      [{ k: 'F', l: 'F', d: '', ph: 'blank = solve' }, { k: 'm', l: 'm', d: 5 }, { k: 'a', l: 'a', d: 2 }],
+    density:      [{ k: 'rho', l: 'ρ', d: '', ph: 'blank = solve' }, { k: 'm', l: 'm', d: 50 }, { k: 'V', l: 'V', d: 10 }],
+    kinematicsv:  [{ k: 'v', l: 'v', d: '', ph: 'blank = solve' }, { k: 'u', l: 'u', d: 0 }, { k: 'a', l: 'a', d: 9.8 }, { k: 't', l: 't', d: 2 }],
+    kinematicss:  [{ k: 's', l: 's', d: '', ph: 'blank = solve' }, { k: 'u', l: 'u', d: 0 }, { k: 'a', l: 'a', d: 9.8 }, { k: 't', l: 't', d: 2 }],
+    kinematicsvs: [{ k: 'v', l: 'v', d: '', ph: 'blank = solve' }, { k: 'u', l: 'u', d: 0 }, { k: 'a', l: 'a', d: 9.8 }, { k: 's', l: 's', d: 20 }],
+    idealgas:     [{ k: 'P', l: 'P', d: 1 }, { k: 'V', l: 'V', d: 22.4 }, { k: 'n', l: 'n', d: 1 }, { k: 'R', l: 'R', d: 0.0821 }, { k: 'T', l: 'T', d: '', ph: 'blank = solve' }],
+    molarity:     [{ k: 'M', l: 'M', d: '', ph: 'blank = solve' }, { k: 'n', l: 'n', d: 2 }, { k: 'V', l: 'V', d: 4 }],
+    circlearea:   [{ k: 'A', l: 'A', d: '', ph: 'blank = solve' }, { k: 'r', l: 'r', d: 7 }],
+    circumference:[{ k: 'C', l: 'C', d: '', ph: 'blank = solve' }, { k: 'r', l: 'r', d: 7 }],
+    spherevolume: [{ k: 'V', l: 'V', d: '', ph: 'blank = solve' }, { k: 'r', l: 'r', d: 3 }],
+    lawofcosines: [{ k: 'a', l: 'a', d: 5 }, { k: 'b', l: 'b', d: 7 }, { k: 'C', l: 'C (°)', d: 60 }, { k: 'c', l: 'c', d: '', ph: 'blank = solve' }],
+    radioactivedecay: [{ k: 'N', l: 'N', d: '', ph: 'blank = solve' }, { k: 'N0', l: 'N₀', d: 100 }, { k: 'k', l: 'k', d: 0.1 }, { k: 't', l: 't', d: 5 }],
+    halflife:     [{ k: 'N', l: 'N', d: '', ph: 'blank = solve' }, { k: 'N0', l: 'N₀', d: 80 }, { k: 't', l: 't', d: 10 }, { k: 'T', l: 'T (half-life)', d: 5 }],
+    freefall:     [{ k: 'h', l: 'h', d: '', ph: 'blank = solve' }, { k: 'g', l: 'g', d: 9.8 }, { k: 't', l: 't', d: 3 }],
+    waveeq:       [{ k: 'v', l: 'v', d: '', ph: 'blank = solve' }, { k: 'f', l: 'f', d: 50 }, { k: 'lambda', l: 'λ', d: 2 }],
+    lensformula:  [{ k: 'f', l: 'f', d: '', ph: 'blank = solve' }, { k: 'u', l: 'u', d: 30 }, { k: 'v', l: 'v', d: 60 }],
   };
 
   function buildFieldGroup(f) {
@@ -7303,6 +7328,309 @@ setTimeout(() => {
     renderStepsHtml(html);
   }
 
+  /* ---------- 26. Pythagorean Theorem: c² = a² + b² ---------- */
+  function solvePythagorean() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (countBlanks([a, b, c]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'c² = a² + b²');
+    if (!isFinite(c)) { const ans = Math.sqrt(a * a + b * b); html += stepHtml('Solve for c', 'c = √(a² + b²) = ' + fmt(ans), true); }
+    else if (!isFinite(a)) { if (c * c < b * b) { renderStepsHtml(html + errorHtml('c must be larger than b.')); return; } const ans = Math.sqrt(c * c - b * b); html += stepHtml('Solve for a', 'a = √(c² − b²) = ' + fmt(ans), true); }
+    else { if (c * c < a * a) { renderStepsHtml(html + errorHtml('c must be larger than a.')); return; } const ans = Math.sqrt(c * c - a * a); html += stepHtml('Solve for b', 'b = √(c² − a²) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 27. Slope-Intercept: y = mx + c ---------- */
+  function solveSlopeIntercept() {
+    const y = val('y'), m = val('m'), x = val('x'), c = val('c');
+    if (countBlanks([y, m, x, c]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'y = mx + c');
+    if (!isFinite(y)) { const ans = m * x + c; html += stepHtml('Solve for y', 'y = ' + m + '×' + x + ' + ' + c + ' = ' + fmt(ans), true); }
+    else if (!isFinite(m)) { if (x === 0) { renderStepsHtml(html + errorHtml('x cannot be 0.')); return; } const ans = (y - c) / x; html += stepHtml('Solve for m', 'm = (y − c)/x = ' + fmt(ans), true); }
+    else if (!isFinite(x)) { if (m === 0) { renderStepsHtml(html + errorHtml('m cannot be 0.')); return; } const ans = (y - c) / m; html += stepHtml('Solve for x', 'x = (y − c)/m = ' + fmt(ans), true); }
+    else { const ans = y - m * x; html += stepHtml('Solve for c', 'c = y − mx = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 28. Percentage: p% of x = y ---------- */
+  function solvePercentage() {
+    const p = val('p'), x = val('x'), y = val('y');
+    if (countBlanks([p, x, y]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'y = (p/100) × x');
+    if (!isFinite(y)) { const ans = (p * x) / 100; html += stepHtml('Solve for y', 'y = (' + p + '/100) × ' + x + ' = ' + fmt(ans), true); }
+    else if (!isFinite(p)) { if (x === 0) { renderStepsHtml(html + errorHtml('x cannot be 0.')); return; } const ans = (y * 100) / x; html += stepHtml('Solve for p', 'p = (y × 100)/x = ' + fmt(ans) + '%', true); }
+    else { if (p === 0) { renderStepsHtml(html + errorHtml('p cannot be 0.')); return; } const ans = (y * 100) / p; html += stepHtml('Solve for x', 'x = (y × 100)/p = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 29. Simple Interest: I = PRT/100 ---------- */
+  function solveSimpleInterest() {
+    const I = val('I'), P = val('P'), R = val('R'), T = val('T');
+    if (countBlanks([I, P, R, T]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'I = PRT / 100');
+    if (!isFinite(I)) { const ans = (P * R * T) / 100; html += stepHtml('Solve for I', 'I = (' + P + '×' + R + '×' + T + ')/100 = ' + fmt(ans), true); }
+    else if (!isFinite(P)) { if (R === 0 || T === 0) { renderStepsHtml(html + errorHtml('R and T cannot be 0.')); return; } const ans = (I * 100) / (R * T); html += stepHtml('Solve for P', 'P = (I×100)/(RT) = ' + fmt(ans), true); }
+    else if (!isFinite(R)) { if (P === 0 || T === 0) { renderStepsHtml(html + errorHtml('P and T cannot be 0.')); return; } const ans = (I * 100) / (P * T); html += stepHtml('Solve for R', 'R = (I×100)/(PT) = ' + fmt(ans) + '%', true); }
+    else { if (P === 0 || R === 0) { renderStepsHtml(html + errorHtml('P and R cannot be 0.')); return; } const ans = (I * 100) / (P * R); html += stepHtml('Solve for T', 'T = (I×100)/(PR) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 30. Compound Interest: A = P(1 + r/100)^t ---------- */
+  function solveCompoundInterest() {
+    const A = val('A'), P = val('P'), r = val('r'), t = val('t');
+    if (countBlanks([A, P, r, t]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'A = P(1 + r/100)ᵗ');
+    const base = (rr) => 1 + rr / 100;
+    if (!isFinite(A)) { const ans = P * Math.pow(base(r), t); html += stepHtml('Solve for A', 'A = ' + P + '×(1+' + r + '/100)^' + t + ' = ' + fmt(ans), true); }
+    else if (!isFinite(P)) { const ans = A / Math.pow(base(r), t); html += stepHtml('Solve for P', 'P = A / (1+r/100)ᵗ = ' + fmt(ans), true); }
+    else if (!isFinite(t)) { if (P === 0 || A / P <= 0 || base(r) <= 0 || base(r) === 1) { renderStepsHtml(html + errorHtml('Cannot solve for t with these values.')); return; } const ans = Math.log(A / P) / Math.log(base(r)); html += stepHtml('Solve for t', 't = ln(A/P) / ln(1+r/100) = ' + fmt(ans), true); }
+    else { if (P === 0 || A / P <= 0 || t === 0) { renderStepsHtml(html + errorHtml('Cannot solve for r with these values.')); return; } const ans = 100 * (Math.pow(A / P, 1 / t) - 1); html += stepHtml('Solve for r', 'r = 100×((A/P)^(1/t) − 1) = ' + fmt(ans) + '%', true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 31. Ohm's Law: V = IR ---------- */
+  function solveOhmsLaw() {
+    const V = val('V'), I = val('I'), R = val('R');
+    if (countBlanks([V, I, R]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'V = IR');
+    if (!isFinite(V)) { const ans = I * R; html += stepHtml('Solve for V', 'V = ' + I + ' × ' + R + ' = ' + fmt(ans), true); }
+    else if (!isFinite(I)) { if (R === 0) { renderStepsHtml(html + errorHtml('R cannot be 0.')); return; } const ans = V / R; html += stepHtml('Solve for I', 'I = V/R = ' + fmt(ans), true); }
+    else { if (I === 0) { renderStepsHtml(html + errorHtml('I cannot be 0.')); return; } const ans = V / I; html += stepHtml('Solve for R', 'R = V/I = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 32. Electric Power: P = I²R ---------- */
+  function solveElectricPower() {
+    const P = val('P'), I = val('I'), R = val('R');
+    if (countBlanks([P, I, R]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'P = I²R');
+    if (!isFinite(P)) { const ans = I * I * R; html += stepHtml('Solve for P', 'P = ' + I + '² × ' + R + ' = ' + fmt(ans), true); }
+    else if (!isFinite(I)) { if (R === 0 || P / R < 0) { renderStepsHtml(html + errorHtml('Cannot solve for I with these values.')); return; } const ans = Math.sqrt(P / R); html += stepHtml('Solve for I', 'I = √(P/R) = ' + fmt(ans), true); }
+    else { if (I === 0) { renderStepsHtml(html + errorHtml('I cannot be 0.')); return; } const ans = P / (I * I); html += stepHtml('Solve for R', 'R = P/I² = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 33. Work Done: W = F·d ---------- */
+  function solveWorkDone() {
+    const W = val('W'), F = val('F'), d = val('d');
+    if (countBlanks([W, F, d]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'W = F × d');
+    if (!isFinite(W)) { const ans = F * d; html += stepHtml('Solve for W', 'W = ' + F + ' × ' + d + ' = ' + fmt(ans), true); }
+    else if (!isFinite(F)) { if (d === 0) { renderStepsHtml(html + errorHtml('d cannot be 0.')); return; } const ans = W / d; html += stepHtml('Solve for F', 'F = W/d = ' + fmt(ans), true); }
+    else { if (F === 0) { renderStepsHtml(html + errorHtml('F cannot be 0.')); return; } const ans = W / F; html += stepHtml('Solve for d', 'd = W/F = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 34. Power: P = W/t ---------- */
+  function solvePower() {
+    const P = val('P'), W = val('W'), t = val('t');
+    if (countBlanks([P, W, t]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'P = W/t');
+    if (!isFinite(P)) { if (t === 0) { renderStepsHtml(html + errorHtml('t cannot be 0.')); return; } const ans = W / t; html += stepHtml('Solve for P', 'P = W/t = ' + fmt(ans), true); }
+    else if (!isFinite(W)) { const ans = P * t; html += stepHtml('Solve for W', 'W = P × t = ' + fmt(ans), true); }
+    else { if (P === 0) { renderStepsHtml(html + errorHtml('P cannot be 0.')); return; } const ans = W / P; html += stepHtml('Solve for t', 't = W/P = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 35. Newton's Second Law: F = ma ---------- */
+  function solveNewton2() {
+    const F = val('F'), m = val('m'), a = val('a');
+    if (countBlanks([F, m, a]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'F = ma');
+    if (!isFinite(F)) { const ans = m * a; html += stepHtml('Solve for F', 'F = ' + m + ' × ' + a + ' = ' + fmt(ans), true); }
+    else if (!isFinite(m)) { if (a === 0) { renderStepsHtml(html + errorHtml('a cannot be 0.')); return; } const ans = F / a; html += stepHtml('Solve for m', 'm = F/a = ' + fmt(ans), true); }
+    else { if (m === 0) { renderStepsHtml(html + errorHtml('m cannot be 0.')); return; } const ans = F / m; html += stepHtml('Solve for a', 'a = F/m = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 36. Density: ρ = m/V ---------- */
+  function solveDensity() {
+    const rho = val('rho'), m = val('m'), V = val('V');
+    if (countBlanks([rho, m, V]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'ρ = m/V');
+    if (!isFinite(rho)) { if (V === 0) { renderStepsHtml(html + errorHtml('V cannot be 0.')); return; } const ans = m / V; html += stepHtml('Solve for ρ', 'ρ = m/V = ' + fmt(ans), true); }
+    else if (!isFinite(m)) { const ans = rho * V; html += stepHtml('Solve for m', 'm = ρ × V = ' + fmt(ans), true); }
+    else { if (rho === 0) { renderStepsHtml(html + errorHtml('ρ cannot be 0.')); return; } const ans = m / rho; html += stepHtml('Solve for V', 'V = m/ρ = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 37. Kinematics: v = u + at ---------- */
+  function solveKinematicsV() {
+    const v = val('v'), u = val('u'), a = val('a'), t = val('t');
+    if (countBlanks([v, u, a, t]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'v = u + at');
+    if (!isFinite(v)) { const ans = u + a * t; html += stepHtml('Solve for v', 'v = ' + u + ' + ' + a + '×' + t + ' = ' + fmt(ans), true); }
+    else if (!isFinite(u)) { const ans = v - a * t; html += stepHtml('Solve for u', 'u = v − at = ' + fmt(ans), true); }
+    else if (!isFinite(a)) { if (t === 0) { renderStepsHtml(html + errorHtml('t cannot be 0.')); return; } const ans = (v - u) / t; html += stepHtml('Solve for a', 'a = (v − u)/t = ' + fmt(ans), true); }
+    else { if (a === 0) { renderStepsHtml(html + errorHtml('a cannot be 0.')); return; } const ans = (v - u) / a; html += stepHtml('Solve for t', 't = (v − u)/a = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 38. Kinematics: s = ut + ½at² ---------- */
+  function solveKinematicsS() {
+    const s = val('s'), u = val('u'), a = val('a'), t = val('t');
+    if (countBlanks([s, u, a, t]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 's = ut + ½at²');
+    if (!isFinite(s)) { const ans = u * t + 0.5 * a * t * t; html += stepHtml('Solve for s', 's = ' + u + '×' + t + ' + ½×' + a + '×' + t + '² = ' + fmt(ans), true); }
+    else if (!isFinite(u)) { if (t === 0) { renderStepsHtml(html + errorHtml('t cannot be 0.')); return; } const ans = (s - 0.5 * a * t * t) / t; html += stepHtml('Solve for u', 'u = (s − ½at²)/t = ' + fmt(ans), true); }
+    else if (!isFinite(a)) { if (t === 0) { renderStepsHtml(html + errorHtml('t cannot be 0.')); return; } const ans = 2 * (s - u * t) / (t * t); html += stepHtml('Solve for a', 'a = 2(s − ut)/t² = ' + fmt(ans), true); }
+    else {
+      if (a === 0) { if (u === 0) { renderStepsHtml(html + errorHtml('Cannot solve for t: u and a are both 0.')); return; } const ans = s / u; html += stepHtml('Solve for t (a = 0)', 't = s/u = ' + fmt(ans), true); renderStepsHtml(html); return; }
+      const A = 0.5 * a, B = u, C = -s;
+      const D = B * B - 4 * A * C;
+      html += stepHtml('Rearrange as a quadratic in t', '½at² + ut − s = 0');
+      if (D < 0) { renderStepsHtml(html + errorHtml('No real solution for t.')); return; }
+      const t1 = (-B + Math.sqrt(D)) / (2 * A), t2 = (-B - Math.sqrt(D)) / (2 * A);
+      html += stepHtml('Solve for t', 't₁ = ' + fmt(t1) + ',  t₂ = ' + fmt(t2) + '  (take the positive, physically valid one)', true);
+    }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 39. Kinematics: v² = u² + 2as ---------- */
+  function solveKinematicsVS() {
+    const v = val('v'), u = val('u'), a = val('a'), s = val('s');
+    if (countBlanks([v, u, a, s]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'v² = u² + 2as');
+    if (!isFinite(v)) { const sq = u * u + 2 * a * s; if (sq < 0) { renderStepsHtml(html + errorHtml('No real solution (negative under the root).')); return; } const ans = Math.sqrt(sq); html += stepHtml('Solve for v', 'v = √(u² + 2as) = ' + fmt(ans) + '  (± possible)', true); }
+    else if (!isFinite(u)) { const sq = v * v - 2 * a * s; if (sq < 0) { renderStepsHtml(html + errorHtml('No real solution (negative under the root).')); return; } const ans = Math.sqrt(sq); html += stepHtml('Solve for u', 'u = √(v² − 2as) = ' + fmt(ans) + '  (± possible)', true); }
+    else if (!isFinite(a)) { if (s === 0) { renderStepsHtml(html + errorHtml('s cannot be 0.')); return; } const ans = (v * v - u * u) / (2 * s); html += stepHtml('Solve for a', 'a = (v² − u²)/2s = ' + fmt(ans), true); }
+    else { if (a === 0) { renderStepsHtml(html + errorHtml('a cannot be 0.')); return; } const ans = (v * v - u * u) / (2 * a); html += stepHtml('Solve for s', 's = (v² − u²)/2a = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 40. Ideal Gas Law: PV = nRT ---------- */
+  function solveIdealGas() {
+    const P = val('P'), V = val('V'), n = val('n'), R = val('R'), T = val('T');
+    if (countBlanks([P, V, n, R, T]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'PV = nRT');
+    if (!isFinite(P)) { if (V === 0) { renderStepsHtml(html + errorHtml('V cannot be 0.')); return; } const ans = (n * R * T) / V; html += stepHtml('Solve for P', 'P = nRT/V = ' + fmt(ans), true); }
+    else if (!isFinite(V)) { if (P === 0) { renderStepsHtml(html + errorHtml('P cannot be 0.')); return; } const ans = (n * R * T) / P; html += stepHtml('Solve for V', 'V = nRT/P = ' + fmt(ans), true); }
+    else if (!isFinite(n)) { if (R === 0 || T === 0) { renderStepsHtml(html + errorHtml('R and T cannot be 0.')); return; } const ans = (P * V) / (R * T); html += stepHtml('Solve for n', 'n = PV/RT = ' + fmt(ans), true); }
+    else if (!isFinite(R)) { if (n === 0 || T === 0) { renderStepsHtml(html + errorHtml('n and T cannot be 0.')); return; } const ans = (P * V) / (n * T); html += stepHtml('Solve for R', 'R = PV/nT = ' + fmt(ans), true); }
+    else { if (n === 0 || R === 0) { renderStepsHtml(html + errorHtml('n and R cannot be 0.')); return; } const ans = (P * V) / (n * R); html += stepHtml('Solve for T', 'T = PV/nR = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 41. Molarity: M = n/V ---------- */
+  function solveMolarity() {
+    const M = val('M'), n = val('n'), V = val('V');
+    if (countBlanks([M, n, V]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'M = n/V');
+    if (!isFinite(M)) { if (V === 0) { renderStepsHtml(html + errorHtml('V cannot be 0.')); return; } const ans = n / V; html += stepHtml('Solve for M', 'M = n/V = ' + fmt(ans), true); }
+    else if (!isFinite(n)) { const ans = M * V; html += stepHtml('Solve for n', 'n = M × V = ' + fmt(ans), true); }
+    else { if (M === 0) { renderStepsHtml(html + errorHtml('M cannot be 0.')); return; } const ans = n / M; html += stepHtml('Solve for V', 'V = n/M = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 42. Circle Area: A = πr² ---------- */
+  function solveCircleArea() {
+    const A = val('A'), r = val('r');
+    if (countBlanks([A, r]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'A = πr²');
+    if (!isFinite(A)) { const ans = Math.PI * r * r; html += stepHtml('Solve for A', 'A = π × ' + r + '² = ' + fmt(ans), true); }
+    else { if (A < 0) { renderStepsHtml(html + errorHtml('A cannot be negative.')); return; } const ans = Math.sqrt(A / Math.PI); html += stepHtml('Solve for r', 'r = √(A/π) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 43. Circumference: C = 2πr ---------- */
+  function solveCircumference() {
+    const C = val('C'), r = val('r');
+    if (countBlanks([C, r]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'C = 2πr');
+    if (!isFinite(C)) { const ans = 2 * Math.PI * r; html += stepHtml('Solve for C', 'C = 2π × ' + r + ' = ' + fmt(ans), true); }
+    else { const ans = C / (2 * Math.PI); html += stepHtml('Solve for r', 'r = C/(2π) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 44. Sphere Volume: V = (4/3)πr³ ---------- */
+  function solveSphereVolume() {
+    const V = val('V'), r = val('r');
+    if (countBlanks([V, r]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'V = (4/3)πr³');
+    if (!isFinite(V)) { const ans = (4 / 3) * Math.PI * r * r * r; html += stepHtml('Solve for V', 'V = (4/3)π × ' + r + '³ = ' + fmt(ans), true); }
+    else { const ans = Math.cbrt(V / ((4 / 3) * Math.PI)); html += stepHtml('Solve for r', 'r = ∛(V / ((4/3)π)) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 45. Law of Cosines: c² = a² + b² − 2ab·cos(C) ---------- */
+  function solveLawOfCosines() {
+    const a = val('a'), b = val('b'), C = val('C'), c = val('c');
+    if (!allFinite(a, b) || countBlanks([c, C]) !== 1) {
+      renderStepsHtml(errorHtml('Fill in a and b, and leave exactly one of C or c blank to solve for it.'));
+      return;
+    }
+    let html = stepHtml('Formula', 'c² = a² + b² − 2ab·cos(C)');
+    if (!isFinite(c)) {
+      const cRad = C * Math.PI / 180;
+      const sq = a * a + b * b - 2 * a * b * Math.cos(cRad);
+      if (sq < 0) { renderStepsHtml(html + errorHtml('No real solution for these inputs.')); return; }
+      const ans = Math.sqrt(sq);
+      html += stepHtml('Solve for c', 'c = √(a² + b² − 2ab·cos(C)) = ' + fmt(ans), true);
+    } else {
+      const cosC = (a * a + b * b - c * c) / (2 * a * b);
+      if (cosC < -1 || cosC > 1) { renderStepsHtml(html + errorHtml('These side lengths cannot form a valid triangle.')); return; }
+      const ans = Math.acos(cosC) * 180 / Math.PI;
+      html += stepHtml('Solve for C', 'cos(C) = (a² + b² − c²)/2ab → C = ' + fmt(ans) + '°', true);
+    }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 46. Radioactive Decay: N = N₀·e^(−kt) ---------- */
+  function solveRadioactiveDecay() {
+    const N = val('N'), N0 = val('N0'), k = val('k'), t = val('t');
+    if (countBlanks([N, N0, k, t]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'N = N₀ · e^(−kt)');
+    if (!isFinite(N)) { const ans = N0 * Math.exp(-k * t); html += stepHtml('Solve for N', 'N = ' + N0 + ' × e^(−' + k + '×' + t + ') = ' + fmt(ans), true); }
+    else if (!isFinite(N0)) { const ans = N * Math.exp(k * t); html += stepHtml('Solve for N₀', 'N₀ = N × e^(kt) = ' + fmt(ans), true); }
+    else if (!isFinite(k)) { if (t === 0 || N / N0 <= 0) { renderStepsHtml(html + errorHtml('Cannot solve for k with these values.')); return; } const ans = -Math.log(N / N0) / t; html += stepHtml('Solve for k', 'k = −ln(N/N₀)/t = ' + fmt(ans), true); }
+    else { if (k === 0 || N / N0 <= 0) { renderStepsHtml(html + errorHtml('Cannot solve for t with these values.')); return; } const ans = -Math.log(N / N0) / k; html += stepHtml('Solve for t', 't = −ln(N/N₀)/k = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 47. Half-Life: N = N₀·(1/2)^(t/T) ---------- */
+  function solveHalfLife() {
+    const N = val('N'), N0 = val('N0'), t = val('t'), T = val('T');
+    if (countBlanks([N, N0, t, T]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'N = N₀ · (1/2)^(t/T)');
+    if (!isFinite(N)) { if (T === 0) { renderStepsHtml(html + errorHtml('T cannot be 0.')); return; } const ans = N0 * Math.pow(0.5, t / T); html += stepHtml('Solve for N', 'N = ' + N0 + ' × (0.5)^(' + t + '/' + T + ') = ' + fmt(ans), true); }
+    else if (!isFinite(N0)) { if (T === 0) { renderStepsHtml(html + errorHtml('T cannot be 0.')); return; } const ans = N / Math.pow(0.5, t / T); html += stepHtml('Solve for N₀', 'N₀ = N / (0.5)^(t/T) = ' + fmt(ans), true); }
+    else if (!isFinite(t)) { if (N / N0 <= 0) { renderStepsHtml(html + errorHtml('Cannot solve for t with these values.')); return; } const ans = T * Math.log(N / N0) / Math.log(0.5); html += stepHtml('Solve for t', 't = T·log(N/N₀)/log(0.5) = ' + fmt(ans), true); }
+    else { if (N / N0 <= 0 || N === N0) { renderStepsHtml(html + errorHtml('Cannot solve for T with these values.')); return; } const ans = t * Math.log(0.5) / Math.log(N / N0); html += stepHtml('Solve for T', 'T = t·log(0.5)/log(N/N₀) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 48. Free Fall: h = ½gt² ---------- */
+  function solveFreeFall() {
+    const h = val('h'), g = val('g'), t = val('t');
+    if (countBlanks([h, g, t]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'h = ½gt²');
+    if (!isFinite(h)) { const ans = 0.5 * g * t * t; html += stepHtml('Solve for h', 'h = ½×' + g + '×' + t + '² = ' + fmt(ans), true); }
+    else if (!isFinite(g)) { if (t === 0) { renderStepsHtml(html + errorHtml('t cannot be 0.')); return; } const ans = (2 * h) / (t * t); html += stepHtml('Solve for g', 'g = 2h/t² = ' + fmt(ans), true); }
+    else { if (g === 0 || h / g < 0) { renderStepsHtml(html + errorHtml('Cannot solve for t with these values.')); return; } const ans = Math.sqrt((2 * h) / g); html += stepHtml('Solve for t', 't = √(2h/g) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 49. Wave Equation: v = fλ ---------- */
+  function solveWaveEq() {
+    const v = val('v'), f = val('f'), lambda = val('lambda');
+    if (countBlanks([v, f, lambda]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', 'v = f × λ');
+    if (!isFinite(v)) { const ans = f * lambda; html += stepHtml('Solve for v', 'v = ' + f + ' × ' + lambda + ' = ' + fmt(ans), true); }
+    else if (!isFinite(f)) { if (lambda === 0) { renderStepsHtml(html + errorHtml('λ cannot be 0.')); return; } const ans = v / lambda; html += stepHtml('Solve for f', 'f = v/λ = ' + fmt(ans), true); }
+    else { if (f === 0) { renderStepsHtml(html + errorHtml('f cannot be 0.')); return; } const ans = v / f; html += stepHtml('Solve for λ', 'λ = v/f = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 50. Lens Formula: 1/f = 1/u + 1/v ---------- */
+  function solveLensFormula() {
+    const f = val('f'), u = val('u'), v = val('v');
+    if (countBlanks([f, u, v]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = stepHtml('Formula', '1/f = 1/u + 1/v');
+    if (!isFinite(f)) { if (u + v === 0 || u === 0 || v === 0) { renderStepsHtml(html + errorHtml('Cannot solve for f with these values.')); return; } const ans = (u * v) / (u + v); html += stepHtml('Solve for f', 'f = uv/(u+v) = ' + fmt(ans), true); }
+    else if (!isFinite(u)) { if (v === f || f === 0 || v === 0) { renderStepsHtml(html + errorHtml('Cannot solve for u with these values.')); return; } const ans = (f * v) / (v - f); html += stepHtml('Solve for u', 'u = fv/(v−f) = ' + fmt(ans), true); }
+    else { if (u === f || f === 0 || u === 0) { renderStepsHtml(html + errorHtml('Cannot solve for v with these values.')); return; } const ans = (f * u) / (u - f); html += stepHtml('Solve for v', 'v = fu/(u−f) = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
   const SOLVERS = {
     linear: solveLinear, quadratic: solveQuadratic, cubic: solveCubic, biquadratic: solveBiquadratic,
     sys2: solveSys2, sys3: solveSys3, exponential: solveExponential, logarithmic: solveLogarithmic,
@@ -7311,6 +7639,14 @@ setTimeout(() => {
     cuberoot: solveCubeRoot, proportion: solveProportion, linearboth: solveLinearBoth,
     rationalcross: solveRationalCross, directvar: solveDirectVar, inversevar: solveInverseVar,
     arithseq: solveArithSeq, geomseq: solveGeomSeq, sincos: solveSinCos,
+    pythagorean: solvePythagorean, slopeintercept: solveSlopeIntercept, percentage: solvePercentage,
+    simpleinterest: solveSimpleInterest, compoundinterest: solveCompoundInterest, ohmslaw: solveOhmsLaw,
+    electricpower: solveElectricPower, workdone: solveWorkDone, power: solvePower, newton2: solveNewton2,
+    density: solveDensity, kinematicsv: solveKinematicsV, kinematicss: solveKinematicsS,
+    kinematicsvs: solveKinematicsVS, idealgas: solveIdealGas, molarity: solveMolarity,
+    circlearea: solveCircleArea, circumference: solveCircumference, spherevolume: solveSphereVolume,
+    lawofcosines: solveLawOfCosines, radioactivedecay: solveRadioactiveDecay, halflife: solveHalfLife,
+    freefall: solveFreeFall, waveeq: solveWaveEq, lensformula: solveLensFormula,
   };
 
   eqModePills.querySelectorAll('.subject-pill').forEach(btn => {
