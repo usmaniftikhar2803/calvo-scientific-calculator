@@ -1237,6 +1237,17 @@ body {
 }
 .subject-pills::-webkit-scrollbar { display: none; }
 
+/* Equation Solver: show one equation-type button per line (stacked list)
+   instead of wrapping several pills onto the same row. */
+#eqModePills {
+  flex-direction: column;
+  align-items: stretch;
+}
+#eqModePills .subject-pill {
+  width: 100%;
+  text-align: left;
+}
+
 /* Converter category pills: wrap onto multiple lines instead of
    horizontally scrolling, so every category (including the last
    ones like Time/Data) is always fully visible, never cut off
@@ -2885,15 +2896,26 @@ body {
    ============================================ */
 .eq-input-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin: 14px 0 6px;
 }
 .eq-input-group {
   flex: 1;
+  min-width: 64px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+.eq-sys-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 0;
+  border-top: 1px dashed var(--case-border);
+}
+.eq-sys-row:first-child { border-top: none; padding-top: 0; }
 .eq-input-group label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
