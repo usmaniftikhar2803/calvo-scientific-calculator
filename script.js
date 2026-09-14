@@ -7667,13 +7667,14 @@ setTimeout(() => {
   const gridA = document.getElementById('matrixGridA');
   const gridB = document.getElementById('matrixGridB');
   const bBlock = document.getElementById('matrixBBlock');
-  const size2Btn = document.getElementById('matrixSize2Btn');
-  const size3Btn = document.getElementById('matrixSize3Btn');
+  const sizeBtns = document.querySelectorAll('[data-msize]');
   const opPills = document.getElementById('matrixOpPills');
   const calcBtn = document.getElementById('matrixCalcBtn');
   const resultBox = document.getElementById('matrixResultBox');
   const scalarBlock = document.getElementById('matrixScalarBlock');
   const scalarInput = document.getElementById('matrixScalarInput');
+  const powerBlock = document.getElementById('matrixPowerBlock');
+  const powerInput = document.getElementById('matrixPowerInput');
   if (!gridA) return;
 
   let mSize = 2;
@@ -7681,7 +7682,7 @@ setTimeout(() => {
 
   function buildGrid(container, size, seed) {
     container.dataset.size = size;
-    container.style.gridTemplateColumns = 'repeat(' + size + ', 52px)';
+    container.style.gridTemplateColumns = 'repeat(' + size + ', ' + (size === 4 ? '44px' : '52px') + ')';
     let html = '';
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
@@ -7706,23 +7707,24 @@ setTimeout(() => {
 
   function setSize(size) {
     mSize = size;
-    size2Btn.classList.toggle('active', size === 2);
-    size3Btn.classList.toggle('active', size === 3);
+    sizeBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.msize, 10) === size));
     buildGrid(gridA, size);
     buildGrid(gridB, size);
     resultBox.innerHTML = '';
   }
 
-  const UNARY_OPS = ['det', 'inv', 'transpose', 'trace', 'scalar', 'rank'];
+  const UNARY_OPS = ['det', 'inv', 'transpose', 'trace', 'scalar', 'power', 'rank', 'adjoint', 'cofactor', 'ref', 'norm', 'properties'];
 
   function setOp(op) {
     mOp = op;
     opPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p.dataset.mop === op));
     bBlock.style.display = UNARY_OPS.includes(op) ? 'none' : 'block';
     scalarBlock.style.display = (op === 'scalar') ? 'flex' : 'none';
+    powerBlock.style.display = (op === 'power') ? 'flex' : 'none';
     resultBox.innerHTML = '';
   }
 
+  /* ---- core matrix ops (generic, work for any n×n up to 4×4) ---- */
   function matAdd(A, B, sign) {
     return A.map((row, r) => row.map((v, c) => v + sign * B[r][c]));
   }
@@ -7739,44 +7741,43 @@ setTimeout(() => {
     return R;
   }
   function det2(M) { return M[0][0] * M[1][1] - M[0][1] * M[1][0]; }
-  function det3(M) {
-    return (
-      M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) -
-      M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) +
-      M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0])
-    );
+  function minorOf(M, rowIdx, colIdx) {
+    return M.filter((_, r) => r !== rowIdx).map(row => row.filter((_, c) => c !== colIdx));
   }
-  function inv2(M) {
-    const d = det2(M);
-    if (d === 0) return null;
-    return [
-      [M[1][1] / d, -M[0][1] / d],
-      [-M[1][0] / d, M[0][0] / d],
-    ];
-  }
-  function inv3(M) {
-    const d = det3(M);
-    if (d === 0) return null;
-    const cof = (r, c) => {
-      const rows = [0, 1, 2].filter(x => x !== r);
-      const cols = [0, 1, 2].filter(x => x !== c);
-      const sub = [
-        [M[rows[0]][cols[0]], M[rows[0]][cols[1]]],
-        [M[rows[1]][cols[0]], M[rows[1]][cols[1]]],
-      ];
-      const sign = ((r + c) % 2 === 0) ? 1 : -1;
-      return sign * det2(sub);
-    };
-    const adjT = [];
-    for (let r = 0; r < 3; r++) {
-      adjT.push([]);
-      for (let c = 0; c < 3; c++) adjT[r].push(cof(c, r) / d); // transposed cofactor = adjugate
+  function detN(M) {
+    const n = M.length;
+    if (n === 1) return M[0][0];
+    if (n === 2) return det2(M);
+    let d = 0;
+    for (let c = 0; c < n; c++) {
+      const sign = (c % 2 === 0) ? 1 : -1;
+      d += sign * M[0][c] * detN(minorOf(M, 0, c));
     }
-    return adjT;
+    return d;
   }
-
+  function cofactorMatrix(M) {
+    const n = M.length;
+    const C = [];
+    for (let r = 0; r < n; r++) {
+      C.push([]);
+      for (let c = 0; c < n; c++) {
+        const sign = ((r + c) % 2 === 0) ? 1 : -1;
+        C[r].push(sign * detN(minorOf(M, r, c)));
+      }
+    }
+    return C;
+  }
   function transpose(M) {
     return M[0].map((_, c) => M.map(row => row[c]));
+  }
+  function adjugate(M) {
+    return transpose(cofactorMatrix(M));
+  }
+  function invN(M) {
+    const d = detN(M);
+    if (Math.abs(d) < 1e-9) return null;
+    const adj = adjugate(M);
+    return adj.map(row => row.map(v => v / d));
   }
   function trace(M) {
     let s = 0;
@@ -7785,6 +7786,26 @@ setTimeout(() => {
   }
   function scalarMul(M, k) {
     return M.map(row => row.map(v => v * k));
+  }
+  function identity(size) {
+    const I = [];
+    for (let r = 0; r < size; r++) {
+      I.push([]);
+      for (let c = 0; c < size; c++) I[r].push(r === c ? 1 : 0);
+    }
+    return I;
+  }
+  function matPow(A, p, size) {
+    let base = A;
+    if (p < 0) {
+      const inv = invN(A);
+      if (!inv) return null;
+      base = inv;
+    }
+    let result = identity(size);
+    let exp = Math.abs(p);
+    for (let i = 0; i < exp; i++) result = matMul(result, base, size);
+    return result;
   }
   function rankOf(M) {
     const A = M.map(row => row.slice());
@@ -7806,6 +7827,50 @@ setTimeout(() => {
     }
     return rank;
   }
+  function rrefMatrix(M) {
+    const A = M.map(row => row.slice());
+    const n = A.length, m = A[0].length;
+    let lead = 0;
+    for (let r = 0; r < n; r++) {
+      if (lead >= m) break;
+      let i = r;
+      while (Math.abs(A[i][lead]) < 1e-9) {
+        i++;
+        if (i === n) { i = r; lead++; if (lead === m) return A; }
+      }
+      [A[i], A[r]] = [A[r], A[i]];
+      const div = A[r][lead];
+      if (Math.abs(div) > 1e-9) A[r] = A[r].map(v => v / div);
+      for (let k = 0; k < n; k++) {
+        if (k === r) continue;
+        const factor = A[k][lead];
+        A[k] = A[k].map((v, c) => v - factor * A[r][c]);
+      }
+      lead++;
+    }
+    return A;
+  }
+  function frobeniusNorm(M) {
+    let s = 0;
+    M.forEach(row => row.forEach(v => { s += v * v; }));
+    return Math.sqrt(s);
+  }
+  function matEqual(A, B, eps) {
+    eps = eps || 1e-6;
+    return A.every((row, r) => row.every((v, c) => Math.abs(v - B[r][c]) < eps));
+  }
+  function propertiesOf(M, size) {
+    const d = detN(M);
+    const facts = [
+      [t('matrix_prop_symmetric'), matEqual(M, transpose(M))],
+      [t('matrix_prop_skew'), matEqual(M, scalarMul(transpose(M), -1))],
+      [t('matrix_prop_diagonal'), M.every((row, r) => row.every((v, c) => r === c || Math.abs(v) < 1e-6))],
+      [t('matrix_prop_identity'), matEqual(M, identity(size))],
+      [t('matrix_prop_singular'), Math.abs(d) < 1e-6],
+      [t('matrix_prop_orthogonal'), matEqual(matMul(M, transpose(M), size), identity(size))],
+    ];
+    return facts;
+  }
 
   function fmtNum(n) {
     const r = Math.round(n * 1e6) / 1e6;
@@ -7819,6 +7884,16 @@ setTimeout(() => {
     resultBox.innerHTML = html;
   }
 
+  function renderProperties(facts) {
+    let html = '<div class="matrix-prop-list">';
+    facts.forEach(([label, val]) => {
+      html += '<div class="matrix-prop-row"><span>' + label + '</span><span class="matrix-prop-badge ' +
+        (val ? 'yes">' + t('matrix_prop_yes') : 'no">' + t('matrix_prop_no')) + '</span></div>';
+    });
+    html += '</div>';
+    resultBox.innerHTML = html;
+  }
+
   function calculate() {
     const A = readMatrix(gridA, mSize);
     const B = readMatrix(gridB, mSize);
@@ -7826,12 +7901,11 @@ setTimeout(() => {
     if (mOp === 'sub') { renderMatrixResult(matAdd(A, B, -1)); return; }
     if (mOp === 'mul') { renderMatrixResult(matMul(A, B, mSize)); return; }
     if (mOp === 'det') {
-      const d = mSize === 2 ? det2(A) : det3(A);
-      resultBox.innerHTML = '<div class="matrix-result-scalar">det(A) = ' + fmtNum(d) + '</div>';
+      resultBox.innerHTML = '<div class="matrix-result-scalar">det(A) = ' + fmtNum(detN(A)) + '</div>';
       return;
     }
     if (mOp === 'inv') {
-      const inv = mSize === 2 ? inv2(A) : inv3(A);
+      const inv = invN(A);
       if (!inv) {
         resultBox.innerHTML = '<div class="eq-error">' + t('matrix_error_singular') + '</div>';
         return;
@@ -7849,14 +7923,31 @@ setTimeout(() => {
       renderMatrixResult(scalarMul(A, k));
       return;
     }
+    if (mOp === 'power') {
+      const p = Math.round(parseFloat(powerInput.value)) || 0;
+      const res = matPow(A, p, mSize);
+      if (!res) {
+        resultBox.innerHTML = '<div class="eq-error">' + t('matrix_error_singular') + '</div>';
+        return;
+      }
+      renderMatrixResult(res);
+      return;
+    }
     if (mOp === 'rank') {
       resultBox.innerHTML = '<div class="matrix-result-scalar">rank(A) = ' + rankOf(A) + '</div>';
       return;
     }
+    if (mOp === 'adjoint') { renderMatrixResult(adjugate(A)); return; }
+    if (mOp === 'cofactor') { renderMatrixResult(cofactorMatrix(A)); return; }
+    if (mOp === 'ref') { renderMatrixResult(rrefMatrix(A)); return; }
+    if (mOp === 'norm') {
+      resultBox.innerHTML = '<div class="matrix-result-scalar">‖A‖ = ' + fmtNum(frobeniusNorm(A)) + '</div>';
+      return;
+    }
+    if (mOp === 'properties') { renderProperties(propertiesOf(A, mSize)); return; }
   }
 
-  size2Btn.addEventListener('click', () => setSize(2));
-  size3Btn.addEventListener('click', () => setSize(3));
+  sizeBtns.forEach(btn => btn.addEventListener('click', () => setSize(parseInt(btn.dataset.msize, 10))));
   opPills.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-mop]');
     if (btn) setOp(btn.dataset.mop);
