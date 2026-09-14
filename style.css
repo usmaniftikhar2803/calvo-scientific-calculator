@@ -3034,6 +3034,33 @@ body {
   color: var(--accent);
   padding: 10px;
 }
+.matrix-scalar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 12px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.matrix-scalar-wrap input {
+  width: 80px;
+  height: 40px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid var(--case-border);
+  background: rgba(255,255,255,0.04);
+  color: #e8e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  outline: none;
+}
+.matrix-scalar-wrap input:focus {
+  border-color: var(--accent);
+  background: rgba(255,138,31,0.08);
+}
 
 /* ============================================
    PROGRAMMER MODE TAB
