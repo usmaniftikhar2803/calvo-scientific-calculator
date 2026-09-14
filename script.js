@@ -7672,6 +7672,8 @@ setTimeout(() => {
   const opPills = document.getElementById('matrixOpPills');
   const calcBtn = document.getElementById('matrixCalcBtn');
   const resultBox = document.getElementById('matrixResultBox');
+  const scalarBlock = document.getElementById('matrixScalarBlock');
+  const scalarInput = document.getElementById('matrixScalarInput');
   if (!gridA) return;
 
   let mSize = 2;
@@ -7711,10 +7713,13 @@ setTimeout(() => {
     resultBox.innerHTML = '';
   }
 
+  const UNARY_OPS = ['det', 'inv', 'transpose', 'trace', 'scalar', 'rank'];
+
   function setOp(op) {
     mOp = op;
     opPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p.dataset.mop === op));
-    bBlock.style.display = (op === 'det' || op === 'inv') ? 'none' : 'block';
+    bBlock.style.display = UNARY_OPS.includes(op) ? 'none' : 'block';
+    scalarBlock.style.display = (op === 'scalar') ? 'flex' : 'none';
     resultBox.innerHTML = '';
   }
 
@@ -7770,6 +7775,38 @@ setTimeout(() => {
     return adjT;
   }
 
+  function transpose(M) {
+    return M[0].map((_, c) => M.map(row => row[c]));
+  }
+  function trace(M) {
+    let s = 0;
+    for (let i = 0; i < M.length; i++) s += M[i][i];
+    return s;
+  }
+  function scalarMul(M, k) {
+    return M.map(row => row.map(v => v * k));
+  }
+  function rankOf(M) {
+    const A = M.map(row => row.slice());
+    const n = A.length, m = A[0].length;
+    let rank = 0;
+    for (let col = 0; col < m && rank < n; col++) {
+      let pivot = -1;
+      for (let r = rank; r < n; r++) {
+        if (Math.abs(A[r][col]) > 1e-9) { pivot = r; break; }
+      }
+      if (pivot === -1) continue;
+      [A[rank], A[pivot]] = [A[pivot], A[rank]];
+      for (let r = 0; r < n; r++) {
+        if (r === rank) continue;
+        const factor = A[r][col] / A[rank][col];
+        for (let c = col; c < m; c++) A[r][c] -= factor * A[rank][c];
+      }
+      rank++;
+    }
+    return rank;
+  }
+
   function fmtNum(n) {
     const r = Math.round(n * 1e6) / 1e6;
     return String(r);
@@ -7800,6 +7837,21 @@ setTimeout(() => {
         return;
       }
       renderMatrixResult(inv);
+      return;
+    }
+    if (mOp === 'transpose') { renderMatrixResult(transpose(A)); return; }
+    if (mOp === 'trace') {
+      resultBox.innerHTML = '<div class="matrix-result-scalar">tr(A) = ' + fmtNum(trace(A)) + '</div>';
+      return;
+    }
+    if (mOp === 'scalar') {
+      const k = parseFloat(scalarInput.value) || 0;
+      renderMatrixResult(scalarMul(A, k));
+      return;
+    }
+    if (mOp === 'rank') {
+      resultBox.innerHTML = '<div class="matrix-result-scalar">rank(A) = ' + rankOf(A) + '</div>';
+      return;
     }
   }
 
