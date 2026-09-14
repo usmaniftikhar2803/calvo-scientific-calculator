@@ -4126,6 +4126,191 @@
           const dol = cm / ebit;
           out.innerHTML = resultCell(t('tool_dol_result'), round(dol, 3));
         }
+      },
+      {
+        id: 'economicOrderQuantity',
+        label: 'tool_eoq',
+        render: () => `
+          <p class="tool-hint">${t('tool_eoq_hint')}</p>
+          ${field('eoqDemand', 'tool_annual_demand_units', '', 'number')}
+          ${field('eoqOrderCost', 'tool_ordering_cost_per_order', '', 'number')}
+          ${field('eoqHoldingCost', 'tool_holding_cost_per_unit', '', 'number')}
+        `,
+        calc: (out) => {
+          const D = num('eoqDemand'), S = num('eoqOrderCost'), H = num('eoqHoldingCost');
+          if (D === null || S === null || H === null || D <= 0 || S <= 0 || H <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const eoq = Math.sqrt((2 * D * S) / H);
+          const ordersPerYear = D / eoq;
+          out.innerHTML = resultCell(t('tool_eoq_result'), round(eoq, 2)) + resultCell(t('tool_orders_per_year'), round(ordersPerYear, 2));
+        }
+      },
+      {
+        id: 'targetProfitBreakeven',
+        label: 'tool_target_profit_breakeven',
+        render: () => `
+          <p class="tool-hint">${t('tool_target_profit_breakeven_hint')}</p>
+          ${field('tpbFixed', 'tool_fixed_cost', '', 'number')}
+          ${field('tpbTargetProfit', 'tool_target_profit', '', 'number')}
+          ${field('tpbPrice', 'tool_price_per_unit', '', 'number')}
+          ${field('tpbVar', 'tool_variable_cost', '', 'number')}
+        `,
+        calc: (out) => {
+          const fixed = num('tpbFixed'), target = num('tpbTargetProfit'), price = num('tpbPrice'), varCost = num('tpbVar');
+          if ([fixed, target, price, varCost].some(v => v === null) || price <= varCost) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          const units = (fixed + target) / (price - varCost);
+          out.innerHTML = resultCell(t('tool_target_profit_units'), round(units, 2)) + resultCell(t('tool_target_profit_revenue'), round(units * price, 2));
+        }
+      },
+      {
+        id: 'effectiveTaxRate',
+        label: 'tool_effective_tax_rate',
+        render: () => `
+          <p class="tool-hint">${t('tool_effective_tax_rate_hint')}</p>
+          ${field('etrTax', 'tool_total_tax_paid', '', 'number')}
+          ${field('etrIncome', 'tool_taxable_income', '', 'number')}
+        `,
+        calc: (out) => {
+          const tax = num('etrTax'), income = num('etrIncome');
+          if (tax === null || income === null || income === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_effective_tax_rate_result'), round((tax / income) * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'operatingMargin',
+        label: 'tool_operating_margin',
+        render: () => `
+          <p class="tool-hint">${t('tool_operating_margin_hint')}</p>
+          ${field('omIncome', 'tool_operating_income', '', 'number')}
+          ${field('omSales', 'tool_net_sales', '', 'number')}
+        `,
+        calc: (out) => {
+          const income = num('omIncome'), sales = num('omSales');
+          if (income === null || sales === null || sales === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_operating_margin_result'), round((income / sales) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'freeCashFlow',
+        label: 'tool_free_cash_flow',
+        render: () => `
+          <p class="tool-hint">${t('tool_free_cash_flow_hint')}</p>
+          ${field('fcfOperating', 'tool_operating_cash_flow', '', 'number')}
+          ${field('fcfCapex', 'tool_capital_expenditures', '', 'number')}
+        `,
+        calc: (out) => {
+          const ocf = num('fcfOperating'), capex = num('fcfCapex');
+          if (ocf === null || capex === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell(t('tool_free_cash_flow_result'), round(ocf - capex, 2));
+        }
+      },
+      {
+        id: 'costOfGoodsSold',
+        label: 'tool_cogs',
+        render: () => `
+          <p class="tool-hint">${t('tool_cogs_hint')}</p>
+          ${field('cogsBeginInv', 'tool_beginning_inventory', '', 'number')}
+          ${field('cogsPurchases', 'tool_purchases', '', 'number')}
+          ${field('cogsEndInv', 'tool_ending_inventory', '', 'number')}
+        `,
+        calc: (out) => {
+          const begin = num('cogsBeginInv'), purchases = num('cogsPurchases'), end = num('cogsEndInv');
+          if (begin === null || purchases === null || end === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          out.innerHTML = resultCell(t('tool_cogs_result'), round(begin + purchases - end, 2));
+        }
+      },
+      {
+        id: 'weightedAverageCost',
+        label: 'tool_weighted_avg_cost',
+        render: () => `
+          <p class="tool-hint">${t('tool_weighted_avg_cost_hint')}</p>
+          ${field('wacQty1', 'tool_batch_qty_1', '', 'number')}
+          ${field('wacCost1', 'tool_batch_unit_cost_1', '', 'number')}
+          ${field('wacQty2', 'tool_batch_qty_2', '', 'number')}
+          ${field('wacCost2', 'tool_batch_unit_cost_2', '', 'number')}
+          ${field('wacQty3', 'tool_batch_qty_3', 'optional', 'number')}
+          ${field('wacCost3', 'tool_batch_unit_cost_3', 'optional', 'number')}
+        `,
+        calc: (out) => {
+          const q1 = num('wacQty1'), c1 = num('wacCost1'), q2 = num('wacQty2'), c2 = num('wacCost2');
+          const q3 = num('wacQty3'), c3 = num('wacCost3');
+          if ([q1, c1, q2, c2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          let totalQty = q1 + q2, totalCost = q1 * c1 + q2 * c2;
+          if (q3 !== null && c3 !== null) { totalQty += q3; totalCost += q3 * c3; }
+          if (totalQty === 0) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          out.innerHTML = resultCell(t('tool_weighted_avg_cost_result'), round(totalCost / totalQty, 4));
+        }
+      },
+      {
+        id: 'priceElasticityOfDemand',
+        label: 'tool_ped',
+        render: () => `
+          <p class="tool-hint">${t('tool_ped_hint')}</p>
+          ${field('pedPriceInitial', 'tool_initial_price', '', 'number')}
+          ${field('pedPriceFinal', 'tool_final_price', '', 'number')}
+          ${field('pedQtyInitial', 'tool_initial_quantity', '', 'number')}
+          ${field('pedQtyFinal', 'tool_final_quantity', '', 'number')}
+        `,
+        calc: (out) => {
+          const p0 = num('pedPriceInitial'), p1 = num('pedPriceFinal'), q0 = num('pedQtyInitial'), q1 = num('pedQtyFinal');
+          if ([p0, p1, q0, q1].some(v => v === null) || p0 === 0 || q0 === 0) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          const pctQty = ((q1 - q0) / q0) * 100;
+          const pctPrice = ((p1 - p0) / p0) * 100;
+          if (pctPrice === 0) { out.innerHTML = errorBox(t('tool_err_ped_price')); return; }
+          const ped = pctQty / pctPrice;
+          const absPed = Math.abs(ped);
+          let classification;
+          if (absPed > 1) classification = t('tool_ped_elastic');
+          else if (absPed < 1) classification = t('tool_ped_inelastic');
+          else classification = t('tool_ped_unit_elastic');
+          out.innerHTML = resultCell(t('tool_ped_result'), round(ped, 4)) + resultCell(t('tool_ped_classification'), classification);
+        }
+      },
+      {
+        id: 'loanAmortizationSplit',
+        label: 'tool_amortization_split',
+        render: () => `
+          <p class="tool-hint">${t('tool_amortization_split_hint')}</p>
+          ${field('lasPrincipal', 'tool_loan_principal', '', 'number')}
+          ${field('lasRate', 'tool_annual_rate_percent', '%', 'number')}
+          ${field('lasTotalMonths', 'tool_loan_term_months', '', 'number')}
+          ${field('lasPaymentNum', 'tool_payment_number', 'e.g. 12', 'number')}
+        `,
+        calc: (out) => {
+          const P = num('lasPrincipal'), annualRate = num('lasRate'), N = num('lasTotalMonths'), n = num('lasPaymentNum');
+          if ([P, annualRate, N, n].some(v => v === null) || N <= 0 || n < 1 || n > N) { out.innerHTML = errorBox(t('tool_err_4fields')); return; }
+          const i = annualRate / 100 / 12;
+          let interestPortion, principalPortion, payment;
+          if (i === 0) {
+            payment = P / N;
+            interestPortion = 0;
+            principalPortion = payment;
+          } else {
+            payment = P * i / (1 - Math.pow(1 + i, -N));
+            const balanceBefore = P * Math.pow(1 + i, n - 1) - payment * ((Math.pow(1 + i, n - 1) - 1) / i);
+            interestPortion = balanceBefore * i;
+            principalPortion = payment - interestPortion;
+          }
+          out.innerHTML =
+            resultCell(t('tool_monthly_payment'), round(payment, 2)) +
+            resultCell(t('tool_principal_portion'), round(principalPortion, 2)) +
+            resultCell(t('tool_interest_portion'), round(interestPortion, 2));
+        }
+      },
+      {
+        id: 'realValueOfMoney',
+        label: 'tool_real_value_money',
+        render: () => `
+          <p class="tool-hint">${t('tool_real_value_money_hint')}</p>
+          ${field('rvmFuture', 'tool_future_amount', '', 'number')}
+          ${field('rvmInflation', 'tool_inflation_rate_percent', '%', 'number')}
+          ${field('rvmYears', 'tool_num_years', '', 'number')}
+        `,
+        calc: (out) => {
+          const fv = num('rvmFuture'), infl = num('rvmInflation'), years = num('rvmYears');
+          if (fv === null || infl === null || years === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const realValue = fv / Math.pow(1 + infl / 100, years);
+          out.innerHTML = resultCell(t('tool_real_value_result'), round(realValue, 2));
+        }
       }
     ],
 
@@ -5137,6 +5322,226 @@
           out.innerHTML =
             resultCell(t('tool_semi_perimeter'), round(s, 4)) +
             resultCell(t('tool_triangle_area_result'), round(area, 5));
+        }
+      },
+      {
+        id: 'multinomialCoefficient',
+        label: 'tool_multinomial_coefficient',
+        render: () => `
+          <p class="tool-hint">${t('tool_multinomial_coefficient_hint')}</p>
+          ${field('mcGroups', 'tool_group_sizes', 'e.g. 2, 3, 4')}
+        `,
+        calc: (out) => {
+          const raw = str('mcGroups');
+          const groups = raw.split(',').map(x => parseInt(x.trim(), 10)).filter(x => !isNaN(x));
+          if (groups.length < 2 || groups.some(g => g < 0)) { out.innerHTML = errorBox(t('tool_err_multinomial')); return; }
+          const n = groups.reduce((a, b) => a + b, 0);
+          if (n > 170) { out.innerHTML = errorBox(t('tool_err_toolarge')); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const coeff = groups.reduce((acc, g) => acc / fact(g), fact(n));
+          out.innerHTML = resultCell('n', n) + resultCell(t('tool_multinomial_result'), Math.round(coeff).toLocaleString());
+        }
+      },
+      {
+        id: 'meansCalculator',
+        label: 'tool_means_calculator',
+        render: () => `
+          <p class="tool-hint">${t('tool_means_calculator_hint')}</p>
+          ${field('mnA', 'tool_value_a', '', 'number')}
+          ${field('mnB', 'tool_value_b', '', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('mnA'), b = num('mnB');
+          if (a === null || b === null || a <= 0 || b <= 0) { out.innerHTML = errorBox(t('tool_err_means')); return; }
+          const am = (a + b) / 2;
+          const gm = Math.sqrt(a * b);
+          const hm = (2 * a * b) / (a + b);
+          out.innerHTML =
+            resultCell(t('tool_arithmetic_mean'), round(am, 5)) +
+            resultCell(t('tool_geometric_mean'), round(gm, 5)) +
+            resultCell(t('tool_harmonic_mean'), round(hm, 5));
+        }
+      },
+      {
+        id: 'eigenvalues2x2',
+        label: 'tool_eigenvalues',
+        render: () => `
+          <p class="tool-hint">${t('tool_eigenvalues_hint')}</p>
+          <div class="tool-vector-row">
+            ${field('evA', 'tool_m11', '', 'number')}
+            ${field('evB', 'tool_m12', '', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('evC', 'tool_m21', '', 'number')}
+            ${field('evD', 'tool_m22', '', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a = num('evA'), b = num('evB'), c = num('evC'), d = num('evD');
+          if ([a, b, c, d].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const trace = a + d, det = a * d - b * c;
+          const disc = trace * trace - 4 * det;
+          let html;
+          if (disc >= 0) {
+            const sq = Math.sqrt(disc);
+            html = resultCell('λ₁', round((trace + sq) / 2, 5)) + resultCell('λ₂', round((trace - sq) / 2, 5));
+          } else {
+            const re = round(trace / 2, 5), im = round(Math.sqrt(-disc) / 2, 5);
+            html = resultCell('λ₁', `${re} + ${im}i`) + resultCell('λ₂', `${re} - ${im}i`);
+          }
+          out.innerHTML = html;
+        }
+      },
+      {
+        id: 'bitwiseOperations',
+        label: 'tool_bitwise_operations',
+        render: () => `
+          <p class="tool-hint">${t('tool_bitwise_operations_hint')}</p>
+          ${field('bwA', 'tool_integer_a', 'e.g. 12', 'number')}
+          ${field('bwB', 'tool_integer_b', 'e.g. 10', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('bwA'), b = num('bwB');
+          if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML =
+            resultCell('AND', (a & b).toString()) +
+            resultCell('OR', (a | b).toString()) +
+            resultCell('XOR', (a ^ b).toString()) +
+            resultCell('NOT A', (~a).toString()) +
+            resultCell('A << 1', (a << 1).toString()) +
+            resultCell('A >> 1', (a >> 1).toString());
+        }
+      },
+      {
+        id: 'sumOfDivisors',
+        label: 'tool_sum_of_divisors',
+        render: () => `
+          <p class="tool-hint">${t('tool_sum_of_divisors_hint')}</p>
+          ${field('sodN', 'tool_positive_integer', 'e.g. 28', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('sodN');
+          if (n === null || n < 1 || !Number.isInteger(n)) { out.innerHTML = errorBox(t('tool_err_1field')); return; }
+          let properSum = 0;
+          for (let i = 1; i <= Math.floor(n / 2); i++) { if (n % i === 0) properSum += i; }
+          let classification;
+          if (n > 1 && properSum === n) classification = t('tool_perfect_number');
+          else if (properSum > n) classification = t('tool_abundant_number');
+          else classification = t('tool_deficient_number');
+          out.innerHTML =
+            resultCell(t('tool_sum_proper_divisors'), properSum) +
+            resultCell(t('tool_sum_all_divisors'), properSum + n) +
+            resultCell(t('tool_number_classification'), classification);
+        }
+      },
+      {
+        id: 'confidenceInterval',
+        label: 'tool_confidence_interval',
+        render: () => `
+          <p class="tool-hint">${t('tool_confidence_interval_hint')}</p>
+          ${field('ciMean', 'tool_sample_mean', '', 'number')}
+          ${field('ciStdDev', 'tool_sample_std_dev', '', 'number')}
+          ${field('ciSampleSize', 'tool_sample_size', '', 'number')}
+          ${selectField('ciLevel', 'tool_confidence_level', [
+            { value: '1.645', label: '90%' },
+            { value: '1.96', label: '95%' },
+            { value: '2.576', label: '99%' }
+          ])}
+        `,
+        calc: (out) => {
+          const mean = num('ciMean'), sd = num('ciStdDev'), n = num('ciSampleSize');
+          const z = parseFloat(str('ciLevel'));
+          if (mean === null || sd === null || n === null || n <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const margin = z * (sd / Math.sqrt(n));
+          out.innerHTML =
+            resultCell(t('tool_margin_of_error'), round(margin, 4)) +
+            resultCell(t('tool_confidence_interval_result'), `${round(mean - margin, 4)} – ${round(mean + margin, 4)}`);
+        }
+      },
+      {
+        id: 'regularPolygonCalculator',
+        label: 'tool_regular_polygon',
+        render: () => `
+          <p class="tool-hint">${t('tool_regular_polygon_hint')}</p>
+          ${field('rpSides', 'tool_num_sides', 'e.g. 6', 'number')}
+          ${field('rpSideLength', 'tool_side_length', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('rpSides'), s = num('rpSideLength');
+          if (n === null || s === null || n < 3 || s <= 0 || !Number.isInteger(n)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const perimeter = n * s;
+          const apothem = s / (2 * Math.tan(Math.PI / n));
+          const area = (perimeter * apothem) / 2;
+          out.innerHTML =
+            resultCell(t('tool_perimeter_result'), round(perimeter, 4)) +
+            resultCell(t('tool_apothem_result'), round(apothem, 4)) +
+            resultCell(t('tool_polygon_area_result'), round(area, 4));
+        }
+      },
+      {
+        id: 'limitAtInfinityRational',
+        label: 'tool_limit_at_infinity',
+        render: () => `
+          <p class="tool-hint">${t('tool_limit_at_infinity_hint')}</p>
+          ${field('laiNum', 'tool_numerator_coefficients', 'e.g. 3, 2, -1')}
+          ${field('laiDen', 'tool_denominator_coefficients', 'e.g. 1, 0, 5')}
+        `,
+        calc: (out) => {
+          const numCoeffs = str('laiNum').split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+          const denCoeffs = str('laiDen').split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+          if (numCoeffs.length === 0 || denCoeffs.length === 0 || denCoeffs.every(c => c === 0)) { out.innerHTML = errorBox(t('tool_err_polynomial')); return; }
+          const degNum = numCoeffs.length - 1, degDen = denCoeffs.length - 1;
+          const leadNum = numCoeffs[0], leadDen = denCoeffs[0];
+          let result;
+          if (degNum < degDen) result = '0';
+          else if (degNum === degDen) result = round(leadNum / leadDen, 6).toString();
+          else result = (leadNum / leadDen > 0) ? '+∞' : '-∞';
+          out.innerHTML = resultCell(t('tool_limit_result'), result);
+        }
+      },
+      {
+        id: 'modularInverse',
+        label: 'tool_modular_inverse',
+        render: () => `
+          <p class="tool-hint">${t('tool_modular_inverse_hint')}</p>
+          ${field('miA', 'tool_value_a', 'e.g. 3', 'number')}
+          ${field('miM', 'tool_modulus_m', 'e.g. 11', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('miA'), m = num('miM');
+          if (a === null || m === null || m <= 0 || !Number.isInteger(a) || !Number.isInteger(m)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          function extGcd(a, b) {
+            if (b === 0) return [a, 1, 0];
+            const [g, x1, y1] = extGcd(b, a % b);
+            return [g, y1, x1 - Math.floor(a / b) * y1];
+          }
+          const aMod = ((a % m) + m) % m;
+          const [g, x] = extGcd(aMod, m);
+          if (g !== 1) { out.innerHTML = errorBox(t('tool_err_no_inverse')); return; }
+          const inv = ((x % m) + m) % m;
+          out.innerHTML = resultCell(t('tool_modular_inverse_result'), inv);
+        }
+      },
+      {
+        id: 'sphericalCoordinates',
+        label: 'tool_spherical_coordinates',
+        render: () => `
+          <p class="tool-hint">${t('tool_spherical_coordinates_hint')}</p>
+          ${field('scX', 'tool_x_coord', '', 'number')}
+          ${field('scY', 'tool_y_coord', '', 'number')}
+          ${field('scZ', 'tool_z_coord', '', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('scX'), y = num('scY'), z = num('scZ');
+          if (x === null || y === null || z === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const r = Math.sqrt(x * x + y * y + z * z);
+          if (r === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const theta = Math.atan2(y, x) * 180 / Math.PI;
+          const phi = Math.acos(z / r) * 180 / Math.PI;
+          out.innerHTML =
+            resultCell('r', round(r, 5)) +
+            resultCell(t('tool_azimuth_angle'), round(theta, 3) + '°') +
+            resultCell(t('tool_polar_angle'), round(phi, 3) + '°');
         }
       }
     ]
