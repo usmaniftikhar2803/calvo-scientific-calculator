@@ -1,0 +1,25 @@
+1. Linear — ax + b = c
+2. Quadratic — ax² + bx + c = 0
+3. Cubic — ax³ + bx² + cx + d = 0
+4. Biquadratic — ax⁴ + bx² + c = 0
+5. System (2 variables) — a1x + b1y = c1, a2x + b2y = c2
+6. System (3 variables) — a1x+b1y+c1z=d1, a2x+b2y+c2z=d2, a3x+b3y+c3z=d3
+7. Exponential — a·bˣ = c
+8. Logarithmic — a·log_b(x) = c
+9. Absolute Value — a|x| + b = c
+10. Radical — a·√x + b = c
+11. Rational — a/x + b = c
+12. Trigonometric — a·sin(x) = b
+13. Quartic — ax⁴ + bx³ + cx² + dx + e = 0
+14. Cosine — a·cos(x) = b
+15. Tangent — a·tan(x) = b
+16. Reciprocal Quadratic — ax + b/x = c
+17. Cube Root — a·∛x + b = c
+18. Proportion — a/b = c/x
+19. Linear Both Sides — a(x+b) = c(x+d)
+20. Rational Cross-Multiply — a/(x+b) = c/(x+d)
+21. Direct Variation — y = kx
+22. Inverse Variation — y = k/x
+23. Arithmetic Sequence — an = a1 + (n-1)d
+24. Geometric Sequence — an = a1 · r^(n-1)
+25. Sine + Cosine Combined — a·sin(x) + b·cos(x) = c
