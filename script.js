@@ -6671,12 +6671,12 @@ setTimeout(() => {
    EQUATION SOLVER — offline, step-by-step
    ============================================ */
 (function () {
-  const eqModeLinearBtn = document.getElementById('eqModeLinearBtn');
-  const eqModeQuadBtn = document.getElementById('eqModeQuadBtn');
-  const eqCGroup = document.getElementById('eqCGroup');
-  const eqA = document.getElementById('eqA');
-  const eqB = document.getElementById('eqB');
-  const eqC = document.getElementById('eqC');
+  const eqModePills = document.getElementById('eqModePills');
+  const eqListView = document.getElementById('eqListView');
+  const eqDetailView = document.getElementById('eqDetailView');
+  const eqDetailTitle = document.getElementById('eqDetailTitle');
+  const eqDetailBackBtn = document.getElementById('eqDetailBackBtn');
+  const eqDynamicInputs = document.getElementById('eqDynamicInputs');
   const eqSolveBtn = document.getElementById('eqSolveBtn');
   const eqStepsBox = document.getElementById('eqStepsBox');
   if (!eqSolveBtn) return;
@@ -6688,54 +6688,119 @@ setTimeout(() => {
     const r = Math.round(n * 1e6) / 1e6;
     return Number.isInteger(r) ? String(r) : String(r);
   }
-
+  function fmtComplex(re, im) {
+    im = Math.round(im * 1e6) / 1e6;
+    if (im === 0) return fmt(re);
+    return fmt(re) + (im > 0 ? ' + ' : ' − ') + Math.abs(im) + 'i';
+  }
   function stepHtml(label, content, isFinal) {
     return '<div class="eq-step' + (isFinal ? ' eq-final' : '') + '">'
       + '<span class="eq-step-label">' + label + '</span>' + content + '</div>';
   }
+  function errorHtml(msg) { return '<div class="eq-error">' + msg + '</div>'; }
+  function renderStepsHtml(html) { eqStepsBox.innerHTML = html; }
 
-  function setEqMode(mode) {
-    eqMode = mode;
-    eqModeLinearBtn.classList.toggle('active', mode === 'linear');
-    eqModeQuadBtn.classList.toggle('active', mode === 'quadratic');
-    eqCGroup.style.display = 'flex';
-    eqStepsBox.innerHTML = '';
+  /* ---- Field layouts per mode. Plain 3-coefficient modes just list
+     their fields; the two systems-of-equations modes are grouped into
+     one visual row per equation for readability. ---- */
+  const EQ_FIELDS = {
+    linear:      [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 0 }],
+    quadratic:   [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 0 }],
+    cubic:       [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 0 }, { k: 'd', l: 'd', d: 0 }],
+    biquadratic: [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 0 }],
+    sys2: [
+      [{ k: 'a1', l: 'a₁', d: 1 }, { k: 'b1', l: 'b₁', d: 1 }, { k: 'c1', l: 'c₁', d: 0 }],
+      [{ k: 'a2', l: 'a₂', d: 1 }, { k: 'b2', l: 'b₂', d: -1 }, { k: 'c2', l: 'c₂', d: 0 }],
+    ],
+    sys3: [
+      [{ k: 'a1', l: 'a₁', d: 1 }, { k: 'b1', l: 'b₁', d: 0 }, { k: 'c1', l: 'c₁', d: 0 }, { k: 'd1', l: 'd₁', d: 0 }],
+      [{ k: 'a2', l: 'a₂', d: 0 }, { k: 'b2', l: 'b₂', d: 1 }, { k: 'c2', l: 'c₂', d: 0 }, { k: 'd2', l: 'd₂', d: 0 }],
+      [{ k: 'a3', l: 'a₃', d: 0 }, { k: 'b3', l: 'b₃', d: 0 }, { k: 'c3', l: 'c₃', d: 1 }, { k: 'd3', l: 'd₃', d: 0 }],
+    ],
+    exponential: [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 2 }, { k: 'c', l: 'c', d: 8 }],
+    logarithmic: [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b (base)', d: 2 }, { k: 'c', l: 'c', d: 3 }],
+    absolute:    [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 5 }],
+    radical:     [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 3 }],
+    rational:    [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 2 }],
+    trig:        [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0.5 }],
+    quartic:     [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: -5 }, { k: 'd', l: 'd', d: 0 }, { k: 'e', l: 'e', d: 4 }],
+    cosine:      [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0.5 }],
+    tangent:     [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 1 }],
+    reciprocal:  [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 2 }, { k: 'c', l: 'c', d: 3 }],
+    cuberoot:    [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 0 }, { k: 'c', l: 'c', d: 2 }],
+    proportion:  [{ k: 'a', l: 'a', d: 2 }, { k: 'b', l: 'b', d: 3 }, { k: 'c', l: 'c', d: 4 }],
+    linearboth:  [{ k: 'a', l: 'a', d: 2 }, { k: 'b', l: 'b', d: 3 }, { k: 'c', l: 'c', d: 1 }, { k: 'd', l: 'd', d: 5 }],
+    rationalcross: [{ k: 'a', l: 'a', d: 2 }, { k: 'b', l: 'b', d: 1 }, { k: 'c', l: 'c', d: 3 }, { k: 'd', l: 'd', d: 4 }],
+    directvar:   [{ k: 'y', l: 'y', d: '', ph: 'blank = solve' }, { k: 'k', l: 'k', d: 2 }, { k: 'x', l: 'x', d: 5 }],
+    inversevar:  [{ k: 'y', l: 'y', d: '', ph: 'blank = solve' }, { k: 'k', l: 'k', d: 12 }, { k: 'x', l: 'x', d: 4 }],
+    arithseq:    [{ k: 'a1', l: 'a₁', d: 2 }, { k: 'd', l: 'd', d: 3 }, { k: 'n', l: 'n', d: 5 }, { k: 'an', l: 'aₙ', d: '', ph: 'blank = solve' }],
+    geomseq:     [{ k: 'a1', l: 'a₁', d: 3 }, { k: 'r', l: 'r', d: 2 }, { k: 'n', l: 'n', d: 4 }, { k: 'an', l: 'aₙ', d: '', ph: 'blank = solve' }],
+    sincos:      [{ k: 'a', l: 'a', d: 1 }, { k: 'b', l: 'b', d: 1 }, { k: 'c', l: 'c', d: 1 }],
+  };
+
+  function buildFieldGroup(f) {
+    const valAttr = (f.d === '' || f.d === undefined || f.d === null) ? '' : f.d;
+    const placeholderAttr = f.ph ? ' placeholder="' + f.ph + '"' : '';
+    return '<div class="eq-input-group"><label>' + f.l + '</label>'
+      + '<input type="number" class="formula-search convert-input" id="eqF_' + f.k + '" value="' + valAttr + '"' + placeholderAttr + '></div>';
   }
 
+  function renderFields() {
+    const cfg = EQ_FIELDS[eqMode];
+    if (Array.isArray(cfg[0])) {
+      eqDynamicInputs.innerHTML = cfg.map(row =>
+        '<div class="eq-sys-row">' + row.map(buildFieldGroup).join('') + '</div>'
+      ).join('');
+    } else {
+      eqDynamicInputs.innerHTML = cfg.map(buildFieldGroup).join('');
+    }
+    renderStepsHtml('');
+  }
+
+  function val(key) {
+    const el = document.getElementById('eqF_' + key);
+    return el ? parseFloat(el.value) : NaN;
+  }
+  function allFinite(...vals) { return vals.every(v => isFinite(v)); }
+
+  function setEqMode(mode, label) {
+    eqMode = mode;
+    eqDetailTitle.textContent = label || mode;
+    eqListView.style.display = 'none';
+    eqDetailView.style.display = '';
+    renderFields();
+  }
+
+  if (eqDetailBackBtn) {
+    eqDetailBackBtn.addEventListener('click', () => {
+      eqDetailView.style.display = 'none';
+      eqListView.style.display = '';
+    });
+  }
+
+  /* ---------- 1. Linear: ax + b = c ---------- */
   function solveLinear() {
-    const a = parseFloat(eqA.value), b = parseFloat(eqB.value), c = parseFloat(eqC.value);
-    if (!isFinite(a) || !isFinite(b) || !isFinite(c)) {
-      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_input') + '</div>';
-      return;
-    }
-    if (a === 0) {
-      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_a_zero') + '</div>';
-      return;
-    }
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
     let html = '';
     html += stepHtml(t('eq_step_original'), a + 'x + ' + b + ' = ' + c);
     html += stepHtml(t('eq_step_isolate'), a + 'x = ' + c + ' − (' + b + ') = ' + fmt(c - b));
     const x = (c - b) / a;
     html += stepHtml(t('eq_step_divide'), 'x = ' + fmt(c - b) + ' / ' + a);
     html += stepHtml(t('eq_step_answer'), 'x = ' + fmt(x), true);
-    eqStepsBox.innerHTML = html;
+    renderStepsHtml(html);
   }
 
+  /* ---------- 2. Quadratic: ax² + bx + c = 0 ---------- */
   function solveQuadratic() {
-    const a = parseFloat(eqA.value), b = parseFloat(eqB.value), c = parseFloat(eqC.value);
-    if (!isFinite(a) || !isFinite(b) || !isFinite(c)) {
-      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_input') + '</div>';
-      return;
-    }
-    if (a === 0) {
-      eqStepsBox.innerHTML = '<div class="eq-error">' + t('eq_error_a_zero') + '</div>';
-      return;
-    }
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
     let html = '';
     html += stepHtml(t('eq_step_original'), a + 'x² + ' + b + 'x + ' + c + ' = 0');
     const D = b * b - 4 * a * c;
     html += stepHtml(t('eq_step_discriminant'), 'D = b² − 4ac = (' + b + ')² − 4(' + a + ')(' + c + ') = ' + fmt(D));
-
     if (D > 0) {
       const sqrtD = Math.sqrt(D);
       const x1 = (-b + sqrtD) / (2 * a);
@@ -6752,15 +6817,511 @@ setTimeout(() => {
       html += stepHtml(t('eq_step_no_real'), t('eq_step_complex_roots'));
       html += stepHtml(t('eq_step_two_roots'), 'x₁ = ' + fmt(real) + ' + ' + fmt(imag) + 'i,  x₂ = ' + fmt(real) + ' − ' + fmt(imag) + 'i', true);
     }
-    eqStepsBox.innerHTML = html;
+    renderStepsHtml(html);
   }
 
-  eqModeLinearBtn.addEventListener('click', () => setEqMode('linear'));
-  eqModeQuadBtn.addEventListener('click', () => setEqMode('quadratic'));
-  eqSolveBtn.addEventListener('click', () => {
-    if (eqMode === 'linear') solveLinear();
-    else solveQuadratic();
+  /* ---------- 3. Cubic: ax³ + bx² + cx + d = 0 (depressed-cubic / Cardano method) ---------- */
+  function solveCubic() {
+    const a = val('a'), b = val('b'), c = val('c'), d = val('d');
+    if (!allFinite(a, b, c, d)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + 'x³ + ' + b + 'x² + ' + c + 'x + ' + d + ' = 0');
+
+    const B = b / a, C = c / a, D0 = d / a;
+    html += stepHtml('Normalize (÷a)', 'x³ + ' + fmt(B) + 'x² + ' + fmt(C) + 'x + ' + fmt(D0) + ' = 0');
+
+    const p = C - (B * B) / 3;
+    const q = (2 * B * B * B) / 27 - (B * C) / 3 + D0;
+    html += stepHtml('Depressed cubic (x = t − B/3)', 't³ + (' + fmt(p) + ')t + (' + fmt(q) + ') = 0');
+
+    const disc = -4 * p * p * p - 27 * q * q;
+    html += stepHtml('Discriminant', 'Δ = −4p³ − 27q² = ' + fmt(disc));
+
+    const shift = B / 3;
+    let roots = [];
+    if (disc >= 0) {
+      // Three real roots — trigonometric method
+      const m = 2 * Math.sqrt(-p / 3);
+      for (let k = 0; k < 3; k++) {
+        const theta = Math.acos((3 * q) / (p * m)) / 3 - (2 * Math.PI * k) / 3;
+        const t_k = m * Math.cos(theta);
+        roots.push({ re: t_k - shift, im: 0 });
+      }
+      html += stepHtml('Three real roots (trigonometric formula)',
+        'x₁ = ' + fmt(roots[0].re) + ',  x₂ = ' + fmt(roots[1].re) + ',  x₃ = ' + fmt(roots[2].re), true);
+    } else {
+      // One real root, one complex-conjugate pair — Cardano's formula
+      const inner = Math.sqrt((q * q) / 4 + (p * p * p) / 27);
+      const u = Math.cbrt(-q / 2 + inner);
+      const v = Math.cbrt(-q / 2 - inner);
+      const t1 = u + v;
+      roots.push({ re: t1 - shift, im: 0 });
+      roots.push({ re: -t1 / 2 - shift, im: (u - v) * Math.sqrt(3) / 2 });
+      roots.push({ re: -t1 / 2 - shift, im: -(u - v) * Math.sqrt(3) / 2 });
+      html += stepHtml('One real root + a complex-conjugate pair (Cardano)',
+        'x₁ = ' + fmt(roots[0].re) + ',  x₂ = ' + fmtComplex(roots[1].re, roots[1].im) + ',  x₃ = ' + fmtComplex(roots[2].re, roots[2].im), true);
+    }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 4. Biquadratic: ax⁴ + bx² + c = 0 (substitute y = x²) ---------- */
+  function solveBiquadratic() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + 'x⁴ + ' + b + 'x² + ' + c + ' = 0');
+    html += stepHtml('Substitute y = x²', a + 'y² + ' + b + 'y + ' + c + ' = 0');
+    const D = b * b - 4 * a * c;
+    html += stepHtml('Discriminant', 'D = b² − 4ac = ' + fmt(D));
+    if (D < 0) {
+      renderStepsHtml(html + errorHtml('No real value of y (discriminant is negative) → no real roots for x.'));
+      return;
+    }
+    const sqrtD = Math.sqrt(D);
+    const y1 = (-b + sqrtD) / (2 * a);
+    const y2 = (-b - sqrtD) / (2 * a);
+    html += stepHtml('Solve for y', 'y₁ = ' + fmt(y1) + ',  y₂ = ' + fmt(y2));
+
+    const rootsOf = (y) => {
+      if (y > 0) return fmt(Math.sqrt(y)) + ',  ' + fmt(-Math.sqrt(y));
+      if (y === 0) return '0 (double root)';
+      return fmtComplex(0, Math.sqrt(-y)) + ',  ' + fmtComplex(0, -Math.sqrt(-y));
+    };
+    html += stepHtml('x = ±√y for each y', 'From y₁: x = ' + rootsOf(y1) + '<br>From y₂: x = ' + rootsOf(y2), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 5. System of 2 linear equations (Cramer's rule) ---------- */
+  function solveSys2() {
+    const a1 = val('a1'), b1 = val('b1'), c1 = val('c1');
+    const a2 = val('a2'), b2 = val('b2'), c2 = val('c2');
+    if (!allFinite(a1, b1, c1, a2, b2, c2)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    let html = '';
+    html += stepHtml('System', a1 + 'x + ' + b1 + 'y = ' + c1 + '<br>' + a2 + 'x + ' + b2 + 'y = ' + c2);
+    const D = a1 * b2 - a2 * b1;
+    const Dx = c1 * b2 - c2 * b1;
+    const Dy = a1 * c2 - a2 * c1;
+    html += stepHtml('Determinants (Cramer\'s rule)', 'D = ' + fmt(D) + ',  Dx = ' + fmt(Dx) + ',  Dy = ' + fmt(Dy));
+    if (D === 0) {
+      if (Dx === 0 && Dy === 0) renderStepsHtml(html + errorHtml('D = 0 and Dx = Dy = 0 → infinitely many solutions (the two lines coincide).'));
+      else renderStepsHtml(html + errorHtml('D = 0 but Dx or Dy ≠ 0 → no solution (the lines are parallel).'));
+      return;
+    }
+    const x = Dx / D, y = Dy / D;
+    html += stepHtml('Solve', 'x = Dx/D = ' + fmt(x) + ',  y = Dy/D = ' + fmt(y), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 6. System of 3 linear equations (Cramer's rule, 3×3 determinants) ---------- */
+  function det3(m) {
+    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+         - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+         + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+  }
+  function solveSys3() {
+    const keys = ['a1','b1','c1','d1','a2','b2','c2','d2','a3','b3','c3','d3'];
+    const v = {}; keys.forEach(k => v[k] = val(k));
+    if (!allFinite(...keys.map(k => v[k]))) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    let html = '';
+    html += stepHtml('System',
+      v.a1 + 'x + ' + v.b1 + 'y + ' + v.c1 + 'z = ' + v.d1 + '<br>' +
+      v.a2 + 'x + ' + v.b2 + 'y + ' + v.c2 + 'z = ' + v.d2 + '<br>' +
+      v.a3 + 'x + ' + v.b3 + 'y + ' + v.c3 + 'z = ' + v.d3);
+
+    const M = [[v.a1, v.b1, v.c1], [v.a2, v.b2, v.c2], [v.a3, v.b3, v.c3]];
+    const D = det3(M);
+    const Mx = [[v.d1, v.b1, v.c1], [v.d2, v.b2, v.c2], [v.d3, v.b3, v.c3]];
+    const My = [[v.a1, v.d1, v.c1], [v.a2, v.d2, v.c2], [v.a3, v.d3, v.c3]];
+    const Mz = [[v.a1, v.b1, v.d1], [v.a2, v.b2, v.d2], [v.a3, v.b3, v.d3]];
+    const Dx = det3(Mx), Dy = det3(My), Dz = det3(Mz);
+    html += stepHtml('Determinants (Cramer\'s rule)', 'D = ' + fmt(D) + ',  Dx = ' + fmt(Dx) + ',  Dy = ' + fmt(Dy) + ',  Dz = ' + fmt(Dz));
+    if (D === 0) {
+      renderStepsHtml(html + errorHtml('D = 0 → the system has no unique solution (no solution or infinitely many).'));
+      return;
+    }
+    const x = Dx / D, y = Dy / D, z = Dz / D;
+    html += stepHtml('Solve', 'x = ' + fmt(x) + ',  y = ' + fmt(y) + ',  z = ' + fmt(z), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 7. Exponential: a·bˣ = c ---------- */
+  function solveExponential() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + ' · ' + b + '^x = ' + c);
+    if (a === 0) { renderStepsHtml(html + errorHtml('a cannot be 0.')); return; }
+    if (b <= 0 || b === 1) { renderStepsHtml(html + errorHtml('Base b must be positive and not equal to 1.')); return; }
+    const ratio = c / a;
+    html += stepHtml('Isolate the power', 'b^x = c/a = ' + fmt(ratio));
+    if (ratio <= 0) { renderStepsHtml(html + errorHtml('c/a must be positive — no real solution.')); return; }
+    const x = Math.log(ratio) / Math.log(b);
+    html += stepHtml('Take log of both sides', 'x = ln(c/a) / ln(b) = ln(' + fmt(ratio) + ') / ln(' + b + ')');
+    html += stepHtml('Answer', 'x = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 8. Logarithmic: a·log_b(x) = c ---------- */
+  function solveLogarithmic() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + ' · log_' + b + '(x) = ' + c);
+    if (a === 0) { renderStepsHtml(html + errorHtml('a cannot be 0.')); return; }
+    if (b <= 0 || b === 1) { renderStepsHtml(html + errorHtml('Base b must be positive and not equal to 1.')); return; }
+    const rhs = c / a;
+    html += stepHtml('Isolate the log', 'log_' + b + '(x) = c/a = ' + fmt(rhs));
+    const x = Math.pow(b, rhs);
+    html += stepHtml('Rewrite in exponential form', 'x = b^(c/a) = ' + b + '^' + fmt(rhs));
+    html += stepHtml('Answer', 'x = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 9. Absolute value: a|x| + b = c ---------- */
+  function solveAbsolute() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '|x| + ' + b + ' = ' + c);
+    const rhs = (c - b) / a;
+    html += stepHtml('Isolate |x|', '|x| = (c − b)/a = ' + fmt(rhs));
+    if (rhs < 0) { renderStepsHtml(html + errorHtml('|x| cannot be negative → no solution.')); return; }
+    if (rhs === 0) { renderStepsHtml(html + stepHtml('Answer', 'x = 0', true)); return; }
+    html += stepHtml('Answer', 'x = ' + fmt(rhs) + '  or  x = ' + fmt(-rhs), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 10. Radical: a·√x + b = c ---------- */
+  function solveRadical() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '·√x + ' + b + ' = ' + c);
+    const rhs = (c - b) / a;
+    html += stepHtml('Isolate √x', '√x = (c − b)/a = ' + fmt(rhs));
+    if (rhs < 0) { renderStepsHtml(html + errorHtml('√x cannot be negative → no real solution.')); return; }
+    const x = rhs * rhs;
+    html += stepHtml('Square both sides', 'x = (' + fmt(rhs) + ')²');
+    html += stepHtml('Answer', 'x = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 11. Rational: a/x + b = c ---------- */
+  function solveRational() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '/x + ' + b + ' = ' + c);
+    const denom = c - b;
+    html += stepHtml('Isolate a/x', 'a/x = c − b = ' + fmt(denom));
+    if (denom === 0) { renderStepsHtml(html + errorHtml('c − b cannot be 0 (would need x to be infinite) → no solution.')); return; }
+    const x = a / denom;
+    html += stepHtml('Solve for x', 'x = a / (c − b) = ' + a + ' / ' + fmt(denom));
+    html += stepHtml('Answer', 'x = ' + fmt(x) + '  (x ≠ 0)', true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 12. Trigonometric: a·sin(x) = b, x in [0°, 360°) ---------- */
+  function solveTrig() {
+    const a = val('a'), b = val('b');
+    if (!allFinite(a, b)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '·sin(x) = ' + b);
+    const ratio = b / a;
+    html += stepHtml('Isolate sin(x)', 'sin(x) = b/a = ' + fmt(ratio));
+    if (ratio < -1 || ratio > 1) { renderStepsHtml(html + errorHtml('sin(x) must be between −1 and 1 → no solution.')); return; }
+    const x1 = Math.asin(ratio) * 180 / Math.PI;
+    const x1n = x1 < 0 ? x1 + 360 : x1;
+    let x2 = 180 - x1;
+    if (x2 < 0) x2 += 360; if (x2 >= 360) x2 -= 360;
+    html += stepHtml('Solve within [0°, 360°)', 'x₁ = ' + fmt(x1n) + '°,  x₂ = 180° − x₁ = ' + fmt(x2) + '°', true);
+    renderStepsHtml(html);
+  }
+
+  /* ---- Small complex-number helpers, used only by the numeric quartic solver ---- */
+  function cAdd(a, b) { return { re: a.re + b.re, im: a.im + b.im }; }
+  function cSub(a, b) { return { re: a.re - b.re, im: a.im - b.im }; }
+  function cMul(a, b) { return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re }; }
+  function cDiv(a, b) { const dnm = b.re * b.re + b.im * b.im; return { re: (a.re * b.re + a.im * b.im) / dnm, im: (a.im * b.re - a.re * b.im) / dnm }; }
+  function cAbs(a) { return Math.sqrt(a.re * a.re + a.im * a.im); }
+  function subscript(n) {
+    const digits = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'];
+    return String(n).split('').map(ch => digits[+ch] || ch).join('');
+  }
+  /* Durand-Kerner method: finds all `degree` roots of a monic polynomial at once,
+     without needing a closed-form formula — used for the general quartic. */
+  function durandKerner(monicCoeffs, degree) {
+    function evalPoly(z) {
+      let result = { re: 0, im: 0 };
+      for (let i = 0; i < monicCoeffs.length; i++) {
+        result = cAdd(cMul(result, z), { re: monicCoeffs[i], im: 0 });
+      }
+      return result;
+    }
+    let roots = [];
+    let p = { re: 1, im: 0 };
+    const base = { re: 0.4, im: 0.9 };
+    for (let k = 0; k < degree; k++) { roots.push(p); p = cMul(p, base); }
+    for (let iter = 0; iter < 300; iter++) {
+      const next = roots.slice();
+      let maxDelta = 0;
+      for (let i = 0; i < degree; i++) {
+        let denom = { re: 1, im: 0 };
+        for (let j = 0; j < degree; j++) { if (j !== i) denom = cMul(denom, cSub(roots[i], roots[j])); }
+        const delta = cDiv(evalPoly(roots[i]), denom);
+        next[i] = cSub(roots[i], delta);
+        maxDelta = Math.max(maxDelta, cAbs(delta));
+      }
+      roots = next;
+      if (maxDelta < 1e-10) break;
+    }
+    return roots;
+  }
+
+  /* ---------- 13. Quartic: ax⁴ + bx³ + cx² + dx + e = 0 (numeric, Durand-Kerner) ---------- */
+  function solveQuartic() {
+    const a = val('a'), b = val('b'), c = val('c'), d = val('d'), e = val('e');
+    if (!allFinite(a, b, c, d, e)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + 'x⁴ + ' + b + 'x³ + ' + c + 'x² + ' + d + 'x + ' + e + ' = 0');
+    const B = b / a, C = c / a, D = d / a, E = e / a;
+    html += stepHtml('Normalize (÷a)', 'x⁴ + ' + fmt(B) + 'x³ + ' + fmt(C) + 'x² + ' + fmt(D) + 'x + ' + fmt(E) + ' = 0');
+    const roots = durandKerner([1, B, C, D, E], 4).map(r => ({
+      re: Math.abs(r.re) < 1e-9 ? 0 : r.re,
+      im: Math.abs(r.im) < 1e-9 ? 0 : r.im,
+    }));
+    const rootsStr = roots.map((r, i) => 'x' + subscript(i + 1) + ' = ' + fmtComplex(r.re, r.im)).join(',  ');
+    html += stepHtml('Solved numerically (iterative method)', rootsStr, true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 14. Cosine: a·cos(x) = b, x in [0°, 360°) ---------- */
+  function solveCosine() {
+    const a = val('a'), b = val('b');
+    if (!allFinite(a, b)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '·cos(x) = ' + b);
+    const ratio = b / a;
+    html += stepHtml('Isolate cos(x)', 'cos(x) = b/a = ' + fmt(ratio));
+    if (ratio < -1 || ratio > 1) { renderStepsHtml(html + errorHtml('cos(x) must be between −1 and 1 → no solution.')); return; }
+    const x1 = Math.acos(ratio) * 180 / Math.PI;
+    const x2 = 360 - x1;
+    html += stepHtml('Solve within [0°, 360°)', 'x₁ = ' + fmt(x1) + '°,  x₂ = 360° − x₁ = ' + fmt(x2) + '°', true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 15. Tangent: a·tan(x) = b, x in [0°, 360°) ---------- */
+  function solveTangent() {
+    const a = val('a'), b = val('b');
+    if (!allFinite(a, b)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '·tan(x) = ' + b);
+    const ratio = b / a;
+    html += stepHtml('Isolate tan(x)', 'tan(x) = b/a = ' + fmt(ratio));
+    let x1 = Math.atan(ratio) * 180 / Math.PI;
+    if (x1 < 0) x1 += 180;
+    const x2 = x1 + 180;
+    html += stepHtml('Solve within [0°, 360°) (period 180°)', 'x₁ = ' + fmt(x1) + '°,  x₂ = x₁ + 180° = ' + fmt(x2) + '°', true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 16. Reciprocal quadratic: ax + b/x = c ---------- */
+  function solveReciprocal() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + 'x + ' + b + '/x = ' + c);
+    html += stepHtml('Multiply through by x', a + 'x² + ' + b + ' = ' + c + 'x  (x ≠ 0)');
+    const A = a, Bc = -c, C = b;
+    html += stepHtml('Standard quadratic form', A + 'x² + (' + Bc + ')x + ' + C + ' = 0');
+    const D = Bc * Bc - 4 * A * C;
+    html += stepHtml('Discriminant', 'D = ' + fmt(D));
+    if (D < 0) { renderStepsHtml(html + errorHtml('D < 0 → no real solution.')); return; }
+    const sqrtD = Math.sqrt(D);
+    const x1 = (-Bc + sqrtD) / (2 * A), x2 = (-Bc - sqrtD) / (2 * A);
+    html += stepHtml('Answer', 'x₁ = ' + fmt(x1) + ',  x₂ = ' + fmt(x2), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 17. Cube root: a·∛x + b = c ---------- */
+  function solveCubeRoot() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '·∛x + ' + b + ' = ' + c);
+    const ratio = (c - b) / a;
+    html += stepHtml('Isolate ∛x', '∛x = (c − b)/a = ' + fmt(ratio));
+    const x = ratio * ratio * ratio;
+    html += stepHtml('Cube both sides', 'x = (' + fmt(ratio) + ')³');
+    html += stepHtml('Answer', 'x = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 18. Proportion: a/b = c/x ---------- */
+  function solveProportion() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0) { renderStepsHtml(errorHtml(t('eq_error_a_zero'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '/' + b + ' = ' + c + '/x');
+    html += stepHtml('Cross-multiply', a + 'x = ' + b + ' × ' + c + ' = ' + fmt(b * c));
+    const x = (b * c) / a;
+    html += stepHtml('Answer', 'x = (b × c)/a = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 19. Linear, variables on both sides: a(x+b) = c(x+d) ---------- */
+  function solveLinearBoth() {
+    const a = val('a'), b = val('b'), c = val('c'), d = val('d');
+    if (!allFinite(a, b, c, d)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '(x + ' + b + ') = ' + c + '(x + ' + d + ')');
+    html += stepHtml('Distribute', a + 'x + ' + fmt(a * b) + ' = ' + c + 'x + ' + fmt(c * d));
+    const coeff = a - c;
+    if (coeff === 0) {
+      const eq = Math.abs(a * b - c * d) < 1e-9;
+      renderStepsHtml(html + errorHtml(eq ? 'a = c and both sides match → infinitely many solutions.' : 'a = c but the constants differ → no solution.'));
+      return;
+    }
+    html += stepHtml('Collect x terms', '(' + a + ' − ' + c + ')x = ' + fmt(c * d) + ' − ' + fmt(a * b));
+    const x = (c * d - a * b) / coeff;
+    html += stepHtml('Answer', 'x = (cd − ab)/(a − c) = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 20. Rational cross-multiply: a/(x+b) = c/(x+d) ---------- */
+  function solveRationalCross() {
+    const a = val('a'), b = val('b'), c = val('c'), d = val('d');
+    if (!allFinite(a, b, c, d)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '/(x + ' + b + ') = ' + c + '/(x + ' + d + ')');
+    html += stepHtml('Cross-multiply', a + '(x + ' + d + ') = ' + c + '(x + ' + b + ')');
+    const coeff = a - c;
+    if (coeff === 0) { renderStepsHtml(html + errorHtml('a = c → no unique solution (either no solution or identical fractions).')); return; }
+    const x = (c * b - a * d) / coeff;
+    if (Math.abs(x + b) < 1e-9 || Math.abs(x + d) < 1e-9) {
+      renderStepsHtml(html + errorHtml('The result makes a denominator zero → no valid solution.'));
+      return;
+    }
+    html += stepHtml('Answer', 'x = (cb − ad)/(a − c) = ' + fmt(x), true);
+    renderStepsHtml(html);
+  }
+
+  /* ---- Shared helper for direct/inverse variation & the two sequence solvers:
+     exactly one field must be left blank; that's the one solved for. ---- */
+  function countBlanks(vals) { return vals.filter(v => !isFinite(v)).length; }
+
+  /* ---------- 21. Direct variation: y = kx ---------- */
+  function solveDirectVar() {
+    const y = val('y'), k = val('k'), x = val('x');
+    if (countBlanks([y, k, x]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = '';
+    html += stepHtml('Direct variation', 'y = kx');
+    if (!isFinite(y)) { const ans = k * x; html += stepHtml('Solve for y', 'y = ' + k + ' × ' + x + ' = ' + fmt(ans), true); }
+    else if (!isFinite(k)) { if (x === 0) { renderStepsHtml(html + errorHtml('x cannot be 0 when solving for k.')); return; } const ans = y / x; html += stepHtml('Solve for k', 'k = y/x = ' + y + '/' + x + ' = ' + fmt(ans), true); }
+    else { if (k === 0) { renderStepsHtml(html + errorHtml('k cannot be 0 when solving for x.')); return; } const ans = y / k; html += stepHtml('Solve for x', 'x = y/k = ' + y + '/' + k + ' = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 22. Inverse variation: y = k/x ---------- */
+  function solveInverseVar() {
+    const y = val('y'), k = val('k'), x = val('x');
+    if (countBlanks([y, k, x]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = '';
+    html += stepHtml('Inverse variation', 'y = k/x');
+    if (!isFinite(y)) { if (x === 0) { renderStepsHtml(html + errorHtml('x cannot be 0.')); return; } const ans = k / x; html += stepHtml('Solve for y', 'y = k/x = ' + k + '/' + x + ' = ' + fmt(ans), true); }
+    else if (!isFinite(k)) { const ans = y * x; html += stepHtml('Solve for k', 'k = y × x = ' + y + ' × ' + x + ' = ' + fmt(ans), true); }
+    else { if (y === 0) { renderStepsHtml(html + errorHtml('y cannot be 0 when solving for x.')); return; } const ans = k / y; html += stepHtml('Solve for x', 'x = k/y = ' + k + '/' + y + ' = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 23. Arithmetic sequence: aₙ = a₁ + (n−1)d ---------- */
+  function solveArithSeq() {
+    const a1 = val('a1'), d = val('d'), n = val('n'), an = val('an');
+    if (countBlanks([a1, d, n, an]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = '';
+    html += stepHtml('Arithmetic sequence', 'aₙ = a₁ + (n − 1)d');
+    if (!isFinite(an)) { const ans = a1 + (n - 1) * d; html += stepHtml('Solve for aₙ', 'aₙ = ' + a1 + ' + (' + n + ' − 1)(' + d + ') = ' + fmt(ans), true); }
+    else if (!isFinite(a1)) { const ans = an - (n - 1) * d; html += stepHtml('Solve for a₁', 'a₁ = aₙ − (n − 1)d = ' + fmt(ans), true); }
+    else if (!isFinite(d)) { if (n === 1) { renderStepsHtml(html + errorHtml('n cannot be 1 when solving for d.')); return; } const ans = (an - a1) / (n - 1); html += stepHtml('Solve for d', 'd = (aₙ − a₁)/(n − 1) = ' + fmt(ans), true); }
+    else { if (d === 0) { renderStepsHtml(html + errorHtml('d cannot be 0 when solving for n.')); return; } const ans = (an - a1) / d + 1; html += stepHtml('Solve for n', 'n = (aₙ − a₁)/d + 1 = ' + fmt(ans), true); }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 24. Geometric sequence: aₙ = a₁·r^(n−1) ---------- */
+  function solveGeomSeq() {
+    const a1 = val('a1'), r = val('r'), n = val('n'), an = val('an');
+    if (countBlanks([a1, r, n, an]) !== 1) { renderStepsHtml(errorHtml('Leave exactly one field blank — that\'s the value that gets solved for.')); return; }
+    let html = '';
+    html += stepHtml('Geometric sequence', 'aₙ = a₁ · r^(n − 1)');
+    if (!isFinite(an)) { const ans = a1 * Math.pow(r, n - 1); html += stepHtml('Solve for aₙ', 'aₙ = ' + a1 + ' × ' + r + '^(' + n + '−1) = ' + fmt(ans), true); }
+    else if (!isFinite(a1)) { const ans = an / Math.pow(r, n - 1); html += stepHtml('Solve for a₁', 'a₁ = aₙ / r^(n−1) = ' + fmt(ans), true); }
+    else if (!isFinite(r)) {
+      if (n === 1) { renderStepsHtml(html + errorHtml('n cannot be 1 when solving for r.')); return; }
+      const ratio = an / a1;
+      if (ratio < 0 && (n - 1) % 2 === 0) { renderStepsHtml(html + errorHtml('No real r satisfies this (even root of a negative number).')); return; }
+      const ans = Math.sign(ratio) * Math.pow(Math.abs(ratio), 1 / (n - 1));
+      html += stepHtml('Solve for r', 'r = (aₙ/a₁)^(1/(n−1)) = ' + fmt(ans), true);
+    } else {
+      if (r === 0 || r === 1) { renderStepsHtml(html + errorHtml('r must not be 0 or 1 when solving for n.')); return; }
+      const ratio = an / a1;
+      if (ratio <= 0) { renderStepsHtml(html + errorHtml('aₙ/a₁ must be positive to solve for n this way.')); return; }
+      const ans = Math.log(ratio) / Math.log(r) + 1;
+      html += stepHtml('Solve for n', 'n = log(aₙ/a₁)/log(r) + 1 = ' + fmt(ans), true);
+    }
+    renderStepsHtml(html);
+  }
+
+  /* ---------- 25. Sine + Cosine combined: a·sin(x) + b·cos(x) = c ---------- */
+  function solveSinCos() {
+    const a = val('a'), b = val('b'), c = val('c');
+    if (!allFinite(a, b, c)) { renderStepsHtml(errorHtml(t('eq_error_input'))); return; }
+    if (a === 0 && b === 0) { renderStepsHtml(errorHtml('a and b cannot both be 0.')); return; }
+    let html = '';
+    html += stepHtml('Original equation', a + '·sin(x) + ' + b + '·cos(x) = ' + c);
+    const R = Math.sqrt(a * a + b * b);
+    const phi = Math.atan2(b, a) * 180 / Math.PI;
+    html += stepHtml('Rewrite as R·sin(x + φ)', 'R = √(a² + b²) = ' + fmt(R) + ',  φ = atan2(b, a) = ' + fmt(phi) + '°');
+    const ratio = c / R;
+    if (ratio < -1 || ratio > 1) { renderStepsHtml(html + errorHtml('c/R must be between −1 and 1 → no solution.')); return; }
+    const theta = Math.asin(ratio) * 180 / Math.PI;
+    const norm = (v) => ((v % 360) + 360) % 360;
+    const x1 = norm(theta - phi);
+    const x2 = norm((180 - theta) - phi);
+    html += stepHtml('Solve within [0°, 360°)', 'x₁ = ' + fmt(x1) + '°,  x₂ = ' + fmt(x2) + '°', true);
+    renderStepsHtml(html);
+  }
+
+  const SOLVERS = {
+    linear: solveLinear, quadratic: solveQuadratic, cubic: solveCubic, biquadratic: solveBiquadratic,
+    sys2: solveSys2, sys3: solveSys3, exponential: solveExponential, logarithmic: solveLogarithmic,
+    absolute: solveAbsolute, radical: solveRadical, rational: solveRational, trig: solveTrig,
+    quartic: solveQuartic, cosine: solveCosine, tangent: solveTangent, reciprocal: solveReciprocal,
+    cuberoot: solveCubeRoot, proportion: solveProportion, linearboth: solveLinearBoth,
+    rationalcross: solveRationalCross, directvar: solveDirectVar, inversevar: solveInverseVar,
+    arithseq: solveArithSeq, geomseq: solveGeomSeq, sincos: solveSinCos,
+  };
+
+  eqModePills.querySelectorAll('.subject-pill').forEach(btn => {
+    btn.addEventListener('click', () => setEqMode(btn.dataset.eqmode, btn.textContent));
   });
+  eqSolveBtn.addEventListener('click', () => {
+    const solver = SOLVERS[eqMode];
+    if (solver) solver();
+  });
+
+  renderFields();
 })();
 
 /* ============================================
