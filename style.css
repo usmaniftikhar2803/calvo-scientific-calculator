@@ -191,7 +191,10 @@ html, body {
   height: 100dvh;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-  overscroll-behavior: none;
+  /* overscroll-behavior: none; removed — this was the line blocking the
+     browser's native pull-to-refresh gesture on mobile. Inner scrollable
+     panels (.tab-panel etc.) still don't bounce because they have their
+     own overflow-y: auto and aren't affected by this change. */
 }
 
 body {
