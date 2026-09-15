@@ -10,7 +10,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v20';
+const CACHE_VERSION = 'calvo-cache-v21';
 
 const CORE_ASSETS = [
   './',
@@ -64,6 +64,27 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
+  // Page navigations (i.e. loading/reloading an HTML document, which is
+  // what a manual or pull-to-refresh triggers) go NETWORK-FIRST, so a
+  // refresh always shows the latest deployed version instead of a
+  // possibly-stale cached copy. Falls back to cache only when offline.
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const resClone = res.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(req, resClone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Everything else (css/js/images) keeps the fast stale-while-revalidate
+  // strategy: serve cached instantly, refresh cache in the background.
   event.respondWith(
     caches.match(req).then((cached) => {
       const networkFetch = fetch(req)
@@ -74,15 +95,8 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => {
-          // Offline and not cached — fall back to the app shell for
-          // page navigations so the app still opens.
-          if (req.mode === 'navigate') return caches.match('./index.html');
-          return cached;
-        });
+        .catch(() => cached);
 
-      // Serve cached copy instantly if we have one, refresh it in the
-      // background (stale-while-revalidate); otherwise wait for network.
       return cached || networkFetch;
     })
   );
