@@ -5824,6 +5824,7 @@ function onLanguageChange() {
   if (typeof window.refreshQuizI18n === 'function') window.refreshQuizI18n();
   if (typeof window.refreshTimerI18n === 'function') window.refreshTimerI18n();
   if (typeof window.refreshSubjectToolsI18n === 'function') window.refreshSubjectToolsI18n();
+  if (typeof window.refreshMatrixI18n === 'function') window.refreshMatrixI18n();
 }
 
 /* ---------- INIT ---------- */
@@ -7668,17 +7669,92 @@ setTimeout(() => {
   const gridB = document.getElementById('matrixGridB');
   const bBlock = document.getElementById('matrixBBlock');
   const sizeBtns = document.querySelectorAll('[data-msize]');
-  const opPills = document.getElementById('matrixOpPills');
   const calcBtn = document.getElementById('matrixCalcBtn');
   const resultBox = document.getElementById('matrixResultBox');
   const scalarBlock = document.getElementById('matrixScalarBlock');
   const scalarInput = document.getElementById('matrixScalarInput');
   const powerBlock = document.getElementById('matrixPowerBlock');
   const powerInput = document.getElementById('matrixPowerInput');
+  const listView = document.getElementById('matrixListView');
+  const detailView = document.getElementById('matrixDetailView');
+  const toolListEl = document.getElementById('matrixToolList');
+  const detailTitle = document.getElementById('matrixDetailTitle');
+  const detailBackBtn = document.getElementById('matrixDetailBackBtn');
   if (!gridA) return;
 
   let mSize = 2;
   let mOp = 'add';
+
+  /* Every function, one per line on the list page; clicking a row opens
+     its own detail page where the matrix inputs + Calculate button live. */
+  const MATRIX_OPS = [
+    { id: 'add', label: 'matrix_op_add' },
+    { id: 'sub', label: 'matrix_op_sub' },
+    { id: 'mul', label: 'matrix_op_mul' },
+    { id: 'det', label: 'matrix_op_det' },
+    { id: 'inv', label: 'matrix_op_inv' },
+    { id: 'transpose', label: 'matrix_op_transpose' },
+    { id: 'trace', label: 'matrix_op_trace' },
+    { id: 'scalar', label: 'matrix_op_scalar' },
+    { id: 'power', label: 'matrix_op_power' },
+    { id: 'rank', label: 'matrix_op_rank' },
+    { id: 'adjoint', label: 'matrix_op_adjoint' },
+    { id: 'cofactor', label: 'matrix_op_cofactor' },
+    { id: 'ref', label: 'matrix_op_ref' },
+    { id: 'norm', label: 'matrix_op_norm' },
+    { id: 'properties', label: 'matrix_op_properties' },
+    { id: 'solve', label: 'matrix_op_solve' },
+    { id: 'div', label: 'matrix_op_div' },
+    { id: 'lu', label: 'matrix_op_lu' },
+    { id: 'charpoly', label: 'matrix_op_charpoly' },
+    { id: 'eigen', label: 'matrix_op_eigen' },
+    { id: 'diag', label: 'matrix_op_diag' },
+    { id: 'sum', label: 'matrix_op_sum' },
+    { id: 'mean', label: 'matrix_op_mean' },
+    { id: 'hadamard', label: 'matrix_op_hadamard' },
+    { id: 'dsum', label: 'matrix_op_dsum' },
+    { id: 'rowsum', label: 'matrix_op_rowsum' },
+    { id: 'colsum', label: 'matrix_op_colsum' },
+    { id: 'min', label: 'matrix_op_min' },
+    { id: 'max', label: 'matrix_op_max' },
+    { id: 'permanent', label: 'matrix_op_permanent' },
+    { id: 'nullspace', label: 'matrix_op_nullspace' },
+    { id: 'expm', label: 'matrix_op_expm' },
+    { id: 'idempotent', label: 'matrix_op_idempotent' },
+    { id: 'nilpotent', label: 'matrix_op_nilpotent' },
+    { id: 'involutory', label: 'matrix_op_involutory' },
+  ];
+
+  function renderMatrixList() {
+    toolListEl.innerHTML = MATRIX_OPS.map(op =>
+      '<div class="subject-tool-row" data-mop="' + op.id + '">' +
+        '<span class="subject-tool-row-name">' + t(op.label) + '</span>' +
+        '<span class="subject-tool-row-arrow">&rarr;</span>' +
+      '</div>'
+    ).join('');
+    toolListEl.querySelectorAll('.subject-tool-row').forEach(row => {
+      row.addEventListener('click', () => openMatrixDetail(row.dataset.mop));
+    });
+  }
+
+  // STEP 1 -> STEP 2: clicking a function's line opens its own page,
+  // where the matrix inputs and Calculate button live.
+  function openMatrixDetail(op) {
+    const meta = MATRIX_OPS.find(o => o.id === op);
+    detailTitle.textContent = meta ? t(meta.label) : '';
+    listView.style.display = 'none';
+    detailView.style.display = '';
+    setOp(op);
+    buildGrid(gridA, mSize);
+    buildGrid(gridB, mSize);
+  }
+
+  if (detailBackBtn) {
+    detailBackBtn.addEventListener('click', () => {
+      detailView.style.display = 'none';
+      listView.style.display = '';
+    });
+  }
 
   function buildGrid(container, size, seed) {
     container.dataset.size = size;
@@ -7713,11 +7789,10 @@ setTimeout(() => {
     resultBox.innerHTML = '';
   }
 
-  const UNARY_OPS = ['det', 'inv', 'transpose', 'trace', 'scalar', 'power', 'rank', 'adjoint', 'cofactor', 'ref', 'norm', 'properties'];
+  const UNARY_OPS = ['det', 'inv', 'transpose', 'trace', 'scalar', 'power', 'rank', 'adjoint', 'cofactor', 'ref', 'norm', 'properties', 'lu', 'charpoly', 'eigen', 'diag', 'sum', 'mean', 'rowsum', 'colsum', 'min', 'max', 'permanent', 'nullspace', 'expm', 'idempotent', 'nilpotent', 'involutory'];
 
   function setOp(op) {
     mOp = op;
-    opPills.querySelectorAll('.subject-pill').forEach(p => p.classList.toggle('active', p.dataset.mop === op));
     bBlock.style.display = UNARY_OPS.includes(op) ? 'none' : 'block';
     scalarBlock.style.display = (op === 'scalar') ? 'flex' : 'none';
     powerBlock.style.display = (op === 'power') ? 'flex' : 'none';
@@ -7872,6 +7947,207 @@ setTimeout(() => {
     return facts;
   }
 
+  function zeroMatrix(n) {
+    const Z = [];
+    for (let r = 0; r < n; r++) Z.push(new Array(n).fill(0));
+    return Z;
+  }
+
+  /* Solve A·X = B via X = A⁻¹B */
+  function solveSystem(A, B, size) {
+    const inv = invN(A);
+    if (!inv) return null;
+    return matMul(inv, B, size);
+  }
+
+  /* A ÷ B := A · B⁻¹ */
+  function matDivide(A, B, size) {
+    const inv = invN(B);
+    if (!inv) return null;
+    return matMul(A, inv, size);
+  }
+
+  /* LU decomposition with partial pivoting: PA = LU */
+  function luDecompose(A, n) {
+    const U = A.map(row => row.slice());
+    const L = identity(n);
+    const P = identity(n);
+    for (let k = 0; k < n; k++) {
+      let maxRow = k, maxVal = Math.abs(U[k][k]);
+      for (let r = k + 1; r < n; r++) {
+        if (Math.abs(U[r][k]) > maxVal) { maxVal = Math.abs(U[r][k]); maxRow = r; }
+      }
+      if (maxVal < 1e-10) continue;
+      if (maxRow !== k) {
+        [U[k], U[maxRow]] = [U[maxRow], U[k]];
+        [P[k], P[maxRow]] = [P[maxRow], P[k]];
+        for (let c = 0; c < k; c++) { const tmp = L[k][c]; L[k][c] = L[maxRow][c]; L[maxRow][c] = tmp; }
+      }
+      for (let r = k + 1; r < n; r++) {
+        const factor = U[r][k] / U[k][k];
+        L[r][k] = factor;
+        for (let c = k; c < n; c++) U[r][c] -= factor * U[k][c];
+      }
+    }
+    return { L, U };
+  }
+
+  /* Characteristic polynomial coefficients via Faddeev–LeVerrier:
+     returns [1, c1, ..., cn] such that det(xI - A) = x^n + c1 x^(n-1) + ... + cn */
+  function charPolyCoeffs(A, n) {
+    const coeffs = new Array(n + 1).fill(0);
+    coeffs[0] = 1;
+    let M = zeroMatrix(n);
+    for (let k = 1; k <= n; k++) {
+      M = matAdd(matMul(A, M, n), scalarMul(identity(n), coeffs[k - 1]), 1);
+      const tr = trace(matMul(A, M, n));
+      coeffs[k] = -tr / k;
+    }
+    return coeffs;
+  }
+
+  const SUP_DIGITS = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  const SUB_DIGITS = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉' };
+  function toSuperscript(num) {
+    return String(num).split('').map(ch => SUP_DIGITS[ch] || ch).join('');
+  }
+  function toSubscript(num) {
+    return String(num).split('').map(ch => SUB_DIGITS[ch] || ch).join('');
+  }
+  function formatCharPoly(coeffs, n) {
+    let str = 'p(λ) = ';
+    let first = true;
+    for (let i = 0; i <= n; i++) {
+      const power = n - i;
+      let c = Math.round(coeffs[i] * 1e6) / 1e6;
+      if (Math.abs(c) < 1e-9) continue;
+      const sign = c < 0 ? '−' : (first ? '' : '+');
+      const absC = Math.abs(c);
+      const coefStr = (absC === 1 && power !== 0) ? '' : fmtNum(absC);
+      let term;
+      if (power === 0) term = fmtNum(absC);
+      else if (power === 1) term = coefStr + 'λ';
+      else term = coefStr + 'λ' + toSuperscript(power);
+      str += (first ? sign : ' ' + sign + ' ') + term;
+      first = false;
+    }
+    if (first) str += '0';
+    return str;
+  }
+
+  /* Eigenvalues via unshifted QR algorithm (real approx; best for symmetric matrices) */
+  function qrDecompose(A, n) {
+    const cols = [];
+    for (let c = 0; c < n; c++) cols.push(A.map(row => row[c]));
+    const qCols = [];
+    const R = zeroMatrix(n);
+    for (let j = 0; j < n; j++) {
+      let v = cols[j].slice();
+      for (let i = 0; i < j; i++) {
+        const q = qCols[i];
+        const dot = v.reduce((s, val, idx) => s + val * q[idx], 0);
+        R[i][j] = dot;
+        v = v.map((val, idx) => val - dot * q[idx]);
+      }
+      const norm = Math.sqrt(v.reduce((s, val) => s + val * val, 0));
+      R[j][j] = norm;
+      const q = norm > 1e-10 ? v.map(val => val / norm) : v.map(() => 0);
+      qCols.push(q);
+    }
+    const Qm = [];
+    for (let r = 0; r < n; r++) Qm.push(qCols.map(q => q[r]));
+    return { Q: Qm, R };
+  }
+  function eigenApprox(A, n) {
+    let Ak = A.map(row => row.slice());
+    for (let iter = 0; iter < 300; iter++) {
+      const { Q, R } = qrDecompose(Ak, n);
+      Ak = matMul(R, Q, n);
+    }
+    const vals = [];
+    for (let i = 0; i < n; i++) vals.push(Ak[i][i]);
+    return vals;
+  }
+
+  /* Hadamard (element-wise) product */
+  function hadamard(A, B) {
+    return A.map((row, r) => row.map((v, c) => v * B[r][c]));
+  }
+
+  /* Direct sum: block-diagonal combination of A and B into a 2n×2n matrix */
+  function directSum(A, B, n) {
+    const size = 2 * n;
+    const R = [];
+    for (let r = 0; r < size; r++) R.push(new Array(size).fill(0));
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) R[r][c] = A[r][c];
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) R[n + r][n + c] = B[r][c];
+    return R;
+  }
+
+  function rowSums(A) {
+    return A.map(row => [row.reduce((s, v) => s + v, 0)]);
+  }
+  function colSums(A, n) {
+    const s = new Array(n).fill(0);
+    A.forEach(row => row.forEach((v, c) => { s[c] += v; }));
+    return [s];
+  }
+  function minElement(A) {
+    let m = Infinity;
+    A.forEach(row => row.forEach(v => { if (v < m) m = v; }));
+    return m;
+  }
+  function maxElement(A) {
+    let m = -Infinity;
+    A.forEach(row => row.forEach(v => { if (v > m) m = v; }));
+    return m;
+  }
+
+  /* Permanent: like the determinant's cofactor expansion, but without alternating signs */
+  function permN(M) {
+    const n = M.length;
+    if (n === 1) return M[0][0];
+    if (n === 2) return M[0][0] * M[1][1] + M[0][1] * M[1][0];
+    let p = 0;
+    for (let c = 0; c < n; c++) p += M[0][c] * permN(minorOf(M, 0, c));
+    return p;
+  }
+
+  /* Null space (kernel) basis via RREF: free-variable back-substitution */
+  function nullSpaceBasis(A) {
+    const R = rrefMatrix(A);
+    const m = R[0].length;
+    const pivotCols = [];
+    for (let r = 0; r < R.length; r++) {
+      let pc = -1;
+      for (let c = 0; c < m; c++) { if (Math.abs(R[r][c]) > 1e-9) { pc = c; break; } }
+      if (pc !== -1) pivotCols.push(pc);
+    }
+    const freeCols = [];
+    for (let c = 0; c < m; c++) if (!pivotCols.includes(c)) freeCols.push(c);
+    if (freeCols.length === 0) return [];
+    const basis = [];
+    freeCols.forEach(fc => {
+      const vec = new Array(m).fill(0);
+      vec[fc] = 1;
+      pivotCols.forEach((pc, idx) => { vec[pc] = -R[idx][fc]; });
+      basis.push(vec);
+    });
+    return basis;
+  }
+
+  /* Matrix exponential via Taylor series: e^A = Σ A^k / k! */
+  function matExp(A, n, terms) {
+    terms = terms || 60;
+    let term = identity(n), result = identity(n);
+    for (let k = 1; k <= terms; k++) {
+      term = matMul(term, A, n);
+      term = term.map(row => row.map(v => v / k));
+      result = matAdd(result, term, 1);
+    }
+    return result;
+  }
+
   function fmtNum(n) {
     const r = Math.round(n * 1e6) / 1e6;
     return String(r);
@@ -7892,6 +8168,50 @@ setTimeout(() => {
     });
     html += '</div>';
     resultBox.innerHTML = html;
+  }
+
+  function renderLU(L, U) {
+    const grid = (M, label) => {
+      let g = '<div class="matrix-lu-block"><div class="matrix-block-label">' + label + '</div>' +
+        '<div class="matrix-result-grid" style="grid-template-columns:repeat(' + M[0].length + ', 56px);">';
+      M.forEach(row => row.forEach(v => { g += '<div class="matrix-result-cell">' + fmtNum(v) + '</div>'; }));
+      g += '</div></div>';
+      return g;
+    };
+    let html = '<div class="matrix-lu-wrap">' + grid(L, t('matrix_l_label')) + grid(U, t('matrix_u_label')) + '</div>';
+    html += '<div class="matrix-lu-note">' + t('matrix_lu_note') + '</div>';
+    resultBox.innerHTML = html;
+  }
+
+  function renderPoly(coeffs, n) {
+    resultBox.innerHTML = '<div class="matrix-poly-box">' + formatCharPoly(coeffs, n) + '</div>';
+  }
+
+  function renderEigen(vals) {
+    let html = '<div class="matrix-eigen-wrap">';
+    vals.forEach((v, i) => {
+      html += '<div class="matrix-eigen-chip">λ' + toSubscript(i + 1) + ' = ' + fmtNum(v) + '</div>';
+    });
+    html += '</div><div class="matrix-eigen-note">' + t('matrix_eigen_note') + '</div>';
+    resultBox.innerHTML = html;
+  }
+
+  function renderNullSpace(vectors) {
+    if (vectors.length === 0) {
+      resultBox.innerHTML = '<div class="matrix-poly-box">' + t('matrix_nullspace_trivial') + '</div>';
+      return;
+    }
+    let html = '<div class="matrix-eigen-wrap">';
+    vectors.forEach((v, i) => {
+      html += '<div class="matrix-eigen-chip">v' + toSubscript(i + 1) + ' = (' + v.map(fmtNum).join(', ') + ')</div>';
+    });
+    html += '</div><div class="matrix-eigen-note">' + t('matrix_nullspace_dim_label') + ' = ' + vectors.length + '</div>';
+    resultBox.innerHTML = html;
+  }
+
+  function renderSingleCheck(label, bool) {
+    resultBox.innerHTML = '<div class="matrix-prop-list"><div class="matrix-prop-row"><span>' + label +
+      '</span><span class="matrix-prop-badge ' + (bool ? 'yes">' + t('matrix_prop_yes') : 'no">' + t('matrix_prop_no')) + '</span></div></div>';
   }
 
   function calculate() {
@@ -7945,17 +8265,102 @@ setTimeout(() => {
       return;
     }
     if (mOp === 'properties') { renderProperties(propertiesOf(A, mSize)); return; }
+    if (mOp === 'solve') {
+      const X = solveSystem(A, B, mSize);
+      if (!X) {
+        resultBox.innerHTML = '<div class="eq-error">' + t('matrix_error_solve_singular') + '</div>';
+        return;
+      }
+      renderMatrixResult(X);
+      return;
+    }
+    if (mOp === 'div') {
+      const res = matDivide(A, B, mSize);
+      if (!res) {
+        resultBox.innerHTML = '<div class="eq-error">' + t('matrix_error_div_singular') + '</div>';
+        return;
+      }
+      renderMatrixResult(res);
+      return;
+    }
+    if (mOp === 'lu') {
+      const { L, U } = luDecompose(A, mSize);
+      renderLU(L, U);
+      return;
+    }
+    if (mOp === 'charpoly') {
+      renderPoly(charPolyCoeffs(A, mSize), mSize);
+      return;
+    }
+    if (mOp === 'eigen') {
+      renderEigen(eigenApprox(A, mSize));
+      return;
+    }
+    if (mOp === 'diag') {
+      const d = [];
+      for (let i = 0; i < mSize; i++) d.push(A[i][i]);
+      renderMatrixResult([d]);
+      return;
+    }
+    if (mOp === 'sum') {
+      let s = 0;
+      A.forEach(row => row.forEach(v => { s += v; }));
+      resultBox.innerHTML = '<div class="matrix-result-scalar">Σ A = ' + fmtNum(s) + '</div>';
+      return;
+    }
+    if (mOp === 'mean') {
+      let s = 0;
+      A.forEach(row => row.forEach(v => { s += v; }));
+      resultBox.innerHTML = '<div class="matrix-result-scalar">mean(A) = ' + fmtNum(s / (mSize * mSize)) + '</div>';
+      return;
+    }
+    if (mOp === 'hadamard') { renderMatrixResult(hadamard(A, B)); return; }
+    if (mOp === 'dsum') { renderMatrixResult(directSum(A, B, mSize)); return; }
+    if (mOp === 'rowsum') { renderMatrixResult(rowSums(A)); return; }
+    if (mOp === 'colsum') { renderMatrixResult(colSums(A, mSize)); return; }
+    if (mOp === 'min') {
+      resultBox.innerHTML = '<div class="matrix-result-scalar">min(A) = ' + fmtNum(minElement(A)) + '</div>';
+      return;
+    }
+    if (mOp === 'max') {
+      resultBox.innerHTML = '<div class="matrix-result-scalar">max(A) = ' + fmtNum(maxElement(A)) + '</div>';
+      return;
+    }
+    if (mOp === 'permanent') {
+      resultBox.innerHTML = '<div class="matrix-result-scalar">perm(A) = ' + fmtNum(permN(A)) + '</div>';
+      return;
+    }
+    if (mOp === 'nullspace') { renderNullSpace(nullSpaceBasis(A)); return; }
+    if (mOp === 'expm') { renderMatrixResult(matExp(A, mSize, 60)); return; }
+    if (mOp === 'idempotent') {
+      renderSingleCheck(t('matrix_check_idempotent'), matEqual(matMul(A, A, mSize), A));
+      return;
+    }
+    if (mOp === 'nilpotent') {
+      renderSingleCheck(t('matrix_check_nilpotent'), matEqual(matPow(A, mSize, mSize), zeroMatrix(mSize)));
+      return;
+    }
+    if (mOp === 'involutory') {
+      renderSingleCheck(t('matrix_check_involutory'), matEqual(matMul(A, A, mSize), identity(mSize)));
+      return;
+    }
   }
 
   sizeBtns.forEach(btn => btn.addEventListener('click', () => setSize(parseInt(btn.dataset.msize, 10))));
-  opPills.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-mop]');
-    if (btn) setOp(btn.dataset.mop);
-  });
   calcBtn.addEventListener('click', calculate);
 
   setSize(2);
-  setOp('add');
+  renderMatrixList();
+
+  window.refreshMatrixI18n = function () {
+    if (listView.style.display !== 'none') {
+      renderMatrixList();
+    }
+    if (detailView.style.display !== 'none') {
+      const meta = MATRIX_OPS.find(o => o.id === mOp);
+      detailTitle.textContent = meta ? t(meta.label) : '';
+    }
+  };
 })();
 
 /* ============================================
