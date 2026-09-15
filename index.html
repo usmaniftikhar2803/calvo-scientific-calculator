@@ -953,57 +953,53 @@
 <section class="tab-panel" id="tab-matrix">
   <div class="formulas-wrap">
     <div class="formulas-card" id="matrixCard">
-      <div class="formulas-title" data-i18n="matrix_title">Matrix Calculator</div>
-      <div class="formulas-subtitle" data-i18n="matrix_subtitle">Addition, multiplication, determinant &amp; inverse</div>
 
-      <div class="subject-pills">
-        <button class="subject-pill active" data-msize="2" id="matrixSize2Btn">2 × 2</button>
-        <button class="subject-pill" data-msize="3" id="matrixSize3Btn">3 × 3</button>
-        <button class="subject-pill" data-msize="4" id="matrixSize4Btn">4 × 4</button>
+      <!-- LIST VIEW (default) — every function on its own line -->
+      <div id="matrixListView">
+        <div class="formulas-title" data-i18n="matrix_title">Matrix Calculator</div>
+        <div class="formulas-subtitle" data-i18n="matrix_subtitle">Addition, multiplication, determinant, inverse &amp; more (2×2 to 4×4)</div>
+        <div class="subject-tool-list" id="matrixToolList"></div>
       </div>
 
-      <div class="matrix-pair-wrap">
-        <div class="matrix-block">
-          <div class="matrix-block-label" data-i18n="matrix_a_label">Matrix A</div>
-          <div class="matrix-grid" id="matrixGridA"></div>
+      <!-- DETAIL VIEW (shown after clicking a function — its own page) -->
+      <div id="matrixDetailView" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="matrixDetailBackBtn">&larr; <span data-i18n="back_to_tools">Back to tools</span></button>
         </div>
-        <div class="matrix-block" id="matrixBBlock">
-          <div class="matrix-block-label" data-i18n="matrix_b_label">Matrix B</div>
-          <div class="matrix-grid" id="matrixGridB"></div>
+        <div class="formulas-title" id="matrixDetailTitle"></div>
+
+        <div class="subject-pills">
+          <button class="subject-pill active" data-msize="2" id="matrixSize2Btn">2 × 2</button>
+          <button class="subject-pill" data-msize="3" id="matrixSize3Btn">3 × 3</button>
+          <button class="subject-pill" data-msize="4" id="matrixSize4Btn">4 × 4</button>
         </div>
+
+        <div class="matrix-pair-wrap">
+          <div class="matrix-block">
+            <div class="matrix-block-label" data-i18n="matrix_a_label">Matrix A</div>
+            <div class="matrix-grid" id="matrixGridA"></div>
+          </div>
+          <div class="matrix-block" id="matrixBBlock">
+            <div class="matrix-block-label" data-i18n="matrix_b_label">Matrix B</div>
+            <div class="matrix-grid" id="matrixGridB"></div>
+          </div>
+        </div>
+
+        <div class="matrix-scalar-wrap" id="matrixScalarBlock" style="display:none;">
+          <label for="matrixScalarInput" data-i18n="matrix_scalar_label">Scalar k =</label>
+          <input type="number" id="matrixScalarInput" value="2">
+        </div>
+
+        <div class="matrix-scalar-wrap" id="matrixPowerBlock" style="display:none;">
+          <label for="matrixPowerInput" data-i18n="matrix_power_label">Power n =</label>
+          <input type="number" id="matrixPowerInput" value="2" step="1">
+        </div>
+
+        <button class="pill-btn save-btn" id="matrixCalcBtn" data-i18n="matrix_calculate">Calculate</button>
+
+        <div class="matrix-result" id="matrixResultBox"></div>
       </div>
 
-      <div class="subject-pills" id="matrixOpPills">
-        <button class="subject-pill active" data-mop="add" data-i18n="matrix_op_add">A + B</button>
-        <button class="subject-pill" data-mop="sub" data-i18n="matrix_op_sub">A − B</button>
-        <button class="subject-pill" data-mop="mul" data-i18n="matrix_op_mul">A × B</button>
-        <button class="subject-pill" data-mop="det" data-i18n="matrix_op_det">det(A)</button>
-        <button class="subject-pill" data-mop="inv" data-i18n="matrix_op_inv">A⁻¹</button>
-        <button class="subject-pill" data-mop="transpose" data-i18n="matrix_op_transpose">Aᵀ</button>
-        <button class="subject-pill" data-mop="trace" data-i18n="matrix_op_trace">tr(A)</button>
-        <button class="subject-pill" data-mop="scalar" data-i18n="matrix_op_scalar">k·A</button>
-        <button class="subject-pill" data-mop="power" data-i18n="matrix_op_power">Aⁿ</button>
-        <button class="subject-pill" data-mop="rank" data-i18n="matrix_op_rank">rank(A)</button>
-        <button class="subject-pill" data-mop="adjoint" data-i18n="matrix_op_adjoint">adj(A)</button>
-        <button class="subject-pill" data-mop="cofactor" data-i18n="matrix_op_cofactor">Cofactor(A)</button>
-        <button class="subject-pill" data-mop="ref" data-i18n="matrix_op_ref">RREF(A)</button>
-        <button class="subject-pill" data-mop="norm" data-i18n="matrix_op_norm">‖A‖</button>
-        <button class="subject-pill" data-mop="properties" data-i18n="matrix_op_properties">Properties</button>
-      </div>
-
-      <div class="matrix-scalar-wrap" id="matrixScalarBlock" style="display:none;">
-        <label for="matrixScalarInput" data-i18n="matrix_scalar_label">Scalar k =</label>
-        <input type="number" id="matrixScalarInput" value="2">
-      </div>
-
-      <div class="matrix-scalar-wrap" id="matrixPowerBlock" style="display:none;">
-        <label for="matrixPowerInput" data-i18n="matrix_power_label">Power n =</label>
-        <input type="number" id="matrixPowerInput" value="2" step="1">
-      </div>
-
-      <button class="pill-btn save-btn" id="matrixCalcBtn" data-i18n="matrix_calculate">Calculate</button>
-
-      <div class="matrix-result" id="matrixResultBox"></div>
     </div>
   </div>
 </section>
