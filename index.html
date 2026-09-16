@@ -834,6 +834,7 @@
       <div class="subject-pills">
         <button class="subject-pill active" data-graphmode="function" id="graphModeFnBtn" data-i18n="graph_mode_function">Function Graph</button>
         <button class="subject-pill" data-graphmode="unitcircle" id="graphModeCircleBtn" data-i18n="graph_mode_unitcircle">Unit Circle</button>
+        <button class="subject-pill" data-graphmode="surface3d" id="graphMode3DBtn" data-i18n="graph_mode_3d">3D Surface</button>
       </div>
 
       <div id="graphFunctionPanel">
@@ -862,8 +863,21 @@
         </div>
       </div>
 
+      <div id="graph3DPanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graph3DFnInput" data-i18n-placeholder="graph_3d_placeholder" placeholder="e.g. sin(sqrt(x^2+y^2))" value="sin(sqrt(x*x+y*y))">
+        <div class="graph-quick-row" id="graph3DQuickBtns">
+          <button class="pill-btn small" data-fn3d="x*x+y*y">x²+y²</button>
+          <button class="pill-btn small" data-fn3d="sin(sqrt(x*x+y*y))">sin(√(x²+y²))</button>
+          <button class="pill-btn small" data-fn3d="sin(x)*cos(y)">sin(x)cos(y)</button>
+          <button class="pill-btn small" data-fn3d="x*x-y*y">x²−y²</button>
+        </div>
+        <div class="graph-error" id="graph3DError"></div>
+        <div class="graph-3d-hint" data-i18n="graph_3d_hint">Drag to rotate the surface</div>
+      </div>
+
       <div class="graph-canvas-wrap">
         <canvas id="graphCanvas" width="600" height="380"></canvas>
+        <canvas id="graph3DCanvas" width="600" height="380" style="display:none;"></canvas>
       </div>
     </div>
   </div>
