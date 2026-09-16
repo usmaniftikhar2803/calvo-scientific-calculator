@@ -174,6 +174,209 @@
     return Math.round(x * Math.pow(10, dp)) / Math.pow(10, dp);
   }
 
+  // Safely compiles a single-variable f(x) string (used by the Calculus
+  // tools) into a callable JS function, whitelisting allowed tokens first.
+  function compileCalcFn(exprRaw) {
+    let expr = (exprRaw || '').trim();
+    if (!expr) return null;
+    expr = expr.replace(/(\d)(x)/gi, '$1*$2');
+    expr = expr.replace(/\)(\s*)(x|\()/gi, ')*$2');
+    expr = expr.replace(/(\d)(\()/g, '$1*$2');
+    expr = expr.replace(/\^/g, '**');
+    expr = expr.replace(/\bln\(/g, 'log(');
+    const safety = expr
+      .replace(/\b(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|pow|min|max|pi|PI)\b/g, '')
+      .replace(/[x\d\s+\-*/().,]/g, '');
+    if (safety.length > 0) return null;
+    const body = expr
+      .replace(/\bsin\(/g, 'Math.sin(').replace(/\bcos\(/g, 'Math.cos(')
+      .replace(/\btan\(/g, 'Math.tan(').replace(/\basin\(/g, 'Math.asin(')
+      .replace(/\bacos\(/g, 'Math.acos(').replace(/\batan\(/g, 'Math.atan(')
+      .replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\blog\(/g, 'Math.log(').replace(/\bexp\(/g, 'Math.exp(')
+      .replace(/\bpow\(/g, 'Math.pow(').replace(/\bmin\(/g, 'Math.min(')
+      .replace(/\bmax\(/g, 'Math.max(').replace(/\bpi\b/gi, 'Math.PI');
+    try {
+      const fn = new Function('x', 'return (' + body + ');');
+      fn(1);
+      return fn;
+    } catch (e) { return null; }
+  }
+
+  /* ============================================
+     PERIODIC TABLE DATA (all 118 elements)
+     cat: alkali | alkaline | transition | post | metalloid |
+          nonmetal | halogen | noble | lanthanide | actinide
+     ============================================ */
+  const ELEMENTS = [
+    {z:1,symbol:'H',name:'Hydrogen',mass:1.008,cat:'nonmetal',group:1,period:1},
+    {z:2,symbol:'He',name:'Helium',mass:4.0026,cat:'noble',group:18,period:1},
+    {z:3,symbol:'Li',name:'Lithium',mass:6.94,cat:'alkali',group:1,period:2},
+    {z:4,symbol:'Be',name:'Beryllium',mass:9.0122,cat:'alkaline',group:2,period:2},
+    {z:5,symbol:'B',name:'Boron',mass:10.81,cat:'metalloid',group:13,period:2},
+    {z:6,symbol:'C',name:'Carbon',mass:12.011,cat:'nonmetal',group:14,period:2},
+    {z:7,symbol:'N',name:'Nitrogen',mass:14.007,cat:'nonmetal',group:15,period:2},
+    {z:8,symbol:'O',name:'Oxygen',mass:15.999,cat:'nonmetal',group:16,period:2},
+    {z:9,symbol:'F',name:'Fluorine',mass:18.998,cat:'halogen',group:17,period:2},
+    {z:10,symbol:'Ne',name:'Neon',mass:20.180,cat:'noble',group:18,period:2},
+    {z:11,symbol:'Na',name:'Sodium',mass:22.990,cat:'alkali',group:1,period:3},
+    {z:12,symbol:'Mg',name:'Magnesium',mass:24.305,cat:'alkaline',group:2,period:3},
+    {z:13,symbol:'Al',name:'Aluminium',mass:26.982,cat:'post',group:13,period:3},
+    {z:14,symbol:'Si',name:'Silicon',mass:28.085,cat:'metalloid',group:14,period:3},
+    {z:15,symbol:'P',name:'Phosphorus',mass:30.974,cat:'nonmetal',group:15,period:3},
+    {z:16,symbol:'S',name:'Sulfur',mass:32.06,cat:'nonmetal',group:16,period:3},
+    {z:17,symbol:'Cl',name:'Chlorine',mass:35.45,cat:'halogen',group:17,period:3},
+    {z:18,symbol:'Ar',name:'Argon',mass:39.948,cat:'noble',group:18,period:3},
+    {z:19,symbol:'K',name:'Potassium',mass:39.098,cat:'alkali',group:1,period:4},
+    {z:20,symbol:'Ca',name:'Calcium',mass:40.078,cat:'alkaline',group:2,period:4},
+    {z:21,symbol:'Sc',name:'Scandium',mass:44.956,cat:'transition',group:3,period:4},
+    {z:22,symbol:'Ti',name:'Titanium',mass:47.867,cat:'transition',group:4,period:4},
+    {z:23,symbol:'V',name:'Vanadium',mass:50.942,cat:'transition',group:5,period:4},
+    {z:24,symbol:'Cr',name:'Chromium',mass:51.996,cat:'transition',group:6,period:4},
+    {z:25,symbol:'Mn',name:'Manganese',mass:54.938,cat:'transition',group:7,period:4},
+    {z:26,symbol:'Fe',name:'Iron',mass:55.845,cat:'transition',group:8,period:4},
+    {z:27,symbol:'Co',name:'Cobalt',mass:58.933,cat:'transition',group:9,period:4},
+    {z:28,symbol:'Ni',name:'Nickel',mass:58.693,cat:'transition',group:10,period:4},
+    {z:29,symbol:'Cu',name:'Copper',mass:63.546,cat:'transition',group:11,period:4},
+    {z:30,symbol:'Zn',name:'Zinc',mass:65.38,cat:'transition',group:12,period:4},
+    {z:31,symbol:'Ga',name:'Gallium',mass:69.723,cat:'post',group:13,period:4},
+    {z:32,symbol:'Ge',name:'Germanium',mass:72.630,cat:'metalloid',group:14,period:4},
+    {z:33,symbol:'As',name:'Arsenic',mass:74.922,cat:'metalloid',group:15,period:4},
+    {z:34,symbol:'Se',name:'Selenium',mass:78.971,cat:'nonmetal',group:16,period:4},
+    {z:35,symbol:'Br',name:'Bromine',mass:79.904,cat:'halogen',group:17,period:4},
+    {z:36,symbol:'Kr',name:'Krypton',mass:83.798,cat:'noble',group:18,period:4},
+    {z:37,symbol:'Rb',name:'Rubidium',mass:85.468,cat:'alkali',group:1,period:5},
+    {z:38,symbol:'Sr',name:'Strontium',mass:87.62,cat:'alkaline',group:2,period:5},
+    {z:39,symbol:'Y',name:'Yttrium',mass:88.906,cat:'transition',group:3,period:5},
+    {z:40,symbol:'Zr',name:'Zirconium',mass:91.224,cat:'transition',group:4,period:5},
+    {z:41,symbol:'Nb',name:'Niobium',mass:92.906,cat:'transition',group:5,period:5},
+    {z:42,symbol:'Mo',name:'Molybdenum',mass:95.95,cat:'transition',group:6,period:5},
+    {z:43,symbol:'Tc',name:'Technetium',mass:98,cat:'transition',group:7,period:5},
+    {z:44,symbol:'Ru',name:'Ruthenium',mass:101.07,cat:'transition',group:8,period:5},
+    {z:45,symbol:'Rh',name:'Rhodium',mass:102.91,cat:'transition',group:9,period:5},
+    {z:46,symbol:'Pd',name:'Palladium',mass:106.42,cat:'transition',group:10,period:5},
+    {z:47,symbol:'Ag',name:'Silver',mass:107.87,cat:'transition',group:11,period:5},
+    {z:48,symbol:'Cd',name:'Cadmium',mass:112.41,cat:'transition',group:12,period:5},
+    {z:49,symbol:'In',name:'Indium',mass:114.82,cat:'post',group:13,period:5},
+    {z:50,symbol:'Sn',name:'Tin',mass:118.71,cat:'post',group:14,period:5},
+    {z:51,symbol:'Sb',name:'Antimony',mass:121.76,cat:'metalloid',group:15,period:5},
+    {z:52,symbol:'Te',name:'Tellurium',mass:127.60,cat:'metalloid',group:16,period:5},
+    {z:53,symbol:'I',name:'Iodine',mass:126.90,cat:'halogen',group:17,period:5},
+    {z:54,symbol:'Xe',name:'Xenon',mass:131.29,cat:'noble',group:18,period:5},
+    {z:55,symbol:'Cs',name:'Caesium',mass:132.91,cat:'alkali',group:1,period:6},
+    {z:56,symbol:'Ba',name:'Barium',mass:137.33,cat:'alkaline',group:2,period:6},
+    {z:57,symbol:'La',name:'Lanthanum',mass:138.91,cat:'lanthanide',group:3,period:6},
+    {z:58,symbol:'Ce',name:'Cerium',mass:140.12,cat:'lanthanide',group:0,period:9},
+    {z:59,symbol:'Pr',name:'Praseodymium',mass:140.91,cat:'lanthanide',group:0,period:9},
+    {z:60,symbol:'Nd',name:'Neodymium',mass:144.24,cat:'lanthanide',group:0,period:9},
+    {z:61,symbol:'Pm',name:'Promethium',mass:145,cat:'lanthanide',group:0,period:9},
+    {z:62,symbol:'Sm',name:'Samarium',mass:150.36,cat:'lanthanide',group:0,period:9},
+    {z:63,symbol:'Eu',name:'Europium',mass:151.96,cat:'lanthanide',group:0,period:9},
+    {z:64,symbol:'Gd',name:'Gadolinium',mass:157.25,cat:'lanthanide',group:0,period:9},
+    {z:65,symbol:'Tb',name:'Terbium',mass:158.93,cat:'lanthanide',group:0,period:9},
+    {z:66,symbol:'Dy',name:'Dysprosium',mass:162.50,cat:'lanthanide',group:0,period:9},
+    {z:67,symbol:'Ho',name:'Holmium',mass:164.93,cat:'lanthanide',group:0,period:9},
+    {z:68,symbol:'Er',name:'Erbium',mass:167.26,cat:'lanthanide',group:0,period:9},
+    {z:69,symbol:'Tm',name:'Thulium',mass:168.93,cat:'lanthanide',group:0,period:9},
+    {z:70,symbol:'Yb',name:'Ytterbium',mass:173.05,cat:'lanthanide',group:0,period:9},
+    {z:71,symbol:'Lu',name:'Lutetium',mass:174.97,cat:'lanthanide',group:0,period:9},
+    {z:72,symbol:'Hf',name:'Hafnium',mass:178.49,cat:'transition',group:4,period:6},
+    {z:73,symbol:'Ta',name:'Tantalum',mass:180.95,cat:'transition',group:5,period:6},
+    {z:74,symbol:'W',name:'Tungsten',mass:183.84,cat:'transition',group:6,period:6},
+    {z:75,symbol:'Re',name:'Rhenium',mass:186.21,cat:'transition',group:7,period:6},
+    {z:76,symbol:'Os',name:'Osmium',mass:190.23,cat:'transition',group:8,period:6},
+    {z:77,symbol:'Ir',name:'Iridium',mass:192.22,cat:'transition',group:9,period:6},
+    {z:78,symbol:'Pt',name:'Platinum',mass:195.08,cat:'transition',group:10,period:6},
+    {z:79,symbol:'Au',name:'Gold',mass:196.97,cat:'transition',group:11,period:6},
+    {z:80,symbol:'Hg',name:'Mercury',mass:200.59,cat:'transition',group:12,period:6},
+    {z:81,symbol:'Tl',name:'Thallium',mass:204.38,cat:'post',group:13,period:6},
+    {z:82,symbol:'Pb',name:'Lead',mass:207.2,cat:'post',group:14,period:6},
+    {z:83,symbol:'Bi',name:'Bismuth',mass:208.98,cat:'post',group:15,period:6},
+    {z:84,symbol:'Po',name:'Polonium',mass:209,cat:'post',group:16,period:6},
+    {z:85,symbol:'At',name:'Astatine',mass:210,cat:'halogen',group:17,period:6},
+    {z:86,symbol:'Rn',name:'Radon',mass:222,cat:'noble',group:18,period:6},
+    {z:87,symbol:'Fr',name:'Francium',mass:223,cat:'alkali',group:1,period:7},
+    {z:88,symbol:'Ra',name:'Radium',mass:226,cat:'alkaline',group:2,period:7},
+    {z:89,symbol:'Ac',name:'Actinium',mass:227,cat:'actinide',group:3,period:7},
+    {z:90,symbol:'Th',name:'Thorium',mass:232.04,cat:'actinide',group:0,period:10},
+    {z:91,symbol:'Pa',name:'Protactinium',mass:231.04,cat:'actinide',group:0,period:10},
+    {z:92,symbol:'U',name:'Uranium',mass:238.03,cat:'actinide',group:0,period:10},
+    {z:93,symbol:'Np',name:'Neptunium',mass:237,cat:'actinide',group:0,period:10},
+    {z:94,symbol:'Pu',name:'Plutonium',mass:244,cat:'actinide',group:0,period:10},
+    {z:95,symbol:'Am',name:'Americium',mass:243,cat:'actinide',group:0,period:10},
+    {z:96,symbol:'Cm',name:'Curium',mass:247,cat:'actinide',group:0,period:10},
+    {z:97,symbol:'Bk',name:'Berkelium',mass:247,cat:'actinide',group:0,period:10},
+    {z:98,symbol:'Cf',name:'Californium',mass:251,cat:'actinide',group:0,period:10},
+    {z:99,symbol:'Es',name:'Einsteinium',mass:252,cat:'actinide',group:0,period:10},
+    {z:100,symbol:'Fm',name:'Fermium',mass:257,cat:'actinide',group:0,period:10},
+    {z:101,symbol:'Md',name:'Mendelevium',mass:258,cat:'actinide',group:0,period:10},
+    {z:102,symbol:'No',name:'Nobelium',mass:259,cat:'actinide',group:0,period:10},
+    {z:103,symbol:'Lr',name:'Lawrencium',mass:266,cat:'actinide',group:0,period:10},
+    {z:104,symbol:'Rf',name:'Rutherfordium',mass:267,cat:'transition',group:4,period:7},
+    {z:105,symbol:'Db',name:'Dubnium',mass:268,cat:'transition',group:5,period:7},
+    {z:106,symbol:'Sg',name:'Seaborgium',mass:269,cat:'transition',group:6,period:7},
+    {z:107,symbol:'Bh',name:'Bohrium',mass:270,cat:'transition',group:7,period:7},
+    {z:108,symbol:'Hs',name:'Hassium',mass:269,cat:'transition',group:8,period:7},
+    {z:109,symbol:'Mt',name:'Meitnerium',mass:278,cat:'transition',group:9,period:7},
+    {z:110,symbol:'Ds',name:'Darmstadtium',mass:281,cat:'transition',group:10,period:7},
+    {z:111,symbol:'Rg',name:'Roentgenium',mass:282,cat:'transition',group:11,period:7},
+    {z:112,symbol:'Cn',name:'Copernicium',mass:285,cat:'transition',group:12,period:7},
+    {z:113,symbol:'Nh',name:'Nihonium',mass:286,cat:'post',group:13,period:7},
+    {z:114,symbol:'Fl',name:'Flerovium',mass:289,cat:'post',group:14,period:7},
+    {z:115,symbol:'Mc',name:'Moscovium',mass:290,cat:'post',group:15,period:7},
+    {z:116,symbol:'Lv',name:'Livermorium',mass:293,cat:'post',group:16,period:7},
+    {z:117,symbol:'Ts',name:'Tennessine',mass:294,cat:'halogen',group:17,period:7},
+    {z:118,symbol:'Og',name:'Oganesson',mass:294,cat:'noble',group:18,period:7},
+  ];
+  const ELEMENT_CAT_LABELS = {
+    alkali: 'Alkali metal', alkaline: 'Alkaline earth metal', transition: 'Transition metal',
+    post: 'Post-transition metal', metalloid: 'Metalloid', nonmetal: 'Reactive nonmetal',
+    halogen: 'Halogen', noble: 'Noble gas', lanthanide: 'Lanthanide', actinide: 'Actinide'
+  };
+
+  window.CalvoPeriodicTable = {
+    init() {
+      const grid = document.getElementById('periodicGrid');
+      if (!grid) return;
+      grid.innerHTML = ELEMENTS.map(el => {
+        // main table cells only get a CSS grid position; the two
+        // f-block rows (lanthanides/actinides) sit below, in order.
+        const style = el.group > 0
+          ? `grid-column:${el.group};grid-row:${el.period};`
+          : `grid-row:${el.period};`;
+        return `<button type="button" class="periodic-cell cat-${el.cat}" style="${style}" data-symbol="${el.symbol}" title="${el.name}">
+          <span class="pc-z">${el.z}</span>
+          <span class="pc-symbol">${el.symbol}</span>
+        </button>`;
+      }).join('');
+      grid.querySelectorAll('.periodic-cell').forEach(cell => {
+        cell.addEventListener('click', () => {
+          const el = ELEMENTS.find(e => e.symbol === cell.dataset.symbol);
+          if (el) this.renderDetail(el);
+        });
+      });
+    },
+    renderDetail(el) {
+      const box = document.getElementById('periodicDetail');
+      if (!box) return;
+      box.classList.remove('periodic-detail-empty');
+      box.innerHTML = `
+        <div class="periodic-detail-head cat-${el.cat}">
+          <div class="periodic-detail-symbol">${el.symbol}</div>
+          <div>
+            <div class="periodic-detail-name">${el.name}</div>
+            <div class="periodic-detail-sub">${ELEMENT_CAT_LABELS[el.cat] || ''}</div>
+          </div>
+        </div>
+        <div class="stats-result-grid">
+          ${resultCell('Atomic Number', el.z)}
+          ${resultCell('Atomic Mass', el.mass + ' u')}
+          ${resultCell('Period', el.period <= 7 ? el.period : (el.cat === 'lanthanide' ? 6 : 7))}
+          ${resultCell('Group', el.group > 0 ? el.group : '—')}
+        </div>`;
+    }
+  };
+
   /* ============================================
      TOOL DEFINITIONS
      ============================================ */
@@ -1311,6 +1514,27 @@
           else direction = t('tool_at_equilibrium');
           out.innerHTML = resultCell('Q', round(Q, 5)) + resultCell(t('tool_reaction_direction'), direction);
         }
+      },
+      {
+        id: 'periodicTable',
+        label: 'Periodic Table',
+        render: () => `
+          <p class="tool-hint">Tap any element to see its details, or search by symbol / name / atomic number.</p>
+          ${field('ptSearch', 'tool_element_symbol', 'e.g. Na, Sodium, or 11')}
+          <div class="periodic-grid" id="periodicGrid"></div>
+          <div id="periodicDetail" class="periodic-detail-empty">Select an element above to see its details here.</div>
+        `,
+        calc: (out) => {
+          const q = str('ptSearch').toLowerCase();
+          if (!q) { out.innerHTML = ''; return; }
+          const el = ELEMENTS.find(e =>
+            e.symbol.toLowerCase() === q || e.name.toLowerCase() === q || String(e.z) === q
+          );
+          if (!el) { out.innerHTML = errorBox('Element not found. Try a symbol (Fe), name (Iron), or atomic number (26).'); return; }
+          window.CalvoPeriodicTable.renderDetail(el);
+          out.innerHTML = '';
+        },
+        afterRender: () => { window.CalvoPeriodicTable.init(); }
       }
     ],
 
@@ -5542,6 +5766,1592 @@
             resultCell('r', round(r, 5)) +
             resultCell(t('tool_azimuth_angle'), round(theta, 3) + '°') +
             resultCell(t('tool_polar_angle'), round(phi, 3) + '°');
+        }
+      }
+    ],
+
+    Finance: [
+      {
+        id: 'amortizationSchedule',
+        label: 'Amortization Schedule',
+        render: () => `
+          <p class="tool-hint">Full month-by-month loan breakdown — principal, interest and remaining balance.</p>
+          ${field('amPrincipal', 'tool_loan_principal', 'e.g. 500000', 'number')}
+          ${field('amRate', 'tool_annual_rate', '% per year, e.g. 12', 'number')}
+          ${field('amMonths', 'tool_loan_term_months', 'e.g. 24', 'number')}
+        `,
+        calc: (out) => {
+          const P = num('amPrincipal'), annualRate = num('amRate'), N = num('amMonths');
+          if (P === null || annualRate === null || N === null || N <= 0 || !Number.isInteger(N)) {
+            out.innerHTML = errorBox(t('tool_err_3fields')); return;
+          }
+          const i = annualRate / 100 / 12;
+          const payment = i === 0 ? P / N : (P * i) / (1 - Math.pow(1 + i, -N));
+          let balance = P, totalInterest = 0;
+          let rows = '';
+          const showRows = Math.min(N, 360);
+          for (let m = 1; m <= showRows; m++) {
+            const interest = balance * i;
+            const principalPart = payment - interest;
+            balance = Math.max(0, balance - principalPart);
+            totalInterest += interest;
+            rows += `<tr><td>${m}</td><td>${round(payment, 2)}</td><td>${round(principalPart, 2)}</td><td>${round(interest, 2)}</td><td>${round(balance, 2)}</td></tr>`;
+          }
+          out.innerHTML =
+            resultCell(t('tool_monthly_payment'), round(payment, 2)) +
+            resultCell(t('tool_total_payment'), round(payment * N, 2)) +
+            resultCell(t('tool_total_interest'), round(totalInterest, 2)) +
+            `<div class="amort-table-wrap"><table class="amort-table">
+              <thead><tr><th>#</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table></div>`;
+        }
+      },
+      {
+        id: 'npvCalculator',
+        label: 'NPV Calculator',
+        render: () => `
+          <p class="tool-hint">Net Present Value of a series of cash flows. Enter the initial outlay as a negative number, then comma-separated future cash flows.</p>
+          ${field('npvRate', 'tool_rate_percent', 'discount rate %, e.g. 10', 'number')}
+          ${field('npvFlows', 'Cash flows', 'e.g. -100000,30000,40000,50000,20000')}
+        `,
+        calc: (out) => {
+          const rate = num('npvRate');
+          const flows = str('npvFlows').split(',').map(v => parseFloat(v.trim()));
+          if (rate === null || flows.length < 2 || flows.some(isNaN)) { out.innerHTML = errorBox('Enter a discount rate and at least 2 comma-separated cash flows.'); return; }
+          const r = rate / 100;
+          let npv = 0;
+          flows.forEach((cf, t2) => { npv += cf / Math.pow(1 + r, t2); });
+          out.innerHTML =
+            resultCell('NPV', round(npv, 2)) +
+            resultCell('Verdict', npv >= 0 ? 'Accept (NPV ≥ 0)' : 'Reject (NPV < 0)');
+        }
+      },
+      {
+        id: 'irrCalculator',
+        label: 'IRR Calculator',
+        render: () => `
+          <p class="tool-hint">Internal Rate of Return — the discount rate that makes NPV = 0. Enter the initial outlay as negative, then comma-separated future cash flows.</p>
+          ${field('irrFlows', 'Cash flows', 'e.g. -100000,30000,40000,50000,20000')}
+        `,
+        calc: (out) => {
+          const flows = str('irrFlows').split(',').map(v => parseFloat(v.trim()));
+          if (flows.length < 2 || flows.some(isNaN) || flows[0] >= 0) { out.innerHTML = errorBox('Enter an initial negative outlay followed by comma-separated future cash flows.'); return; }
+          function npvAt(r) { return flows.reduce((sum, cf, t2) => sum + cf / Math.pow(1 + r, t2), 0); }
+          // bisection between -0.99 and 10 (i.e. -99% to 1000%)
+          let lo = -0.99, hi = 10;
+          let npvLo = npvAt(lo), npvHi = npvAt(hi);
+          if (npvLo * npvHi > 0) { out.innerHTML = errorBox('No IRR found in a reasonable range for these cash flows.'); return; }
+          let mid = 0;
+          for (let iter = 0; iter < 200; iter++) {
+            mid = (lo + hi) / 2;
+            const npvMid = npvAt(mid);
+            if (Math.abs(npvMid) < 1e-7) break;
+            if (npvLo * npvMid < 0) { hi = mid; } else { lo = mid; npvLo = npvMid; }
+          }
+          out.innerHTML = resultCell('IRR', round(mid * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'breakEvenPoint',
+        label: 'Break-Even Point',
+        render: () => `
+          <p class="tool-hint">Units and revenue needed to cover all costs.</p>
+          ${field('bepFixed', 'Fixed costs', '', 'number')}
+          ${field('bepPrice', 'Price per unit', '', 'number')}
+          ${field('bepVarCost', 'Variable cost per unit', '', 'number')}
+        `,
+        calc: (out) => {
+          const fixed = num('bepFixed'), price = num('bepPrice'), varCost = num('bepVarCost');
+          if (fixed === null || price === null || varCost === null || price <= varCost) { out.innerHTML = errorBox('Price per unit must be greater than variable cost per unit.'); return; }
+          const contribution = price - varCost;
+          const units = fixed / contribution;
+          out.innerHTML =
+            resultCell('Contribution Margin', round(contribution, 2) + '/unit') +
+            resultCell('Break-Even Units', Math.ceil(units)) +
+            resultCell('Break-Even Revenue', round(units * price, 2));
+        }
+      },
+      {
+        id: 'cagrCalculator',
+        label: 'CAGR Calculator',
+        render: () => `
+          <p class="tool-hint">Compound Annual Growth Rate between a starting and ending value.</p>
+          ${field('cagrStart', 'Starting Value', '', 'number')}
+          ${field('cagrEnd', 'Ending Value', '', 'number')}
+          ${field('cagrYears', 'Number of Years', '', 'number')}
+        `,
+        calc: (out) => {
+          const start = num('cagrStart'), end = num('cagrEnd'), years = num('cagrYears');
+          if (start === null || end === null || years === null || start <= 0 || years <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const cagr = (Math.pow(end / start, 1 / years) - 1) * 100;
+          out.innerHTML =
+            resultCell('CAGR', round(cagr, 3) + '%') +
+            resultCell('Total Growth', round(((end - start) / start) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'debtRatio',
+        label: 'Debt Ratio',
+        render: () => `
+          <p class="tool-hint">Debt Ratio = Total Debt / Total Assets — share of assets financed by debt.</p>
+          ${field('drDebt', 'Total Debt', '', 'number')}
+          ${field('drAssets', 'Total Assets', '', 'number')}
+        `,
+        calc: (out) => {
+          const debt = num('drDebt'), assets = num('drAssets');
+          if (debt === null || assets === null || assets === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Debt Ratio', round(debt / assets, 4)) +
+            resultCell('Debt %', round((debt / assets) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'equityMultiplier',
+        label: 'Equity Multiplier',
+        render: () => `
+          <p class="tool-hint">Equity Multiplier = Total Assets / Total Equity — how much assets are leveraged relative to equity.</p>
+          ${field('emAssets', 'Total Assets', '', 'number')}
+          ${field('emEquity', 'Total Equity', '', 'number')}
+        `,
+        calc: (out) => {
+          const assets = num('emAssets'), equity = num('emEquity');
+          if (assets === null || equity === null || equity === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Equity Multiplier', round(assets / equity, 4) + '×');
+        }
+      },
+      {
+        id: 'timesInterestEarned',
+        label: 'Times Interest Earned',
+        render: () => `
+          <p class="tool-hint">TIE = EBIT / Interest Expense — how many times operating income covers interest payments.</p>
+          ${field('tieEbit', 'EBIT (Operating Income)', '', 'number')}
+          ${field('tieInterest', 'Interest Expense', '', 'number')}
+        `,
+        calc: (out) => {
+          const ebit = num('tieEbit'), interest = num('tieInterest');
+          if (ebit === null || interest === null || interest === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Times Interest Earned', round(ebit / interest, 3) + '×');
+        }
+      },
+      {
+        id: 'degreeFinancialLeverage',
+        label: 'Degree of Financial Leverage',
+        render: () => `
+          <p class="tool-hint">DFL = EBIT / (EBIT − Interest) — sensitivity of EPS to a change in operating income.</p>
+          ${field('dflEbit', 'EBIT (Operating Income)', '', 'number')}
+          ${field('dflInterest', 'Interest Expense', '', 'number')}
+        `,
+        calc: (out) => {
+          const ebit = num('dflEbit'), interest = num('dflInterest');
+          if (ebit === null || interest === null || (ebit - interest) === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('DFL', round(ebit / (ebit - interest), 4) + '×');
+        }
+      },
+      {
+        id: 'degreeCombinedLeverage',
+        label: 'Degree of Combined Leverage',
+        render: () => `
+          <p class="tool-hint">DCL = DOL × DFL — total sensitivity of EPS to a change in sales, combining operating and financial leverage.</p>
+          ${field('dclCM', 'Contribution Margin (Sales − Variable Costs)', '', 'number')}
+          ${field('dclEbit', 'EBIT (Operating Income)', '', 'number')}
+          ${field('dclInterest', 'Interest Expense', '', 'number')}
+        `,
+        calc: (out) => {
+          const cm = num('dclCM'), ebit = num('dclEbit'), interest = num('dclInterest');
+          if (cm === null || ebit === null || interest === null || ebit === 0 || (ebit - interest) === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const dol = cm / ebit;
+          const dfl = ebit / (ebit - interest);
+          out.innerHTML =
+            resultCell('DOL', round(dol, 4) + '×') +
+            resultCell('DFL', round(dfl, 4) + '×') +
+            resultCell('DCL', round(dol * dfl, 4) + '×');
+        }
+      },
+      {
+        id: 'costOfEquityCAPM',
+        label: 'Cost of Equity (CAPM)',
+        render: () => `
+          <p class="tool-hint">Re = Rf + β(Rm − Rf) — required return on equity via the Capital Asset Pricing Model.</p>
+          ${field('capmRf', 'Risk-Free Rate (%)', 'e.g. 6', 'number')}
+          ${field('capmBeta', 'Beta (β)', 'e.g. 1.2', 'number')}
+          ${field('capmRm', 'Expected Market Return (%)', 'e.g. 14', 'number')}
+        `,
+        calc: (out) => {
+          const rf = num('capmRf'), beta = num('capmBeta'), rm = num('capmRm');
+          if (rf === null || beta === null || rm === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const re = rf + beta * (rm - rf);
+          out.innerHTML = resultCell('Cost of Equity (Re)', round(re, 3) + '%');
+        }
+      },
+      {
+        id: 'costOfDebtAfterTax',
+        label: 'Cost of Debt (After-Tax)',
+        render: () => `
+          <p class="tool-hint">Kd = Rd(1 − T) — the effective cost of debt once the tax shield on interest is applied.</p>
+          ${field('kdRate', 'Pre-Tax Cost of Debt (%)', 'e.g. 10', 'number')}
+          ${field('kdTax', 'Tax Rate (%)', 'e.g. 30', 'number')}
+        `,
+        calc: (out) => {
+          const rd = num('kdRate'), tax = num('kdTax');
+          if (rd === null || tax === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const kd = rd * (1 - tax / 100);
+          out.innerHTML = resultCell('After-Tax Cost of Debt', round(kd, 3) + '%');
+        }
+      },
+      {
+        id: 'dupontROE',
+        label: 'DuPont ROE Breakdown',
+        render: () => `
+          <p class="tool-hint">ROE = Net Margin × Asset Turnover × Equity Multiplier — breaks return on equity into its three drivers.</p>
+          ${field('duNetIncome', 'Net Income', '', 'number')}
+          ${field('duRevenue', 'Revenue (Sales)', '', 'number')}
+          ${field('duAssets', 'Total Assets', '', 'number')}
+          ${field('duEquity', 'Total Equity', '', 'number')}
+        `,
+        calc: (out) => {
+          const ni = num('duNetIncome'), rev = num('duRevenue'), assets = num('duAssets'), equity = num('duEquity');
+          if (ni === null || rev === null || assets === null || equity === null || rev === 0 || assets === 0 || equity === 0) { out.innerHTML = errorBox(t('tool_err_costlife')); return; }
+          const netMargin = ni / rev;
+          const assetTurnover = rev / assets;
+          const equityMultiplier = assets / equity;
+          const roe = netMargin * assetTurnover * equityMultiplier;
+          out.innerHTML =
+            resultCell('Net Profit Margin', round(netMargin * 100, 2) + '%') +
+            resultCell('Asset Turnover', round(assetTurnover, 3) + '×') +
+            resultCell('Equity Multiplier', round(equityMultiplier, 3) + '×') +
+            resultCell('ROE', round(roe * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'bookValuePerShare',
+        label: 'Book Value per Share',
+        render: () => `
+          <p class="tool-hint">BVPS = Total Equity / Shares Outstanding — accounting value of one share.</p>
+          ${field('bvpsEquity', 'Total Equity', '', 'number')}
+          ${field('bvpsShares', 'Shares Outstanding', '', 'number')}
+        `,
+        calc: (out) => {
+          const equity = num('bvpsEquity'), shares = num('bvpsShares');
+          if (equity === null || shares === null || shares === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Book Value per Share', round(equity / shares, 4));
+        }
+      },
+      {
+        id: 'marketToBookRatio',
+        label: 'Market-to-Book Ratio',
+        render: () => `
+          <p class="tool-hint">M/B = Market Price per Share / Book Value per Share — how the market values the company relative to its book value.</p>
+          ${field('mbPrice', 'Market Price per Share', '', 'number')}
+          ${field('mbBVPS', 'Book Value per Share', '', 'number')}
+        `,
+        calc: (out) => {
+          const price = num('mbPrice'), bvps = num('mbBVPS');
+          if (price === null || bvps === null || bvps === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Market-to-Book Ratio', round(price / bvps, 4) + '×');
+        }
+      },
+      {
+        id: 'quickRatio',
+        label: 'Quick Ratio (Acid-Test)',
+        render: () => `
+          <p class="tool-hint">Quick Ratio = (Current Assets − Inventory) / Current Liabilities — liquidity excluding inventory.</p>
+          ${field('qrCA', 'Current Assets', '', 'number')}
+          ${field('qrInv', 'Inventory', '', 'number')}
+          ${field('qrCL', 'Current Liabilities', '', 'number')}
+        `,
+        calc: (out) => {
+          const ca = num('qrCA'), inv = num('qrInv'), cl = num('qrCL');
+          if (ca === null || inv === null || cl === null || cl === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          out.innerHTML = resultCell('Quick Ratio', round((ca - inv) / cl, 4));
+        }
+      },
+      {
+        id: 'cashRatio',
+        label: 'Cash Ratio',
+        render: () => `
+          <p class="tool-hint">Cash Ratio = Cash &amp; Cash Equivalents / Current Liabilities — strictest measure of short-term liquidity.</p>
+          ${field('crCash', 'Cash & Cash Equivalents', '', 'number')}
+          ${field('crCL', 'Current Liabilities', '', 'number')}
+        `,
+        calc: (out) => {
+          const cash = num('crCash'), cl = num('crCL');
+          if (cash === null || cl === null || cl === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Cash Ratio', round(cash / cl, 4));
+        }
+      },
+      {
+        id: 'profitabilityIndex',
+        label: 'Profitability Index',
+        render: () => `
+          <p class="tool-hint">PI = PV of Future Cash Flows / Initial Investment. Enter the discount rate and comma-separated future cash flows (not including the initial outlay).</p>
+          ${field('piRate', 'Discount Rate (%)', 'e.g. 10', 'number')}
+          ${field('piInvestment', 'Initial Investment', 'e.g. 100000', 'number')}
+          ${field('piFlows', 'Future Cash Flows', 'e.g. 30000,40000,50000,20000')}
+        `,
+        calc: (out) => {
+          const rate = num('piRate'), investment = num('piInvestment');
+          const flows = str('piFlows').split(',').map(v => parseFloat(v.trim()));
+          if (rate === null || investment === null || investment === 0 || flows.length < 1 || flows.some(isNaN)) { out.innerHTML = errorBox('Enter a rate, an initial investment and at least 1 comma-separated cash flow.'); return; }
+          const r = rate / 100;
+          let pv = 0;
+          flows.forEach((cf, idx) => { pv += cf / Math.pow(1 + r, idx + 1); });
+          const pi = pv / investment;
+          out.innerHTML =
+            resultCell('PV of Cash Flows', round(pv, 2)) +
+            resultCell('Profitability Index', round(pi, 4)) +
+            resultCell('Verdict', pi >= 1 ? 'Accept (PI ≥ 1)' : 'Reject (PI < 1)');
+        }
+      },
+      {
+        id: 'discountedPaybackPeriod',
+        label: 'Discounted Payback Period',
+        render: () => `
+          <p class="tool-hint">Years to recover the initial investment using discounted cash flows. Enter the initial outlay as negative, then comma-separated future cash flows.</p>
+          ${field('dppRate', 'Discount Rate (%)', 'e.g. 10', 'number')}
+          ${field('dppFlows', 'Cash Flows', 'e.g. -100000,30000,40000,50000,20000')}
+        `,
+        calc: (out) => {
+          const rate = num('dppRate');
+          const flows = str('dppFlows').split(',').map(v => parseFloat(v.trim()));
+          if (rate === null || flows.length < 2 || flows.some(isNaN) || flows[0] >= 0) { out.innerHTML = errorBox('Enter a discount rate and an initial negative outlay followed by comma-separated future cash flows.'); return; }
+          const r = rate / 100;
+          let cumulative = flows[0];
+          let payback = null;
+          for (let i = 1; i < flows.length; i++) {
+            const disc = flows[i] / Math.pow(1 + r, i);
+            const prevCumulative = cumulative;
+            cumulative += disc;
+            if (payback === null && cumulative >= 0) {
+              payback = (i - 1) + (-prevCumulative / disc);
+            }
+          }
+          if (payback === null) { out.innerHTML = resultCell('Verdict', 'Not recovered within the given cash flows'); return; }
+          out.innerHTML = resultCell('Discounted Payback Period', round(payback, 2) + ' years');
+        }
+      },
+      {
+        id: 'mirrCalculator',
+        label: 'Modified IRR (MIRR)',
+        render: () => `
+          <p class="tool-hint">MIRR — assumes negative flows are financed at the finance rate and positive flows are reinvested at the reinvestment rate. Enter the initial outlay as negative, then comma-separated future cash flows.</p>
+          ${field('mirrFinRate', 'Finance Rate (%)', 'e.g. 8', 'number')}
+          ${field('mirrReinvestRate', 'Reinvestment Rate (%)', 'e.g. 12', 'number')}
+          ${field('mirrFlows', 'Cash Flows', 'e.g. -100000,30000,40000,50000,20000')}
+        `,
+        calc: (out) => {
+          const finRate = num('mirrFinRate'), reinvestRate = num('mirrReinvestRate');
+          const flows = str('mirrFlows').split(',').map(v => parseFloat(v.trim()));
+          if (finRate === null || reinvestRate === null || flows.length < 2 || flows.some(isNaN)) { out.innerHTML = errorBox('Enter both rates and at least 2 comma-separated cash flows.'); return; }
+          const n = flows.length - 1;
+          const fr = finRate / 100, rr = reinvestRate / 100;
+          let pvNeg = 0, fvPos = 0;
+          flows.forEach((cf, idx) => {
+            if (cf < 0) pvNeg += cf / Math.pow(1 + fr, idx);
+            else if (cf > 0) fvPos += cf * Math.pow(1 + rr, n - idx);
+          });
+          if (pvNeg === 0 || fvPos === 0) { out.innerHTML = errorBox('Cash flows must include at least one negative and one positive value.'); return; }
+          const mirr = Math.pow(fvPos / -pvNeg, 1 / n) - 1;
+          out.innerHTML = resultCell('MIRR', round(mirr * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'dividendDiscountModel',
+        label: 'Dividend Discount Model (Gordon Growth)',
+        render: () => `
+          <p class="tool-hint">P = D₁ / (r − g) — intrinsic stock value from next year's expected dividend, required return and growth rate.</p>
+          ${field('ddmD1', "Next Year's Dividend (D₁)", '', 'number')}
+          ${field('ddmR', 'Required Return (%)', 'e.g. 12', 'number')}
+          ${field('ddmG', 'Dividend Growth Rate (%)', 'e.g. 5', 'number')}
+        `,
+        calc: (out) => {
+          const d1 = num('ddmD1'), r = num('ddmR'), g = num('ddmG');
+          if (d1 === null || r === null || g === null || r <= g) { out.innerHTML = errorBox('Required return must be greater than the growth rate.'); return; }
+          const price = d1 / ((r - g) / 100);
+          out.innerHTML = resultCell('Intrinsic Value per Share', round(price, 2));
+        }
+      },
+      {
+        id: 'freeCashFlowToEquity',
+        label: 'Free Cash Flow to Equity (FCFE)',
+        render: () => `
+          <p class="tool-hint">FCFE = Net Income + Depreciation − CapEx − ΔWorking Capital + Net Borrowing — cash available to equity holders.</p>
+          ${field('fcfeNI', 'Net Income', '', 'number')}
+          ${field('fcfeDep', 'Depreciation & Amortization', '', 'number')}
+          ${field('fcfeCapex', 'Capital Expenditure', '', 'number')}
+          ${field('fcfeWC', 'Change in Working Capital', '', 'number')}
+          ${field('fcfeBorrow', 'Net Borrowing', '', 'number')}
+        `,
+        calc: (out) => {
+          const ni = num('fcfeNI'), dep = num('fcfeDep'), capex = num('fcfeCapex'), wc = num('fcfeWC'), borrow = num('fcfeBorrow');
+          if (ni === null || dep === null || capex === null || wc === null || borrow === null) { out.innerHTML = errorBox('Please fill in all fields.'); return; }
+          const fcfe = ni + dep - capex - wc + borrow;
+          out.innerHTML = resultCell('FCFE', round(fcfe, 2));
+        }
+      },
+      {
+        id: 'freeCashFlowToFirm',
+        label: 'Free Cash Flow to Firm (FCFF)',
+        render: () => `
+          <p class="tool-hint">FCFF = EBIT×(1 − Tax) + Depreciation − CapEx − ΔWorking Capital — cash available to all capital providers.</p>
+          ${field('fcffEbit', 'EBIT', '', 'number')}
+          ${field('fcffTax', 'Tax Rate (%)', '', 'number')}
+          ${field('fcffDep', 'Depreciation & Amortization', '', 'number')}
+          ${field('fcffCapex', 'Capital Expenditure', '', 'number')}
+          ${field('fcffWC', 'Change in Working Capital', '', 'number')}
+        `,
+        calc: (out) => {
+          const ebit = num('fcffEbit'), tax = num('fcffTax'), dep = num('fcffDep'), capex = num('fcffCapex'), wc = num('fcffWC');
+          if (ebit === null || tax === null || dep === null || capex === null || wc === null) { out.innerHTML = errorBox('Please fill in all fields.'); return; }
+          const fcff = ebit * (1 - tax / 100) + dep - capex - wc;
+          out.innerHTML = resultCell('FCFF', round(fcff, 2));
+        }
+      },
+      {
+        id: 'costOfPreferredStock',
+        label: 'Cost of Preferred Stock',
+        render: () => `
+          <p class="tool-hint">Kp = Preferred Dividend / Preferred Stock Price — required return on preferred shares.</p>
+          ${field('kpDividend', 'Annual Preferred Dividend', '', 'number')}
+          ${field('kpPrice', 'Preferred Stock Price', '', 'number')}
+        `,
+        calc: (out) => {
+          const div = num('kpDividend'), price = num('kpPrice');
+          if (div === null || price === null || price === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Cost of Preferred Stock (Kp)', round((div / price) * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'sustainableGrowthRate',
+        label: 'Sustainable Growth Rate',
+        render: () => `
+          <p class="tool-hint">SGR = ROE × (1 − Dividend Payout Ratio) — max growth rate a firm can sustain without new equity or extra debt.</p>
+          ${field('sgrROE', 'Return on Equity (%)', 'e.g. 18', 'number')}
+          ${field('sgrPayout', 'Dividend Payout Ratio (%)', 'e.g. 30', 'number')}
+        `,
+        calc: (out) => {
+          const roe = num('sgrROE'), payout = num('sgrPayout');
+          if (roe === null || payout === null) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const sgr = (roe / 100) * (1 - payout / 100);
+          out.innerHTML = resultCell('Sustainable Growth Rate', round(sgr * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'growingPerpetuityValue',
+        label: 'Growing Perpetuity Value',
+        render: () => `
+          <p class="tool-hint">PV = C / (r − g) — value of an infinite cash flow stream that grows at a constant rate.</p>
+          ${field('gpvC', 'Next Cash Flow (C)', '', 'number')}
+          ${field('gpvR', 'Discount Rate (%)', 'e.g. 10', 'number')}
+          ${field('gpvG', 'Growth Rate (%)', 'e.g. 4', 'number')}
+        `,
+        calc: (out) => {
+          const c = num('gpvC'), r = num('gpvR'), g = num('gpvG');
+          if (c === null || r === null || g === null || r <= g) { out.innerHTML = errorBox('Discount rate must be greater than the growth rate.'); return; }
+          out.innerHTML = resultCell('Growing Perpetuity Value', round(c / ((r - g) / 100), 2));
+        }
+      },
+      {
+        id: 'annuityDuePV',
+        label: 'Present Value of Annuity Due',
+        render: () => `
+          <p class="tool-hint">Annuity due — payments occur at the start of each period (e.g. rent). PV = PMT × [1−(1+r)⁻ⁿ]/r × (1+r).</p>
+          ${field('advPmt', 'Payment per Period', '', 'number')}
+          ${field('advR', 'Rate per Period (%)', 'e.g. 10', 'number')}
+          ${field('advN', 'Number of Periods', '', 'number')}
+        `,
+        calc: (out) => {
+          const pmt = num('advPmt'), rate = num('advR'), n = num('advN');
+          if (pmt === null || rate === null || n === null || n <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const r = rate / 100;
+          const pv = r === 0 ? pmt * n : pmt * ((1 - Math.pow(1 + r, -n)) / r) * (1 + r);
+          out.innerHTML = resultCell('Present Value (Annuity Due)', round(pv, 2));
+        }
+      },
+      {
+        id: 'annuityDueFV',
+        label: 'Future Value of Annuity Due',
+        render: () => `
+          <p class="tool-hint">Annuity due — payments occur at the start of each period. FV = PMT × [(1+r)ⁿ−1]/r × (1+r).</p>
+          ${field('afvPmt', 'Payment per Period', '', 'number')}
+          ${field('afvR', 'Rate per Period (%)', 'e.g. 10', 'number')}
+          ${field('afvN', 'Number of Periods', '', 'number')}
+        `,
+        calc: (out) => {
+          const pmt = num('afvPmt'), rate = num('afvR'), n = num('afvN');
+          if (pmt === null || rate === null || n === null || n <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const r = rate / 100;
+          const fv = r === 0 ? pmt * n : pmt * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+          out.innerHTML = resultCell('Future Value (Annuity Due)', round(fv, 2));
+        }
+      },
+      {
+        id: 'zeroCouponBondPrice',
+        label: 'Zero-Coupon Bond Price',
+        render: () => `
+          <p class="tool-hint">Price = Face Value / (1 + r)ⁿ — value of a bond that pays no periodic interest.</p>
+          ${field('zcbFace', 'Face Value', '', 'number')}
+          ${field('zcbRate', 'Required Yield (%)', 'e.g. 9', 'number')}
+          ${field('zcbYears', 'Years to Maturity', '', 'number')}
+        `,
+        calc: (out) => {
+          const face = num('zcbFace'), rate = num('zcbRate'), years = num('zcbYears');
+          if (face === null || rate === null || years === null || years <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          out.innerHTML = resultCell('Bond Price', round(face / Math.pow(1 + rate / 100, years), 2));
+        }
+      },
+      {
+        id: 'yieldToMaturityApprox',
+        label: 'Approximate Yield to Maturity',
+        render: () => `
+          <p class="tool-hint">YTM ≈ [C + (F − P)/n] / [(F + P)/2] — quick estimate of a bond's yield to maturity.</p>
+          ${field('ytmCoupon', 'Annual Coupon Payment (C)', '', 'number')}
+          ${field('ytmFace', 'Face Value (F)', '', 'number')}
+          ${field('ytmPrice', 'Current Price (P)', '', 'number')}
+          ${field('ytmYears', 'Years to Maturity (n)', '', 'number')}
+        `,
+        calc: (out) => {
+          const c = num('ytmCoupon'), face = num('ytmFace'), price = num('ytmPrice'), n = num('ytmYears');
+          if (c === null || face === null || price === null || n === null || n <= 0) { out.innerHTML = errorBox(t('tool_err_costlife')); return; }
+          const ytm = (c + (face - price) / n) / ((face + price) / 2);
+          out.innerHTML = resultCell('Approx. YTM', round(ytm * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'returnOnInvestedCapital',
+        label: 'Return on Invested Capital (ROIC)',
+        render: () => `
+          <p class="tool-hint">ROIC = NOPAT / Invested Capital — how efficiently a company turns invested capital into profit.</p>
+          ${field('roicNOPAT', 'NOPAT (Net Operating Profit After Tax)', '', 'number')}
+          ${field('roicCapital', 'Invested Capital', '', 'number')}
+        `,
+        calc: (out) => {
+          const nopat = num('roicNOPAT'), capital = num('roicCapital');
+          if (nopat === null || capital === null || capital === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('ROIC', round((nopat / capital) * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'economicValueAdded',
+        label: 'Economic Value Added (EVA)',
+        render: () => `
+          <p class="tool-hint">EVA = NOPAT − (WACC × Invested Capital) — profit left after paying for the cost of all capital used.</p>
+          ${field('evaNOPAT', 'NOPAT (Net Operating Profit After Tax)', '', 'number')}
+          ${field('evaWACC', 'WACC (%)', 'e.g. 11', 'number')}
+          ${field('evaCapital', 'Invested Capital', '', 'number')}
+        `,
+        calc: (out) => {
+          const nopat = num('evaNOPAT'), wacc = num('evaWACC'), capital = num('evaCapital');
+          if (nopat === null || wacc === null || capital === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const eva = nopat - (wacc / 100) * capital;
+          out.innerHTML = resultCell('EVA', round(eva, 2));
+        }
+      },
+      {
+        id: 'altmanZScore',
+        label: 'Altman Z-Score',
+        render: () => `
+          <p class="tool-hint">Z = 1.2A + 1.4B + 3.3C + 0.6D + 1.0E — bankruptcy-risk score for manufacturing/public firms. Z &gt; 2.99 safe, 1.81–2.99 grey zone, &lt; 1.81 distress.</p>
+          ${field('zWC', 'Working Capital / Total Assets (A)', 'e.g. 0.2', 'number')}
+          ${field('zRE', 'Retained Earnings / Total Assets (B)', 'e.g. 0.15', 'number')}
+          ${field('zEBIT', 'EBIT / Total Assets (C)', 'e.g. 0.18', 'number')}
+          ${field('zMVE', 'Market Value of Equity / Total Liabilities (D)', 'e.g. 1.5', 'number')}
+          ${field('zSales', 'Sales / Total Assets (E)', 'e.g. 1.1', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('zWC'), b = num('zRE'), c = num('zEBIT'), d = num('zMVE'), e = num('zSales');
+          if ([a, b, c, d, e].some(v => v === null)) { out.innerHTML = errorBox('Please fill in all fields.'); return; }
+          const z = 1.2 * a + 1.4 * b + 3.3 * c + 0.6 * d + 1.0 * e;
+          let zone;
+          if (z > 2.99) zone = 'Safe Zone';
+          else if (z >= 1.81) zone = 'Grey Zone';
+          else zone = 'Distress Zone';
+          out.innerHTML = resultCell('Altman Z-Score', round(z, 3)) + resultCell('Zone', zone);
+        }
+      },
+      {
+        id: 'operatingCashFlowRatio',
+        label: 'Operating Cash Flow Ratio',
+        render: () => `
+          <p class="tool-hint">OCF Ratio = Operating Cash Flow / Current Liabilities — ability to cover short-term liabilities from core operations.</p>
+          ${field('ocfrOCF', 'Operating Cash Flow', '', 'number')}
+          ${field('ocfrCL', 'Current Liabilities', '', 'number')}
+        `,
+        calc: (out) => {
+          const ocf = num('ocfrOCF'), cl = num('ocfrCL');
+          if (ocf === null || cl === null || cl === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Operating Cash Flow Ratio', round(ocf / cl, 4));
+        }
+      },
+      {
+        id: 'retentionRatio',
+        label: 'Retention (Plowback) Ratio',
+        render: () => `
+          <p class="tool-hint">Retention Ratio = 1 − Dividend Payout Ratio — share of earnings a company reinvests rather than pays out.</p>
+          ${field('rrPayout', 'Dividend Payout Ratio (%)', 'e.g. 30', 'number')}
+        `,
+        calc: (out) => {
+          const payout = num('rrPayout');
+          if (payout === null) { out.innerHTML = errorBox(t('tool_err_1field')); return; }
+          out.innerHTML = resultCell('Retention Ratio', round(100 - payout, 3) + '%');
+        }
+      },
+      {
+        id: 'daysSalesOutstanding',
+        label: 'Days Sales Outstanding (DSO)',
+        render: () => `
+          <p class="tool-hint">DSO = (Accounts Receivable / Credit Sales) × 365 — average days to collect payment after a sale.</p>
+          ${field('dsoAR', 'Accounts Receivable', '', 'number')}
+          ${field('dsoSales', 'Annual Credit Sales', '', 'number')}
+        `,
+        calc: (out) => {
+          const ar = num('dsoAR'), sales = num('dsoSales');
+          if (ar === null || sales === null || sales === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('DSO', round((ar / sales) * 365, 1) + ' days');
+        }
+      },
+      {
+        id: 'daysPayableOutstanding',
+        label: 'Days Payable Outstanding (DPO)',
+        render: () => `
+          <p class="tool-hint">DPO = (Accounts Payable / COGS) × 365 — average days a company takes to pay its suppliers.</p>
+          ${field('dpoAP', 'Accounts Payable', '', 'number')}
+          ${field('dpoCOGS', 'Cost of Goods Sold (Annual)', '', 'number')}
+        `,
+        calc: (out) => {
+          const ap = num('dpoAP'), cogs = num('dpoCOGS');
+          if (ap === null || cogs === null || cogs === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('DPO', round((ap / cogs) * 365, 1) + ' days');
+        }
+      },
+      {
+        id: 'daysInventoryOutstanding',
+        label: 'Days Inventory Outstanding (DIO)',
+        render: () => `
+          <p class="tool-hint">DIO = (Average Inventory / COGS) × 365 — average days inventory sits before being sold.</p>
+          ${field('dioInv', 'Average Inventory', '', 'number')}
+          ${field('dioCOGS', 'Cost of Goods Sold (Annual)', '', 'number')}
+        `,
+        calc: (out) => {
+          const inv = num('dioInv'), cogs = num('dioCOGS');
+          if (inv === null || cogs === null || cogs === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('DIO', round((inv / cogs) * 365, 1) + ' days');
+        }
+      },
+      {
+        id: 'debtServiceCoverageRatio',
+        label: 'Debt Service Coverage Ratio (DSCR)',
+        render: () => `
+          <p class="tool-hint">DSCR = Net Operating Income / Total Debt Service — ability to cover loan principal and interest from operating income.</p>
+          ${field('dscrNOI', 'Net Operating Income', '', 'number')}
+          ${field('dscrDebtService', 'Total Debt Service (Principal + Interest)', '', 'number')}
+        `,
+        calc: (out) => {
+          const noi = num('dscrNOI'), ds = num('dscrDebtService');
+          if (noi === null || ds === null || ds === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          const dscr = noi / ds;
+          out.innerHTML = resultCell('DSCR', round(dscr, 3) + '×') +
+            resultCell('Verdict', dscr >= 1 ? 'Healthy (≥ 1×)' : 'Shortfall (< 1×)');
+        }
+      },
+      {
+        id: 'fixedChargeCoverageRatio',
+        label: 'Fixed Charge Coverage Ratio',
+        render: () => `
+          <p class="tool-hint">FCCR = (EBIT + Fixed Charges) / (Fixed Charges + Interest Expense) — ability to cover fixed obligations like lease payments and interest.</p>
+          ${field('fccrEbit', 'EBIT', '', 'number')}
+          ${field('fccrFixed', 'Fixed Charges (e.g. Lease Payments)', '', 'number')}
+          ${field('fccrInterest', 'Interest Expense', '', 'number')}
+        `,
+        calc: (out) => {
+          const ebit = num('fccrEbit'), fixed = num('fccrFixed'), interest = num('fccrInterest');
+          if (ebit === null || fixed === null || interest === null || (fixed + interest) === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          out.innerHTML = resultCell('Fixed Charge Coverage Ratio', round((ebit + fixed) / (fixed + interest), 3) + '×');
+        }
+      },
+      {
+        id: 'loanToValueRatio',
+        label: 'Loan-to-Value Ratio (LTV)',
+        render: () => `
+          <p class="tool-hint">LTV = (Loan Amount / Appraised Value) × 100 — lender's risk measure on a secured loan.</p>
+          ${field('ltvLoan', 'Loan Amount', '', 'number')}
+          ${field('ltvValue', 'Appraised Property Value', '', 'number')}
+        `,
+        calc: (out) => {
+          const loan = num('ltvLoan'), value = num('ltvValue');
+          if (loan === null || value === null || value === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('LTV', round((loan / value) * 100, 2) + '%');
+        }
+      },
+      {
+        id: 'netInterestMargin',
+        label: 'Net Interest Margin (NIM)',
+        render: () => `
+          <p class="tool-hint">NIM = (Interest Income − Interest Expense) / Average Earning Assets — a bank's core lending profitability.</p>
+          ${field('nimIncome', 'Interest Income', '', 'number')}
+          ${field('nimExpense', 'Interest Expense', '', 'number')}
+          ${field('nimAssets', 'Average Earning Assets', '', 'number')}
+        `,
+        calc: (out) => {
+          const income = num('nimIncome'), expense = num('nimExpense'), assets = num('nimAssets');
+          if (income === null || expense === null || assets === null || assets === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          out.innerHTML = resultCell('Net Interest Margin', round(((income - expense) / assets) * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'costOfEquityDGM',
+        label: 'Cost of Equity (Dividend Growth Model)',
+        render: () => `
+          <p class="tool-hint">Ke = D₁/P₀ + g — required return on equity from expected dividend yield plus growth.</p>
+          ${field('dgmD1', "Next Year's Dividend (D₁)", '', 'number')}
+          ${field('dgmP0', 'Current Share Price (P₀)', '', 'number')}
+          ${field('dgmG', 'Dividend Growth Rate (%)', 'e.g. 5', 'number')}
+        `,
+        calc: (out) => {
+          const d1 = num('dgmD1'), p0 = num('dgmP0'), g = num('dgmG');
+          if (d1 === null || p0 === null || g === null || p0 === 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const ke = (d1 / p0) * 100 + g;
+          out.innerHTML = resultCell('Cost of Equity (Ke)', round(ke, 3) + '%');
+        }
+      },
+      {
+        id: 'weightedAverageInterestRate',
+        label: 'Weighted Average Interest Rate',
+        render: () => `
+          <p class="tool-hint">Blended interest rate across multiple loans, weighted by principal. Enter matching comma-separated lists.</p>
+          ${field('wairPrincipals', 'Loan Principals', 'e.g. 500000,300000,200000')}
+          ${field('wairRates', 'Interest Rates (%)', 'e.g. 12,9,15')}
+        `,
+        calc: (out) => {
+          const principals = str('wairPrincipals').split(',').map(v => parseFloat(v.trim()));
+          const rates = str('wairRates').split(',').map(v => parseFloat(v.trim()));
+          if (principals.length === 0 || principals.length !== rates.length || principals.some(isNaN) || rates.some(isNaN)) { out.innerHTML = errorBox('Enter matching comma-separated lists of principals and rates.'); return; }
+          const totalPrincipal = principals.reduce((s, p) => s + p, 0);
+          if (totalPrincipal === 0) { out.innerHTML = errorBox('Total principal cannot be zero.'); return; }
+          let weightedSum = 0;
+          principals.forEach((p, idx) => { weightedSum += p * rates[idx]; });
+          out.innerHTML = resultCell('Weighted Average Rate', round(weightedSum / totalPrincipal, 3) + '%') +
+            resultCell('Total Principal', round(totalPrincipal, 2));
+        }
+      },
+      {
+        id: 'financialBreakEvenEBIT',
+        label: 'Financial Break-Even (EBIT*)',
+        render: () => `
+          <p class="tool-hint">EBIT* = Interest + [Preferred Dividends / (1 − Tax Rate)] — the EBIT level at which EPS is exactly zero.</p>
+          ${field('fbeInterest', 'Interest Expense', '', 'number')}
+          ${field('fbePreferred', 'Preferred Dividends', '0 if none', 'number')}
+          ${field('fbeTax', 'Tax Rate (%)', 'e.g. 30', 'number')}
+        `,
+        calc: (out) => {
+          const interest = num('fbeInterest'), preferred = num('fbePreferred'), tax = num('fbeTax');
+          if (interest === null || preferred === null || tax === null || tax >= 100) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const ebitStar = interest + preferred / (1 - tax / 100);
+          out.innerHTML = resultCell('Financial Break-Even EBIT', round(ebitStar, 2));
+        }
+      },
+      {
+        id: 'pvGrowingAnnuity',
+        label: 'Present Value of Growing Annuity',
+        render: () => `
+          <p class="tool-hint">PV = PMT × [1 − ((1+g)/(1+r))ⁿ] / (r − g) — value of a series of payments that grow each period.</p>
+          ${field('pvgaPmt', 'First Payment (PMT)', '', 'number')}
+          ${field('pvgaR', 'Discount Rate (%)', 'e.g. 10', 'number')}
+          ${field('pvgaG', 'Growth Rate (%)', 'e.g. 4', 'number')}
+          ${field('pvgaN', 'Number of Periods', '', 'number')}
+        `,
+        calc: (out) => {
+          const pmt = num('pvgaPmt'), rate = num('pvgaR'), g = num('pvgaG'), n = num('pvgaN');
+          if (pmt === null || rate === null || g === null || n === null || n <= 0 || rate === g) { out.innerHTML = errorBox('Please fill in all fields; rate and growth rate cannot be equal.'); return; }
+          const r = rate / 100, gr = g / 100;
+          const pv = pmt * (1 - Math.pow((1 + gr) / (1 + r), n)) / (r - gr);
+          out.innerHTML = resultCell('Present Value', round(pv, 2));
+        }
+      },
+      {
+        id: 'fvGrowingAnnuity',
+        label: 'Future Value of Growing Annuity',
+        render: () => `
+          <p class="tool-hint">FV = PMT × [(1+r)ⁿ − (1+g)ⁿ] / (r − g) — future value of a series of payments that grow each period.</p>
+          ${field('fvgaPmt', 'First Payment (PMT)', '', 'number')}
+          ${field('fvgaR', 'Growth-Adjusted Return Rate (%)', 'e.g. 10', 'number')}
+          ${field('fvgaG', 'Growth Rate (%)', 'e.g. 4', 'number')}
+          ${field('fvgaN', 'Number of Periods', '', 'number')}
+        `,
+        calc: (out) => {
+          const pmt = num('fvgaPmt'), rate = num('fvgaR'), g = num('fvgaG'), n = num('fvgaN');
+          if (pmt === null || rate === null || g === null || n === null || n <= 0 || rate === g) { out.innerHTML = errorBox('Please fill in all fields; rate and growth rate cannot be equal.'); return; }
+          const r = rate / 100, gr = g / 100;
+          const fv = pmt * (Math.pow(1 + r, n) - Math.pow(1 + gr, n)) / (r - gr);
+          out.innerHTML = resultCell('Future Value', round(fv, 2));
+        }
+      },
+      {
+        id: 'cashFlowMargin',
+        label: 'Cash Flow Margin',
+        render: () => `
+          <p class="tool-hint">Cash Flow Margin = Operating Cash Flow / Sales — how efficiently sales convert into actual cash.</p>
+          ${field('cfmOCF', 'Operating Cash Flow', '', 'number')}
+          ${field('cfmSales', 'Sales (Revenue)', '', 'number')}
+        `,
+        calc: (out) => {
+          const ocf = num('cfmOCF'), sales = num('cfmSales');
+          if (ocf === null || sales === null || sales === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Cash Flow Margin', round((ocf / sales) * 100, 3) + '%');
+        }
+      },
+      {
+        id: 'costOfTradeCredit',
+        label: 'Effective Cost of Trade Credit',
+        render: () => `
+          <p class="tool-hint">Annualized cost of giving up an early-payment discount (e.g. "2/10 net 30"). Cost = [d/(100−d)] × [365/(Full Period − Discount Period)].</p>
+          ${field('ctcDiscount', 'Discount Offered (%)', 'e.g. 2', 'number')}
+          ${field('ctcDiscountDays', 'Discount Period (days)', 'e.g. 10', 'number')}
+          ${field('ctcFullDays', 'Full Credit Period (days)', 'e.g. 30', 'number')}
+        `,
+        calc: (out) => {
+          const d = num('ctcDiscount'), discDays = num('ctcDiscountDays'), fullDays = num('ctcFullDays');
+          if (d === null || discDays === null || fullDays === null || d >= 100 || fullDays <= discDays) { out.innerHTML = errorBox('Full credit period must be greater than the discount period, and discount must be under 100%.'); return; }
+          const cost = (d / (100 - d)) * (365 / (fullDays - discDays)) * 100;
+          out.innerHTML = resultCell('Effective Annual Cost', round(cost, 2) + '%');
+        }
+      },
+      {
+        id: 'preferredStockValue',
+        label: 'Preferred Stock Value',
+        render: () => `
+          <p class="tool-hint">Value = Dividend / Required Rate of Return — price of a preferred share given its fixed dividend and the investor's required return.</p>
+          ${field('psvDividend', 'Annual Preferred Dividend', '', 'number')}
+          ${field('psvRate', 'Required Rate of Return (%)', 'e.g. 8', 'number')}
+        `,
+        calc: (out) => {
+          const div = num('psvDividend'), rate = num('psvRate');
+          if (div === null || rate === null || rate === 0) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('Preferred Stock Value', round(div / (rate / 100), 2));
+        }
+      }
+    ],
+
+    Vectors: [
+      {
+        id: 'vectorAddSub',
+        label: 'Vector Addition / Subtraction',
+        render: () => `
+          <p class="tool-hint">Works in 2D or 3D — leave the z-fields blank for 2D vectors.</p>
+          <div class="tool-vector-row">
+            ${field('vasAx', 'Ax', 'Ax', 'number')}
+            ${field('vasAy', 'Ay', 'Ay', 'number')}
+            ${field('vasAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vasBx', 'Bx', 'Bx', 'number')}
+            ${field('vasBy', 'By', 'By', 'number')}
+            ${field('vasBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('vasAx'), ay = num('vasAy'), az = num('vasAz') || 0;
+          const bx = num('vasBx'), by = num('vasBy'), bz = num('vasBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          out.innerHTML =
+            resultCell('A + B', `(${round(ax + bx, 4)}, ${round(ay + by, 4)}, ${round(az + bz, 4)})`) +
+            resultCell('A − B', `(${round(ax - bx, 4)}, ${round(ay - by, 4)}, ${round(az - bz, 4)})`);
+        }
+      },
+      {
+        id: 'unitVector',
+        label: 'Unit Vector & Magnitude',
+        render: () => `
+          ${field('uvX', 'x', 'x', 'number')}
+          ${field('uvY', 'y', 'y', 'number')}
+          ${field('uvZ', 'z', 'z (optional)', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('uvX'), y = num('uvY'), z = num('uvZ') || 0;
+          if (x === null || y === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const mag = Math.sqrt(x * x + y * y + z * z);
+          if (mag === 0) { out.innerHTML = errorBox('The zero vector has no direction.'); return; }
+          out.innerHTML =
+            resultCell('Magnitude |v|', round(mag, 5)) +
+            resultCell('Unit Vector', `(${round(x / mag, 5)}, ${round(y / mag, 5)}, ${round(z / mag, 5)})`);
+        }
+      },
+      {
+        id: 'vectorProjection',
+        label: 'Vector Projection',
+        render: () => `
+          <p class="tool-hint">Projection of vector A onto vector B.</p>
+          <div class="tool-vector-row">
+            ${field('vpAx', 'Ax', 'Ax', 'number')}
+            ${field('vpAy', 'Ay', 'Ay', 'number')}
+            ${field('vpAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vpBx', 'Bx', 'Bx', 'number')}
+            ${field('vpBy', 'By', 'By', 'number')}
+            ${field('vpBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('vpAx'), ay = num('vpAy'), az = num('vpAz') || 0;
+          const bx = num('vpBx'), by = num('vpBy'), bz = num('vpBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = ax * bx + ay * by + az * bz;
+          const magBsq = bx * bx + by * by + bz * bz;
+          if (magBsq === 0) { out.innerHTML = errorBox('Vector B cannot be the zero vector.'); return; }
+          const scalarProj = dot / Math.sqrt(magBsq);
+          const k = dot / magBsq;
+          out.innerHTML =
+            resultCell('Scalar Projection', round(scalarProj, 5)) +
+            resultCell('Vector Projection', `(${round(k * bx, 5)}, ${round(k * by, 5)}, ${round(k * bz, 5)})`);
+        }
+      },
+      {
+        id: 'directionCosines',
+        label: 'Direction Cosines',
+        render: () => `
+          ${field('dcX', 'x', 'x', 'number')}
+          ${field('dcY', 'y', 'y', 'number')}
+          ${field('dcZ', 'z', 'z', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('dcX'), y = num('dcY'), z = num('dcZ');
+          if (x === null || y === null || z === null) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const mag = Math.sqrt(x * x + y * y + z * z);
+          if (mag === 0) { out.innerHTML = errorBox('The zero vector has no direction.'); return; }
+          out.innerHTML =
+            resultCell('cos α (x-axis)', round(x / mag, 5)) +
+            resultCell('cos β (y-axis)', round(y / mag, 5)) +
+            resultCell('cos γ (z-axis)', round(z / mag, 5)) +
+            resultCell('|v|', round(mag, 5));
+        }
+      },
+      {
+        id: 'scalarTripleProduct',
+        label: 'Scalar Triple Product',
+        render: () => `
+          <p class="tool-hint">A·(B×C) — signed volume of the parallelepiped formed by three vectors. Zero means the vectors are coplanar.</p>
+          <div class="tool-vector-row">
+            ${field('stpAx', 'Ax', 'Ax', 'number')}${field('stpAy', 'Ay', 'Ay', 'number')}${field('stpAz', 'Az', 'Az', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('stpBx', 'Bx', 'Bx', 'number')}${field('stpBy', 'By', 'By', 'number')}${field('stpBz', 'Bz', 'Bz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('stpCx', 'Cx', 'Cx', 'number')}${field('stpCy', 'Cy', 'Cy', 'number')}${field('stpCz', 'Cz', 'Cz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('stpAx'), ay = num('stpAy'), az = num('stpAz');
+          const bx = num('stpBx'), by = num('stpBy'), bz = num('stpBz');
+          const cx = num('stpCx'), cy = num('stpCy'), cz = num('stpCz');
+          if ([ax, ay, az, bx, by, bz, cx, cy, cz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const crossX = by * cz - bz * cy, crossY = bz * cx - bx * cz, crossZ = bx * cy - by * cx;
+          const triple = ax * crossX + ay * crossY + az * crossZ;
+          out.innerHTML =
+            resultCell('A·(B×C)', round(triple, 4)) +
+            resultCell('Coplanar?', Math.abs(triple) < 1e-9 ? 'Yes (volume = 0)' : 'No');
+        }
+      },
+      {
+        id: 'vectorTripleProduct',
+        label: 'Vector Triple Product',
+        render: () => `
+          <p class="tool-hint">A×(B×C) — a vector perpendicular to A and lying in the plane of B and C.</p>
+          <div class="tool-vector-row">
+            ${field('vtpAx', 'Ax', 'Ax', 'number')}${field('vtpAy', 'Ay', 'Ay', 'number')}${field('vtpAz', 'Az', 'Az', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vtpBx', 'Bx', 'Bx', 'number')}${field('vtpBy', 'By', 'By', 'number')}${field('vtpBz', 'Bz', 'Bz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vtpCx', 'Cx', 'Cx', 'number')}${field('vtpCy', 'Cy', 'Cy', 'number')}${field('vtpCz', 'Cz', 'Cz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('vtpAx'), ay = num('vtpAy'), az = num('vtpAz');
+          const bx = num('vtpBx'), by = num('vtpBy'), bz = num('vtpBz');
+          const cx = num('vtpCx'), cy = num('vtpCy'), cz = num('vtpCz');
+          if ([ax, ay, az, bx, by, bz, cx, cy, cz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const bcx = by * cz - bz * cy, bcy = bz * cx - bx * cz, bcz = bx * cy - by * cx;
+          const rx = ay * bcz - az * bcy, ry = az * bcx - ax * bcz, rz = ax * bcy - ay * bcx;
+          out.innerHTML = resultCell('A×(B×C)', `(${round(rx, 4)}, ${round(ry, 4)}, ${round(rz, 4)})`);
+        }
+      },
+      {
+        id: 'parallelogramArea',
+        label: 'Area of Parallelogram (Vectors)',
+        render: () => `
+          <p class="tool-hint">Area = |A × B| — area of the parallelogram spanned by two vectors.</p>
+          <div class="tool-vector-row">
+            ${field('paAx', 'Ax', 'Ax', 'number')}${field('paAy', 'Ay', 'Ay', 'number')}${field('paAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('paBx', 'Bx', 'Bx', 'number')}${field('paBy', 'By', 'By', 'number')}${field('paBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('paAx'), ay = num('paAy'), az = num('paAz') || 0;
+          const bx = num('paBx'), by = num('paBy'), bz = num('paBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const cx = ay * bz - az * by, cy = az * bx - ax * bz, cz = ax * by - ay * bx;
+          out.innerHTML = resultCell('Area', round(Math.sqrt(cx * cx + cy * cy + cz * cz), 5));
+        }
+      },
+      {
+        id: 'triangleAreaVectors',
+        label: 'Area of Triangle (Vectors)',
+        render: () => `
+          <p class="tool-hint">Area = ½|A × B| — area of the triangle spanned by two vectors from a common vertex.</p>
+          <div class="tool-vector-row">
+            ${field('tavAx', 'Ax', 'Ax', 'number')}${field('tavAy', 'Ay', 'Ay', 'number')}${field('tavAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('tavBx', 'Bx', 'Bx', 'number')}${field('tavBy', 'By', 'By', 'number')}${field('tavBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('tavAx'), ay = num('tavAy'), az = num('tavAz') || 0;
+          const bx = num('tavBx'), by = num('tavBy'), bz = num('tavBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const cx = ay * bz - az * by, cy = az * bx - ax * bz, cz = ax * by - ay * bx;
+          out.innerHTML = resultCell('Area', round(0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz), 5));
+        }
+      },
+      {
+        id: 'planeEquationFromPointNormal',
+        label: 'Plane Equation (Point & Normal)',
+        render: () => `
+          <p class="tool-hint">Plane through point (x₀,y₀,z₀) with normal vector (a,b,c): a(x−x₀) + b(y−y₀) + c(z−z₀) = 0.</p>
+          <div class="tool-vector-row">
+            ${field('pePx', 'x₀', 'x₀', 'number')}${field('pePy', 'y₀', 'y₀', 'number')}${field('pePz', 'z₀', 'z₀', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('peNx', 'a (normal x)', 'a', 'number')}${field('peNy', 'b (normal y)', 'b', 'number')}${field('peNz', 'c (normal z)', 'c', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const px = num('pePx'), py = num('pePy'), pz = num('pePz');
+          const a = num('peNx'), b = num('peNy'), c = num('peNz');
+          if ([px, py, pz, a, b, c].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const d = a * px + b * py + c * pz;
+          out.innerHTML = resultCell('Plane Equation', `${round(a, 3)}x + ${round(b, 3)}y + ${round(c, 3)}z = ${round(d, 3)}`);
+        }
+      },
+      {
+        id: 'lineEquationParametric3D',
+        label: 'Line Equation (Point & Direction)',
+        render: () => `
+          <p class="tool-hint">Parametric line through point (x₀,y₀,z₀) with direction vector (a,b,c): x = x₀+at, y = y₀+bt, z = z₀+ct.</p>
+          <div class="tool-vector-row">
+            ${field('lePx', 'x₀', 'x₀', 'number')}${field('lePy', 'y₀', 'y₀', 'number')}${field('lePz', 'z₀', 'z₀', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('leDx', 'a (dir x)', 'a', 'number')}${field('leDy', 'b (dir y)', 'b', 'number')}${field('leDz', 'c (dir z)', 'c', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const px = num('lePx'), py = num('lePy'), pz = num('lePz');
+          const a = num('leDx'), b = num('leDy'), c = num('leDz');
+          if ([px, py, pz, a, b, c].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          out.innerHTML =
+            resultCell('Parametric Form', `x = ${round(px, 3)} + ${round(a, 3)}t,  y = ${round(py, 3)} + ${round(b, 3)}t,  z = ${round(pz, 3)} + ${round(c, 3)}t`) +
+            resultCell('Symmetric Form', `(x−${round(px, 3)})/${round(a, 3)} = (y−${round(py, 3)})/${round(b, 3)} = (z−${round(pz, 3)})/${round(c, 3)}`);
+        }
+      },
+      {
+        id: 'pointToPlaneDistance',
+        label: 'Distance: Point to Plane',
+        render: () => `
+          <p class="tool-hint">Distance from point (x₀,y₀,z₀) to plane ax+by+cz+d=0: |ax₀+by₀+cz₀+d| / √(a²+b²+c²).</p>
+          <div class="tool-vector-row">
+            ${field('ptpX', 'x₀', 'x₀', 'number')}${field('ptpY', 'y₀', 'y₀', 'number')}${field('ptpZ', 'z₀', 'z₀', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('ptpA', 'a', 'a', 'number')}${field('ptpB', 'b', 'b', 'number')}${field('ptpC', 'c', 'c', 'number')}${field('ptpD', 'd', 'd', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const x0 = num('ptpX'), y0 = num('ptpY'), z0 = num('ptpZ');
+          const a = num('ptpA'), b = num('ptpB'), c = num('ptpC'), d = num('ptpD');
+          if ([x0, y0, z0, a, b, c, d].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const denom = Math.sqrt(a * a + b * b + c * c);
+          if (denom === 0) { out.innerHTML = errorBox('Normal vector (a,b,c) cannot be zero.'); return; }
+          out.innerHTML = resultCell('Distance', round(Math.abs(a * x0 + b * y0 + c * z0 + d) / denom, 5));
+        }
+      },
+      {
+        id: 'pointToLineDistance3D',
+        label: 'Distance: Point to Line (3D)',
+        render: () => `
+          <p class="tool-hint">Shortest distance from point P to the line through point Q with direction vector D.</p>
+          <div class="tool-vector-row">
+            ${field('pldPx', 'Px', 'Px', 'number')}${field('pldPy', 'Py', 'Py', 'number')}${field('pldPz', 'Pz', 'Pz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('pldQx', 'Qx', 'Qx', 'number')}${field('pldQy', 'Qy', 'Qy', 'number')}${field('pldQz', 'Qz', 'Qz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('pldDx', 'Dx', 'Dx', 'number')}${field('pldDy', 'Dy', 'Dy', 'number')}${field('pldDz', 'Dz', 'Dz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const px = num('pldPx'), py = num('pldPy'), pz = num('pldPz');
+          const qx = num('pldQx'), qy = num('pldQy'), qz = num('pldQz');
+          const dx = num('pldDx'), dy = num('pldDy'), dz = num('pldDz');
+          if ([px, py, pz, qx, qy, qz, dx, dy, dz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const wx = px - qx, wy = py - qy, wz = pz - qz;
+          const crossX = wy * dz - wz * dy, crossY = wz * dx - wx * dz, crossZ = wx * dy - wy * dx;
+          const magCross = Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+          const magD = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (magD === 0) { out.innerHTML = errorBox('Direction vector D cannot be zero.'); return; }
+          out.innerHTML = resultCell('Distance', round(magCross / magD, 5));
+        }
+      },
+      {
+        id: 'angleBetweenPlanes',
+        label: 'Angle Between Two Planes',
+        render: () => `
+          <p class="tool-hint">Angle between planes with normal vectors N₁=(a₁,b₁,c₁) and N₂=(a₂,b₂,c₂): cos θ = |N₁·N₂| / (|N₁||N₂|).</p>
+          <div class="tool-vector-row">
+            ${field('abpA1', 'a₁', 'a₁', 'number')}${field('abpB1', 'b₁', 'b₁', 'number')}${field('abpC1', 'c₁', 'c₁', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('abpA2', 'a₂', 'a₂', 'number')}${field('abpB2', 'b₂', 'b₂', 'number')}${field('abpC2', 'c₂', 'c₂', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a1 = num('abpA1'), b1 = num('abpB1'), c1 = num('abpC1');
+          const a2 = num('abpA2'), b2 = num('abpB2'), c2 = num('abpC2');
+          if ([a1, b1, c1, a2, b2, c2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = a1 * a2 + b1 * b2 + c1 * c2;
+          const mag1 = Math.sqrt(a1 * a1 + b1 * b1 + c1 * c1), mag2 = Math.sqrt(a2 * a2 + b2 * b2 + c2 * c2);
+          if (mag1 === 0 || mag2 === 0) { out.innerHTML = errorBox('Normal vectors cannot be zero.'); return; }
+          const cosTheta = Math.abs(dot) / (mag1 * mag2);
+          out.innerHTML = resultCell('Angle Between Planes', round(Math.acos(Math.max(-1, Math.min(1, cosTheta))) * 180 / Math.PI, 3) + '°');
+        }
+      },
+      {
+        id: 'angleLinePlane',
+        label: 'Angle Between Line and Plane',
+        render: () => `
+          <p class="tool-hint">Line direction D=(dx,dy,dz), plane normal N=(a,b,c): sin θ = |D·N| / (|D||N|).</p>
+          <div class="tool-vector-row">
+            ${field('alpDx', 'dx', 'dx', 'number')}${field('alpDy', 'dy', 'dy', 'number')}${field('alpDz', 'dz', 'dz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('alpA', 'a (normal x)', 'a', 'number')}${field('alpB', 'b (normal y)', 'b', 'number')}${field('alpC', 'c (normal z)', 'c', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const dx = num('alpDx'), dy = num('alpDy'), dz = num('alpDz');
+          const a = num('alpA'), b = num('alpB'), c = num('alpC');
+          if ([dx, dy, dz, a, b, c].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = dx * a + dy * b + dz * c;
+          const magD = Math.sqrt(dx * dx + dy * dy + dz * dz), magN = Math.sqrt(a * a + b * b + c * c);
+          if (magD === 0 || magN === 0) { out.innerHTML = errorBox('Direction and normal vectors cannot be zero.'); return; }
+          const sinTheta = Math.abs(dot) / (magD * magN);
+          out.innerHTML = resultCell('Angle Between Line and Plane', round(Math.asin(Math.max(-1, Math.min(1, sinTheta))) * 180 / Math.PI, 3) + '°');
+        }
+      },
+      {
+        id: 'dotProduct',
+        label: 'Dot Product',
+        render: () => `
+          <p class="tool-hint">A·B = AxBx + AyBy + AzBz — leave z-fields blank for 2D vectors.</p>
+          <div class="tool-vector-row">
+            ${field('dpAx', 'Ax', 'Ax', 'number')}${field('dpAy', 'Ay', 'Ay', 'number')}${field('dpAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('dpBx', 'Bx', 'Bx', 'number')}${field('dpBy', 'By', 'By', 'number')}${field('dpBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('dpAx'), ay = num('dpAy'), az = num('dpAz') || 0;
+          const bx = num('dpBx'), by = num('dpBy'), bz = num('dpBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          out.innerHTML = resultCell('A·B', round(ax * bx + ay * by + az * bz, 5));
+        }
+      },
+      {
+        id: 'crossProduct',
+        label: 'Cross Product',
+        render: () => `
+          <p class="tool-hint">A×B — a vector perpendicular to both A and B (3D vectors).</p>
+          <div class="tool-vector-row">
+            ${field('cpAx', 'Ax', 'Ax', 'number')}${field('cpAy', 'Ay', 'Ay', 'number')}${field('cpAz', 'Az', 'Az', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('cpBx', 'Bx', 'Bx', 'number')}${field('cpBy', 'By', 'By', 'number')}${field('cpBz', 'Bz', 'Bz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('cpAx'), ay = num('cpAy'), az = num('cpAz');
+          const bx = num('cpBx'), by = num('cpBy'), bz = num('cpBz');
+          if ([ax, ay, az, bx, by, bz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const cx = ay * bz - az * by, cy = az * bx - ax * bz, cz = ax * by - ay * bx;
+          out.innerHTML = resultCell('A×B', `(${round(cx, 4)}, ${round(cy, 4)}, ${round(cz, 4)})`) +
+            resultCell('|A×B|', round(Math.sqrt(cx * cx + cy * cy + cz * cz), 5));
+        }
+      },
+      {
+        id: 'angleBetweenVectors',
+        label: 'Angle Between Two Vectors',
+        render: () => `
+          <p class="tool-hint">cos θ = (A·B) / (|A||B|) — leave z-fields blank for 2D vectors.</p>
+          <div class="tool-vector-row">
+            ${field('abvAx', 'Ax', 'Ax', 'number')}${field('abvAy', 'Ay', 'Ay', 'number')}${field('abvAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('abvBx', 'Bx', 'Bx', 'number')}${field('abvBy', 'By', 'By', 'number')}${field('abvBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('abvAx'), ay = num('abvAy'), az = num('abvAz') || 0;
+          const bx = num('abvBx'), by = num('abvBy'), bz = num('abvBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = ax * bx + ay * by + az * bz;
+          const magA = Math.sqrt(ax * ax + ay * ay + az * az), magB = Math.sqrt(bx * bx + by * by + bz * bz);
+          if (magA === 0 || magB === 0) { out.innerHTML = errorBox('Neither vector can be the zero vector.'); return; }
+          const cosTheta = Math.max(-1, Math.min(1, dot / (magA * magB)));
+          out.innerHTML = resultCell('Angle Between Vectors', round(Math.acos(cosTheta) * 180 / Math.PI, 3) + '°');
+        }
+      },
+      {
+        id: 'vectorDecomposition',
+        label: 'Resolve Vector (Parallel & Perpendicular)',
+        render: () => `
+          <p class="tool-hint">Splits A into a component parallel to B and a component perpendicular to B.</p>
+          <div class="tool-vector-row">
+            ${field('vdAx', 'Ax', 'Ax', 'number')}${field('vdAy', 'Ay', 'Ay', 'number')}${field('vdAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vdBx', 'Bx', 'Bx', 'number')}${field('vdBy', 'By', 'By', 'number')}${field('vdBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('vdAx'), ay = num('vdAy'), az = num('vdAz') || 0;
+          const bx = num('vdBx'), by = num('vdBy'), bz = num('vdBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = ax * bx + ay * by + az * bz;
+          const magBsq = bx * bx + by * by + bz * bz;
+          if (magBsq === 0) { out.innerHTML = errorBox('Vector B cannot be the zero vector.'); return; }
+          const k = dot / magBsq;
+          const parX = k * bx, parY = k * by, parZ = k * bz;
+          const perpX = ax - parX, perpY = ay - parY, perpZ = az - parZ;
+          out.innerHTML =
+            resultCell('Parallel Component', `(${round(parX, 4)}, ${round(parY, 4)}, ${round(parZ, 4)})`) +
+            resultCell('Perpendicular Component', `(${round(perpX, 4)}, ${round(perpY, 4)}, ${round(perpZ, 4)})`);
+        }
+      },
+      {
+        id: 'vectorReflection',
+        label: 'Reflection of Vector Across a Plane',
+        render: () => `
+          <p class="tool-hint">Reflects vector V across a plane with normal N: V' = V − 2(V·N̂)N̂.</p>
+          <div class="tool-vector-row">
+            ${field('vrVx', 'Vx', 'Vx', 'number')}${field('vrVy', 'Vy', 'Vy', 'number')}${field('vrVz', 'Vz', 'Vz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vrNx', 'Nx (normal)', 'Nx', 'number')}${field('vrNy', 'Ny (normal)', 'Ny', 'number')}${field('vrNz', 'Nz (normal)', 'Nz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const vx = num('vrVx'), vy = num('vrVy'), vz = num('vrVz');
+          const nx = num('vrNx'), ny = num('vrNy'), nz = num('vrNz');
+          if ([vx, vy, vz, nx, ny, nz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magN = Math.sqrt(nx * nx + ny * ny + nz * nz);
+          if (magN === 0) { out.innerHTML = errorBox('Normal vector cannot be zero.'); return; }
+          const ux = nx / magN, uy = ny / magN, uz = nz / magN;
+          const dot = vx * ux + vy * uy + vz * uz;
+          const rx = vx - 2 * dot * ux, ry = vy - 2 * dot * uy, rz = vz - 2 * dot * uz;
+          out.innerHTML = resultCell("Reflected Vector V'", `(${round(rx, 4)}, ${round(ry, 4)}, ${round(rz, 4)})`);
+        }
+      },
+      {
+        id: 'midpointDistance3D',
+        label: 'Midpoint & Distance Between Two Points',
+        render: () => `
+          <p class="tool-hint">Works in 2D or 3D — leave the z-fields blank for 2D points.</p>
+          <div class="tool-vector-row">
+            ${field('mdP1x', 'x₁', 'x₁', 'number')}${field('mdP1y', 'y₁', 'y₁', 'number')}${field('mdP1z', 'z₁', 'z₁ (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('mdP2x', 'x₂', 'x₂', 'number')}${field('mdP2y', 'y₂', 'y₂', 'number')}${field('mdP2z', 'z₂', 'z₂ (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const x1 = num('mdP1x'), y1 = num('mdP1y'), z1 = num('mdP1z') || 0;
+          const x2 = num('mdP2x'), y2 = num('mdP2y'), z2 = num('mdP2z') || 0;
+          if (x1 === null || y1 === null || x2 === null || y2 === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, mz = (z1 + z2) / 2;
+          const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2) + Math.pow(z2 - z1, 2));
+          out.innerHTML =
+            resultCell('Midpoint', `(${round(mx, 4)}, ${round(my, 4)}, ${round(mz, 4)})`) +
+            resultCell('Distance', round(dist, 5));
+        }
+      },
+      {
+        id: 'lineFromTwoPoints3D',
+        label: 'Line Equation (Two Points)',
+        render: () => `
+          <p class="tool-hint">Parametric line through points P₁ and P₂: direction D = P₂ − P₁.</p>
+          <div class="tool-vector-row">
+            ${field('l2pP1x', 'x₁', 'x₁', 'number')}${field('l2pP1y', 'y₁', 'y₁', 'number')}${field('l2pP1z', 'z₁', 'z₁', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('l2pP2x', 'x₂', 'x₂', 'number')}${field('l2pP2y', 'y₂', 'y₂', 'number')}${field('l2pP2z', 'z₂', 'z₂', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const x1 = num('l2pP1x'), y1 = num('l2pP1y'), z1 = num('l2pP1z');
+          const x2 = num('l2pP2x'), y2 = num('l2pP2y'), z2 = num('l2pP2z');
+          if ([x1, y1, z1, x2, y2, z2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const a = x2 - x1, b = y2 - y1, c = z2 - z1;
+          if (a === 0 && b === 0 && c === 0) { out.innerHTML = errorBox('The two points must be different.'); return; }
+          out.innerHTML =
+            resultCell('Direction Vector', `(${round(a, 4)}, ${round(b, 4)}, ${round(c, 4)})`) +
+            resultCell('Parametric Form', `x = ${round(x1, 3)} + ${round(a, 3)}t,  y = ${round(y1, 3)} + ${round(b, 3)}t,  z = ${round(z1, 3)} + ${round(c, 3)}t`);
+        }
+      },
+      {
+        id: 'planeFromThreePoints',
+        label: 'Plane Equation (Three Points)',
+        render: () => `
+          <p class="tool-hint">Finds the plane ax+by+cz=d passing through three non-collinear points.</p>
+          <div class="tool-vector-row">
+            ${field('p3P1x', 'x₁', 'x₁', 'number')}${field('p3P1y', 'y₁', 'y₁', 'number')}${field('p3P1z', 'z₁', 'z₁', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('p3P2x', 'x₂', 'x₂', 'number')}${field('p3P2y', 'y₂', 'y₂', 'number')}${field('p3P2z', 'z₂', 'z₂', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('p3P3x', 'x₃', 'x₃', 'number')}${field('p3P3y', 'y₃', 'y₃', 'number')}${field('p3P3z', 'z₃', 'z₃', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const x1 = num('p3P1x'), y1 = num('p3P1y'), z1 = num('p3P1z');
+          const x2 = num('p3P2x'), y2 = num('p3P2y'), z2 = num('p3P2z');
+          const x3 = num('p3P3x'), y3 = num('p3P3y'), z3 = num('p3P3z');
+          if ([x1, y1, z1, x2, y2, z2, x3, y3, z3].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const ux = x2 - x1, uy = y2 - y1, uz = z2 - z1;
+          const vx = x3 - x1, vy = y3 - y1, vz = z3 - z1;
+          const a = uy * vz - uz * vy, b = uz * vx - ux * vz, c = ux * vy - uy * vx;
+          if (a === 0 && b === 0 && c === 0) { out.innerHTML = errorBox('The three points must not be collinear.'); return; }
+          const d = a * x1 + b * y1 + c * z1;
+          out.innerHTML = resultCell('Plane Equation', `${round(a, 3)}x + ${round(b, 3)}y + ${round(c, 3)}z = ${round(d, 3)}`);
+        }
+      },
+      {
+        id: 'angleBetweenLines3D',
+        label: 'Angle Between Two Lines (3D)',
+        render: () => `
+          <p class="tool-hint">For lines with direction vectors D₁ and D₂: cos θ = |D₁·D₂| / (|D₁||D₂|).</p>
+          <div class="tool-vector-row">
+            ${field('abl1x', 'D₁x', 'D₁x', 'number')}${field('abl1y', 'D₁y', 'D₁y', 'number')}${field('abl1z', 'D₁z', 'D₁z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('abl2x', 'D₂x', 'D₂x', 'number')}${field('abl2y', 'D₂y', 'D₂y', 'number')}${field('abl2z', 'D₂z', 'D₂z', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const d1x = num('abl1x'), d1y = num('abl1y'), d1z = num('abl1z');
+          const d2x = num('abl2x'), d2y = num('abl2y'), d2z = num('abl2z');
+          if ([d1x, d1y, d1z, d2x, d2y, d2z].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = d1x * d2x + d1y * d2y + d1z * d2z;
+          const mag1 = Math.sqrt(d1x * d1x + d1y * d1y + d1z * d1z), mag2 = Math.sqrt(d2x * d2x + d2y * d2y + d2z * d2z);
+          if (mag1 === 0 || mag2 === 0) { out.innerHTML = errorBox('Direction vectors cannot be zero.'); return; }
+          const cosTheta = Math.abs(dot) / (mag1 * mag2);
+          out.innerHTML = resultCell('Angle Between Lines', round(Math.acos(Math.max(-1, Math.min(1, cosTheta))) * 180 / Math.PI, 3) + '°');
+        }
+      },
+      {
+        id: 'lineLineDistance3D',
+        label: 'Shortest Distance Between Two Lines (3D)',
+        render: () => `
+          <p class="tool-hint">For skew lines through points P₁, P₂ with directions D₁, D₂: distance = |(P₂−P₁)·(D₁×D₂)| / |D₁×D₂|.</p>
+          <div class="tool-vector-row">
+            ${field('lldP1x', 'P₁x', 'P₁x', 'number')}${field('lldP1y', 'P₁y', 'P₁y', 'number')}${field('lldP1z', 'P₁z', 'P₁z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lldD1x', 'D₁x', 'D₁x', 'number')}${field('lldD1y', 'D₁y', 'D₁y', 'number')}${field('lldD1z', 'D₁z', 'D₁z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lldP2x', 'P₂x', 'P₂x', 'number')}${field('lldP2y', 'P₂y', 'P₂y', 'number')}${field('lldP2z', 'P₂z', 'P₂z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lldD2x', 'D₂x', 'D₂x', 'number')}${field('lldD2y', 'D₂y', 'D₂y', 'number')}${field('lldD2z', 'D₂z', 'D₂z', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const p1x = num('lldP1x'), p1y = num('lldP1y'), p1z = num('lldP1z');
+          const d1x = num('lldD1x'), d1y = num('lldD1y'), d1z = num('lldD1z');
+          const p2x = num('lldP2x'), p2y = num('lldP2y'), p2z = num('lldP2z');
+          const d2x = num('lldD2x'), d2y = num('lldD2y'), d2z = num('lldD2z');
+          if ([p1x, p1y, p1z, d1x, d1y, d1z, p2x, p2y, p2z, d2x, d2y, d2z].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const crossX = d1y * d2z - d1z * d2y, crossY = d1z * d2x - d1x * d2z, crossZ = d1x * d2y - d1y * d2x;
+          const magCross = Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+          const wx = p2x - p1x, wy = p2y - p1y, wz = p2z - p1z;
+          if (magCross === 0) {
+            // Parallel lines — distance from P1 to line 2
+            const crossX2 = wy * d1z - wz * d1y, crossY2 = wz * d1x - wx * d1z, crossZ2 = wx * d1y - wy * d1x;
+            const magD1 = Math.sqrt(d1x * d1x + d1y * d1y + d1z * d1z);
+            if (magD1 === 0) { out.innerHTML = errorBox('Direction vectors cannot be zero.'); return; }
+            out.innerHTML = resultCell('Distance (Parallel Lines)', round(Math.sqrt(crossX2 * crossX2 + crossY2 * crossY2 + crossZ2 * crossZ2) / magD1, 5));
+            return;
+          }
+          const dist = Math.abs(wx * crossX + wy * crossY + wz * crossZ) / magCross;
+          out.innerHTML = resultCell('Shortest Distance', round(dist, 5));
+        }
+      }
+    ],
+
+    Calculus: [
+      {
+        id: 'derivativeAtPoint',
+        label: 'Derivative at a Point',
+        render: () => `
+          <p class="tool-hint">Numeric derivative f'(x) using functions of x: sin, cos, tan, sqrt, log (ln), exp, abs, ^ for powers.</p>
+          ${field('daFn', 'f(x)', 'e.g. sin(x)*x^2', 'text')}
+          ${field('daX', 'x =', 'point to evaluate at', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('daFn'));
+          const x0 = num('daX');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x.'); return; }
+          const h = 1e-5;
+          try {
+            const deriv = (fn(x0 + h) - fn(x0 - h)) / (2 * h);
+            const deriv2 = (fn(x0 + h) - 2 * fn(x0) + fn(x0 - h)) / (h * h);
+            out.innerHTML =
+              resultCell("f'(x)", round(deriv, 6)) +
+              resultCell("f''(x)", round(deriv2, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'definiteIntegralNumeric',
+        label: 'Definite Integral (numeric)',
+        render: () => `
+          <p class="tool-hint">Computes ∫f(x)dx from a to b using Simpson's Rule.</p>
+          ${field('diFn', 'f(x)', 'e.g. sin(x), x^2+1, exp(-x^2)', 'text')}
+          ${field('diA', 'Lower bound a', '', 'number')}
+          ${field('diB', 'Upper bound b', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('diFn'));
+          const a = num('diA'), b = num('diB');
+          if (!fn || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid f(x) and distinct bounds a, b.'); return; }
+          const n = 1000; // even number of intervals for Simpson's rule
+          const h = (b - a) / n;
+          let sum;
+          try {
+            sum = fn(a) + fn(b);
+            for (let i = 1; i < n; i++) {
+              const x = a + i * h;
+              sum += fn(x) * (i % 2 === 0 ? 2 : 4);
+            }
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); return; }
+          const integral = (h / 3) * sum;
+          if (!isFinite(integral)) { out.innerHTML = errorBox('The function is undefined somewhere in that range.'); return; }
+          out.innerHTML = resultCell('∫f(x)dx', round(integral, 6));
+        }
+      },
+      {
+        id: 'limitAtPoint',
+        label: 'Limit at a Point (numeric)',
+        render: () => `
+          <p class="tool-hint">Approaches x → a from both sides numerically.</p>
+          ${field('laFn', 'f(x)', 'e.g. sin(x)/x', 'text')}
+          ${field('laA', 'a =', 'the point x approaches', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('laFn'));
+          const a = num('laA');
+          if (!fn || a === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point a.'); return; }
+          let left = NaN, right = NaN;
+          try { left = fn(a - 1e-6); } catch (e) {}
+          try { right = fn(a + 1e-6); } catch (e) {}
+          if (!isFinite(left) || !isFinite(right)) { out.innerHTML = errorBox('The function appears undefined or unbounded near that point.'); return; }
+          const agree = Math.abs(left - right) < 1e-3;
+          out.innerHTML =
+            resultCell('Left-hand limit', round(left, 6)) +
+            resultCell('Right-hand limit', round(right, 6)) +
+            resultCell('Limit exists?', agree ? 'Yes ≈ ' + round((left + right) / 2, 6) : 'No (one-sided limits differ)');
+        }
+      }
+    ],
+
+    Probability: [
+      {
+        id: 'permutations',
+        label: 'Permutations (nPr)',
+        render: () => `
+          ${field('permN', 'n', 'total items', 'number')}
+          ${field('permR', 'r', 'items chosen', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('permN'), r = num('permR');
+          if (n === null || r === null || r > n || n < 0 || r < 0 || !Number.isInteger(n) || !Number.isInteger(r)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          out.innerHTML = resultCell('nPr', fact(n) / fact(n - r));
+        }
+      },
+      {
+        id: 'combinations',
+        label: 'Combinations (nCr)',
+        render: () => `
+          ${field('combN', 'n', 'total items', 'number')}
+          ${field('combR', 'r', 'items chosen', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('combN'), r = num('combR');
+          if (n === null || r === null || r > n || n < 0 || r < 0 || !Number.isInteger(n) || !Number.isInteger(r)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          out.innerHTML = resultCell('nCr', fact(n) / (fact(r) * fact(n - r)));
+        }
+      },
+      {
+        id: 'normalDistribution',
+        label: 'Normal Distribution Probability',
+        render: () => `
+          <p class="tool-hint">P(X ≤ x) for a normal distribution with the given mean and standard deviation.</p>
+          ${field('ndX', 'x', '', 'number')}
+          ${field('ndMean', 'Mean (μ)', '', 'number')}
+          ${field('ndStd', 'Std Dev (σ)', '', 'number')}
+        `,
+        calc: (out) => {
+          const x = num('ndX'), mean = num('ndMean'), std = num('ndStd');
+          if (x === null || mean === null || std === null || std <= 0) { out.innerHTML = errorBox(t('tool_err_3fields')); return; }
+          const z = (x - mean) / std;
+          // Abramowitz & Stegun erf approximation
+          function erf(v) {
+            const sign = v < 0 ? -1 : 1; v = Math.abs(v);
+            const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+            const t2 = 1 / (1 + p * v);
+            const y = 1 - (((((a5*t2+a4)*t2)+a3)*t2+a2)*t2+a1)*t2*Math.exp(-v*v);
+            return sign * y;
+          }
+          const cdf = 0.5 * (1 + erf(z / Math.sqrt(2)));
+          out.innerHTML =
+            resultCell('z-score', round(z, 4)) +
+            resultCell('P(X ≤ x)', round(cdf, 6)) +
+            resultCell('P(X > x)', round(1 - cdf, 6));
+        }
+      },
+      {
+        id: 'simpleProbability',
+        label: 'Simple Event Probability',
+        render: () => `
+          ${field('spFav', 'Favorable outcomes', '', 'number')}
+          ${field('spTotal', 'Total outcomes', '', 'number')}
+        `,
+        calc: (out) => {
+          const fav = num('spFav'), total = num('spTotal');
+          if (fav === null || total === null || total <= 0 || fav < 0 || fav > total) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML =
+            resultCell('P(Event)', round(fav / total, 6)) +
+            resultCell('As Percent', round((fav / total) * 100, 3) + '%') +
+            resultCell('Odds', `${fav} : ${total - fav}`);
         }
       }
     ]
