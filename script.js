@@ -154,7 +154,8 @@ const memIndicator = document.getElementById('memIndicator');
   const CATEGORIES = Object.keys(TOOLS);
 
   const CATEGORY_ICONS = {
-    Chemistry: '⚗', Physics: '⚛', Biology: '🧬', Commerce: '💰', Math: '∑'
+    Chemistry: '⚗', Physics: '⚛', Biology: '🧬', Commerce: '💰', Math: '∑',
+    Finance: '🏦', Vectors: '➡', Calculus: '∂', Probability: '🎲'
   };
 
   let activeCat = CATEGORIES[0];
@@ -228,7 +229,9 @@ const memIndicator = document.getElementById('memIndicator');
 
   function renderToolBody() {
     resultBox.innerHTML = '';
-    body.innerHTML = currentTool().render();
+    const tool = currentTool();
+    body.innerHTML = tool.render();
+    if (typeof tool.afterRender === 'function') tool.afterRender();
   }
 
   calcBtn.addEventListener('click', () => {
@@ -5196,6 +5199,74 @@ const currencyList = [
   { code: 'AFN', name: 'Afghan Afghani' }, { code: 'LKR', name: 'Sri Lankan Rupee' },
 ];
 
+/* ---- Crypto assets shown in the SAME currency dropdown (merged into
+   currencyRates as "units per 1 USD" so they convert seamlessly against
+   every fiat currency above, e.g. BTC -> PKR in one step). ---- */
+const cryptoList = [
+  { code: 'BTC', name: 'Bitcoin', id: 'bitcoin' },
+  { code: 'ETH', name: 'Ethereum', id: 'ethereum' },
+  { code: 'USDT', name: 'Tether', id: 'tether' },
+  { code: 'BNB', name: 'BNB', id: 'binancecoin' },
+  { code: 'SOL', name: 'Solana', id: 'solana' },
+  { code: 'XRP', name: 'XRP', id: 'ripple' },
+  { code: 'USDC', name: 'USD Coin', id: 'usd-coin' },
+  { code: 'DOGE', name: 'Dogecoin', id: 'dogecoin' },
+  { code: 'ADA', name: 'Cardano', id: 'cardano' },
+  { code: 'TRX', name: 'TRON', id: 'tron' },
+  { code: 'TON', name: 'Toncoin', id: 'the-open-network' },
+  { code: 'LTC', name: 'Litecoin', id: 'litecoin' },
+];
+const CRYPTO_CACHE_KEY = 'calvoCryptoRatesV1';
+const CRYPTO_CACHE_TTL = 5 * 60 * 1000; // crypto moves fast — refresh every 5 min
+let cryptoFetchPromise = null;
+
+function loadCachedCryptoRates() {
+  try {
+    const raw = localStorage.getItem(CRYPTO_CACHE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !data.rates || !data.time) return null;
+    return data;
+  } catch (e) { return null; }
+}
+
+// Merges crypto prices into currencyRates as "units of CODE per 1 USD"
+// (i.e. 1 / priceInUsd), matching the convention open.er-api already uses
+// for fiat, so the existing convert math needs zero changes.
+function mergeCryptoIntoRates(pricesUsd) {
+  if (!currencyRates) currencyRates = {};
+  cryptoList.forEach(c => {
+    const price = pricesUsd[c.id] && pricesUsd[c.id].usd;
+    if (price && price > 0) currencyRates[c.code] = 1 / price;
+  });
+}
+
+function fetchCryptoRates(force) {
+  if (cryptoFetchPromise) return cryptoFetchPromise;
+  const cached = loadCachedCryptoRates();
+  if (!force && cached && (Date.now() - cached.time) < CRYPTO_CACHE_TTL) {
+    mergeCryptoIntoRates(cached.rates);
+    return Promise.resolve(currencyRates);
+  }
+  const ids = cryptoList.map(c => c.id).join(',');
+  cryptoFetchPromise = fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`)
+    .then(res => res.json())
+    .then(data => {
+      if (data && Object.keys(data).length) {
+        try { localStorage.setItem(CRYPTO_CACHE_KEY, JSON.stringify({ rates: data, time: Date.now() })); } catch (e) {}
+        mergeCryptoIntoRates(data);
+        return currencyRates;
+      }
+      throw new Error('bad crypto response');
+    })
+    .catch(err => {
+      if (cached && cached.rates) { mergeCryptoIntoRates(cached.rates); return currencyRates; }
+      throw err;
+    })
+    .finally(() => { cryptoFetchPromise = null; });
+  return cryptoFetchPromise;
+}
+
 /* ---- Live currency rates (base USD), fetched from the free,
    no-API-key ExchangeRate-API open endpoint and cached in
    localStorage so the app works offline after the first fetch. ---- */
@@ -5287,6 +5358,17 @@ function buildConvertUnitOptions() {
       convertFromUnitEl.add(new Option(label, c.code, false, c.code === 'USD'));
       convertToUnitEl.add(new Option(label, c.code, false, c.code === 'PKR'));
     });
+    const cryptoGroupFrom = document.createElement('optgroup');
+    cryptoGroupFrom.label = 'Crypto';
+    const cryptoGroupTo = document.createElement('optgroup');
+    cryptoGroupTo.label = 'Crypto';
+    cryptoList.forEach(c => {
+      const label = `${c.code} — ${c.name}`;
+      cryptoGroupFrom.appendChild(new Option(label, c.code));
+      cryptoGroupTo.appendChild(new Option(label, c.code));
+    });
+    convertFromUnitEl.appendChild(cryptoGroupFrom);
+    convertToUnitEl.appendChild(cryptoGroupTo);
   } else if (cat.special) {
     ['Celsius', 'Fahrenheit', 'Kelvin'].forEach((u, i) => {
       convertFromUnitEl.add(new Option(u, u, false, i === 0));
@@ -5351,14 +5433,18 @@ function runCurrencyConvert(val, fromU, toU) {
     convertToEl.value = '';
     convertHintEl.textContent = t('convert_rates_loading');
   }
-  fetchCurrencyRates()
+  Promise.all([fetchCurrencyRates(), fetchCryptoRates()])
     .then(() => {
       if (activeConvertCategory !== 'Currency') return;
       computeAndShowCurrency(parseFloat(convertFromEl.value), convertFromUnitEl.value, convertToUnitEl.value);
     })
     .catch(() => {
       if (activeConvertCategory !== 'Currency') return;
-      convertHintEl.textContent = t('convert_rates_error');
+      if (currencyRates && currencyRates[convertFromUnitEl.value] && currencyRates[convertToUnitEl.value]) {
+        computeAndShowCurrency(parseFloat(convertFromEl.value), convertFromUnitEl.value, convertToUnitEl.value);
+      } else {
+        convertHintEl.textContent = t('convert_rates_error');
+      }
     });
 }
 
@@ -5377,9 +5463,10 @@ if (convertFromEl) {
   buildConvertUnitOptions();
   runConvert();
   if (convertAttributionEl) convertAttributionEl.style.display = (activeConvertCategory === 'Currency') ? 'block' : 'none';
-  // Warm the currency rates cache in the background so switching to the
-  // Currency tab feels instant even on first launch.
+  // Warm the currency + crypto rates cache in the background so switching
+  // to the Currency tab feels instant even on first launch.
   fetchCurrencyRates().catch(() => {});
+  fetchCryptoRates().catch(() => {});
 }
 
 /* ============================================
@@ -6387,9 +6474,16 @@ setTimeout(() => {
   const circlePanel = document.getElementById('graphUnitCirclePanel');
   const modeFnBtn = document.getElementById('graphModeFnBtn');
   const modeCircleBtn = document.getElementById('graphModeCircleBtn');
+  const mode3DBtn = document.getElementById('graphMode3DBtn');
   const angleSlider = document.getElementById('graphAngleSlider');
   const angleDeg = document.getElementById('graphAngleDeg');
   const angleValues = document.getElementById('graphAngleValues');
+  const panel3D = document.getElementById('graph3DPanel');
+  const fn3DInput = document.getElementById('graph3DFnInput');
+  const quick3DBtns = document.getElementById('graph3DQuickBtns');
+  const error3D = document.getElementById('graph3DError');
+  const canvas3D = document.getElementById('graph3DCanvas');
+  const ctx3D = canvas3D ? canvas3D.getContext('2d') : null;
 
   let graphMode = 'function';
 
@@ -6608,18 +6702,174 @@ setTimeout(() => {
     angleValues.textContent = 'sin=' + sinV.toFixed(3) + '  cos=' + cosV.toFixed(3) + '  tan=' + (Math.abs(cosV) < 1e-6 ? '∞' : (sinV / cosV).toFixed(3));
   }
 
+  /* ---- 3D SURFACE PLOTTER (pure canvas, no external library) ---- */
+  function compileFn3D(exprRaw) {
+    let expr = (exprRaw || '').trim();
+    if (!expr) return null;
+    expr = expr.replace(/(\d)(x|y)/gi, '$1*$2');
+    expr = expr.replace(/\)(\s*)(x|y|\()/gi, ')*$2');
+    expr = expr.replace(/(\d)(\()/g, '$1*$2');
+    expr = expr.replace(/\^/g, '**');
+    expr = expr.replace(/\bln\(/g, 'log(');
+    const safety = expr
+      .replace(/\b(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|pow|min|max|pi|PI)\b/g, '')
+      .replace(/[xy\d\s+\-*/().,]/g, '');
+    if (safety.length > 0) return null;
+    const body = expr
+      .replace(/\bsin\(/g, 'Math.sin(').replace(/\bcos\(/g, 'Math.cos(')
+      .replace(/\btan\(/g, 'Math.tan(').replace(/\basin\(/g, 'Math.asin(')
+      .replace(/\bacos\(/g, 'Math.acos(').replace(/\batan\(/g, 'Math.atan(')
+      .replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\blog\(/g, 'Math.log(').replace(/\bexp\(/g, 'Math.exp(')
+      .replace(/\bpow\(/g, 'Math.pow(').replace(/\bmin\(/g, 'Math.min(')
+      .replace(/\bmax\(/g, 'Math.max(').replace(/\bpi\b/gi, 'Math.PI');
+    try {
+      const fn = new Function('x', 'y', 'return (' + body + ');');
+      fn(1, 1);
+      return fn;
+    } catch (e) { return null; }
+  }
+
+  let rot3D = { x: 0.55, y: 0.8 }; // radians
+  let dragging3D = false, lastDrag = { x: 0, y: 0 };
+
+  function project3D(px, py, pz, w, h, scale) {
+    // rotate around Y then X, then simple orthographic projection
+    const cosY = Math.cos(rot3D.y), sinY = Math.sin(rot3D.y);
+    const x1 = px * cosY - pz * sinY;
+    const z1 = px * sinY + pz * cosY;
+    const cosX = Math.cos(rot3D.x), sinX = Math.sin(rot3D.x);
+    const y2 = py * cosX - z1 * sinX;
+    const z2 = py * sinX + z1 * cosX;
+    return [w / 2 + x1 * scale, h / 2 - y2 * scale, z2];
+  }
+
+  function draw3DSurface() {
+    if (!ctx3D) return;
+    const w = canvas3D.__w || canvas3D.width, h = canvas3D.__h || canvas3D.height;
+    ctx3D.clearRect(0, 0, w, h);
+    if (error3D) error3D.textContent = '';
+
+    const fn = compileFn3D(fn3DInput.value);
+    if (!fn) {
+      if (error3D) error3D.textContent = t('graph_3d_error_expr');
+      return;
+    }
+
+    const range = 3, steps = 26;
+    const step = (range * 2) / steps;
+    let zMin = Infinity, zMax = -Infinity;
+    const grid = [];
+    for (let i = 0; i <= steps; i++) {
+      const row = [];
+      const gx = -range + i * step;
+      for (let j = 0; j <= steps; j++) {
+        const gy = -range + j * step;
+        let gz;
+        try { gz = fn(gx, gy); } catch (e) { gz = 0; }
+        if (!isFinite(gz)) gz = 0;
+        gz = Math.max(-6, Math.min(6, gz));
+        row.push(gz);
+        if (gz < zMin) zMin = gz;
+        if (gz > zMax) zMax = gz;
+      }
+      grid.push(row);
+    }
+    if (zMax === zMin) { zMax += 1; zMin -= 1; }
+
+    const scale = Math.min(w, h) / (range * 3.2);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+
+    // collect quads with average depth for painter's-algorithm sorting
+    const quads = [];
+    for (let i = 0; i < steps; i++) {
+      for (let j = 0; j < steps; j++) {
+        const gx0 = -range + i * step, gx1 = -range + (i + 1) * step;
+        const gy0 = -range + j * step, gy1 = -range + (j + 1) * step;
+        const corners = [
+          [gx0, gy0, grid[i][j]], [gx1, gy0, grid[i + 1][j]],
+          [gx1, gy1, grid[i + 1][j + 1]], [gx0, gy1, grid[i][j + 1]],
+        ].map(([px, py, pz]) => project3D(px, pz, py, w, h, scale));
+        const avgDepth = corners.reduce((s, c) => s + c[2], 0) / 4;
+        const avgZ = (grid[i][j] + grid[i + 1][j] + grid[i + 1][j + 1] + grid[i][j + 1]) / 4;
+        quads.push({ corners, avgDepth, avgZ });
+      }
+    }
+    quads.sort((a, b) => a.avgDepth - b.avgDepth);
+
+    quads.forEach(q => {
+      const t2 = (q.avgZ - zMin) / (zMax - zMin);
+      // color ramp from cool blue (low) to accent orange (high)
+      const r = Math.round(60 + t2 * 195);
+      const g = Math.round(110 - t2 * 40);
+      const b = Math.round(200 - t2 * 160);
+      ctx3D.fillStyle = `rgba(${r},${g},${b},0.85)`;
+      ctx3D.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx3D.lineWidth = 1;
+      ctx3D.beginPath();
+      q.corners.forEach(([px, py], idx) => idx === 0 ? ctx3D.moveTo(px, py) : ctx3D.lineTo(px, py));
+      ctx3D.closePath();
+      ctx3D.fill();
+      ctx3D.stroke();
+    });
+
+    // simple axis indicator at origin
+    ctx3D.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx3D.lineWidth = 1.5;
+    [[range, 0, 0], [0, range, 0], [0, 0, range]].forEach(([ax, ay, az], idx) => {
+      const [ox, oy] = project3D(0, 0, 0, w, h, scale);
+      const [ex, ey] = project3D(ax, az, ay, w, h, scale);
+      ctx3D.beginPath(); ctx3D.moveTo(ox, oy); ctx3D.lineTo(ex, ey); ctx3D.stroke();
+    });
+  }
+
+  function draw3DSized(w, h) { canvas3D.__w = w; canvas3D.__h = h; draw3DSurface(); }
+
+  if (canvas3D) {
+    const startDrag = (x, y) => { dragging3D = true; lastDrag = { x, y }; };
+    const moveDrag = (x, y) => {
+      if (!dragging3D) return;
+      rot3D.y += (x - lastDrag.x) * 0.01;
+      rot3D.x += (y - lastDrag.y) * -0.01;
+      rot3D.x = Math.max(-1.4, Math.min(1.4, rot3D.x));
+      lastDrag = { x, y };
+      draw3DSurface();
+    };
+    const endDrag = () => { dragging3D = false; };
+    canvas3D.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+    window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+    window.addEventListener('mouseup', endDrag);
+    canvas3D.addEventListener('touchstart', (e) => { const t2 = e.touches[0]; startDrag(t2.clientX, t2.clientY); }, { passive: true });
+    canvas3D.addEventListener('touchmove', (e) => { const t2 = e.touches[0]; moveDrag(t2.clientX, t2.clientY); }, { passive: true });
+    canvas3D.addEventListener('touchend', endDrag);
+    fn3DInput.addEventListener('input', () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(draw3DSurface, 150); });
+    quick3DBtns.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-fn3d]');
+      if (!btn) return;
+      fn3DInput.value = btn.dataset.fn3d;
+      draw3DSurface();
+    });
+  }
+
   function redraw() {
     // resize canvas to actual displayed size for crispness
-    const rect = canvas.getBoundingClientRect();
+    const wrapRect = canvas.parentElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    if (rect.width > 0 && rect.height > 0) {
-      canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(rect.height * dpr);
+    if (wrapRect.width > 0 && wrapRect.height > 0) {
+      canvas.width = Math.round(wrapRect.width * dpr);
+      canvas.height = Math.round(wrapRect.height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (canvas3D) {
+        canvas3D.width = Math.round(wrapRect.width * dpr);
+        canvas3D.height = Math.round(wrapRect.height * dpr);
+        if (ctx3D) ctx3D.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
     }
-    const w = rect.width || 600, h = rect.height || 380;
+    const w = wrapRect.width || 600, h = wrapRect.height || 380;
     if (graphMode === 'function') {
       plotFunctionSized(w, h);
+    } else if (graphMode === 'surface3d') {
+      draw3DSized(w, h);
     } else {
       drawUnitCircleSized(w, h, parseFloat(angleSlider.value));
     }
@@ -6633,13 +6883,18 @@ setTimeout(() => {
     graphMode = mode;
     modeFnBtn.classList.toggle('active', mode === 'function');
     modeCircleBtn.classList.toggle('active', mode === 'unitcircle');
+    if (mode3DBtn) mode3DBtn.classList.toggle('active', mode === 'surface3d');
     fnPanel.style.display = mode === 'function' ? 'block' : 'none';
     circlePanel.style.display = mode === 'unitcircle' ? 'block' : 'none';
+    if (panel3D) panel3D.style.display = mode === 'surface3d' ? 'block' : 'none';
+    canvas.style.display = mode === 'surface3d' ? 'none' : 'block';
+    if (canvas3D) canvas3D.style.display = mode === 'surface3d' ? 'block' : 'none';
     redraw();
   }
 
   modeFnBtn.addEventListener('click', () => setGraphMode('function'));
   modeCircleBtn.addEventListener('click', () => setGraphMode('unitcircle'));
+  if (mode3DBtn) mode3DBtn.addEventListener('click', () => setGraphMode('surface3d'));
 
   let debounceTimer;
   function debounceRedraw() {
