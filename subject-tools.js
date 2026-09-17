@@ -203,6 +203,23 @@
     } catch (e) { return null; }
   }
 
+  // Shared numeric-calculus helpers (used by the extra Calculus tools below).
+  function numDeriv1(fn, x, h) { h = h || 1e-5; return (fn(x + h) - fn(x - h)) / (2 * h); }
+  function numDeriv2(fn, x, h) { h = h || 1e-4; return (fn(x + h) - 2 * fn(x) + fn(x - h)) / (h * h); }
+  function numDeriv3(fn, x, h) { h = h || 1e-2; return (fn(x + 2*h) - 2*fn(x + h) + 2*fn(x - h) - fn(x - 2*h)) / (2 * h * h * h); }
+  function numDeriv4(fn, x, h) { h = h || 1e-2; return (fn(x + 2*h) - 4*fn(x + h) + 6*fn(x) - 4*fn(x - h) + fn(x - 2*h)) / (h * h * h * h); }
+  function simpsonIntegral(fn, a, b, n) {
+    n = n || 1000;
+    if (n % 2 !== 0) n++;
+    const h = (b - a) / n;
+    let sum = fn(a) + fn(b);
+    for (let i = 1; i < n; i++) {
+      const x = a + i * h;
+      sum += fn(x) * (i % 2 === 0 ? 2 : 4);
+    }
+    return (h / 3) * sum;
+  }
+
   /* ============================================
      PERIODIC TABLE DATA (all 118 elements)
      cat: alkali | alkaline | transition | post | metalloid |
@@ -7202,6 +7219,671 @@
           const dist = Math.abs(wx * crossX + wy * crossY + wz * crossZ) / magCross;
           out.innerHTML = resultCell('Shortest Distance', round(dist, 5));
         }
+      },
+      {
+        id: 'scalarMultVector',
+        label: 'Scalar Multiplication of a Vector',
+        render: () => `
+          <p class="tool-hint">Works in 2D or 3D — leave the z-field blank for 2D vectors.</p>
+          ${field('smvK', 'Scalar k', 'e.g. 3', 'number')}
+          <div class="tool-vector-row">
+            ${field('smvX', 'Ax', 'Ax', 'number')}${field('smvY', 'Ay', 'Ay', 'number')}${field('smvZ', 'Az', 'Az (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const k = num('smvK'), x = num('smvX'), y = num('smvY'), z = num('smvZ') || 0;
+          if (k === null || x === null || y === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const rx = k * x, ry = k * y, rz = k * z;
+          out.innerHTML =
+            resultCell('k·A', `(${round(rx, 5)}, ${round(ry, 5)}, ${round(rz, 5)})`) +
+            resultCell('Magnitude', round(Math.sqrt(rx * rx + ry * ry + rz * rz), 5));
+        }
+      },
+      {
+        id: 'resultantVectors',
+        label: 'Resultant of Multiple Vectors',
+        render: () => `
+          <p class="tool-hint">Sum of two or three vectors. Leave Vector C blank to add only A and B. Works in 2D or 3D — leave z-fields blank for 2D.</p>
+          <div class="tool-vector-row">
+            ${field('rvAx', 'Ax', 'Ax', 'number')}${field('rvAy', 'Ay', 'Ay', 'number')}${field('rvAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('rvBx', 'Bx', 'Bx', 'number')}${field('rvBy', 'By', 'By', 'number')}${field('rvBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('rvCx', 'Cx', 'Cx (optional)', 'number')}${field('rvCy', 'Cy', 'Cy (optional)', 'number')}${field('rvCz', 'Cz', 'Cz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('rvAx'), ay = num('rvAy'), az = num('rvAz') || 0;
+          const bx = num('rvBx'), by = num('rvBy'), bz = num('rvBz') || 0;
+          const cx = num('rvCx'), cy = num('rvCy'), cz = num('rvCz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const hasC = num('rvCx') !== null || num('rvCy') !== null;
+          if (hasC && (cx === null || cy === null)) { out.innerHTML = errorBox('Please enter both Cx and Cy, or leave Vector C blank entirely.'); return; }
+          const rx = ax + bx + (hasC ? cx : 0), ry = ay + by + (hasC ? cy : 0), rz = az + bz + (hasC ? cz : 0);
+          out.innerHTML =
+            resultCell('Resultant Vector', `(${round(rx, 5)}, ${round(ry, 5)}, ${round(rz, 5)})`) +
+            resultCell('Magnitude', round(Math.sqrt(rx * rx + ry * ry + rz * rz), 5));
+        }
+      },
+      {
+        id: 'equilibrantVector',
+        label: 'Equilibrant of Multiple Vectors',
+        render: () => `
+          <p class="tool-hint">The equilibrant is the vector that balances the given vectors — equal in magnitude but opposite in direction to their resultant. Leave Vector C blank to use only A and B.</p>
+          <div class="tool-vector-row">
+            ${field('eqAx', 'Ax', 'Ax', 'number')}${field('eqAy', 'Ay', 'Ay', 'number')}${field('eqAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('eqBx', 'Bx', 'Bx', 'number')}${field('eqBy', 'By', 'By', 'number')}${field('eqBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('eqCx', 'Cx', 'Cx (optional)', 'number')}${field('eqCy', 'Cy', 'Cy (optional)', 'number')}${field('eqCz', 'Cz', 'Cz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('eqAx'), ay = num('eqAy'), az = num('eqAz') || 0;
+          const bx = num('eqBx'), by = num('eqBy'), bz = num('eqBz') || 0;
+          const cx = num('eqCx'), cy = num('eqCy'), cz = num('eqCz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const hasC = num('eqCx') !== null || num('eqCy') !== null;
+          if (hasC && (cx === null || cy === null)) { out.innerHTML = errorBox('Please enter both Cx and Cy, or leave Vector C blank entirely.'); return; }
+          const rx = ax + bx + (hasC ? cx : 0), ry = ay + by + (hasC ? cy : 0), rz = az + bz + (hasC ? cz : 0);
+          out.innerHTML =
+            resultCell('Equilibrant Vector', `(${round(-rx, 5)}, ${round(-ry, 5)}, ${round(-rz, 5)})`) +
+            resultCell('Magnitude', round(Math.sqrt(rx * rx + ry * ry + rz * rz), 5));
+        }
+      },
+      {
+        id: 'vectorComponentsFromAngle',
+        label: 'Resolve Vector into Components',
+        render: () => `
+          <p class="tool-hint">Given a vector's magnitude and the angle it makes with the positive x-axis, find its rectangular (x, y) components.</p>
+          ${field('vcfaMag', 'Magnitude', 'e.g. 10', 'number')}
+          ${field('vcfaAngle', 'Angle with x-axis (°)', 'e.g. 30', 'number')}
+        `,
+        calc: (out) => {
+          const mag = num('vcfaMag'), angle = num('vcfaAngle');
+          if (mag === null || angle === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const rad = angle * Math.PI / 180;
+          out.innerHTML =
+            resultCell('x-component', round(mag * Math.cos(rad), 5)) +
+            resultCell('y-component', round(mag * Math.sin(rad), 5));
+        }
+      },
+      {
+        id: 'displacementVector',
+        label: 'Displacement Vector Between Two Points',
+        render: () => `
+          <p class="tool-hint">Vector from point A to point B. Works in 2D or 3D — leave the z-fields blank for 2D points.</p>
+          <div class="tool-vector-row">
+            ${field('dvAx', 'Ax', 'Ax', 'number')}${field('dvAy', 'Ay', 'Ay', 'number')}${field('dvAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('dvBx', 'Bx', 'Bx', 'number')}${field('dvBy', 'By', 'By', 'number')}${field('dvBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('dvAx'), ay = num('dvAy'), az = num('dvAz') || 0;
+          const bx = num('dvBx'), by = num('dvBy'), bz = num('dvBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dx = bx - ax, dy = by - ay, dz = bz - az;
+          const mag = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (mag === 0) { out.innerHTML = errorBox('Points A and B cannot be the same.'); return; }
+          out.innerHTML =
+            resultCell('Displacement Vector (A→B)', `(${round(dx, 5)}, ${round(dy, 5)}, ${round(dz, 5)})`) +
+            resultCell('Magnitude', round(mag, 5)) +
+            resultCell('Unit Vector', `(${round(dx / mag, 5)}, ${round(dy / mag, 5)}, ${round(dz / mag, 5)})`);
+        }
+      },
+      {
+        id: 'sectionFormula3D',
+        label: 'Section Formula (Divides Line in Ratio m:n)',
+        render: () => `
+          <p class="tool-hint">Point P divides segment AB internally in the ratio m:n. Works in 2D or 3D — leave the z-fields blank for 2D points.</p>
+          <div class="tool-vector-row">
+            ${field('sfAx', 'Ax', 'Ax', 'number')}${field('sfAy', 'Ay', 'Ay', 'number')}${field('sfAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('sfBx', 'Bx', 'Bx', 'number')}${field('sfBy', 'By', 'By', 'number')}${field('sfBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('sfM', 'm', 'e.g. 2', 'number')}${field('sfN', 'n', 'e.g. 3', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('sfAx'), ay = num('sfAy'), az = num('sfAz') || 0;
+          const bx = num('sfBx'), by = num('sfBy'), bz = num('sfBz') || 0;
+          const m = num('sfM'), n = num('sfN');
+          if (ax === null || ay === null || bx === null || by === null || m === null || n === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          if (m + n === 0) { out.innerHTML = errorBox('m + n cannot be zero.'); return; }
+          const px = (m * bx + n * ax) / (m + n), py = (m * by + n * ay) / (m + n), pz = (m * bz + n * az) / (m + n);
+          out.innerHTML = resultCell('Point P', `(${round(px, 5)}, ${round(py, 5)}, ${round(pz, 5)})`);
+        }
+      },
+      {
+        id: 'collinearityTest3D',
+        label: 'Collinearity Test of Three Points',
+        render: () => `
+          <p class="tool-hint">Checks whether points A, B, C lie on the same straight line using vectors AB and AC.</p>
+          <div class="tool-vector-row">
+            ${field('ctAx', 'Ax', 'Ax', 'number')}${field('ctAy', 'Ay', 'Ay', 'number')}${field('ctAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('ctBx', 'Bx', 'Bx', 'number')}${field('ctBy', 'By', 'By', 'number')}${field('ctBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('ctCx', 'Cx', 'Cx', 'number')}${field('ctCy', 'Cy', 'Cy', 'number')}${field('ctCz', 'Cz', 'Cz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('ctAx'), ay = num('ctAy'), az = num('ctAz') || 0;
+          const bx = num('ctBx'), by = num('ctBy'), bz = num('ctBz') || 0;
+          const cx = num('ctCx'), cy = num('ctCy'), cz = num('ctCz') || 0;
+          if ([ax, ay, bx, by, cx, cy].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const abx = bx - ax, aby = by - ay, abz = bz - az;
+          const acx = cx - ax, acy = cy - ay, acz = cz - az;
+          const crossX = aby * acz - abz * acy, crossY = abz * acx - abx * acz, crossZ = abx * acy - aby * acx;
+          const magCross = Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+          out.innerHTML = magCross < 1e-9
+            ? resultCell('Result', 'Collinear — the points lie on the same straight line.')
+            : resultCell('Result', 'Not collinear — |AB × AC| = ' + round(magCross, 5));
+        }
+      },
+      {
+        id: 'coplanarityTest4Points',
+        label: 'Coplanarity Test of Four Points',
+        render: () => `
+          <p class="tool-hint">Checks whether points A, B, C, D lie in the same plane using the scalar triple product AB·(AC×AD).</p>
+          <div class="tool-vector-row">
+            ${field('cp4Ax', 'Ax', 'Ax', 'number')}${field('cp4Ay', 'Ay', 'Ay', 'number')}${field('cp4Az', 'Az', 'Az', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('cp4Bx', 'Bx', 'Bx', 'number')}${field('cp4By', 'By', 'By', 'number')}${field('cp4Bz', 'Bz', 'Bz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('cp4Cx', 'Cx', 'Cx', 'number')}${field('cp4Cy', 'Cy', 'Cy', 'number')}${field('cp4Cz', 'Cz', 'Cz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('cp4Dx', 'Dx', 'Dx', 'number')}${field('cp4Dy', 'Dy', 'Dy', 'number')}${field('cp4Dz', 'Dz', 'Dz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('cp4Ax'), ay = num('cp4Ay'), az = num('cp4Az');
+          const bx = num('cp4Bx'), by = num('cp4By'), bz = num('cp4Bz');
+          const cx = num('cp4Cx'), cy = num('cp4Cy'), cz = num('cp4Cz');
+          const dx = num('cp4Dx'), dy = num('cp4Dy'), dz = num('cp4Dz');
+          if ([ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const abx = bx - ax, aby = by - ay, abz = bz - az;
+          const acx = cx - ax, acy = cy - ay, acz = cz - az;
+          const adx = dx - ax, ady = dy - ay, adz = dz - az;
+          const crossX = acy * adz - acz * ady, crossY = acz * adx - acx * adz, crossZ = acx * ady - acy * adx;
+          const triple = abx * crossX + aby * crossY + abz * crossZ;
+          out.innerHTML = Math.abs(triple) < 1e-9
+            ? resultCell('Result', 'Coplanar — the four points lie in the same plane.')
+            : resultCell('Result', 'Not coplanar — scalar triple product = ' + round(triple, 5));
+        }
+      },
+      {
+        id: 'vectorOrthogonalParallelTest',
+        label: 'Orthogonal / Parallel Vector Test',
+        render: () => `
+          <p class="tool-hint">Checks whether two vectors are perpendicular (dot product = 0), parallel (cross product = 0), or neither.</p>
+          <div class="tool-vector-row">
+            ${field('optAx', 'Ax', 'Ax', 'number')}${field('optAy', 'Ay', 'Ay', 'number')}${field('optAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('optBx', 'Bx', 'Bx', 'number')}${field('optBy', 'By', 'By', 'number')}${field('optBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('optAx'), ay = num('optAy'), az = num('optAz') || 0;
+          const bx = num('optBx'), by = num('optBy'), bz = num('optBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const dot = ax * bx + ay * by + az * bz;
+          const crossX = ay * bz - az * by, crossY = az * bx - ax * bz, crossZ = ax * by - ay * bx;
+          const magCross = Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+          let verdict;
+          if (Math.abs(dot) < 1e-9) verdict = 'Orthogonal (perpendicular) — dot product is 0.';
+          else if (magCross < 1e-9) verdict = 'Parallel — cross product is the zero vector.';
+          else verdict = 'Neither orthogonal nor parallel.';
+          out.innerHTML =
+            resultCell('Result', verdict) +
+            resultCell('Dot Product', round(dot, 5)) +
+            resultCell('|Cross Product|', round(magCross, 5));
+        }
+      },
+      {
+        id: 'angleVectorWithAxes',
+        label: 'Angles a Vector Makes with the Axes',
+        render: () => `
+          <p class="tool-hint">Gives the angles α, β, γ that a vector makes with the positive x, y and z axes. Leave z blank for a 2D vector.</p>
+          <div class="tool-vector-row">
+            ${field('avaX', 'Ax', 'Ax', 'number')}${field('avaY', 'Ay', 'Ay', 'number')}${field('avaZ', 'Az', 'Az (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const x = num('avaX'), y = num('avaY'), z = num('avaZ') || 0;
+          if (x === null || y === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const mag = Math.sqrt(x * x + y * y + z * z);
+          if (mag === 0) { out.innerHTML = errorBox('The zero vector has no direction.'); return; }
+          const toDeg = 180 / Math.PI;
+          out.innerHTML =
+            resultCell('α (with x-axis)', round(Math.acos(x / mag) * toDeg, 3) + '°') +
+            resultCell('β (with y-axis)', round(Math.acos(y / mag) * toDeg, 3) + '°') +
+            resultCell('γ (with z-axis)', round(Math.acos(z / mag) * toDeg, 3) + '°');
+        }
+      },
+      {
+        id: 'angleBisectorVector',
+        label: 'Angle Bisector Vector of Two Vectors',
+        render: () => `
+          <p class="tool-hint">Direction of the vector that bisects the angle between A and B: unit(A) + unit(B).</p>
+          <div class="tool-vector-row">
+            ${field('abvAx', 'Ax', 'Ax', 'number')}${field('abvAy', 'Ay', 'Ay', 'number')}${field('abvAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('abvBx', 'Bx', 'Bx', 'number')}${field('abvBy', 'By', 'By', 'number')}${field('abvBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('abvAx'), ay = num('abvAy'), az = num('abvAz') || 0;
+          const bx = num('abvBx'), by = num('abvBy'), bz = num('abvBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magA = Math.sqrt(ax * ax + ay * ay + az * az), magB = Math.sqrt(bx * bx + by * by + bz * bz);
+          if (magA === 0 || magB === 0) { out.innerHTML = errorBox('Neither vector can be the zero vector.'); return; }
+          const rx = ax / magA + bx / magB, ry = ay / magA + by / magB, rz = az / magA + bz / magB;
+          const magR = Math.sqrt(rx * rx + ry * ry + rz * rz);
+          if (magR === 0) { out.innerHTML = errorBox('A and B point in exactly opposite directions — no unique bisector.'); return; }
+          out.innerHTML =
+            resultCell('Bisector Vector', `(${round(rx, 5)}, ${round(ry, 5)}, ${round(rz, 5)})`) +
+            resultCell('Unit Bisector Vector', `(${round(rx / magR, 5)}, ${round(ry / magR, 5)}, ${round(rz / magR, 5)})`);
+        }
+      },
+      {
+        id: 'workDoneVector',
+        label: 'Work Done by a Force (W = F·d)',
+        render: () => `
+          <p class="tool-hint">Work done by a constant force F over a displacement d, using the dot product W = F·d.</p>
+          <div class="tool-vector-row">
+            ${field('wdvFx', 'Fx', 'Fx', 'number')}${field('wdvFy', 'Fy', 'Fy', 'number')}${field('wdvFz', 'Fz', 'Fz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('wdvDx', 'dx', 'dx', 'number')}${field('wdvDy', 'dy', 'dy', 'number')}${field('wdvDz', 'dz', 'dz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const fx = num('wdvFx'), fy = num('wdvFy'), fz = num('wdvFz') || 0;
+          const dx = num('wdvDx'), dy = num('wdvDy'), dz = num('wdvDz') || 0;
+          if (fx === null || fy === null || dx === null || dy === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const work = fx * dx + fy * dy + fz * dz;
+          out.innerHTML = resultCell('Work Done (F·d)', round(work, 5));
+        }
+      },
+      {
+        id: 'torqueVector',
+        label: 'Torque / Moment of a Force (τ = r×F)',
+        render: () => `
+          <p class="tool-hint">Torque of a force F applied at position r (from the pivot), using the cross product τ = r × F.</p>
+          <div class="tool-vector-row">
+            ${field('tvRx', 'rx', 'rx', 'number')}${field('tvRy', 'ry', 'ry', 'number')}${field('tvRz', 'rz', 'rz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('tvFx', 'Fx', 'Fx', 'number')}${field('tvFy', 'Fy', 'Fy', 'number')}${field('tvFz', 'Fz', 'Fz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const rx = num('tvRx'), ry = num('tvRy'), rz = num('tvRz') || 0;
+          const fx = num('tvFx'), fy = num('tvFy'), fz = num('tvFz') || 0;
+          if (rx === null || ry === null || fx === null || fy === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const tx = ry * fz - rz * fy, ty = rz * fx - rx * fz, tz = rx * fy - ry * fx;
+          out.innerHTML =
+            resultCell('Torque Vector (τ)', `(${round(tx, 5)}, ${round(ty, 5)}, ${round(tz, 5)})`) +
+            resultCell('Magnitude', round(Math.sqrt(tx * tx + ty * ty + tz * tz), 5));
+        }
+      },
+      {
+        id: 'planeInterceptForm',
+        label: 'Plane Equation from Intercepts',
+        render: () => `
+          <p class="tool-hint">Plane cutting the axes at (a,0,0), (0,b,0), (0,0,c): x/a + y/b + z/c = 1.</p>
+          <div class="tool-vector-row">
+            ${field('pifA', 'x-intercept (a)', 'a', 'number')}${field('pifB', 'y-intercept (b)', 'b', 'number')}${field('pifC', 'z-intercept (c)', 'c', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a = num('pifA'), b = num('pifB'), c = num('pifC');
+          if (a === null || b === null || c === null || a === 0 || b === 0 || c === 0) { out.innerHTML = errorBox('Please enter three non-zero intercepts a, b, c.'); return; }
+          const bc = round(b * c, 5), ac = round(a * c, 5), ab = round(a * b, 5), abc = round(a * b * c, 5);
+          out.innerHTML =
+            resultCell('Intercept Form', `x/${round(a, 5)} + y/${round(b, 5)} + z/${round(c, 5)} = 1`) +
+            resultCell('Standard Form', `${bc}x + ${ac}y + ${ab}z = ${abc}`);
+        }
+      },
+      {
+        id: 'distanceBetweenParallelPlanes',
+        label: 'Distance Between Two Parallel Planes',
+        render: () => `
+          <p class="tool-hint">For planes ax+by+cz=d₁ and ax+by+cz=d₂ (same normal vector): distance = |d₁−d₂| / √(a²+b²+c²).</p>
+          <div class="tool-vector-row">
+            ${field('dpp_a', 'a', 'a', 'number')}${field('dpp_b', 'b', 'b', 'number')}${field('dpp_c', 'c', 'c', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('dpp_d1', 'd₁', 'd₁', 'number')}${field('dpp_d2', 'd₂', 'd₂', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a = num('dpp_a'), b = num('dpp_b'), c = num('dpp_c'), d1 = num('dpp_d1'), d2 = num('dpp_d2');
+          if ([a, b, c, d1, d2].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magN = Math.sqrt(a * a + b * b + c * c);
+          if (magN === 0) { out.innerHTML = errorBox('Normal vector (a,b,c) cannot be zero.'); return; }
+          out.innerHTML = resultCell('Distance Between Planes', round(Math.abs(d1 - d2) / magN, 5));
+        }
+      },
+      {
+        id: 'quadrilateralAreaVectors',
+        label: 'Area of Quadrilateral (Vectors)',
+        render: () => `
+          <p class="tool-hint">Area of quadrilateral ABCD (vertices in order) using its diagonals: Area = ½|AC × BD|. Works in 2D or 3D.</p>
+          <div class="tool-vector-row">
+            ${field('qavAx', 'Ax', 'Ax', 'number')}${field('qavAy', 'Ay', 'Ay', 'number')}${field('qavAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('qavBx', 'Bx', 'Bx', 'number')}${field('qavBy', 'By', 'By', 'number')}${field('qavBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('qavCx', 'Cx', 'Cx', 'number')}${field('qavCy', 'Cy', 'Cy', 'number')}${field('qavCz', 'Cz', 'Cz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('qavDx', 'Dx', 'Dx', 'number')}${field('qavDy', 'Dy', 'Dy', 'number')}${field('qavDz', 'Dz', 'Dz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('qavAx'), ay = num('qavAy'), az = num('qavAz') || 0;
+          const bx = num('qavBx'), by = num('qavBy'), bz = num('qavBz') || 0;
+          const cx = num('qavCx'), cy = num('qavCy'), cz = num('qavCz') || 0;
+          const dx = num('qavDx'), dy = num('qavDy'), dz = num('qavDz') || 0;
+          if ([ax, ay, bx, by, cx, cy, dx, dy].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const acx = cx - ax, acy = cy - ay, acz = cz - az;
+          const bdx = dx - bx, bdy = dy - by, bdz = dz - bz;
+          const crossX = acy * bdz - acz * bdy, crossY = acz * bdx - acx * bdz, crossZ = acx * bdy - acy * bdx;
+          const area = 0.5 * Math.sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+          out.innerHTML = resultCell('Area of Quadrilateral', round(area, 5));
+        }
+      },
+      {
+        id: 'scalarProjection',
+        label: 'Scalar Projection of A onto B',
+        render: () => `
+          <p class="tool-hint">Scalar (signed) length of A's shadow along B: (A·B)/|B|. Works in 2D or 3D.</p>
+          <div class="tool-vector-row">
+            ${field('spAx', 'Ax', 'Ax', 'number')}${field('spAy', 'Ay', 'Ay', 'number')}${field('spAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('spBx', 'Bx', 'Bx', 'number')}${field('spBy', 'By', 'By', 'number')}${field('spBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('spAx'), ay = num('spAy'), az = num('spAz') || 0;
+          const bx = num('spBx'), by = num('spBy'), bz = num('spBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magB = Math.sqrt(bx * bx + by * by + bz * bz);
+          if (magB === 0) { out.innerHTML = errorBox('Vector B cannot be the zero vector.'); return; }
+          const dot = ax * bx + ay * by + az * bz;
+          out.innerHTML = resultCell('Scalar Projection of A onto B', round(dot / magB, 5));
+        }
+      },
+      {
+        id: 'vectorRejection',
+        label: 'Component of Vector Perpendicular to Another',
+        render: () => `
+          <p class="tool-hint">The rejection of A from B: the part of A perpendicular to B, A − proj_B(A).</p>
+          <div class="tool-vector-row">
+            ${field('vrAx', 'Ax', 'Ax', 'number')}${field('vrAy', 'Ay', 'Ay', 'number')}${field('vrAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('vrBx', 'Bx', 'Bx', 'number')}${field('vrBy', 'By', 'By', 'number')}${field('vrBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('vrAx'), ay = num('vrAy'), az = num('vrAz') || 0;
+          const bx = num('vrBx'), by = num('vrBy'), bz = num('vrBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magBsq = bx * bx + by * by + bz * bz;
+          if (magBsq === 0) { out.innerHTML = errorBox('Vector B cannot be the zero vector.'); return; }
+          const k = (ax * bx + ay * by + az * bz) / magBsq;
+          const rx = ax - k * bx, ry = ay - k * by, rz = az - k * bz;
+          out.innerHTML =
+            resultCell('Rejection Vector', `(${round(rx, 5)}, ${round(ry, 5)}, ${round(rz, 5)})`) +
+            resultCell('Magnitude', round(Math.sqrt(rx * rx + ry * ry + rz * rz), 5));
+        }
+      },
+      {
+        id: 'centroidTriangleVectors',
+        label: 'Centroid of a Triangle (Vectors)',
+        render: () => `
+          <p class="tool-hint">Centroid = (A + B + C) / 3, the average of the three vertex position vectors.</p>
+          <div class="tool-vector-row">
+            ${field('ctgAx', 'Ax', 'Ax', 'number')}${field('ctgAy', 'Ay', 'Ay', 'number')}${field('ctgAz', 'Az', 'Az (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('ctgBx', 'Bx', 'Bx', 'number')}${field('ctgBy', 'By', 'By', 'number')}${field('ctgBz', 'Bz', 'Bz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('ctgCx', 'Cx', 'Cx', 'number')}${field('ctgCy', 'Cy', 'Cy', 'number')}${field('ctgCz', 'Cz', 'Cz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('ctgAx'), ay = num('ctgAy'), az = num('ctgAz') || 0;
+          const bx = num('ctgBx'), by = num('ctgBy'), bz = num('ctgBz') || 0;
+          const cx = num('ctgCx'), cy = num('ctgCy'), cz = num('ctgCz') || 0;
+          if ([ax, ay, bx, by, cx, cy].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          out.innerHTML = resultCell('Centroid', `(${round((ax + bx + cx) / 3, 5)}, ${round((ay + by + cy) / 3, 5)}, ${round((az + bz + cz) / 3, 5)})`);
+        }
+      },
+      {
+        id: 'centerOfMassTwoParticles',
+        label: 'Center of Mass of Two Particles (Vectors)',
+        render: () => `
+          <p class="tool-hint">R꜀ₘ = (m₁r₁ + m₂r₂) / (m₁ + m₂). Works in 2D or 3D.</p>
+          <div class="tool-vector-row">
+            ${field('comM1', 'm₁', 'mass 1', 'number')}${field('comM2', 'm₂', 'mass 2', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('comR1x', 'r₁x', 'r₁x', 'number')}${field('comR1y', 'r₁y', 'r₁y', 'number')}${field('comR1z', 'r₁z', 'r₁z (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('comR2x', 'r₂x', 'r₂x', 'number')}${field('comR2y', 'r₂y', 'r₂y', 'number')}${field('comR2z', 'r₂z', 'r₂z (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const m1 = num('comM1'), m2 = num('comM2');
+          const r1x = num('comR1x'), r1y = num('comR1y'), r1z = num('comR1z') || 0;
+          const r2x = num('comR2x'), r2y = num('comR2y'), r2z = num('comR2z') || 0;
+          if (m1 === null || m2 === null || r1x === null || r1y === null || r2x === null || r2y === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          if (m1 + m2 === 0) { out.innerHTML = errorBox('Total mass (m₁ + m₂) cannot be zero.'); return; }
+          const rx = (m1 * r1x + m2 * r2x) / (m1 + m2), ry = (m1 * r1y + m2 * r2y) / (m1 + m2), rz = (m1 * r1z + m2 * r2z) / (m1 + m2);
+          out.innerHTML = resultCell('Center of Mass', `(${round(rx, 5)}, ${round(ry, 5)}, ${round(rz, 5)})`);
+        }
+      },
+      {
+        id: 'relativeVelocityVector',
+        label: 'Relative Velocity Vector (V_AB = V_A − V_B)',
+        render: () => `
+          <p class="tool-hint">Velocity of A relative to B. Works in 2D or 3D.</p>
+          <div class="tool-vector-row">
+            ${field('rvvAx', 'V_A x', 'V_A x', 'number')}${field('rvvAy', 'V_A y', 'V_A y', 'number')}${field('rvvAz', 'V_A z', 'V_A z (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('rvvBx', 'V_B x', 'V_B x', 'number')}${field('rvvBy', 'V_B y', 'V_B y', 'number')}${field('rvvBz', 'V_B z', 'V_B z (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const ax = num('rvvAx'), ay = num('rvvAy'), az = num('rvvAz') || 0;
+          const bx = num('rvvBx'), by = num('rvvBy'), bz = num('rvvBz') || 0;
+          if (ax === null || ay === null || bx === null || by === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const rx = ax - bx, ry = ay - by, rz = az - bz;
+          out.innerHTML =
+            resultCell('Relative Velocity (V_AB)', `(${round(rx, 5)}, ${round(ry, 5)}, ${round(rz, 5)})`) +
+            resultCell('Magnitude (Speed)', round(Math.sqrt(rx * rx + ry * ry + rz * rz), 5));
+        }
+      },
+      {
+        id: 'momentAboutAxis',
+        label: 'Moment of a Force About an Axis',
+        render: () => `
+          <p class="tool-hint">Scalar moment of force F applied at position r about an axis through the origin with direction n: M = (r×F)·n̂.</p>
+          <div class="tool-vector-row">
+            ${field('maaRx', 'rx', 'rx', 'number')}${field('maaRy', 'ry', 'ry', 'number')}${field('maaRz', 'rz', 'rz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('maaFx', 'Fx', 'Fx', 'number')}${field('maaFy', 'Fy', 'Fy', 'number')}${field('maaFz', 'Fz', 'Fz (optional)', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('maaNx', 'Axis nx', 'nx', 'number')}${field('maaNy', 'Axis ny', 'ny', 'number')}${field('maaNz', 'Axis nz', 'nz (optional)', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const rx = num('maaRx'), ry = num('maaRy'), rz = num('maaRz') || 0;
+          const fx = num('maaFx'), fy = num('maaFy'), fz = num('maaFz') || 0;
+          const nx = num('maaNx'), ny = num('maaNy'), nz = num('maaNz') || 0;
+          if (rx === null || ry === null || fx === null || fy === null || nx === null || ny === null) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magN = Math.sqrt(nx * nx + ny * ny + nz * nz);
+          if (magN === 0) { out.innerHTML = errorBox('Axis direction vector cannot be zero.'); return; }
+          const tx = ry * fz - rz * fy, ty = rz * fx - rx * fz, tz = rx * fy - ry * fx;
+          const moment = (tx * nx + ty * ny + tz * nz) / magN;
+          out.innerHTML = resultCell('Moment About Axis', round(moment, 5));
+        }
+      },
+      {
+        id: 'footOfPerpendicularToLine3D',
+        label: 'Foot of Perpendicular from a Point to a Line',
+        render: () => `
+          <p class="tool-hint">Line through point P₀ with direction D. Finds the foot of the perpendicular dropped from an external point Q onto that line.</p>
+          <div class="tool-vector-row">
+            ${field('foplP0x', 'P₀x', 'P₀x', 'number')}${field('foplP0y', 'P₀y', 'P₀y', 'number')}${field('foplP0z', 'P₀z', 'P₀z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('foplDx', 'Dx', 'Dx', 'number')}${field('foplDy', 'Dy', 'Dy', 'number')}${field('foplDz', 'Dz', 'Dz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('foplQx', 'Qx', 'Qx', 'number')}${field('foplQy', 'Qy', 'Qy', 'number')}${field('foplQz', 'Qz', 'Qz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const p0x = num('foplP0x'), p0y = num('foplP0y'), p0z = num('foplP0z');
+          const dx = num('foplDx'), dy = num('foplDy'), dz = num('foplDz');
+          const qx = num('foplQx'), qy = num('foplQy'), qz = num('foplQz');
+          if ([p0x, p0y, p0z, dx, dy, dz, qx, qy, qz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magDsq = dx * dx + dy * dy + dz * dz;
+          if (magDsq === 0) { out.innerHTML = errorBox('Direction vector D cannot be zero.'); return; }
+          const wx = qx - p0x, wy = qy - p0y, wz = qz - p0z;
+          const tParam = (wx * dx + wy * dy + wz * dz) / magDsq;
+          const fx = p0x + tParam * dx, fy = p0y + tParam * dy, fz = p0z + tParam * dz;
+          const dist = Math.sqrt(Math.pow(qx - fx, 2) + Math.pow(qy - fy, 2) + Math.pow(qz - fz, 2));
+          out.innerHTML =
+            resultCell('Foot of Perpendicular', `(${round(fx, 5)}, ${round(fy, 5)}, ${round(fz, 5)})`) +
+            resultCell('Distance from Q', round(dist, 5));
+        }
+      },
+      {
+        id: 'footOfPerpendicularToPlane3D',
+        label: 'Foot of Perpendicular from a Point to a Plane',
+        render: () => `
+          <p class="tool-hint">Plane ax+by+cz=d. Finds the foot of the perpendicular dropped from an external point Q onto that plane.</p>
+          <div class="tool-vector-row">
+            ${field('foppA', 'a', 'a', 'number')}${field('foppB', 'b', 'b', 'number')}${field('foppC', 'c', 'c', 'number')}${field('foppD', 'd', 'd', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('foppQx', 'Qx', 'Qx', 'number')}${field('foppQy', 'Qy', 'Qy', 'number')}${field('foppQz', 'Qz', 'Qz', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const a = num('foppA'), b = num('foppB'), c = num('foppC'), d = num('foppD');
+          const qx = num('foppQx'), qy = num('foppQy'), qz = num('foppQz');
+          if ([a, b, c, d, qx, qy, qz].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const magNsq = a * a + b * b + c * c;
+          if (magNsq === 0) { out.innerHTML = errorBox('Normal vector (a,b,c) cannot be zero.'); return; }
+          const k = (a * qx + b * qy + c * qz - d) / magNsq;
+          const fx = qx - k * a, fy = qy - k * b, fz = qz - k * c;
+          const dist = Math.sqrt(Math.pow(qx - fx, 2) + Math.pow(qy - fy, 2) + Math.pow(qz - fz, 2));
+          out.innerHTML =
+            resultCell('Foot of Perpendicular', `(${round(fx, 5)}, ${round(fy, 5)}, ${round(fz, 5)})`) +
+            resultCell('Distance from Q', round(dist, 5));
+        }
+      },
+      {
+        id: 'lineIntersectionPoint3D',
+        label: 'Intersection Point of Two Lines (3D)',
+        render: () => `
+          <p class="tool-hint">Lines P₁+tD₁ and P₂+sD₂. Finds their intersection point, if one exists (parallel or skew lines have no unique intersection).</p>
+          <div class="tool-vector-row">
+            ${field('lipP1x', 'P₁x', 'P₁x', 'number')}${field('lipP1y', 'P₁y', 'P₁y', 'number')}${field('lipP1z', 'P₁z', 'P₁z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lipD1x', 'D₁x', 'D₁x', 'number')}${field('lipD1y', 'D₁y', 'D₁y', 'number')}${field('lipD1z', 'D₁z', 'D₁z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lipP2x', 'P₂x', 'P₂x', 'number')}${field('lipP2y', 'P₂y', 'P₂y', 'number')}${field('lipP2z', 'P₂z', 'P₂z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('lipD2x', 'D₂x', 'D₂x', 'number')}${field('lipD2y', 'D₂y', 'D₂y', 'number')}${field('lipD2z', 'D₂z', 'D₂z', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const p1x = num('lipP1x'), p1y = num('lipP1y'), p1z = num('lipP1z');
+          const d1x = num('lipD1x'), d1y = num('lipD1y'), d1z = num('lipD1z');
+          const p2x = num('lipP2x'), p2y = num('lipP2y'), p2z = num('lipP2z');
+          const d2x = num('lipD2x'), d2y = num('lipD2y'), d2z = num('lipD2z');
+          if ([p1x, p1y, p1z, d1x, d1y, d1z, p2x, p2y, p2z, d2x, d2y, d2z].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const crossX = d1y * d2z - d1z * d2y, crossY = d1z * d2x - d1x * d2z, crossZ = d1x * d2y - d1y * d2x;
+          const magCrossSq = crossX * crossX + crossY * crossY + crossZ * crossZ;
+          if (magCrossSq < 1e-12) { out.innerHTML = errorBox('The lines are parallel — no unique intersection point.'); return; }
+          const wx = p2x - p1x, wy = p2y - p1y, wz = p2z - p1z;
+          const wxD2x = wy * d2z - wz * d2y, wxD2y = wz * d2x - wx * d2z, wxD2z = wx * d2y - wy * d2x;
+          const wxD1x = wy * d1z - wz * d1y, wxD1y = wz * d1x - wx * d1z, wxD1z = wx * d1y - wy * d1x;
+          const t1 = (wxD2x * crossX + wxD2y * crossY + wxD2z * crossZ) / magCrossSq;
+          const t2 = (wxD1x * crossX + wxD1y * crossY + wxD1z * crossZ) / magCrossSq;
+          const pt1x = p1x + t1 * d1x, pt1y = p1y + t1 * d1y, pt1z = p1z + t1 * d1z;
+          const pt2x = p2x + t2 * d2x, pt2y = p2y + t2 * d2y, pt2z = p2z + t2 * d2z;
+          const gap = Math.sqrt(Math.pow(pt1x - pt2x, 2) + Math.pow(pt1y - pt2y, 2) + Math.pow(pt1z - pt2z, 2));
+          if (gap > 1e-6) { out.innerHTML = errorBox('The lines are skew — they do not intersect.'); return; }
+          out.innerHTML = resultCell('Intersection Point', `(${round(pt1x, 5)}, ${round(pt1y, 5)}, ${round(pt1z, 5)})`);
+        }
+      },
+      {
+        id: 'planeLineIntersectionPoint',
+        label: 'Intersection of a Line and a Plane',
+        render: () => `
+          <p class="tool-hint">Line P₀+tD and plane ax+by+cz=d. Finds their point of intersection.</p>
+          <div class="tool-vector-row">
+            ${field('pliP0x', 'P₀x', 'P₀x', 'number')}${field('pliP0y', 'P₀y', 'P₀y', 'number')}${field('pliP0z', 'P₀z', 'P₀z', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('pliDx', 'Dx', 'Dx', 'number')}${field('pliDy', 'Dy', 'Dy', 'number')}${field('pliDz', 'Dz', 'Dz', 'number')}
+          </div>
+          <div class="tool-vector-row">
+            ${field('pliA', 'a', 'a', 'number')}${field('pliB', 'b', 'b', 'number')}${field('pliC', 'c', 'c', 'number')}${field('pliD', 'd', 'd', 'number')}
+          </div>
+        `,
+        calc: (out) => {
+          const p0x = num('pliP0x'), p0y = num('pliP0y'), p0z = num('pliP0z');
+          const dx = num('pliDx'), dy = num('pliDy'), dz = num('pliDz');
+          const a = num('pliA'), b = num('pliB'), c = num('pliC'), d = num('pliD');
+          if ([p0x, p0y, p0z, dx, dy, dz, a, b, c, d].some(v => v === null)) { out.innerHTML = errorBox(t('tool_err_vectors')); return; }
+          const denom = a * dx + b * dy + c * dz;
+          const numerator = d - (a * p0x + b * p0y + c * p0z);
+          if (Math.abs(denom) < 1e-9) {
+            out.innerHTML = Math.abs(numerator) < 1e-9
+              ? errorBox('The line lies entirely within the plane — infinitely many intersection points.')
+              : errorBox('The line is parallel to the plane — no intersection.');
+            return;
+          }
+          const tParam = numerator / denom;
+          const ix = p0x + tParam * dx, iy = p0y + tParam * dy, iz = p0z + tParam * dz;
+          out.innerHTML = resultCell('Intersection Point', `(${round(ix, 5)}, ${round(iy, 5)}, ${round(iz, 5)})`);
+        }
       }
     ],
 
@@ -7277,6 +7959,553 @@
             resultCell('Left-hand limit', round(left, 6)) +
             resultCell('Right-hand limit', round(right, 6)) +
             resultCell('Limit exists?', agree ? 'Yes ≈ ' + round((left + right) / 2, 6) : 'No (one-sided limits differ)');
+        }
+      },
+      {
+        id: 'tangentLineEquation',
+        label: 'Equation of Tangent Line',
+        render: () => `
+          <p class="tool-hint">Finds the tangent line to y=f(x) at x=x₀ using the numeric derivative.</p>
+          ${field('telFn', 'f(x)', 'e.g. x^2+3*x', 'text')}
+          ${field('telX0', 'x₀ =', 'point of tangency', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('telFn'));
+          const x0 = num('telX0');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x₀.'); return; }
+          try {
+            const y0 = fn(x0);
+            const m = numDeriv1(fn, x0);
+            if (!isFinite(y0) || !isFinite(m)) throw new Error('bad');
+            const c = y0 - m * x0;
+            out.innerHTML =
+              resultCell('Slope (m)', round(m, 6)) +
+              resultCell('Point', `(${round(x0, 5)}, ${round(y0, 5)})`) +
+              resultCell('Tangent Line', `y = ${round(m, 5)}x ${c >= 0 ? '+' : '−'} ${round(Math.abs(c), 5)}`);
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'normalLineEquation',
+        label: 'Equation of Normal Line',
+        render: () => `
+          <p class="tool-hint">Finds the line perpendicular to the tangent of y=f(x) at x=x₀.</p>
+          ${field('nelFn', 'f(x)', 'e.g. x^2+3*x', 'text')}
+          ${field('nelX0', 'x₀ =', 'point on the curve', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('nelFn'));
+          const x0 = num('nelX0');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x₀.'); return; }
+          try {
+            const y0 = fn(x0);
+            const m = numDeriv1(fn, x0);
+            if (!isFinite(y0) || !isFinite(m)) throw new Error('bad');
+            if (Math.abs(m) < 1e-9) { out.innerHTML = errorBox('The tangent is horizontal — the normal line is vertical: x = ' + round(x0, 5)); return; }
+            const mn = -1 / m;
+            const c = y0 - mn * x0;
+            out.innerHTML =
+              resultCell('Tangent Slope', round(m, 6)) +
+              resultCell('Normal Slope', round(mn, 6)) +
+              resultCell('Normal Line', `y = ${round(mn, 5)}x ${c >= 0 ? '+' : '−'} ${round(Math.abs(c), 5)}`);
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'avgRateOfChange',
+        label: 'Average Rate of Change',
+        render: () => `
+          <p class="tool-hint">Computes [f(b) − f(a)] / (b − a) over an interval.</p>
+          ${field('arcFn', 'f(x)', 'e.g. x^3-2*x', 'text')}
+          ${field('arcA', 'a =', '', 'number')}
+          ${field('arcB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('arcFn'));
+          const a = num('arcA'), b = num('arcB');
+          if (!fn || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid f(x) and distinct points a, b.'); return; }
+          try {
+            const fa = fn(a), fb = fn(b);
+            if (!isFinite(fa) || !isFinite(fb)) throw new Error('bad');
+            out.innerHTML =
+              resultCell('f(a)', round(fa, 6)) +
+              resultCell('f(b)', round(fb, 6)) +
+              resultCell('Average Rate of Change', round((fb - fa) / (b - a), 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at a or b.'); }
+        }
+      },
+      {
+        id: 'newtonRaphsonRoot',
+        label: 'Newton–Raphson Root Finder',
+        render: () => `
+          <p class="tool-hint">Finds a root of f(x)=0 starting from an initial guess, using x₍ₙ₊₁₎ = xₙ − f(xₙ)/f'(xₙ).</p>
+          ${field('nrFn', 'f(x)', 'e.g. x^3-2*x-5', 'text')}
+          ${field('nrX0', 'Initial guess x₀', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('nrFn'));
+          let x0 = num('nrX0');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and an initial guess.'); return; }
+          let x = x0, iterations = 0, converged = false;
+          try {
+            for (let i = 0; i < 100; i++) {
+              const fx = fn(x);
+              const dfx = numDeriv1(fn, x);
+              if (!isFinite(fx) || !isFinite(dfx)) break;
+              if (Math.abs(dfx) < 1e-12) break;
+              const xNext = x - fx / dfx;
+              iterations++;
+              if (Math.abs(xNext - x) < 1e-10) { x = xNext; converged = true; break; }
+              x = xNext;
+            }
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function during iteration.'); return; }
+          if (!converged || !isFinite(x)) { out.innerHTML = errorBox('Did not converge from that starting guess — try a different x₀.'); return; }
+          out.innerHTML =
+            resultCell('Root (x)', round(x, 8)) +
+            resultCell('f(root)', round(fn(x), 8)) +
+            resultCell('Iterations', iterations);
+        }
+      },
+      {
+        id: 'criticalPointsInterval',
+        label: 'Critical Points in an Interval',
+        render: () => `
+          <p class="tool-hint">Scans [a, b] for points where f'(x) = 0 (numerically).</p>
+          ${field('cpiFn', 'f(x)', 'e.g. x^3-3*x', 'text')}
+          ${field('cpiA', 'a =', 'interval start', 'number')}
+          ${field('cpiB', 'b =', 'interval end', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('cpiFn'));
+          const a = num('cpiA'), b = num('cpiB');
+          if (!fn || a === null || b === null || a >= b) { out.innerHTML = errorBox('Enter a valid f(x) and a < b.'); return; }
+          const n = 2000, h = (b - a) / n;
+          const points = [];
+          let prevX = a, prevD;
+          try { prevD = numDeriv1(fn, prevX); } catch (e) { prevD = NaN; }
+          for (let i = 1; i <= n; i++) {
+            const xi = a + i * h;
+            let di;
+            try { di = numDeriv1(fn, xi); } catch (e) { di = NaN; }
+            if (isFinite(prevD) && isFinite(di) && prevD * di < 0) {
+              // bisect between prevX and xi for a sign change of f'
+              let lo = prevX, hi = xi, dlo = prevD;
+              for (let k = 0; k < 40; k++) {
+                const mid = (lo + hi) / 2;
+                let dmid; try { dmid = numDeriv1(fn, mid); } catch (e) { dmid = NaN; }
+                if (!isFinite(dmid)) break;
+                if (dlo * dmid <= 0) { hi = mid; } else { lo = mid; dlo = dmid; }
+              }
+              const c = (lo + hi) / 2;
+              if (points.length === 0 || Math.abs(points[points.length - 1] - c) > 1e-4) points.push(c);
+            }
+            prevX = xi; prevD = di;
+          }
+          if (points.length === 0) { out.innerHTML = resultCell('Critical Points', 'None found in this interval'); return; }
+          const list = points.slice(0, 10).map(c => `x = ${round(c, 5)} (f = ${round(fn(c), 5)})`).join('<br>');
+          out.innerHTML = resultCell('Critical Points Found', list);
+        }
+      },
+      {
+        id: 'concavityInflectionTest',
+        label: 'Concavity Test at a Point',
+        render: () => `
+          <p class="tool-hint">Uses f''(x) to determine concavity, and checks nearby points for a possible inflection.</p>
+          ${field('citFn', 'f(x)', 'e.g. x^3-3*x', 'text')}
+          ${field('citX', 'x =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('citFn'));
+          const x0 = num('citX');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x.'); return; }
+          try {
+            const d2 = numDeriv2(fn, x0);
+            const d2Left = numDeriv2(fn, x0 - 0.05);
+            const d2Right = numDeriv2(fn, x0 + 0.05);
+            let shape = Math.abs(d2) < 1e-6 ? 'Possibly an inflection point (f\'\'≈0)' : (d2 > 0 ? 'Concave Up' : 'Concave Down');
+            const signChange = isFinite(d2Left) && isFinite(d2Right) && (d2Left * d2Right < 0);
+            out.innerHTML =
+              resultCell("f''(x)", round(d2, 6)) +
+              resultCell('Concavity', shape) +
+              resultCell('Inflection nearby?', signChange ? 'Yes — concavity changes sign near this x' : 'No sign change detected nearby');
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'secondDerivativeTest',
+        label: 'Local Extrema Classifier (2nd Derivative Test)',
+        render: () => `
+          <p class="tool-hint">Given a candidate critical point x, classifies it as a local max, local min, or inconclusive.</p>
+          ${field('sdtFn', 'f(x)', 'e.g. x^3-3*x', 'text')}
+          ${field('sdtX', 'Candidate x =', 'where f\'(x)≈0', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('sdtFn'));
+          const x0 = num('sdtX');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a candidate point x.'); return; }
+          try {
+            const d1 = numDeriv1(fn, x0);
+            const d2 = numDeriv2(fn, x0);
+            let verdict;
+            if (Math.abs(d1) > 1e-2) verdict = 'Not a critical point — f\'(x) is not close to 0 here';
+            else if (d2 > 1e-6) verdict = 'Local Minimum (f\'\'>0)';
+            else if (d2 < -1e-6) verdict = 'Local Maximum (f\'\'<0)';
+            else verdict = 'Inconclusive (f\'\'≈0) — try the first derivative test';
+            out.innerHTML =
+              resultCell("f'(x)", round(d1, 6)) +
+              resultCell("f''(x)", round(d2, 6)) +
+              resultCell('Classification', verdict);
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'increasingDecreasingTest',
+        label: 'Increasing or Decreasing at a Point',
+        render: () => `
+          <p class="tool-hint">Uses the sign of f'(x) to tell whether the function is rising or falling at x.</p>
+          ${field('idtFn', 'f(x)', 'e.g. x^2-4*x', 'text')}
+          ${field('idtX', 'x =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('idtFn'));
+          const x0 = num('idtX');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x.'); return; }
+          try {
+            const d1 = numDeriv1(fn, x0);
+            const verdict = Math.abs(d1) < 1e-6 ? 'Stationary (f\'(x)≈0)' : (d1 > 0 ? 'Increasing' : 'Decreasing');
+            out.innerHTML = resultCell("f'(x)", round(d1, 6)) + resultCell('Behavior', verdict);
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'riemannSum',
+        label: 'Riemann Sum Approximation',
+        render: () => `
+          <p class="tool-hint">Approximates ∫f(x)dx from a to b as a sum of n rectangles.</p>
+          ${field('rsFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('rsA', 'a =', '', 'number')}
+          ${field('rsB', 'b =', '', 'number')}
+          ${field('rsN', 'n (subintervals)', 'e.g. 100', 'number')}
+          ${selectField('rsMethod', 'Sample point', [
+            { value: 'left', label: 'Left endpoint' },
+            { value: 'right', label: 'Right endpoint' },
+            { value: 'mid', label: 'Midpoint' }
+          ])}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('rsFn'));
+          const a = num('rsA'), b = num('rsB');
+          let n = num('rsN');
+          const method = str('rsMethod') || document.getElementById('rsMethod')?.value;
+          if (!fn || a === null || b === null || a === b || !n || n <= 0) { out.innerHTML = errorBox('Enter a valid f(x), distinct bounds a,b, and a positive n.'); return; }
+          n = Math.max(1, Math.round(n));
+          const h = (b - a) / n;
+          let sum = 0;
+          try {
+            for (let i = 0; i < n; i++) {
+              let xi;
+              if (method === 'right') xi = a + (i + 1) * h;
+              else if (method === 'mid') xi = a + (i + 0.5) * h;
+              else xi = a + i * h;
+              sum += fn(xi) * h;
+            }
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); return; }
+          if (!isFinite(sum)) { out.innerHTML = errorBox('The function is undefined somewhere in that range.'); return; }
+          out.innerHTML = resultCell('Riemann Sum ≈', round(sum, 6));
+        }
+      },
+      {
+        id: 'trapezoidalRule',
+        label: 'Trapezoidal Rule Integral',
+        render: () => `
+          <p class="tool-hint">Approximates ∫f(x)dx from a to b using n trapezoids.</p>
+          ${field('trFn', 'f(x)', 'e.g. sqrt(x)', 'text')}
+          ${field('trA', 'a =', '', 'number')}
+          ${field('trB', 'b =', '', 'number')}
+          ${field('trN', 'n (subintervals)', 'e.g. 100', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('trFn'));
+          const a = num('trA'), b = num('trB');
+          let n = num('trN');
+          if (!fn || a === null || b === null || a === b || !n || n <= 0) { out.innerHTML = errorBox('Enter a valid f(x), distinct bounds a,b, and a positive n.'); return; }
+          n = Math.max(1, Math.round(n));
+          const h = (b - a) / n;
+          let sum;
+          try {
+            sum = (fn(a) + fn(b)) / 2;
+            for (let i = 1; i < n; i++) sum += fn(a + i * h);
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); return; }
+          const integral = sum * h;
+          if (!isFinite(integral)) { out.innerHTML = errorBox('The function is undefined somewhere in that range.'); return; }
+          out.innerHTML = resultCell('Trapezoidal Estimate', round(integral, 6));
+        }
+      },
+      {
+        id: 'arcLengthCurve',
+        label: 'Arc Length of a Curve',
+        render: () => `
+          <p class="tool-hint">Computes the arc length of y=f(x) from x=a to x=b: ∫√(1+f'(x)²)dx.</p>
+          ${field('alcFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('alcA', 'a =', '', 'number')}
+          ${field('alcB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('alcFn'));
+          const a = num('alcA'), b = num('alcB');
+          if (!fn || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid f(x) and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (x) => Math.sqrt(1 + Math.pow(numDeriv1(fn, x), 2));
+            const length = simpsonIntegral(integrand, a, b, 500);
+            if (!isFinite(length)) throw new Error('bad');
+            out.innerHTML = resultCell('Arc Length', round(length, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not compute the arc length over that range.'); }
+        }
+      },
+      {
+        id: 'areaBetweenCurves',
+        label: 'Area Between Two Curves',
+        render: () => `
+          <p class="tool-hint">Computes ∫|f(x) − g(x)|dx from a to b — the area trapped between the two curves.</p>
+          ${field('abcFnF', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('abcFnG', 'g(x)', 'e.g. x', 'text')}
+          ${field('abcA', 'a =', '', 'number')}
+          ${field('abcB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const f = compileCalcFn(str('abcFnF'));
+          const g = compileCalcFn(str('abcFnG'));
+          const a = num('abcA'), b = num('abcB');
+          if (!f || !g || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter valid f(x), g(x), and distinct bounds a, b.'); return; }
+          try {
+            const diff = (x) => Math.abs(f(x) - g(x));
+            const area = simpsonIntegral(diff, a, b, 1000);
+            if (!isFinite(area)) throw new Error('bad');
+            out.innerHTML = resultCell('Area Between Curves', round(area, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the functions over that range.'); }
+        }
+      },
+      {
+        id: 'volumeDiskMethod',
+        label: 'Volume of Revolution — Disk Method',
+        render: () => `
+          <p class="tool-hint">Revolves y=f(x) around the x-axis from x=a to x=b: V = π∫f(x)²dx.</p>
+          ${field('vdmFn', 'f(x)', 'e.g. sqrt(x)', 'text')}
+          ${field('vdmA', 'a =', '', 'number')}
+          ${field('vdmB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('vdmFn'));
+          const a = num('vdmA'), b = num('vdmB');
+          if (!fn || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid f(x) and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (x) => Math.pow(fn(x), 2);
+            const volume = Math.PI * simpsonIntegral(integrand, a, b, 1000);
+            if (!isFinite(volume)) throw new Error('bad');
+            out.innerHTML = resultCell('Volume (Disk Method)', round(volume, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
+      },
+      {
+        id: 'volumeShellMethod',
+        label: 'Volume of Revolution — Shell Method',
+        render: () => `
+          <p class="tool-hint">Revolves y=f(x) around the y-axis from x=a to x=b (a≥0): V = 2π∫x·f(x)dx.</p>
+          ${field('vsmFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('vsmA', 'a =', '≥ 0', 'number')}
+          ${field('vsmB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('vsmFn'));
+          const a = num('vsmA'), b = num('vsmB');
+          if (!fn || a === null || b === null || a === b || a < 0) { out.innerHTML = errorBox('Enter a valid f(x) and bounds with a ≥ 0, a ≠ b.'); return; }
+          try {
+            const integrand = (x) => x * fn(x);
+            const volume = 2 * Math.PI * simpsonIntegral(integrand, a, b, 1000);
+            if (!isFinite(volume)) throw new Error('bad');
+            out.innerHTML = resultCell('Volume (Shell Method)', round(volume, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
+      },
+      {
+        id: 'surfaceAreaRevolution',
+        label: 'Surface Area of Revolution',
+        render: () => `
+          <p class="tool-hint">Surface area of y=f(x) revolved around the x-axis from a to b: S = 2π∫f(x)√(1+f'(x)²)dx.</p>
+          ${field('sarFn', 'f(x)', 'e.g. sqrt(x)', 'text')}
+          ${field('sarA', 'a =', '', 'number')}
+          ${field('sarB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('sarFn'));
+          const a = num('sarA'), b = num('sarB');
+          if (!fn || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid f(x) and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (x) => fn(x) * Math.sqrt(1 + Math.pow(numDeriv1(fn, x), 2));
+            const area = 2 * Math.PI * simpsonIntegral(integrand, a, b, 500);
+            if (!isFinite(area)) throw new Error('bad');
+            out.innerHTML = resultCell('Surface Area', round(area, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
+      },
+      {
+        id: 'curvatureAtPoint',
+        label: 'Curvature at a Point',
+        render: () => `
+          <p class="tool-hint">Computes κ = |f''(x)| / (1+f'(x)²)^1.5 and the radius of curvature.</p>
+          ${field('capFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('capX', 'x =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('capFn'));
+          const x0 = num('capX');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x.'); return; }
+          try {
+            const d1 = numDeriv1(fn, x0);
+            const d2 = numDeriv2(fn, x0);
+            const kappa = Math.abs(d2) / Math.pow(1 + d1 * d1, 1.5);
+            if (!isFinite(kappa)) throw new Error('bad');
+            out.innerHTML =
+              resultCell('Curvature (κ)', round(kappa, 8)) +
+              resultCell('Radius of Curvature', kappa < 1e-9 ? '∞ (nearly straight)' : round(1 / kappa, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'oneSidedLimit',
+        label: 'One-Sided Limit',
+        render: () => `
+          <p class="tool-hint">Approaches x → a from a single side only, using progressively smaller steps.</p>
+          ${field('oslFn', 'f(x)', 'e.g. 1/(x-2)', 'text')}
+          ${field('oslA', 'a =', 'the point x approaches', 'number')}
+          ${selectField('oslDir', 'Approach from', [
+            { value: 'left', label: 'Left (a⁻)' },
+            { value: 'right', label: 'Right (a⁺)' }
+          ])}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('oslFn'));
+          const a = num('oslA');
+          const dir = document.getElementById('oslDir')?.value || 'right';
+          if (!fn || a === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point a.'); return; }
+          const sign = dir === 'left' ? -1 : 1;
+          const steps = [1e-2, 1e-4, 1e-6, 1e-8];
+          const vals = steps.map(h => { try { return fn(a + sign * h); } catch (e) { return NaN; } });
+          const last = vals[vals.length - 1];
+          if (!vals.every(v => isFinite(v))) { out.innerHTML = errorBox('The function appears undefined or unbounded from that side.'); return; }
+          const stable = Math.abs(vals[vals.length - 1] - vals[vals.length - 2]) < 1e-4;
+          out.innerHTML =
+            resultCell('Approaching values', vals.map(v => round(v, 6)).join(' → ')) +
+            resultCell(dir === 'left' ? 'Left-hand limit' : 'Right-hand limit', stable ? ('≈ ' + round(last, 6)) : 'Does not appear to converge');
+        }
+      },
+      {
+        id: 'limitAtInfinity',
+        label: 'Limit at Infinity',
+        render: () => `
+          <p class="tool-hint">Evaluates the trend of f(x) as x → +∞ or x → −∞.</p>
+          ${field('liFn', 'f(x)', 'e.g. (2*x+1)/(x-3)', 'text')}
+          ${selectField('liDir', 'Direction', [
+            { value: 'pos', label: 'x → +∞' },
+            { value: 'neg', label: 'x → −∞' }
+          ])}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('liFn'));
+          const dir = document.getElementById('liDir')?.value || 'pos';
+          if (!fn) { out.innerHTML = errorBox('Enter a valid f(x).'); return; }
+          const sign = dir === 'neg' ? -1 : 1;
+          const xs = [1e3, 1e5, 1e7].map(v => sign * v);
+          const vals = xs.map(x => { try { return fn(x); } catch (e) { return NaN; } });
+          if (!vals.every(v => isFinite(v))) {
+            out.innerHTML = resultCell('Limit', 'Diverges (unbounded or undefined)');
+            return;
+          }
+          const stable = Math.abs(vals[2] - vals[1]) < 1e-4 * (Math.abs(vals[2]) + 1);
+          out.innerHTML =
+            resultCell('Sampled values', vals.map(v => round(v, 6)).join(' → ')) +
+            resultCell('Limit', stable ? ('≈ ' + round(vals[2], 6)) : 'Does not appear to converge (may diverge or oscillate)');
+        }
+      },
+      {
+        id: 'taylorPolynomial',
+        label: 'Taylor Polynomial Approximation',
+        render: () => `
+          <p class="tool-hint">Builds the Taylor polynomial of f(x) centered at a, up to the chosen order, and evaluates it at x.</p>
+          ${field('tpFn', 'f(x)', 'e.g. exp(x)', 'text')}
+          ${field('tpA', 'Center a =', '', 'number')}
+          ${field('tpX', 'Evaluate at x =', '', 'number')}
+          ${selectField('tpOrder', 'Order', [
+            { value: '1', label: '1 (linear)' },
+            { value: '2', label: '2 (quadratic)' },
+            { value: '3', label: '3 (cubic)' },
+            { value: '4', label: '4 (quartic)' }
+          ])}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('tpFn'));
+          const a = num('tpA'), x = num('tpX');
+          const order = parseInt(document.getElementById('tpOrder')?.value || '2', 10);
+          if (!fn || a === null || x === null) { out.innerHTML = errorBox('Enter a valid f(x), center a, and evaluation point x.'); return; }
+          try {
+            const fa = fn(a);
+            const d1 = numDeriv1(fn, a);
+            const d2 = numDeriv2(fn, a);
+            const d3 = order >= 3 ? numDeriv3(fn, a) : 0;
+            const d4 = order >= 4 ? numDeriv4(fn, a) : 0;
+            const dx = x - a;
+            let approx = fa;
+            if (order >= 1) approx += d1 * dx;
+            if (order >= 2) approx += (d2 * Math.pow(dx, 2)) / 2;
+            if (order >= 3) approx += (d3 * Math.pow(dx, 3)) / 6;
+            if (order >= 4) approx += (d4 * Math.pow(dx, 4)) / 24;
+            const actual = fn(x);
+            if (!isFinite(approx)) throw new Error('bad');
+            out.innerHTML =
+              resultCell(`Taylor Approximation (order ${order})`, round(approx, 6)) +
+              resultCell('Actual f(x)', isFinite(actual) ? round(actual, 6) : 'undefined') +
+              resultCell('Error', isFinite(actual) ? round(Math.abs(actual - approx), 6) : '—');
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function near that center.'); }
+        }
+      },
+      {
+        id: 'meanValueTheorem',
+        label: 'Mean Value Theorem Solver',
+        render: () => `
+          <p class="tool-hint">Finds c in (a, b) such that f'(c) equals the average rate of change of f over [a, b].</p>
+          ${field('mvtFn', 'f(x)', 'e.g. x^3-x', 'text')}
+          ${field('mvtA', 'a =', '', 'number')}
+          ${field('mvtB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('mvtFn'));
+          const a = num('mvtA'), b = num('mvtB');
+          if (!fn || a === null || b === null || a >= b) { out.innerHTML = errorBox('Enter a valid f(x) and a < b.'); return; }
+          try {
+            const avgRate = (fn(b) - fn(a)) / (b - a);
+            const g = (x) => numDeriv1(fn, x) - avgRate;
+            const n = 500, h = (b - a) / n;
+            let found = null, prevX = a, prevG = g(a);
+            for (let i = 1; i <= n && found === null; i++) {
+              const xi = a + i * h;
+              const gi = g(xi);
+              if (isFinite(prevG) && isFinite(gi) && prevG * gi <= 0) {
+                let lo = prevX, hi = xi, glo = prevG;
+                for (let k = 0; k < 40; k++) {
+                  const mid = (lo + hi) / 2;
+                  const gmid = g(mid);
+                  if (glo * gmid <= 0) hi = mid; else { lo = mid; glo = gmid; }
+                }
+                found = (lo + hi) / 2;
+              }
+              prevX = xi; prevG = gi;
+            }
+            if (found === null) { out.innerHTML = errorBox('No point c found — check that f is well-behaved on [a, b].'); return; }
+            out.innerHTML =
+              resultCell('Average Rate of Change', round(avgRate, 6)) +
+              resultCell('c (in the interval)', round(found, 6)) +
+              resultCell("f'(c)", round(numDeriv1(fn, found), 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that interval.'); }
         }
       }
     ],
