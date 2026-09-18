@@ -835,24 +835,54 @@
         <button class="subject-pill active" data-graphmode="function" id="graphModeFnBtn" data-i18n="graph_mode_function">Function Graph</button>
         <button class="subject-pill" data-graphmode="unitcircle" id="graphModeCircleBtn" data-i18n="graph_mode_unitcircle">Unit Circle</button>
         <button class="subject-pill" data-graphmode="surface3d" id="graphMode3DBtn" data-i18n="graph_mode_3d">3D Surface</button>
+        <button class="subject-pill" data-graphmode="polar" id="graphModePolarBtn" data-i18n="graph_mode_polar">Polar Graph</button>
       </div>
 
       <div id="graphFunctionPanel">
         <input type="text" class="formula-search convert-input" id="graphFnInput" placeholder="e.g. sin(x), x^2, 2x+3" data-i18n-placeholder="graph_fn_placeholder" value="sin(x)">
         <div class="graph-quick-row" id="graphQuickBtns">
           <button class="pill-btn small" data-fn="x^2">x²</button>
+          <button class="pill-btn small" data-fn="x^3">x³</button>
           <button class="pill-btn small" data-fn="sin(x)">sin(x)</button>
           <button class="pill-btn small" data-fn="cos(x)">cos(x)</button>
           <button class="pill-btn small" data-fn="tan(x)">tan(x)</button>
+          <button class="pill-btn small" data-fn="cot(x)">cot(x)</button>
+          <button class="pill-btn small" data-fn="sec(x)">sec(x)</button>
+          <button class="pill-btn small" data-fn="csc(x)">csc(x)</button>
           <button class="pill-btn small" data-fn="sqrt(x)">√x</button>
+          <button class="pill-btn small" data-fn="cbrt(x)">∛x</button>
           <button class="pill-btn small" data-fn="1/x">1/x</button>
+          <button class="pill-btn small" data-fn="abs(x)">|x|</button>
+          <button class="pill-btn small" data-fn="exp(x)">eˣ</button>
+          <button class="pill-btn small" data-fn="log(x)">ln(x)</button>
+          <button class="pill-btn small" data-fn="log10(x)">log₁₀(x)</button>
+          <button class="pill-btn small" data-fn="sinh(x)">sinh(x)</button>
+          <button class="pill-btn small" data-fn="cosh(x)">cosh(x)</button>
+          <button class="pill-btn small" data-fn="tanh(x)">tanh(x)</button>
+          <button class="pill-btn small" data-fn="floor(x)">⌊x⌋</button>
         </div>
         <div class="graph-range-row">
           <input type="number" class="formula-search convert-input" id="graphXMin" value="-10">
           <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
           <input type="number" class="formula-search convert-input" id="graphXMax" value="10">
         </div>
+
+        <div class="graph-tools-row" id="graphToolsRow">
+          <label class="graph-tool-toggle"><input type="checkbox" id="graphShowSecond"> <span data-i18n="graph_tool_compare">Compare g(x)</span></label>
+          <label class="graph-tool-toggle"><input type="checkbox" id="graphShowDeriv"> <span data-i18n="graph_tool_deriv">f'(x)</span></label>
+          <label class="graph-tool-toggle"><input type="checkbox" id="graphShowIntegral"> <span data-i18n="graph_tool_integral">Area (a→b)</span></label>
+          <button class="pill-btn small" id="graphTableBtn" type="button" data-i18n="graph_tool_table">Table</button>
+        </div>
+        <input type="text" class="formula-search convert-input" id="graphFn2Input" placeholder="g(x) e.g. cos(x)" data-i18n-placeholder="graph_fn2_placeholder" value="cos(x)" style="display:none;">
+        <div class="graph-range-row" id="graphIntegralRow" style="display:none;">
+          <input type="number" class="formula-search convert-input" id="graphIntA" value="0">
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphIntB" value="2">
+          <span class="graph-integral-value" id="graphIntValue"></span>
+        </div>
         <div class="graph-error" id="graphError"></div>
+        <div class="graph-legend" id="graphLegend"></div>
+        <div class="graph-table-wrap" id="graphTableWrap" style="display:none;"></div>
       </div>
 
       <div id="graphUnitCirclePanel" style="display:none;">
@@ -870,9 +900,29 @@
           <button class="pill-btn small" data-fn3d="sin(sqrt(x*x+y*y))">sin(√(x²+y²))</button>
           <button class="pill-btn small" data-fn3d="sin(x)*cos(y)">sin(x)cos(y)</button>
           <button class="pill-btn small" data-fn3d="x*x-y*y">x²−y²</button>
+          <button class="pill-btn small" data-fn3d="tanh(x)*cos(y)">tanh(x)cos(y)</button>
+          <button class="pill-btn small" data-fn3d="log(x*x+y*y+1)">ln(x²+y²+1)</button>
         </div>
         <div class="graph-error" id="graph3DError"></div>
         <div class="graph-3d-hint" data-i18n="graph_3d_hint">Drag to rotate the surface</div>
+      </div>
+
+      <div id="graphPolarPanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graphPolarFnInput" placeholder="r(t) e.g. 1+cos(t)" data-i18n-placeholder="graph_polar_placeholder" value="1+cos(t)">
+        <div class="graph-quick-row" id="graphPolarQuickBtns">
+          <button class="pill-btn small" data-fnpolar="2" data-thetamax="2">r = 2</button>
+          <button class="pill-btn small" data-fnpolar="1+cos(t)" data-thetamax="2">Cardioid</button>
+          <button class="pill-btn small" data-fnpolar="cos(3*t)" data-thetamax="1">Rose (3-petal)</button>
+          <button class="pill-btn small" data-fnpolar="cos(2*t)" data-thetamax="2">Rose (4-petal)</button>
+          <button class="pill-btn small" data-fnpolar="t" data-thetamax="4">Spiral</button>
+          <button class="pill-btn small" data-fnpolar="2*sin(4*t)" data-thetamax="2">8-petal Flower</button>
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_polar_theta_label">θ from 0 to</span>
+          <input type="number" class="formula-search convert-input" id="graphPolarThetaMax" value="2" step="0.5" min="0.5">
+          <span class="graph-range-sep">π</span>
+        </div>
+        <div class="graph-error" id="graphPolarError"></div>
       </div>
 
       <div class="graph-canvas-wrap">
