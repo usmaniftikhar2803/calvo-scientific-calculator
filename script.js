@@ -6484,25 +6484,49 @@ setTimeout(() => {
   const error3D = document.getElementById('graph3DError');
   const canvas3D = document.getElementById('graph3DCanvas');
   const ctx3D = canvas3D ? canvas3D.getContext('2d') : null;
+  const showSecondCb = document.getElementById('graphShowSecond');
+  const showDerivCb = document.getElementById('graphShowDeriv');
+  const showIntegralCb = document.getElementById('graphShowIntegral');
+  const fn2Input = document.getElementById('graphFn2Input');
+  const integralRow = document.getElementById('graphIntegralRow');
+  const intAInput = document.getElementById('graphIntA');
+  const intBInput = document.getElementById('graphIntB');
+  const intValueSpan = document.getElementById('graphIntValue');
+  const tableBtn = document.getElementById('graphTableBtn');
+  const tableWrap = document.getElementById('graphTableWrap');
+  const legendEl = document.getElementById('graphLegend');
+  const modePolarBtn = document.getElementById('graphModePolarBtn');
+  const polarPanel = document.getElementById('graphPolarPanel');
+  const polarFnInput = document.getElementById('graphPolarFnInput');
+  const polarThetaMaxInput = document.getElementById('graphPolarThetaMax');
+  const polarError = document.getElementById('graphPolarError');
+  const quickPolarBtns = document.getElementById('graphPolarQuickBtns');
 
   let graphMode = 'function';
 
   // Whitelist-validate the expression before ever handing it to Function(),
   // so only numbers, x, basic operators, parens, commas, dots and known
   // function names can appear — nothing else is allowed through.
-  const ALLOWED_FN_NAMES = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'abs', 'log', 'ln', 'exp', 'pow', 'min', 'max'];
+  const ALLOWED_FN_NAMES = ['sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'asin', 'acos', 'atan', 'acot', 'asec', 'acsc',
+    'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh', 'sqrt', 'cbrt', 'abs', 'log', 'ln', 'log10', 'log2',
+    'exp', 'pow', 'min', 'max', 'floor', 'ceil', 'round', 'trunc', 'sign'];
+  // Helper functions injected into the compiled Function's scope for names
+  // JS's Math object has no native equivalent for (reciprocal trig etc.)
+  const FN_HELPERS = 'const cot=a=>1/Math.tan(a),sec=a=>1/Math.cos(a),csc=a=>1/Math.sin(a),' +
+    'acot=a=>Math.atan(1/a),asec=a=>Math.acos(1/a),acsc=a=>Math.asin(1/a);';
   function compileFn(exprRaw) {
     let expr = exprRaw.trim();
     if (!expr) return null;
     // implicit multiplication: 2x -> 2*x, )x -> )*x, 2( -> 2*(
     expr = expr.replace(/(\d)(x)/gi, '$1*$2');
     expr = expr.replace(/\)(\s*)(x|\()/gi, ')*$2');
-    expr = expr.replace(/(\d)(\()/g, '$1*$2');
+    // skip the digit-before-paren rule when it's actually part of log10( / log2(
+    expr = expr.replace(/(?<!log1)(?<!log)(\d)(\()/g, '$1*$2');
     expr = expr.replace(/\^/g, '**');
     expr = expr.replace(/\bln\(/g, 'log(');
 
     const safety = expr
-      .replace(/\b(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|pow|min|max|pi|PI)\b/g, '')
+      .replace(/\b(sin|cos|tan|cot|sec|csc|asin|acos|atan|acot|asec|acsc|sinh|cosh|tanh|asinh|acosh|atanh|sqrt|cbrt|abs|log10|log2|log|exp|pow|min|max|floor|ceil|round|trunc|sign|pi|PI)\b/g, '')
       .replace(/[x\d\s+\-*/().,]/g, '');
     if (safety.length > 0) return null;
 
@@ -6513,19 +6537,69 @@ setTimeout(() => {
       .replace(/\basin\(/g, 'Math.asin(')
       .replace(/\bacos\(/g, 'Math.acos(')
       .replace(/\batan\(/g, 'Math.atan(')
+      .replace(/\bsinh\(/g, 'Math.sinh(')
+      .replace(/\bcosh\(/g, 'Math.cosh(')
+      .replace(/\btanh\(/g, 'Math.tanh(')
+      .replace(/\basinh\(/g, 'Math.asinh(')
+      .replace(/\bacosh\(/g, 'Math.acosh(')
+      .replace(/\batanh\(/g, 'Math.atanh(')
       .replace(/\bsqrt\(/g, 'Math.sqrt(')
+      .replace(/\bcbrt\(/g, 'Math.cbrt(')
       .replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\blog10\(/g, 'Math.log10(')
+      .replace(/\blog2\(/g, 'Math.log2(')
       .replace(/\blog\(/g, 'Math.log(')
       .replace(/\bexp\(/g, 'Math.exp(')
       .replace(/\bpow\(/g, 'Math.pow(')
       .replace(/\bmin\(/g, 'Math.min(')
       .replace(/\bmax\(/g, 'Math.max(')
+      .replace(/\bfloor\(/g, 'Math.floor(')
+      .replace(/\bceil\(/g, 'Math.ceil(')
+      .replace(/\bround\(/g, 'Math.round(')
+      .replace(/\btrunc\(/g, 'Math.trunc(')
+      .replace(/\bsign\(/g, 'Math.sign(')
       .replace(/\bpi\b/gi, 'Math.PI');
 
     try {
       // eslint-disable-next-line no-new-func
-      const fn = new Function('x', 'return (' + funcBody + ');');
+      const fn = new Function('x', FN_HELPERS + ' return (' + funcBody + ');');
       fn(1); // sanity call
+      return fn;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Same whitelist/compile approach as compileFn, but for polar r(θ)
+  // expressions using "t" as the angle variable (radians).
+  function compilePolarFn(exprRaw) {
+    let expr = (exprRaw || '').trim();
+    if (!expr) return null;
+    expr = expr.replace(/(\d)(t)/gi, '$1*$2');
+    expr = expr.replace(/\)(\s*)(t|\()/gi, ')*$2');
+    expr = expr.replace(/(?<!log1)(?<!log)(\d)(\()/g, '$1*$2');
+    expr = expr.replace(/\^/g, '**');
+    expr = expr.replace(/\bln\(/g, 'log(');
+
+    const safety = expr
+      .replace(/\b(sin|cos|tan|cot|sec|csc|asin|acos|atan|acot|asec|acsc|sinh|cosh|tanh|asinh|acosh|atanh|sqrt|cbrt|abs|log10|log2|log|exp|pow|min|max|floor|ceil|round|trunc|sign|pi|PI)\b/g, '')
+      .replace(/[t\d\s+\-*/().,]/g, '');
+    if (safety.length > 0) return null;
+
+    const funcBody = expr
+      .replace(/\bsin\(/g, 'Math.sin(').replace(/\bcos\(/g, 'Math.cos(').replace(/\btan\(/g, 'Math.tan(')
+      .replace(/\basin\(/g, 'Math.asin(').replace(/\bacos\(/g, 'Math.acos(').replace(/\batan\(/g, 'Math.atan(')
+      .replace(/\bsinh\(/g, 'Math.sinh(').replace(/\bcosh\(/g, 'Math.cosh(').replace(/\btanh\(/g, 'Math.tanh(')
+      .replace(/\basinh\(/g, 'Math.asinh(').replace(/\bacosh\(/g, 'Math.acosh(').replace(/\batanh\(/g, 'Math.atanh(')
+      .replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\bcbrt\(/g, 'Math.cbrt(').replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\blog10\(/g, 'Math.log10(').replace(/\blog2\(/g, 'Math.log2(').replace(/\blog\(/g, 'Math.log(')
+      .replace(/\bexp\(/g, 'Math.exp(').replace(/\bpow\(/g, 'Math.pow(').replace(/\bmin\(/g, 'Math.min(').replace(/\bmax\(/g, 'Math.max(')
+      .replace(/\bfloor\(/g, 'Math.floor(').replace(/\bceil\(/g, 'Math.ceil(').replace(/\bround\(/g, 'Math.round(').replace(/\btrunc\(/g, 'Math.trunc(')
+      .replace(/\bsign\(/g, 'Math.sign(').replace(/\bpi\b/gi, 'Math.PI');
+
+    try {
+      const fn = new Function('t', FN_HELPERS + ' return (' + funcBody + ');');
+      fn(1);
       return fn;
     } catch (e) {
       return null;
@@ -6583,6 +6657,86 @@ setTimeout(() => {
     return step * mag;
   }
 
+  // numeric derivative via central difference
+  function numericDeriv(fn, x, h) {
+    try {
+      const y1 = fn(x + h), y2 = fn(x - h);
+      if (!isFinite(y1) || !isFinite(y2)) return NaN;
+      return (y1 - y2) / (2 * h);
+    } catch (e) { return NaN; }
+  }
+
+  // numeric definite integral via Simpson's rule
+  function numericIntegral(fn, a, b, n) {
+    if (n % 2 === 1) n++;
+    const hstep = (b - a) / n;
+    let sum = 0;
+    try {
+      sum += fn(a) + fn(b);
+      for (let i = 1; i < n; i++) {
+        const x = a + i * hstep;
+        const y = fn(x);
+        if (!isFinite(y)) return NaN;
+        sum += (i % 2 === 0 ? 2 : 4) * y;
+      }
+    } catch (e) { return NaN; }
+    return (hstep / 3) * sum;
+  }
+
+  function samplePts(fn, xmin, xmax, samples) {
+    const pts = [];
+    for (let i = 0; i <= samples; i++) {
+      const x = xmin + (xmax - xmin) * i / samples;
+      let y;
+      try { y = fn(x); } catch (e) { y = NaN; }
+      pts.push([x, y]);
+    }
+    return pts;
+  }
+
+  function drawCurve(pts, toPx, color, ymin, yspan, dashed) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash(dashed ? [6, 4] : []);
+    ctx.beginPath();
+    let started = false;
+    let prevY = null;
+    pts.forEach(([x, y]) => {
+      const [px, py] = toPx(x, y);
+      const outOfRange = !isFinite(y) || y < ymin - yspan || y > ymin + yspan * 2;
+      const bigJump = prevY !== null && Math.abs(y - prevY) > yspan * 0.6;
+      if (outOfRange || bigJump) {
+        started = false;
+      } else {
+        if (!started) { ctx.moveTo(px, py); started = true; }
+        else ctx.lineTo(px, py);
+      }
+      prevY = isFinite(y) ? y : null;
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function renderLegend(entries) {
+    if (!legendEl) return;
+    legendEl.innerHTML = entries.map(e =>
+      `<span><i style="background:${e.color}${e.dashed ? ';border-top:2px dashed ' + e.color : ''}"></i>${e.label}</span>`
+    ).join('');
+  }
+
+  function renderTable(rows) {
+    if (!tableWrap) return;
+    if (!tableWrap.dataset.open) { tableWrap.style.display = 'none'; return; }
+    const cols = rows.cols;
+    let html = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+    rows.data.forEach(row => {
+      html += '<tr>' + row.map(v => `<td>${v}</td>`).join('') + '</tr>';
+    });
+    html += '</tbody></table>';
+    tableWrap.innerHTML = html;
+    tableWrap.style.display = 'block';
+  }
+
   function plotFunction() {
     const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
     const xmin = parseFloat(xMinInput.value);
@@ -6602,20 +6756,22 @@ setTimeout(() => {
       return;
     }
 
-    // Sample to find a sensible y-range
+    const showSecond = showSecondCb && showSecondCb.checked;
+    const showDeriv = showDerivCb && showDerivCb.checked;
+    const showIntegral = showIntegralCb && showIntegralCb.checked;
+    const fn2 = showSecond ? compileFn(fn2Input.value) : null;
+    if (showSecond && !fn2) { graphError.textContent = t('graph_error_expr'); }
+
     const samples = 400;
+    const pts = samplePts(fn, xmin, xmax, samples);
+    const h0 = (xmax - xmin) / samples;
+    const derivPts = showDeriv ? pts.map(([x]) => [x, numericDeriv(fn, x, Math.max(h0 / 4, 1e-4))]) : [];
+    const pts2 = fn2 ? samplePts(fn2, xmin, xmax, samples) : [];
+
     let ymin = Infinity, ymax = -Infinity;
-    const pts = [];
-    for (let i = 0; i <= samples; i++) {
-      const x = xmin + (xmax - xmin) * i / samples;
-      let y;
-      try { y = fn(x); } catch (e) { y = NaN; }
-      pts.push([x, y]);
-      if (isFinite(y)) {
-        if (y < ymin) ymin = y;
-        if (y > ymax) ymax = y;
-      }
-    }
+    [pts, pts2, derivPts].forEach(arr => arr.forEach(([, y]) => {
+      if (isFinite(y)) { if (y < ymin) ymin = y; if (y > ymax) ymax = y; }
+    }));
     if (!isFinite(ymin) || !isFinite(ymax)) {
       graphError.textContent = t('graph_error_expr');
       ctx.clearRect(0, 0, w, h);
@@ -6625,31 +6781,120 @@ setTimeout(() => {
     const pad = (ymax - ymin) * 0.1;
     ymin -= pad; ymax += pad;
     // clamp extreme spikes (e.g. tan(x), 1/x asymptotes)
-    const yspan = ymax - ymin;
-    const cap = Math.min(yspan, (xmax - xmin) * 4);
-    if (yspan > cap) {
+    const yspan0 = ymax - ymin;
+    const cap = Math.min(yspan0, (xmax - xmin) * 4);
+    if (yspan0 > cap) {
       const mid = (ymax + ymin) / 2;
       ymin = mid - cap / 2; ymax = mid + cap / 2;
     }
+    const yspan = ymax - ymin;
 
     const toPx = drawAxes(w, h, xmin, xmax, ymin, ymax);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
 
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+    // shaded area under f(x) between a and b
+    let intValue = null;
+    if (showIntegral && intAInput && intBInput) {
+      const a = parseFloat(intAInput.value), b = parseFloat(intBInput.value);
+      if (isFinite(a) && isFinite(b) && a !== b) {
+        const lo = Math.min(a, b), hi = Math.max(a, b);
+        ctx.fillStyle = 'rgba(255,138,31,0.22)';
+        ctx.beginPath();
+        const shadeSamples = 100;
+        const [pz0] = toPx(lo, 0), [, pyz] = toPx(0, 0);
+        ctx.moveTo(pz0, pyz);
+        for (let i = 0; i <= shadeSamples; i++) {
+          const x = lo + (hi - lo) * i / shadeSamples;
+          let y; try { y = fn(x); } catch (e) { y = 0; }
+          if (!isFinite(y)) y = 0;
+          const [px, py] = toPx(x, y);
+          ctx.lineTo(px, py);
+        }
+        const [pxEnd] = toPx(hi, 0);
+        ctx.lineTo(pxEnd, pyz);
+        ctx.closePath();
+        ctx.fill();
+        intValue = numericIntegral(fn, lo, hi, 200);
+      }
+    }
+    if (intValueSpan) intValueSpan.textContent = intValue !== null && isFinite(intValue) ? ('≈ ' + intValue.toFixed(4)) : '';
+
+    if (showDeriv) drawCurve(derivPts, toPx, '#3fbf6f', ymin, yspan, true);
+    if (fn2) drawCurve(pts2, toPx, '#5a9ad8', ymin, yspan, false);
+    drawCurve(pts, toPx, accent, ymin, yspan, false);
+
+    const legend = [{ color: accent, label: 'f(x) = ' + fnInput.value }];
+    if (fn2) legend.push({ color: '#5a9ad8', label: 'g(x) = ' + fn2Input.value });
+    if (showDeriv) legend.push({ color: '#3fbf6f', label: "f'(x)", dashed: true });
+    renderLegend(legend.length > 1 ? legend : []);
+
+    if (tableWrap && tableWrap.dataset.open) {
+      const n = 9;
+      const cols = ['x', 'f(x)'];
+      if (fn2) cols.push('g(x)');
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        const x = xmin + (xmax - xmin) * i / (n - 1);
+        let y; try { y = fn(x); } catch (e) { y = NaN; }
+        const row = [x.toFixed(2), isFinite(y) ? y.toFixed(4) : '—'];
+        if (fn2) {
+          let y2; try { y2 = fn2(x); } catch (e) { y2 = NaN; }
+          row.push(isFinite(y2) ? y2.toFixed(4) : '—');
+        }
+        data.push(row);
+      }
+      renderTable({ cols, data });
+    }
+  }
+
+  function plotPolar() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    if (polarError) polarError.textContent = '';
+
+    const fn = compilePolarFn(polarFnInput ? polarFnInput.value : '');
+    if (!fn) {
+      if (polarError) polarError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    let thetaMult = polarThetaMaxInput ? parseFloat(polarThetaMaxInput.value) : 2;
+    if (!isFinite(thetaMult) || thetaMult <= 0) thetaMult = 2;
+    const thetaMax = thetaMult * Math.PI;
+
+    const samples = 720;
+    let maxR = 0;
+    const pts = [];
+    for (let i = 0; i <= samples; i++) {
+      const theta = thetaMax * i / samples;
+      let r;
+      try { r = fn(theta); } catch (e) { r = NaN; }
+      if (isFinite(r)) {
+        pts.push([theta, r]);
+        if (Math.abs(r) > maxR) maxR = Math.abs(r);
+      } else {
+        pts.push([theta, NaN]);
+      }
+    }
+    if (!isFinite(maxR) || maxR === 0) {
+      if (polarError) polarError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+    maxR *= 1.15;
+
+    const toPx = drawAxes(w, h, -maxR, maxR, -maxR, maxR);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+    ctx.strokeStyle = accent;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     let started = false;
-    let prevY = null;
-    pts.forEach(([x, y]) => {
+    pts.forEach(([theta, r]) => {
+      if (!isFinite(r)) { started = false; return; }
+      const x = r * Math.cos(theta), y = r * Math.sin(theta);
       const [px, py] = toPx(x, y);
-      const outOfRange = !isFinite(y) || y < ymin - yspan || y > ymax + yspan;
-      const bigJump = prevY !== null && Math.abs(y - prevY) > yspan * 0.6;
-      if (outOfRange || bigJump) {
-        started = false;
-      } else {
-        if (!started) { ctx.moveTo(px, py); started = true; }
-        else ctx.lineTo(px, py);
-      }
-      prevY = isFinite(y) ? y : null;
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
     });
     ctx.stroke();
   }
@@ -6708,23 +6953,33 @@ setTimeout(() => {
     if (!expr) return null;
     expr = expr.replace(/(\d)(x|y)/gi, '$1*$2');
     expr = expr.replace(/\)(\s*)(x|y|\()/gi, ')*$2');
-    expr = expr.replace(/(\d)(\()/g, '$1*$2');
+    // skip the digit-before-paren rule when it's actually part of log10( / log2(
+    expr = expr.replace(/(?<!log1)(?<!log)(\d)(\()/g, '$1*$2');
     expr = expr.replace(/\^/g, '**');
     expr = expr.replace(/\bln\(/g, 'log(');
     const safety = expr
-      .replace(/\b(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|pow|min|max|pi|PI)\b/g, '')
+      .replace(/\b(sin|cos|tan|cot|sec|csc|asin|acos|atan|acot|asec|acsc|sinh|cosh|tanh|asinh|acosh|atanh|sqrt|cbrt|abs|log10|log2|log|exp|pow|min|max|floor|ceil|round|trunc|sign|pi|PI)\b/g, '')
       .replace(/[xy\d\s+\-*/().,]/g, '');
     if (safety.length > 0) return null;
     const body = expr
       .replace(/\bsin\(/g, 'Math.sin(').replace(/\bcos\(/g, 'Math.cos(')
       .replace(/\btan\(/g, 'Math.tan(').replace(/\basin\(/g, 'Math.asin(')
       .replace(/\bacos\(/g, 'Math.acos(').replace(/\batan\(/g, 'Math.atan(')
-      .replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\bsinh\(/g, 'Math.sinh(').replace(/\bcosh\(/g, 'Math.cosh(')
+      .replace(/\btanh\(/g, 'Math.tanh(').replace(/\basinh\(/g, 'Math.asinh(')
+      .replace(/\bacosh\(/g, 'Math.acosh(').replace(/\batanh\(/g, 'Math.atanh(')
+      .replace(/\bsqrt\(/g, 'Math.sqrt(').replace(/\bcbrt\(/g, 'Math.cbrt(')
+      .replace(/\babs\(/g, 'Math.abs(')
+      .replace(/\blog10\(/g, 'Math.log10(').replace(/\blog2\(/g, 'Math.log2(')
       .replace(/\blog\(/g, 'Math.log(').replace(/\bexp\(/g, 'Math.exp(')
       .replace(/\bpow\(/g, 'Math.pow(').replace(/\bmin\(/g, 'Math.min(')
-      .replace(/\bmax\(/g, 'Math.max(').replace(/\bpi\b/gi, 'Math.PI');
+      .replace(/\bmax\(/g, 'Math.max(')
+      .replace(/\bfloor\(/g, 'Math.floor(').replace(/\bceil\(/g, 'Math.ceil(')
+      .replace(/\bround\(/g, 'Math.round(').replace(/\btrunc\(/g, 'Math.trunc(')
+      .replace(/\bsign\(/g, 'Math.sign(')
+      .replace(/\bpi\b/gi, 'Math.PI');
     try {
-      const fn = new Function('x', 'y', 'return (' + body + ');');
+      const fn = new Function('x', 'y', FN_HELPERS + ' return (' + body + ');');
       fn(1, 1);
       return fn;
     } catch (e) { return null; }
@@ -6870,6 +7125,8 @@ setTimeout(() => {
       plotFunctionSized(w, h);
     } else if (graphMode === 'surface3d') {
       draw3DSized(w, h);
+    } else if (graphMode === 'polar') {
+      plotPolarSized(w, h);
     } else {
       drawUnitCircleSized(w, h, parseFloat(angleSlider.value));
     }
@@ -6878,15 +7135,18 @@ setTimeout(() => {
   // re-bind sized versions so canvas.width/height (CSS px via transform) match
   function plotFunctionSized(w, h) { canvas.__w = w; canvas.__h = h; plotFunction(); }
   function drawUnitCircleSized(w, h, a) { canvas.__w = w; canvas.__h = h; drawUnitCircle(a); }
+  function plotPolarSized(w, h) { canvas.__w = w; canvas.__h = h; plotPolar(); }
 
   function setGraphMode(mode) {
     graphMode = mode;
     modeFnBtn.classList.toggle('active', mode === 'function');
     modeCircleBtn.classList.toggle('active', mode === 'unitcircle');
     if (mode3DBtn) mode3DBtn.classList.toggle('active', mode === 'surface3d');
+    if (modePolarBtn) modePolarBtn.classList.toggle('active', mode === 'polar');
     fnPanel.style.display = mode === 'function' ? 'block' : 'none';
     circlePanel.style.display = mode === 'unitcircle' ? 'block' : 'none';
     if (panel3D) panel3D.style.display = mode === 'surface3d' ? 'block' : 'none';
+    if (polarPanel) polarPanel.style.display = mode === 'polar' ? 'block' : 'none';
     canvas.style.display = mode === 'surface3d' ? 'none' : 'block';
     if (canvas3D) canvas3D.style.display = mode === 'surface3d' ? 'block' : 'none';
     redraw();
@@ -6895,6 +7155,7 @@ setTimeout(() => {
   modeFnBtn.addEventListener('click', () => setGraphMode('function'));
   modeCircleBtn.addEventListener('click', () => setGraphMode('unitcircle'));
   if (mode3DBtn) mode3DBtn.addEventListener('click', () => setGraphMode('surface3d'));
+  if (modePolarBtn) modePolarBtn.addEventListener('click', () => setGraphMode('polar'));
 
   let debounceTimer;
   function debounceRedraw() {
@@ -6908,6 +7169,33 @@ setTimeout(() => {
     const btn = e.target.closest('[data-fn]');
     if (!btn) return;
     fnInput.value = btn.dataset.fn;
+    redraw();
+  });
+
+  if (showSecondCb) showSecondCb.addEventListener('change', () => {
+    fn2Input.style.display = showSecondCb.checked ? 'block' : 'none';
+    redraw();
+  });
+  if (fn2Input) fn2Input.addEventListener('input', debounceRedraw);
+  if (showDerivCb) showDerivCb.addEventListener('change', redraw);
+  if (showIntegralCb) showIntegralCb.addEventListener('change', () => {
+    if (integralRow) integralRow.style.display = showIntegralCb.checked ? 'flex' : 'none';
+    redraw();
+  });
+  if (intAInput) intAInput.addEventListener('input', debounceRedraw);
+  if (intBInput) intBInput.addEventListener('input', debounceRedraw);
+  if (tableBtn) tableBtn.addEventListener('click', () => {
+    const isOpen = !!tableWrap.dataset.open;
+    if (isOpen) { delete tableWrap.dataset.open; tableWrap.style.display = 'none'; }
+    else { tableWrap.dataset.open = '1'; redraw(); }
+  });
+  if (polarFnInput) polarFnInput.addEventListener('input', debounceRedraw);
+  if (polarThetaMaxInput) polarThetaMaxInput.addEventListener('input', debounceRedraw);
+  if (quickPolarBtns) quickPolarBtns.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-fnpolar]');
+    if (!btn) return;
+    polarFnInput.value = btn.dataset.fnpolar;
+    if (btn.dataset.thetamax) polarThetaMaxInput.value = btn.dataset.thetamax;
     redraw();
   });
   angleSlider.addEventListener('input', () => {
