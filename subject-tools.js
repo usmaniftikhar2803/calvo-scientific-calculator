@@ -8507,6 +8507,722 @@
               resultCell("f'(c)", round(numDeriv1(fn, found), 6));
           } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that interval.'); }
         }
+      },
+      {
+        id: 'lhopitalRule',
+        label: "L'Hôpital's Rule Evaluator",
+        render: () => `
+          <p class="tool-hint">Evaluates lim(x→a) f(x)/g(x) for a 0/0 or ∞/∞ form using f'(a)/g'(a).</p>
+          ${field('lhFnF', 'f(x)', 'e.g. sin(x)', 'text')}
+          ${field('lhFnG', 'g(x)', 'e.g. x', 'text')}
+          ${field('lhA', 'a =', 'point x approaches', 'number')}
+        `,
+        calc: (out) => {
+          const f = compileCalcFn(str('lhFnF'));
+          const g = compileCalcFn(str('lhFnG'));
+          const a = num('lhA');
+          if (!f || !g || a === null) { out.innerHTML = errorBox('Enter valid f(x), g(x), and a point a.'); return; }
+          let fa = NaN, ga = NaN;
+          try { fa = f(a); } catch (e) {}
+          try { ga = g(a); } catch (e) {}
+          const indeterminate = (Math.abs(fa) < 1e-6 && Math.abs(ga) < 1e-6) || (!isFinite(fa) && !isFinite(ga));
+          if (!indeterminate) {
+            out.innerHTML = errorBox('This does not look like a 0/0 or ∞/∞ form at that point — direct substitution may already work: f(a)=' + (isFinite(fa) ? round(fa, 6) : 'undefined') + ', g(a)=' + (isFinite(ga) ? round(ga, 6) : 'undefined'));
+            return;
+          }
+          try {
+            const df = numDeriv1(f, a);
+            const dg = numDeriv1(g, a);
+            if (!isFinite(df) || !isFinite(dg) || Math.abs(dg) < 1e-10) throw new Error('bad');
+            out.innerHTML =
+              resultCell("f'(a)", round(df, 6)) +
+              resultCell("g'(a)", round(dg, 6)) +
+              resultCell("Limit (by L'Hôpital)", round(df / dg, 6));
+          } catch (e) { out.innerHTML = errorBox("Could not apply L'Hôpital's Rule — check that the derivatives exist near a."); }
+        }
+      },
+      {
+        id: 'absoluteExtrema',
+        label: 'Absolute Max/Min on an Interval',
+        render: () => `
+          <p class="tool-hint">Scans [a, b] for the absolute maximum and minimum values of f(x).</p>
+          ${field('aeFn', 'f(x)', 'e.g. x^3-3*x', 'text')}
+          ${field('aeA', 'a =', 'interval start', 'number')}
+          ${field('aeB', 'b =', 'interval end', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('aeFn'));
+          const a = num('aeA'), b = num('aeB');
+          if (!fn || a === null || b === null || a >= b) { out.innerHTML = errorBox('Enter a valid f(x) and a < b.'); return; }
+          const n = 2000, h = (b - a) / n;
+          let maxV = -Infinity, minV = Infinity, maxX = a, minX = a;
+          try {
+            for (let i = 0; i <= n; i++) {
+              const xi = a + i * h;
+              const yi = fn(xi);
+              if (!isFinite(yi)) continue;
+              if (yi > maxV) { maxV = yi; maxX = xi; }
+              if (yi < minV) { minV = yi; minX = xi; }
+            }
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); return; }
+          if (!isFinite(maxV) || !isFinite(minV)) { out.innerHTML = errorBox('The function appears undefined across this interval.'); return; }
+          out.innerHTML =
+            resultCell('Absolute Maximum', `f(${round(maxX, 5)}) = ${round(maxV, 6)}`) +
+            resultCell('Absolute Minimum', `f(${round(minX, 5)}) = ${round(minV, 6)}`);
+        }
+      },
+      {
+        id: 'inflectionPointsInterval',
+        label: 'Inflection Points in an Interval',
+        render: () => `
+          <p class="tool-hint">Scans [a, b] for points where f''(x) changes sign (concavity flips).</p>
+          ${field('ipiFn', 'f(x)', 'e.g. x^3-3*x^2', 'text')}
+          ${field('ipiA', 'a =', 'interval start', 'number')}
+          ${field('ipiB', 'b =', 'interval end', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('ipiFn'));
+          const a = num('ipiA'), b = num('ipiB');
+          if (!fn || a === null || b === null || a >= b) { out.innerHTML = errorBox('Enter a valid f(x) and a < b.'); return; }
+          const n = 1500, h = (b - a) / n;
+          const points = [];
+          let prevX = a, prevD2;
+          try { prevD2 = numDeriv2(fn, prevX); } catch (e) { prevD2 = NaN; }
+          for (let i = 1; i <= n; i++) {
+            const xi = a + i * h;
+            let d2i;
+            try { d2i = numDeriv2(fn, xi); } catch (e) { d2i = NaN; }
+            if (isFinite(prevD2) && isFinite(d2i) && prevD2 * d2i < 0) {
+              let lo = prevX, hi = xi, dlo = prevD2;
+              for (let k = 0; k < 30; k++) {
+                const mid = (lo + hi) / 2;
+                let dmid; try { dmid = numDeriv2(fn, mid); } catch (e) { dmid = NaN; }
+                if (!isFinite(dmid)) break;
+                if (dlo * dmid <= 0) { hi = mid; } else { lo = mid; dlo = dmid; }
+              }
+              const c = (lo + hi) / 2;
+              if (points.length === 0 || Math.abs(points[points.length - 1] - c) > 1e-3) points.push(c);
+            }
+            prevX = xi; prevD2 = d2i;
+          }
+          if (points.length === 0) { out.innerHTML = resultCell('Inflection Points', 'None found in this interval'); return; }
+          const list = points.slice(0, 10).map(c => `x = ${round(c, 5)} (f = ${round(fn(c), 5)})`).join('<br>');
+          out.innerHTML = resultCell('Inflection Points Found', list);
+        }
+      },
+      {
+        id: 'continuityTest',
+        label: 'Continuity Test at a Point',
+        render: () => `
+          <p class="tool-hint">Checks whether f(a), the left-hand limit, and the right-hand limit all agree at x = a.</p>
+          ${field('ctFn', 'f(x)', 'e.g. x^2+1', 'text')}
+          ${field('ctA', 'a =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('ctFn'));
+          const a = num('ctA');
+          if (!fn || a === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point a.'); return; }
+          let fa = NaN, left = NaN, right = NaN;
+          try { fa = fn(a); } catch (e) {}
+          try { left = fn(a - 1e-6); } catch (e) {}
+          try { right = fn(a + 1e-6); } catch (e) {}
+          const limitExists = isFinite(left) && isFinite(right) && Math.abs(left - right) < 1e-3;
+          const continuous = limitExists && isFinite(fa) && Math.abs(fa - (left + right) / 2) < 1e-3;
+          out.innerHTML =
+            resultCell('f(a)', isFinite(fa) ? round(fa, 6) : 'undefined') +
+            resultCell('Left-hand limit', isFinite(left) ? round(left, 6) : 'undefined') +
+            resultCell('Right-hand limit', isFinite(right) ? round(right, 6) : 'undefined') +
+            resultCell('Continuous at a?', continuous ? 'Yes' : 'No');
+        }
+      },
+      {
+        id: 'differentiabilityTest',
+        label: 'Differentiability Test at a Point',
+        render: () => `
+          <p class="tool-hint">Compares the left-hand and right-hand derivatives at x = a to check for a sharp corner.</p>
+          ${field('dtFn', 'f(x)', 'e.g. abs(x)', 'text')}
+          ${field('dtA', 'a =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('dtFn'));
+          const a = num('dtA');
+          if (!fn || a === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point a.'); return; }
+          const h = 1e-5;
+          let leftD = NaN, rightD = NaN;
+          try { leftD = (fn(a) - fn(a - h)) / h; } catch (e) {}
+          try { rightD = (fn(a + h) - fn(a)) / h; } catch (e) {}
+          if (!isFinite(leftD) || !isFinite(rightD)) { out.innerHTML = errorBox('Could not evaluate one-sided derivatives near that point.'); return; }
+          const differentiable = Math.abs(leftD - rightD) < 1e-2;
+          out.innerHTML =
+            resultCell('Left-hand derivative', round(leftD, 6)) +
+            resultCell('Right-hand derivative', round(rightD, 6)) +
+            resultCell('Differentiable at a?', differentiable ? ('Yes ≈ ' + round((leftD + rightD) / 2, 6)) : 'No — the one-sided derivatives disagree (a corner or cusp)');
+        }
+      },
+      {
+        id: 'linearApproximation',
+        label: 'Linear (Tangent Line) Approximation',
+        render: () => `
+          <p class="tool-hint">Approximates f(x) near x = a using L(x) = f(a) + f'(a)(x − a).</p>
+          ${field('laxFn', 'f(x)', 'e.g. sqrt(x)', 'text')}
+          ${field('laxA', 'a =', 'known point', 'number')}
+          ${field('laxX', 'Approximate at x =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('laxFn'));
+          const a = num('laxA'), x = num('laxX');
+          if (!fn || a === null || x === null) { out.innerHTML = errorBox('Enter a valid f(x), point a, and target x.'); return; }
+          try {
+            const fa = fn(a);
+            const m = numDeriv1(fn, a);
+            if (!isFinite(fa) || !isFinite(m)) throw new Error('bad');
+            const approx = fa + m * (x - a);
+            const actual = fn(x);
+            out.innerHTML =
+              resultCell('L(x) Approximation', round(approx, 6)) +
+              resultCell('Actual f(x)', isFinite(actual) ? round(actual, 6) : 'undefined') +
+              resultCell('Error', isFinite(actual) ? round(Math.abs(actual - approx), 6) : '—');
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function near that point.'); }
+        }
+      },
+      {
+        id: 'differentialApprox',
+        label: 'Differential Approximation (dy)',
+        render: () => `
+          <p class="tool-hint">Estimates the change in y using dy = f'(x)·dx, and compares it to the actual Δy.</p>
+          ${field('daxFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('daxX', 'x =', '', 'number')}
+          ${field('daxDx', 'dx (small change) =', 'e.g. 0.01', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('daxFn'));
+          const x = num('daxX'), dx = num('daxDx');
+          if (!fn || x === null || dx === null) { out.innerHTML = errorBox('Enter a valid f(x), point x, and dx.'); return; }
+          try {
+            const fx = fn(x);
+            const m = numDeriv1(fn, x);
+            if (!isFinite(fx) || !isFinite(m)) throw new Error('bad');
+            const dy = m * dx;
+            const actualDelta = fn(x + dx) - fx;
+            out.innerHTML =
+              resultCell("f'(x)", round(m, 6)) +
+              resultCell('dy (approx. change)', round(dy, 6)) +
+              resultCell('Actual Δy', isFinite(actualDelta) ? round(actualDelta, 6) : 'undefined');
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'motionAnalysis',
+        label: 'Velocity & Acceleration from Position',
+        render: () => `
+          <p class="tool-hint">Given a position function s(x) (x represents time t), computes velocity v = s'(x) and acceleration a = s''(x) at a given time.</p>
+          ${field('maSt', 's(x)', 'e.g. x^3-6*x^2+9*x', 'text')}
+          ${field('maT', 'x = (time)', '', 'number')}
+        `,
+        calc: (out) => {
+          const s = compileCalcFn(str('maSt'));
+          const t0 = num('maT');
+          if (!s || t0 === null) { out.innerHTML = errorBox('Enter a valid s(x) and a time.'); return; }
+          try {
+            const pos = s(t0);
+            const v = numDeriv1(s, t0);
+            const acc = numDeriv2(s, t0);
+            if (!isFinite(pos) || !isFinite(v) || !isFinite(acc)) throw new Error('bad');
+            out.innerHTML =
+              resultCell('Position s(t)', round(pos, 6)) +
+              resultCell('Velocity v(t)', round(v, 6)) +
+              resultCell('Speed |v(t)|', round(Math.abs(v), 6)) +
+              resultCell('Acceleration a(t)', round(acc, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the position function at that time.'); }
+        }
+      },
+      {
+        id: 'netChangeTheorem',
+        label: 'Displacement vs. Total Distance',
+        render: () => `
+          <p class="tool-hint">Given a velocity function v(x) (x represents time t), computes net displacement ∫v dt and total distance ∫|v| dt from x=a to x=b.</p>
+          ${field('nctVt', 'v(x)', 'e.g. x^2-4*x+3', 'text')}
+          ${field('nctA', 'a =', 'start time', 'number')}
+          ${field('nctB', 'b =', 'end time', 'number')}
+        `,
+        calc: (out) => {
+          const v = compileCalcFn(str('nctVt'));
+          const a = num('nctA'), b = num('nctB');
+          if (!v || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid v(x) and distinct bounds a, b.'); return; }
+          try {
+            const displacement = simpsonIntegral(v, a, b, 1000);
+            const distance = simpsonIntegral((t) => Math.abs(v(t)), a, b, 1000);
+            if (!isFinite(displacement) || !isFinite(distance)) throw new Error('bad');
+            out.innerHTML =
+              resultCell('Net Displacement', round(displacement, 6)) +
+              resultCell('Total Distance Traveled', round(distance, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the velocity function over that range.'); }
+        }
+      },
+      {
+        id: 'averageValueFunction',
+        label: 'Average Value of a Function',
+        render: () => `
+          <p class="tool-hint">Computes the average value of f(x) on [a, b]: (1/(b−a))∫f(x)dx.</p>
+          ${field('avfFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('avfA', 'a =', '', 'number')}
+          ${field('avfB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('avfFn'));
+          const a = num('avfA'), b = num('avfB');
+          if (!fn || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid f(x) and distinct bounds a, b.'); return; }
+          try {
+            const integral = simpsonIntegral(fn, a, b, 1000);
+            if (!isFinite(integral)) throw new Error('bad');
+            const avg = integral / (b - a);
+            out.innerHTML =
+              resultCell('∫f(x)dx', round(integral, 6)) +
+              resultCell('Average Value', round(avg, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
+      },
+      {
+        id: 'improperIntegral',
+        label: 'Improper Integral (to ∞) Estimator',
+        render: () => `
+          <p class="tool-hint">Estimates ∫f(x)dx from a to ∞ by evaluating with progressively larger upper bounds.</p>
+          ${field('impFn', 'f(x)', 'e.g. 1/x^2', 'text')}
+          ${field('impA', 'a =', 'lower bound', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('impFn'));
+          const a = num('impA');
+          if (!fn || a === null) { out.innerHTML = errorBox('Enter a valid f(x) and a lower bound a.'); return; }
+          try {
+            const bounds = [a + 10, a + 100, a + 1000, a + 10000];
+            const vals = bounds.map(bUpper => {
+              const n = Math.min(200000, Math.max(2000, Math.ceil((bUpper - a) * 20)));
+              return simpsonIntegral(fn, a, bUpper, n);
+            });
+            const last = vals[vals.length - 1];
+            const converging = vals.every(v => isFinite(v)) && Math.abs(vals[3] - vals[2]) < 1e-3;
+            out.innerHTML =
+              resultCell('Partial integrals', vals.map(v => isFinite(v) ? round(v, 5) : '—').join(' → ')) +
+              resultCell('Result', converging ? ('Converges ≈ ' + round(last, 6)) : 'Appears to diverge (does not settle to a finite value)');
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
+      },
+      {
+        id: 'arcLengthParametric',
+        label: 'Arc Length of a Parametric Curve',
+        render: () => `
+          <p class="tool-hint">Computes the arc length of a parametric curve X(t), Y(t) from t=a to t=b. Enter both as functions of x (used as the parameter t).</p>
+          ${field('alpXt', 'X(x) — x is the parameter t', 'e.g. cos(x)', 'text')}
+          ${field('alpYt', 'Y(x) — x is the parameter t', 'e.g. sin(x)', 'text')}
+          ${field('alpA', 't start (a) =', '', 'number')}
+          ${field('alpB', 't end (b) =', '', 'number')}
+        `,
+        calc: (out) => {
+          const X = compileCalcFn(str('alpXt'));
+          const Y = compileCalcFn(str('alpYt'));
+          const a = num('alpA'), b = num('alpB');
+          if (!X || !Y || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter valid X(t), Y(t), and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (t) => Math.sqrt(Math.pow(numDeriv1(X, t), 2) + Math.pow(numDeriv1(Y, t), 2));
+            const length = simpsonIntegral(integrand, a, b, 800);
+            if (!isFinite(length)) throw new Error('bad');
+            out.innerHTML = resultCell('Arc Length', round(length, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the parametric functions over that range.'); }
+        }
+      },
+      {
+        id: 'polarArea',
+        label: 'Area Enclosed by a Polar Curve',
+        render: () => `
+          <p class="tool-hint">Computes the area enclosed by r(θ) from θ=a to θ=b: A = ½∫r(θ)²dθ. Enter r as a function of x (used as θ, in radians).</p>
+          ${field('paRTheta', 'r(x) — x is θ (radians)', 'e.g. 1+cos(x)', 'text')}
+          ${field('paA', 'θ start (a) =', '', 'number')}
+          ${field('paB', 'θ end (b) =', '', 'number')}
+        `,
+        calc: (out) => {
+          const r = compileCalcFn(str('paRTheta'));
+          const a = num('paA'), b = num('paB');
+          if (!r || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid r(θ) and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (theta) => Math.pow(r(theta), 2);
+            const area = 0.5 * simpsonIntegral(integrand, a, b, 1000);
+            if (!isFinite(area)) throw new Error('bad');
+            out.innerHTML = resultCell('Enclosed Area', round(area, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the polar function over that range.'); }
+        }
+      },
+      {
+        id: 'powerRuleDerivative',
+        label: 'Power Rule — Derivative of a·xⁿ',
+        render: () => `
+          <p class="tool-hint">For a single term a·xⁿ, finds the derivative using the power rule: d/dx[a·xⁿ] = n·a·x^(n−1).</p>
+          ${field('prdA', 'Coefficient a', 'e.g. 3', 'number')}
+          ${field('prdN', 'Exponent n', 'e.g. 4', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('prdA'), n = num('prdN');
+          if (a === null || n === null) { out.innerHTML = errorBox('Enter a valid coefficient a and exponent n.'); return; }
+          const newCoeff = a * n;
+          const newExp = n - 1;
+          const term = newExp === 0 ? `${round(newCoeff, 6)}` : (newExp === 1 ? `${round(newCoeff, 6)}x` : `${round(newCoeff, 6)}x^${round(newExp, 6)}`);
+          out.innerHTML =
+            resultCell('Original Term', `${round(a, 6)}x^${round(n, 6)}`) +
+            resultCell('Derivative', term);
+        }
+      },
+      {
+        id: 'powerRuleAntiderivative',
+        label: 'Power Rule — Antiderivative of a·xⁿ',
+        render: () => `
+          <p class="tool-hint">For a single term a·xⁿ (n ≠ −1), finds the antiderivative: ∫a·xⁿ dx = a/(n+1)·x^(n+1) + C.</p>
+          ${field('praA', 'Coefficient a', 'e.g. 3', 'number')}
+          ${field('praN', 'Exponent n', 'e.g. 4', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('praA'), n = num('praN');
+          if (a === null || n === null) { out.innerHTML = errorBox('Enter a valid coefficient a and exponent n.'); return; }
+          if (Math.abs(n + 1) < 1e-12) { out.innerHTML = errorBox('For n = −1, the antiderivative is a·ln|x| + C, not covered by the power rule.'); return; }
+          const newCoeff = a / (n + 1);
+          const newExp = n + 1;
+          out.innerHTML =
+            resultCell('Original Term', `${round(a, 6)}x^${round(n, 6)}`) +
+            resultCell('Antiderivative', `${round(newCoeff, 6)}x^${round(newExp, 6)} + C`);
+        }
+      },
+      {
+        id: 'firstDerivativeTest',
+        label: 'First Derivative Test — Local Extrema in an Interval',
+        render: () => `
+          <p class="tool-hint">Scans [a, b] for critical points and classifies each as a local max, local min, or neither using the sign change of f'(x).</p>
+          ${field('fdtFn', 'f(x)', 'e.g. x^3-3*x', 'text')}
+          ${field('fdtA', 'a =', 'interval start', 'number')}
+          ${field('fdtB', 'b =', 'interval end', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('fdtFn'));
+          const a = num('fdtA'), b = num('fdtB');
+          if (!fn || a === null || b === null || a >= b) { out.innerHTML = errorBox('Enter a valid f(x) and a < b.'); return; }
+          const n = 2000, h = (b - a) / n;
+          const points = [];
+          let prevX = a, prevD;
+          try { prevD = numDeriv1(fn, prevX); } catch (e) { prevD = NaN; }
+          for (let i = 1; i <= n; i++) {
+            const xi = a + i * h;
+            let di;
+            try { di = numDeriv1(fn, xi); } catch (e) { di = NaN; }
+            if (isFinite(prevD) && isFinite(di) && prevD * di < 0) {
+              let lo = prevX, hi = xi, dlo = prevD;
+              for (let k = 0; k < 40; k++) {
+                const mid = (lo + hi) / 2;
+                let dmid; try { dmid = numDeriv1(fn, mid); } catch (e) { dmid = NaN; }
+                if (!isFinite(dmid)) break;
+                if (dlo * dmid <= 0) { hi = mid; } else { lo = mid; dlo = dmid; }
+              }
+              const c = (lo + hi) / 2;
+              if (points.length === 0 || Math.abs(points[points.length - 1] - c) > 1e-3) points.push(c);
+            }
+            prevX = xi; prevD = di;
+          }
+          if (points.length === 0) { out.innerHTML = resultCell('Local Extrema', 'None found in this interval'); return; }
+          const list = points.slice(0, 10).map(c => {
+            let before = NaN, after = NaN;
+            try { before = numDeriv1(fn, c - 0.01); } catch (e) {}
+            try { after = numDeriv1(fn, c + 0.01); } catch (e) {}
+            let kind = 'Neither (no sign change)';
+            if (before > 0 && after < 0) kind = 'Local Maximum';
+            else if (before < 0 && after > 0) kind = 'Local Minimum';
+            return `x = ${round(c, 5)} (f = ${round(fn(c), 5)}) — ${kind}`;
+          }).join('<br>');
+          out.innerHTML = resultCell('Local Extrema Found', list);
+        }
+      },
+      {
+        id: 'relatedRatesChainRule',
+        label: 'Related Rates (Chain Rule)',
+        render: () => `
+          <p class="tool-hint">Given y = f(x) and the rate dx/dt at a point, finds dy/dt = f'(x)·(dx/dt).</p>
+          ${field('rrcFn', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('rrcX', 'x =', 'point of interest', 'number')}
+          ${field('rrcDxdt', 'dx/dt =', 'known rate', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('rrcFn'));
+          const x0 = num('rrcX'), dxdt = num('rrcDxdt');
+          if (!fn || x0 === null || dxdt === null) { out.innerHTML = errorBox('Enter a valid f(x), point x, and dx/dt.'); return; }
+          try {
+            const m = numDeriv1(fn, x0);
+            if (!isFinite(m)) throw new Error('bad');
+            const dydt = m * dxdt;
+            out.innerHTML =
+              resultCell("dy/dx = f'(x)", round(m, 6)) +
+              resultCell('dy/dt', round(dydt, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'chainRuleDerivative',
+        label: 'Chain Rule Derivative of f(g(x))',
+        render: () => `
+          <p class="tool-hint">Computes the derivative of the composite function f(g(x)) at x = x₀ using the chain rule: f'(g(x₀))·g'(x₀).</p>
+          ${field('crdF', 'f(x) — outer function', 'e.g. sin(x)', 'text')}
+          ${field('crdG', 'g(x) — inner function', 'e.g. x^2', 'text')}
+          ${field('crdX', 'x₀ =', '', 'number')}
+        `,
+        calc: (out) => {
+          const f = compileCalcFn(str('crdF'));
+          const g = compileCalcFn(str('crdG'));
+          const x0 = num('crdX');
+          if (!f || !g || x0 === null) { out.innerHTML = errorBox('Enter valid f(x), g(x), and a point x₀.'); return; }
+          try {
+            const gx0 = g(x0);
+            const dg = numDeriv1(g, x0);
+            const df = numDeriv1(f, gx0);
+            if (!isFinite(gx0) || !isFinite(dg) || !isFinite(df)) throw new Error('bad');
+            out.innerHTML =
+              resultCell('g(x₀)', round(gx0, 6)) +
+              resultCell("g'(x₀)", round(dg, 6)) +
+              resultCell("f'(g(x₀))", round(df, 6)) +
+              resultCell("[f(g(x))]' at x₀", round(df * dg, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the functions at that point.'); }
+        }
+      },
+      {
+        id: 'productRuleDerivative',
+        label: 'Product Rule Derivative at a Point',
+        render: () => `
+          <p class="tool-hint">Computes the derivative of f(x)·g(x) at x = x₀ using the product rule: f'g + fg'.</p>
+          ${field('prdfF', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('prdfG', 'g(x)', 'e.g. sin(x)', 'text')}
+          ${field('prdfX', 'x₀ =', '', 'number')}
+        `,
+        calc: (out) => {
+          const f = compileCalcFn(str('prdfF'));
+          const g = compileCalcFn(str('prdfG'));
+          const x0 = num('prdfX');
+          if (!f || !g || x0 === null) { out.innerHTML = errorBox('Enter valid f(x), g(x), and a point x₀.'); return; }
+          try {
+            const fx = f(x0), gx = g(x0);
+            const df = numDeriv1(f, x0), dg = numDeriv1(g, x0);
+            if (!isFinite(fx) || !isFinite(gx) || !isFinite(df) || !isFinite(dg)) throw new Error('bad');
+            const result = df * gx + fx * dg;
+            out.innerHTML =
+              resultCell("f'(x₀)", round(df, 6)) +
+              resultCell("g'(x₀)", round(dg, 6)) +
+              resultCell("[f·g]'(x₀)", round(result, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the functions at that point.'); }
+        }
+      },
+      {
+        id: 'quotientRuleDerivative',
+        label: 'Quotient Rule Derivative at a Point',
+        render: () => `
+          <p class="tool-hint">Computes the derivative of f(x)/g(x) at x = x₀ using the quotient rule: (f'g − fg')/g².</p>
+          ${field('qrdF', 'f(x) — numerator', 'e.g. x^2', 'text')}
+          ${field('qrdG', 'g(x) — denominator', 'e.g. x+1', 'text')}
+          ${field('qrdX', 'x₀ =', '', 'number')}
+        `,
+        calc: (out) => {
+          const f = compileCalcFn(str('qrdF'));
+          const g = compileCalcFn(str('qrdG'));
+          const x0 = num('qrdX');
+          if (!f || !g || x0 === null) { out.innerHTML = errorBox('Enter valid f(x), g(x), and a point x₀.'); return; }
+          try {
+            const fx = f(x0), gx = g(x0);
+            const df = numDeriv1(f, x0), dg = numDeriv1(g, x0);
+            if (!isFinite(fx) || !isFinite(gx) || !isFinite(df) || !isFinite(dg) || Math.abs(gx) < 1e-10) throw new Error('bad');
+            const result = (df * gx - fx * dg) / (gx * gx);
+            out.innerHTML =
+              resultCell("f'(x₀)", round(df, 6)) +
+              resultCell("g'(x₀)", round(dg, 6)) +
+              resultCell("[f/g]'(x₀)", round(result, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the functions at that point (check g(x₀) ≠ 0).'); }
+        }
+      },
+      {
+        id: 'polarArcLength',
+        label: 'Arc Length of a Polar Curve',
+        render: () => `
+          <p class="tool-hint">Computes the arc length of r(θ) from θ=a to θ=b: L = ∫√(r² + (dr/dθ)²)dθ. Enter r as a function of x (used as θ, in radians).</p>
+          ${field('palR', 'r(x) — x is θ (radians)', 'e.g. 1+cos(x)', 'text')}
+          ${field('palA', 'θ start (a) =', '', 'number')}
+          ${field('palB', 'θ end (b) =', '', 'number')}
+        `,
+        calc: (out) => {
+          const r = compileCalcFn(str('palR'));
+          const a = num('palA'), b = num('palB');
+          if (!r || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid r(θ) and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (theta) => Math.sqrt(Math.pow(r(theta), 2) + Math.pow(numDeriv1(r, theta), 2));
+            const length = simpsonIntegral(integrand, a, b, 1000);
+            if (!isFinite(length)) throw new Error('bad');
+            out.innerHTML = resultCell('Arc Length', round(length, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the polar function over that range.'); }
+        }
+      },
+      {
+        id: 'volumeCrossSections',
+        label: 'Volume by Cross-Sections',
+        render: () => `
+          <p class="tool-hint">Given a cross-sectional area function A(x) perpendicular to the x-axis, computes the solid's volume: V = ∫A(x)dx from a to b.</p>
+          ${field('vcsAreaFn', 'A(x) — cross-section area', 'e.g. x^2 or pi*x^2/4', 'text')}
+          ${field('vcsBoundA', 'a =', '', 'number')}
+          ${field('vcsBoundB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const A = compileCalcFn(str('vcsAreaFn'));
+          const a = num('vcsBoundA'), b = num('vcsBoundB');
+          if (!A || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter a valid A(x) and distinct bounds a, b.'); return; }
+          try {
+            const volume = simpsonIntegral(A, a, b, 1000);
+            if (!isFinite(volume)) throw new Error('bad');
+            out.innerHTML = resultCell('Volume', round(volume, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate A(x) over that range.'); }
+        }
+      },
+      {
+        id: 'volumeWasherMethod',
+        label: 'Volume of Revolution — Washer Method',
+        render: () => `
+          <p class="tool-hint">Revolves the region between y=f(x) (outer) and y=g(x) (inner) around the x-axis from a to b: V = π∫[f(x)² − g(x)²]dx.</p>
+          ${field('vwmF', 'f(x) — outer radius', 'e.g. x', 'text')}
+          ${field('vwmG', 'g(x) — inner radius', 'e.g. x^2', 'text')}
+          ${field('vwmA', 'a =', '', 'number')}
+          ${field('vwmB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const f = compileCalcFn(str('vwmF'));
+          const g = compileCalcFn(str('vwmG'));
+          const a = num('vwmA'), b = num('vwmB');
+          if (!f || !g || a === null || b === null || a === b) { out.innerHTML = errorBox('Enter valid f(x), g(x), and distinct bounds a, b.'); return; }
+          try {
+            const integrand = (x) => Math.pow(f(x), 2) - Math.pow(g(x), 2);
+            const volume = Math.PI * simpsonIntegral(integrand, a, b, 1000);
+            if (!isFinite(volume)) throw new Error('bad');
+            out.innerHTML = resultCell('Volume (Washer Method)', round(volume, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the functions over that range.'); }
+        }
+      },
+      {
+        id: 'nthDerivativeAtPoint',
+        label: 'nth Derivative at a Point',
+        render: () => `
+          <p class="tool-hint">Computes f'(x), f''(x), f'''(x), and f⁗(x) at a chosen point using numeric differentiation.</p>
+          ${field('ndpFn', 'f(x)', 'e.g. sin(x)*x^2', 'text')}
+          ${field('ndpX', 'x =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('ndpFn'));
+          const x0 = num('ndpX');
+          if (!fn || x0 === null) { out.innerHTML = errorBox('Enter a valid f(x) and a point x.'); return; }
+          try {
+            const d1 = numDeriv1(fn, x0);
+            const d2 = numDeriv2(fn, x0);
+            const d3 = numDeriv3(fn, x0);
+            const d4 = numDeriv4(fn, x0);
+            if (!isFinite(d1) || !isFinite(d2)) throw new Error('bad');
+            out.innerHTML =
+              resultCell("f'(x)", round(d1, 6)) +
+              resultCell("f''(x)", round(d2, 6)) +
+              resultCell("f'''(x)", isFinite(d3) ? round(d3, 4) : '—') +
+              resultCell("f⁗(x)", isFinite(d4) ? round(d4, 4) : '—');
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function at that point.'); }
+        }
+      },
+      {
+        id: 'rolleTheorem',
+        label: "Rolle's Theorem Solver",
+        render: () => `
+          <p class="tool-hint">Checks f(a) = f(b), then finds c in (a, b) where f'(c) = 0.</p>
+          ${field('rtFn', 'f(x)', 'e.g. x^2-4*x+3', 'text')}
+          ${field('rtA', 'a =', '', 'number')}
+          ${field('rtB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('rtFn'));
+          const a = num('rtA'), b = num('rtB');
+          if (!fn || a === null || b === null || a >= b) { out.innerHTML = errorBox('Enter a valid f(x) and a < b.'); return; }
+          try {
+            const fa = fn(a), fb = fn(b);
+            if (!isFinite(fa) || !isFinite(fb)) throw new Error('bad');
+            if (Math.abs(fa - fb) > 1e-3) {
+              out.innerHTML = errorBox(`Rolle's Theorem does not apply — f(a) = ${round(fa, 5)} ≠ f(b) = ${round(fb, 5)}.`);
+              return;
+            }
+            const n = 500, h = (b - a) / n;
+            let found = null, prevX = a, prevD = numDeriv1(fn, a);
+            for (let i = 1; i <= n && found === null; i++) {
+              const xi = a + i * h;
+              const di = numDeriv1(fn, xi);
+              if (isFinite(prevD) && isFinite(di) && prevD * di <= 0) {
+                let lo = prevX, hi = xi, dlo = prevD;
+                for (let k = 0; k < 40; k++) {
+                  const mid = (lo + hi) / 2;
+                  const dmid = numDeriv1(fn, mid);
+                  if (dlo * dmid <= 0) hi = mid; else { lo = mid; dlo = dmid; }
+                }
+                found = (lo + hi) / 2;
+              }
+              prevX = xi; prevD = di;
+            }
+            if (found === null) { out.innerHTML = errorBox('No point c found — check that f is well-behaved on [a, b].'); return; }
+            out.innerHTML =
+              resultCell('f(a) = f(b)', round(fa, 6)) +
+              resultCell('c (in the interval)', round(found, 6)) +
+              resultCell("f'(c)", round(numDeriv1(fn, found), 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that interval.'); }
+        }
+      },
+      {
+        id: 'surfaceAreaRevolutionYAxis',
+        label: 'Surface Area of Revolution (about y-axis)',
+        render: () => `
+          <p class="tool-hint">Surface area of y=f(x) revolved around the y-axis from x=a to x=b (a≥0): S = 2π∫x√(1+f'(x)²)dx.</p>
+          ${field('saryF', 'f(x)', 'e.g. x^2', 'text')}
+          ${field('saryA', 'a =', '≥ 0', 'number')}
+          ${field('saryB', 'b =', '', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('saryF'));
+          const a = num('saryA'), b = num('saryB');
+          if (!fn || a === null || b === null || a === b || a < 0) { out.innerHTML = errorBox('Enter a valid f(x) and bounds with a ≥ 0, a ≠ b.'); return; }
+          try {
+            const integrand = (x) => x * Math.sqrt(1 + Math.pow(numDeriv1(fn, x), 2));
+            const area = 2 * Math.PI * simpsonIntegral(integrand, a, b, 500);
+            if (!isFinite(area)) throw new Error('bad');
+            out.innerHTML = resultCell('Surface Area', round(area, 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
+      },
+      {
+        id: 'integrationMethodCompare',
+        label: 'Compare Integration Methods (Trapezoidal vs Simpson)',
+        render: () => `
+          <p class="tool-hint">Computes ∫f(x)dx from a to b using both the Trapezoidal Rule and Simpson's Rule with n subintervals, and compares them.</p>
+          ${field('imcFn', 'f(x)', 'e.g. sin(x)', 'text')}
+          ${field('imcA', 'a =', '', 'number')}
+          ${field('imcB', 'b =', '', 'number')}
+          ${field('imcN', 'n (subintervals)', 'e.g. 10', 'number')}
+        `,
+        calc: (out) => {
+          const fn = compileCalcFn(str('imcFn'));
+          const a = num('imcA'), b = num('imcB');
+          let n = num('imcN');
+          if (!fn || a === null || b === null || a === b || !n || n <= 0) { out.innerHTML = errorBox('Enter a valid f(x), distinct bounds a,b, and a positive n.'); return; }
+          n = Math.max(2, Math.round(n));
+          try {
+            const h = (b - a) / n;
+            let trapSum = (fn(a) + fn(b)) / 2;
+            for (let i = 1; i < n; i++) trapSum += fn(a + i * h);
+            const trapezoidal = trapSum * h;
+            const simpson = simpsonIntegral(fn, a, b, n);
+            if (!isFinite(trapezoidal) || !isFinite(simpson)) throw new Error('bad');
+            out.innerHTML =
+              resultCell('Trapezoidal Estimate', round(trapezoidal, 6)) +
+              resultCell("Simpson's Estimate", round(simpson, 6)) +
+              resultCell('Difference', round(Math.abs(trapezoidal - simpson), 6));
+          } catch (e) { out.innerHTML = errorBox('Could not evaluate the function over that range.'); }
+        }
       }
     ],
 
@@ -8581,6 +9297,912 @@
             resultCell('P(Event)', round(fav / total, 6)) +
             resultCell('As Percent', round((fav / total) * 100, 3) + '%') +
             resultCell('Odds', `${fav} : ${total - fav}`);
+        }
+      },
+      {
+        id: 'binomialPMF',
+        label: 'Binomial Probability P(X = k)',
+        render: () => `
+          <p class="tool-hint">P(X = k) for a binomial distribution with n trials and success probability p.</p>
+          ${field('bpmN', 'n (trials)', '', 'number')}
+          ${field('bpmP', 'p (success probability)', 'e.g. 0.5', 'number')}
+          ${field('bpmK', 'k (successes)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('bpmN'), p = num('bpmP'), k = num('bpmK');
+          if (n === null || p === null || k === null || n < 0 || !Number.isInteger(n) || !Number.isInteger(k) || k < 0 || k > n || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid n, p (0–1), and k (0 ≤ k ≤ n).'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const nCk = fact(n) / (fact(k) * fact(n - k));
+          const prob = nCk * Math.pow(p, k) * Math.pow(1 - p, n - k);
+          out.innerHTML =
+            resultCell('C(n,k)', nCk) +
+            resultCell('P(X = k)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'binomialCumulative',
+        label: 'Binomial Cumulative Probability P(X ≤ k)',
+        render: () => `
+          <p class="tool-hint">P(X ≤ k) for a binomial distribution with n trials and success probability p.</p>
+          ${field('bcN', 'n (trials)', '', 'number')}
+          ${field('bcP', 'p (success probability)', 'e.g. 0.5', 'number')}
+          ${field('bcK', 'k (at most this many successes)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('bcN'), p = num('bcP'), k = num('bcK');
+          if (n === null || p === null || k === null || n < 0 || !Number.isInteger(n) || !Number.isInteger(k) || k < 0 || k > n || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid n, p (0–1), and k (0 ≤ k ≤ n).'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          let cdf = 0;
+          for (let i = 0; i <= k; i++) {
+            const nCi = fact(n) / (fact(i) * fact(n - i));
+            cdf += nCi * Math.pow(p, i) * Math.pow(1 - p, n - i);
+          }
+          out.innerHTML =
+            resultCell('P(X ≤ k)', round(cdf, 6)) +
+            resultCell('P(X > k)', round(1 - cdf, 6)) +
+            resultCell('As Percent', round(cdf * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'poissonProbability',
+        label: 'Poisson Probability P(X = k)',
+        render: () => `
+          <p class="tool-hint">P(X = k) for a Poisson distribution with mean rate λ (average occurrences).</p>
+          ${field('ppLambda', 'λ (average rate)', 'e.g. 4', 'number')}
+          ${field('ppK', 'k (occurrences)', '', 'number')}
+        `,
+        calc: (out) => {
+          const lambda = num('ppLambda'), k = num('ppK');
+          if (lambda === null || k === null || lambda < 0 || k < 0 || !Number.isInteger(k)) { out.innerHTML = errorBox('Enter a valid λ ≥ 0 and integer k ≥ 0.'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const prob = Math.exp(-lambda) * Math.pow(lambda, k) / fact(k);
+          out.innerHTML =
+            resultCell('P(X = k)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'geometricProbability',
+        label: 'Geometric Distribution — First Success on Trial k',
+        render: () => `
+          <p class="tool-hint">Probability that the first success happens exactly on trial k: P(X = k) = (1−p)^(k−1)·p.</p>
+          ${field('gpP', 'p (success probability)', 'e.g. 0.2', 'number')}
+          ${field('gpK', 'k (trial number)', '', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('gpP'), k = num('gpK');
+          if (p === null || k === null || p <= 0 || p > 1 || k < 1 || !Number.isInteger(k)) { out.innerHTML = errorBox('Enter a valid p (0 < p ≤ 1) and integer k ≥ 1.'); return; }
+          const prob = Math.pow(1 - p, k - 1) * p;
+          const expectedTrials = 1 / p;
+          out.innerHTML =
+            resultCell('P(X = k)', round(prob, 6)) +
+            resultCell('Expected Trials to First Success', round(expectedTrials, 4));
+        }
+      },
+      {
+        id: 'bayesTheorem',
+        label: "Bayes' Theorem Calculator",
+        render: () => `
+          <p class="tool-hint">Computes P(A|B) given P(A), P(B|A), and P(B|not A), using P(B) = P(B|A)P(A) + P(B|A')P(A').</p>
+          ${field('btPA', 'P(A)', 'e.g. 0.3', 'number')}
+          ${field('btPBA', 'P(B|A)', 'e.g. 0.9', 'number')}
+          ${field('btPBnotA', "P(B|A')", 'e.g. 0.1', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('btPA'), pBA = num('btPBA'), pBnotA = num('btPBnotA');
+          if (pA === null || pBA === null || pBnotA === null || pA < 0 || pA > 1 || pBA < 0 || pBA > 1 || pBnotA < 0 || pBnotA > 1) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const pNotA = 1 - pA;
+          const pB = pBA * pA + pBnotA * pNotA;
+          if (pB <= 0) { out.innerHTML = errorBox('P(B) computes to 0 — check your inputs.'); return; }
+          const pAB = (pBA * pA) / pB;
+          out.innerHTML =
+            resultCell('P(B)', round(pB, 6)) +
+            resultCell('P(A|B)', round(pAB, 6)) +
+            resultCell('As Percent', round(pAB * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'conditionalProbability',
+        label: 'Conditional Probability P(A|B)',
+        render: () => `
+          <p class="tool-hint">Computes P(A|B) = P(A∩B) / P(B).</p>
+          ${field('cpAandB', 'P(A ∩ B)', 'e.g. 0.15', 'number')}
+          ${field('cpB', 'P(B)', 'e.g. 0.4', 'number')}
+        `,
+        calc: (out) => {
+          const pAandB = num('cpAandB'), pB = num('cpB');
+          if (pAandB === null || pB === null || pB <= 0 || pAandB < 0 || pAandB > pB) { out.innerHTML = errorBox('Enter valid probabilities with 0 < P(B) and P(A∩B) ≤ P(B).'); return; }
+          const pAB = pAandB / pB;
+          out.innerHTML =
+            resultCell('P(A|B)', round(pAB, 6)) +
+            resultCell('As Percent', round(pAB * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'unionOfEvents',
+        label: 'Union of Two Events P(A∪B)',
+        render: () => `
+          <p class="tool-hint">Computes P(A∪B) = P(A) + P(B) − P(A∩B).</p>
+          ${field('ueA', 'P(A)', '', 'number')}
+          ${field('ueB', 'P(B)', '', 'number')}
+          ${field('ueAandB', 'P(A ∩ B)', '0 if mutually exclusive', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('ueA'), pB = num('ueB'), pAandB = num('ueAandB');
+          if (pA === null || pB === null || pAandB === null || pA < 0 || pA > 1 || pB < 0 || pB > 1 || pAandB < 0) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const pUnion = pA + pB - pAandB;
+          out.innerHTML =
+            resultCell('P(A∪B)', round(pUnion, 6)) +
+            resultCell('Mutually Exclusive?', pAandB === 0 ? 'Yes (P(A∩B) = 0)' : 'No');
+        }
+      },
+      {
+        id: 'complementProbability',
+        label: "Complement of an Event P(A')",
+        render: () => `
+          ${field('compA', 'P(A)', 'e.g. 0.35', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('compA');
+          if (pA === null || pA < 0 || pA > 1) { out.innerHTML = errorBox('Enter a valid probability between 0 and 1.'); return; }
+          out.innerHTML =
+            resultCell("P(A')", round(1 - pA, 6)) +
+            resultCell('As Percent', round((1 - pA) * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'independentEventsCheck',
+        label: 'Independent Events Check',
+        render: () => `
+          <p class="tool-hint">Checks whether A and B are independent: P(A∩B) should equal P(A)·P(B).</p>
+          ${field('iecA', 'P(A)', '', 'number')}
+          ${field('iecB', 'P(B)', '', 'number')}
+          ${field('iecAandB', 'P(A ∩ B) — observed', '', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('iecA'), pB = num('iecB'), pAandB = num('iecAandB');
+          if (pA === null || pB === null || pAandB === null || pA < 0 || pA > 1 || pB < 0 || pB > 1 || pAandB < 0) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const expected = pA * pB;
+          const independent = Math.abs(expected - pAandB) < 1e-6;
+          out.innerHTML =
+            resultCell('P(A)·P(B)', round(expected, 6)) +
+            resultCell('P(A ∩ B) given', round(pAandB, 6)) +
+            resultCell('Independent?', independent ? 'Yes' : 'No — the events are dependent');
+        }
+      },
+      {
+        id: 'expectedValueVariance',
+        label: 'Expected Value & Variance (Discrete Random Variable)',
+        render: () => `
+          <p class="tool-hint">Enter matching comma-separated values and probabilities, e.g. values "1,2,3" and probabilities "0.2,0.5,0.3".</p>
+          ${field('evvValues', 'Values (x)', 'e.g. 1,2,3', 'text')}
+          ${field('evvProbs', 'Probabilities P(x)', 'e.g. 0.2,0.5,0.3', 'text')}
+        `,
+        calc: (out) => {
+          const valuesStr = str('evvValues'), probsStr = str('evvProbs');
+          const values = valuesStr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+          const probs = probsStr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+          if (values.length === 0 || probs.length === 0 || values.length !== probs.length) { out.innerHTML = errorBox('Enter matching lists of values and probabilities, separated by commas.'); return; }
+          const probSum = probs.reduce((a, b) => a + b, 0);
+          if (Math.abs(probSum - 1) > 0.01 || probs.some(p => p < 0)) { out.innerHTML = errorBox('Probabilities must be non-negative and sum to 1 (got ' + round(probSum, 4) + ').'); return; }
+          let mean = 0;
+          for (let i = 0; i < values.length; i++) mean += values[i] * probs[i];
+          let variance = 0;
+          for (let i = 0; i < values.length; i++) variance += probs[i] * Math.pow(values[i] - mean, 2);
+          out.innerHTML =
+            resultCell('E(X) — Mean', round(mean, 6)) +
+            resultCell('Var(X)', round(variance, 6)) +
+            resultCell('SD(X)', round(Math.sqrt(variance), 6));
+        }
+      },
+      {
+        id: 'oddsToProbability',
+        label: 'Odds to Probability Converter',
+        render: () => `
+          <p class="tool-hint">Converts odds in favor (a : b) into a probability: P = a / (a + b).</p>
+          ${field('otpFor', 'Odds in Favor (a)', 'e.g. 3', 'number')}
+          ${field('otpAgainst', 'Odds Against (b)', 'e.g. 5', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('otpFor'), b = num('otpAgainst');
+          if (a === null || b === null || a < 0 || b < 0 || a + b === 0) { out.innerHTML = errorBox('Enter valid non-negative odds, not both zero.'); return; }
+          const prob = a / (a + b);
+          out.innerHTML =
+            resultCell('P(Event)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%') +
+            resultCell('Odds', `${a} : ${b}`);
+        }
+      },
+      {
+        id: 'probabilityToOdds',
+        label: 'Probability to Odds Converter',
+        render: () => `
+          <p class="tool-hint">Converts a probability into odds in favor and odds against.</p>
+          ${field('ptoP', 'P(Event)', 'e.g. 0.6', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('ptoP');
+          if (p === null || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid probability between 0 and 1.'); return; }
+          if (p === 0) { out.innerHTML = resultCell('Odds in Favor', '0 : 1 (event impossible)'); return; }
+          if (p === 1) { out.innerHTML = resultCell('Odds in Favor', '1 : 0 (event certain)'); return; }
+          const oddsFor = p / (1 - p);
+          const oddsAgainst = (1 - p) / p;
+          out.innerHTML =
+            resultCell('Odds in Favor', round(oddsFor, 6) + ' : 1') +
+            resultCell('Odds Against', round(oddsAgainst, 6) + ' : 1');
+        }
+      },
+      {
+        id: 'multiplicationIndependent',
+        label: 'Multiplication Rule — Independent Events',
+        render: () => `
+          <p class="tool-hint">For independent events, P(A∩B) = P(A) × P(B).</p>
+          ${field('miA', 'P(A)', '', 'number')}
+          ${field('miB', 'P(B)', '', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('miA'), pB = num('miB');
+          if (pA === null || pB === null || pA < 0 || pA > 1 || pB < 0 || pB > 1) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const prob = pA * pB;
+          out.innerHTML =
+            resultCell('P(A∩B)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'multiplicationDependent',
+        label: 'Multiplication Rule — Dependent Events',
+        render: () => `
+          <p class="tool-hint">For dependent events, P(A∩B) = P(A) × P(B|A).</p>
+          ${field('mdA', 'P(A)', '', 'number')}
+          ${field('mdBgivenA', 'P(B|A)', '', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('mdA'), pBA = num('mdBgivenA');
+          if (pA === null || pBA === null || pA < 0 || pA > 1 || pBA < 0 || pBA > 1) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const prob = pA * pBA;
+          out.innerHTML =
+            resultCell('P(A∩B)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'mutuallyExclusiveUnion',
+        label: 'Mutually Exclusive Events — P(A∪B)',
+        render: () => `
+          <p class="tool-hint">For mutually exclusive events (P(A∩B) = 0), P(A∪B) = P(A) + P(B).</p>
+          ${field('meuA', 'P(A)', '', 'number')}
+          ${field('meuB', 'P(B)', '', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('meuA'), pB = num('meuB');
+          if (pA === null || pB === null || pA < 0 || pA > 1 || pB < 0 || pB > 1) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const sum = pA + pB;
+          if (sum > 1) { out.innerHTML = errorBox('P(A) + P(B) exceeds 1 — these cannot be mutually exclusive probabilities.'); return; }
+          out.innerHTML =
+            resultCell('P(A∪B)', round(sum, 6)) +
+            resultCell('As Percent', round(sum * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'hypergeometricProbability',
+        label: 'Hypergeometric Probability',
+        render: () => `
+          <p class="tool-hint">P(X = k) for drawing a sample of size n without replacement from a population of size N containing K successes.</p>
+          ${field('hgN', 'N (population size)', '', 'number')}
+          ${field('hgK', 'K (successes in population)', '', 'number')}
+          ${field('hgn', 'n (sample size)', '', 'number')}
+          ${field('hgk', 'k (successes drawn)', '', 'number')}
+        `,
+        calc: (out) => {
+          const N = num('hgN'), K = num('hgK'), n = num('hgn'), k = num('hgk');
+          if (N === null || K === null || n === null || k === null ||
+              !Number.isInteger(N) || !Number.isInteger(K) || !Number.isInteger(n) || !Number.isInteger(k) ||
+              N < 0 || K < 0 || K > N || n < 0 || n > N || k < 0 || k > K || (n - k) > (N - K)) {
+            out.innerHTML = errorBox('Enter valid integers with 0 ≤ K ≤ N, 0 ≤ n ≤ N, and a reachable k.'); return;
+          }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          function C(a, b) { if (b < 0 || b > a) return 0; return fact(a) / (fact(b) * fact(a - b)); }
+          const prob = (C(K, k) * C(N - K, n - k)) / C(N, n);
+          out.innerHTML =
+            resultCell('P(X = k)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'negativeBinomialProbability',
+        label: 'Negative Binomial Probability',
+        render: () => `
+          <p class="tool-hint">Probability that the r-th success occurs on trial k: P(X = k) = C(k−1, r−1)·p^r·(1−p)^(k−r).</p>
+          ${field('nbR', 'r (target number of successes)', '', 'number')}
+          ${field('nbP', 'p (success probability)', 'e.g. 0.3', 'number')}
+          ${field('nbK', 'k (trial of r-th success)', '', 'number')}
+        `,
+        calc: (out) => {
+          const r = num('nbR'), p = num('nbP'), k = num('nbK');
+          if (r === null || p === null || k === null || !Number.isInteger(r) || !Number.isInteger(k) || r < 1 || k < r || p <= 0 || p > 1) {
+            out.innerHTML = errorBox('Enter integer r ≥ 1, integer k ≥ r, and p in (0, 1].'); return;
+          }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const nCk = fact(k - 1) / (fact(r - 1) * fact(k - r));
+          const prob = nCk * Math.pow(p, r) * Math.pow(1 - p, k - r);
+          out.innerHTML =
+            resultCell('P(X = k)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'binomialMeanVariance',
+        label: 'Binomial Distribution — Mean, Variance & SD',
+        render: () => `
+          ${field('bmvN', 'n (trials)', '', 'number')}
+          ${field('bmvP', 'p (success probability)', 'e.g. 0.5', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('bmvN'), p = num('bmvP');
+          if (n === null || p === null || n < 0 || !Number.isInteger(n) || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid n ≥ 0 and p between 0 and 1.'); return; }
+          const mean = n * p, variance = n * p * (1 - p);
+          out.innerHTML =
+            resultCell('Mean (μ)', round(mean, 6)) +
+            resultCell('Variance (σ²)', round(variance, 6)) +
+            resultCell('SD (σ)', round(Math.sqrt(variance), 6));
+        }
+      },
+      {
+        id: 'poissonMeanVariance',
+        label: 'Poisson Distribution — Mean, Variance & SD',
+        render: () => `
+          ${field('pmvLambda', 'λ (average rate)', 'e.g. 4', 'number')}
+        `,
+        calc: (out) => {
+          const lambda = num('pmvLambda');
+          if (lambda === null || lambda < 0) { out.innerHTML = errorBox('Enter a valid λ ≥ 0.'); return; }
+          out.innerHTML =
+            resultCell('Mean (μ)', round(lambda, 6)) +
+            resultCell('Variance (σ²)', round(lambda, 6)) +
+            resultCell('SD (σ)', round(Math.sqrt(lambda), 6));
+        }
+      },
+      {
+        id: 'geometricMeanVariance',
+        label: 'Geometric Distribution — Mean & Variance',
+        render: () => `
+          ${field('gmvP', 'p (success probability)', 'e.g. 0.2', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('gmvP');
+          if (p === null || p <= 0 || p > 1) { out.innerHTML = errorBox('Enter a valid p between 0 (exclusive) and 1.'); return; }
+          const mean = 1 / p, variance = (1 - p) / (p * p);
+          out.innerHTML =
+            resultCell('Mean (μ)', round(mean, 6)) +
+            resultCell('Variance (σ²)', round(variance, 6)) +
+            resultCell('SD (σ)', round(Math.sqrt(variance), 6));
+        }
+      },
+      {
+        id: 'circularPermutations',
+        label: 'Circular Permutations',
+        render: () => `
+          <p class="tool-hint">Ways to arrange n distinct objects around a circle.</p>
+          ${field('cpN', 'n (distinct objects)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('cpN');
+          if (n === null || n < 1 || !Number.isInteger(n)) { out.innerHTML = errorBox('Enter a valid integer n ≥ 1.'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const arrangements = fact(n - 1);
+          out.innerHTML =
+            resultCell('Circular Arrangements', arrangements) +
+            resultCell('If Reflections Also Match', n > 2 ? arrangements / 2 : arrangements);
+        }
+      },
+      {
+        id: 'permutationsWithRepetition',
+        label: 'Permutations with Repetition (nʳ)',
+        render: () => `
+          <p class="tool-hint">Ways to arrange r selections from n items when repetition is allowed: n^r.</p>
+          ${field('pwrN', 'n (types available)', '', 'number')}
+          ${field('pwrR', 'r (selections made)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('pwrN'), r = num('pwrR');
+          if (n === null || r === null || n < 0 || r < 0 || !Number.isInteger(n) || !Number.isInteger(r)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          out.innerHTML = resultCell('n^r', Math.pow(n, r));
+        }
+      },
+      {
+        id: 'multisetPermutations',
+        label: 'Permutations of a Multiset',
+        render: () => `
+          <p class="tool-hint">Distinguishable arrangements when items repeat: n! / (n₁!·n₂!·...). Enter total items and each group's repeat count.</p>
+          ${field('mpN', 'Total items (n)', '', 'number')}
+          ${field('mpCounts', 'Repeat counts (comma-separated)', 'e.g. 2,3,1', 'text')}
+        `,
+        calc: (out) => {
+          const n = num('mpN'), countsStr = str('mpCounts');
+          const counts = countsStr.split(',').map(v => parseInt(v.trim(), 10)).filter(v => !isNaN(v));
+          if (n === null || n < 1 || !Number.isInteger(n) || counts.length === 0 || counts.some(c => c < 1 || !Number.isInteger(c))) { out.innerHTML = errorBox('Enter a valid n and positive integer repeat counts.'); return; }
+          const sumCounts = counts.reduce((a, b) => a + b, 0);
+          if (sumCounts !== n) { out.innerHTML = errorBox('Repeat counts must add up to n (currently sum to ' + sumCounts + ').'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          let denom = 1;
+          for (const c of counts) denom *= fact(c);
+          out.innerHTML = resultCell('Distinguishable Arrangements', fact(n) / denom);
+        }
+      },
+      {
+        id: 'combinationsWithRepetition',
+        label: 'Combinations with Repetition (Stars and Bars)',
+        render: () => `
+          <p class="tool-hint">Ways to choose r items from n types when repetition is allowed: C(n + r − 1, r).</p>
+          ${field('cwrN', 'n (types available)', '', 'number')}
+          ${field('cwrR', 'r (items chosen)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('cwrN'), r = num('cwrR');
+          if (n === null || r === null || n < 1 || r < 0 || !Number.isInteger(n) || !Number.isInteger(r)) { out.innerHTML = errorBox('Enter a valid n ≥ 1 and integer r ≥ 0.'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const a = n + r - 1;
+          out.innerHTML = resultCell('C(n+r−1, r)', fact(a) / (fact(r) * fact(a - r)));
+        }
+      },
+      {
+        id: 'diceSumProbability',
+        label: 'Dice Sum Probability (Two Dice)',
+        render: () => `
+          <p class="tool-hint">Probability of rolling a given sum with two standard six-sided dice.</p>
+          ${field('dsSum', 'Target Sum (2–12)', '', 'number')}
+        `,
+        calc: (out) => {
+          const sum = num('dsSum');
+          if (sum === null || !Number.isInteger(sum) || sum < 2 || sum > 12) { out.innerHTML = errorBox('Enter a valid integer sum between 2 and 12.'); return; }
+          const ways = [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1][sum - 2];
+          const prob = ways / 36;
+          out.innerHTML =
+            resultCell('Favorable Outcomes', ways) +
+            resultCell('P(Sum = k)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'cardDrawProbability',
+        label: 'Card Draw Probability (Standard Deck)',
+        render: () => `
+          <p class="tool-hint">Probability that a single card drawn from the deck matches a category (e.g. 4 for Aces, 13 for Hearts).</p>
+          ${field('cdK', 'Matching Cards in Deck', 'e.g. 4', 'number')}
+          ${field('cdN', 'Deck Size', '52', 'number')}
+        `,
+        calc: (out) => {
+          const k = num('cdK'), n = num('cdN');
+          if (k === null || n === null || n <= 0 || k < 0 || k > n) { out.innerHTML = errorBox('Enter a valid deck size and matching-card count (0 ≤ K ≤ N).'); return; }
+          const prob = k / n;
+          out.innerHTML =
+            resultCell('P(Match)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'discreteUniformProbability',
+        label: 'Discrete Uniform Distribution',
+        render: () => `
+          <p class="tool-hint">For integers a to b, each equally likely: P(X = k) = 1 / (b − a + 1).</p>
+          ${field('duA', 'a (lowest value)', '', 'number')}
+          ${field('duB', 'b (highest value)', '', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('duA'), b = num('duB');
+          if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b) || b < a) { out.innerHTML = errorBox('Enter valid integers with b ≥ a.'); return; }
+          const nVals = b - a + 1;
+          const prob = 1 / nVals;
+          const mean = (a + b) / 2;
+          const variance = (nVals * nVals - 1) / 12;
+          out.innerHTML =
+            resultCell('P(X = k), any k', round(prob, 6)) +
+            resultCell('Mean (μ)', round(mean, 6)) +
+            resultCell('Variance (σ²)', round(variance, 6)) +
+            resultCell('SD (σ)', round(Math.sqrt(variance), 6));
+        }
+      },
+      {
+        id: 'bernoulliDistribution',
+        label: 'Bernoulli Distribution — Mean & Variance',
+        render: () => `
+          <p class="tool-hint">A single trial with success probability p: P(X=1) = p, P(X=0) = 1 − p.</p>
+          ${field('bdP', 'p (success probability)', 'e.g. 0.5', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('bdP');
+          if (p === null || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid probability between 0 and 1.'); return; }
+          out.innerHTML =
+            resultCell('P(X = 1)', round(p, 6)) +
+            resultCell('P(X = 0)', round(1 - p, 6)) +
+            resultCell('Mean (μ)', round(p, 6)) +
+            resultCell('Variance (σ²)', round(p * (1 - p), 6));
+        }
+      },
+      {
+        id: 'poissonCumulative',
+        label: 'Poisson Cumulative Probability P(X ≤ k)',
+        render: () => `
+          <p class="tool-hint">P(X ≤ k) for a Poisson distribution with mean rate λ.</p>
+          ${field('pcLambda', 'λ (average rate)', 'e.g. 4', 'number')}
+          ${field('pcK', 'k (at most this many occurrences)', '', 'number')}
+        `,
+        calc: (out) => {
+          const lambda = num('pcLambda'), k = num('pcK');
+          if (lambda === null || k === null || lambda < 0 || k < 0 || !Number.isInteger(k)) { out.innerHTML = errorBox('Enter a valid λ ≥ 0 and integer k ≥ 0.'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          let cdf = 0;
+          for (let i = 0; i <= k; i++) cdf += Math.exp(-lambda) * Math.pow(lambda, i) / fact(i);
+          out.innerHTML =
+            resultCell('P(X ≤ k)', round(cdf, 6)) +
+            resultCell('P(X > k)', round(1 - cdf, 6)) +
+            resultCell('As Percent', round(cdf * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'geometricCumulative',
+        label: 'Geometric Cumulative Probability P(X ≤ k)',
+        render: () => `
+          <p class="tool-hint">Probability the first success happens on or before trial k: P(X ≤ k) = 1 − (1−p)^k.</p>
+          ${field('gcP', 'p (success probability)', 'e.g. 0.2', 'number')}
+          ${field('gcK', 'k (trial number)', '', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('gcP'), k = num('gcK');
+          if (p === null || k === null || p <= 0 || p > 1 || k < 1 || !Number.isInteger(k)) { out.innerHTML = errorBox('Enter a valid p (0 < p ≤ 1) and integer k ≥ 1.'); return; }
+          const cdf = 1 - Math.pow(1 - p, k);
+          out.innerHTML =
+            resultCell('P(X ≤ k)', round(cdf, 6)) +
+            resultCell('P(X > k)', round(1 - cdf, 6));
+        }
+      },
+      {
+        id: 'lawOfTotalProbability',
+        label: 'Law of Total Probability (Three-Branch Partition)',
+        render: () => `
+          <p class="tool-hint">For a partition A₁, A₂, A₃ of the sample space: P(B) = ΣP(Aᵢ)·P(B|Aᵢ). Leave the third branch as 0 to use only two.</p>
+          ${field('ltpA1', 'P(A₁)', '', 'number')}
+          ${field('ltpB1', 'P(B|A₁)', '', 'number')}
+          ${field('ltpA2', 'P(A₂)', '', 'number')}
+          ${field('ltpB2', 'P(B|A₂)', '', 'number')}
+          ${field('ltpA3', 'P(A₃)', '0 if unused', 'number')}
+          ${field('ltpB3', 'P(B|A₃)', '0 if unused', 'number')}
+        `,
+        calc: (out) => {
+          const a1 = num('ltpA1'), b1 = num('ltpB1'), a2 = num('ltpA2'), b2 = num('ltpB2'), a3 = num('ltpA3'), b3 = num('ltpB3');
+          const vals = [a1, b1, a2, b2, a3, b3];
+          if (vals.some(v => v === null || v < 0 || v > 1)) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1 (use 0 for an unused branch).'); return; }
+          const partitionSum = a1 + a2 + a3;
+          if (Math.abs(partitionSum - 1) > 0.01) { out.innerHTML = errorBox('P(A₁) + P(A₂) + P(A₃) must sum to 1 (currently ' + round(partitionSum, 4) + ').'); return; }
+          const pB = a1 * b1 + a2 * b2 + a3 * b3;
+          out.innerHTML =
+            resultCell('P(B)', round(pB, 6)) +
+            resultCell('As Percent', round(pB * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'atLeastOneSuccess',
+        label: 'Probability of At Least One Success',
+        render: () => `
+          <p class="tool-hint">For n independent trials each with success probability p: P(at least one success) = 1 − (1−p)^n.</p>
+          ${field('alosP', 'p (success probability)', 'e.g. 0.1', 'number')}
+          ${field('alosN', 'n (number of trials)', '', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('alosP'), n = num('alosN');
+          if (p === null || n === null || p < 0 || p > 1 || n < 0 || !Number.isInteger(n)) { out.innerHTML = errorBox('Enter a valid p between 0 and 1 and integer n ≥ 0.'); return; }
+          const prob = 1 - Math.pow(1 - p, n);
+          out.innerHTML =
+            resultCell('P(At Least One Success)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'sampleSpaceSize',
+        label: 'Sample Space Size',
+        render: () => `
+          <p class="tool-hint">Total number of ways to choose r items from n items, depending on whether order matters and repetition is allowed.</p>
+          ${field('sssN', 'n (items available)', '', 'number')}
+          ${field('sssR', 'r (items chosen)', '', 'number')}
+          ${selectField('sssMode', 'Mode', [
+            { value: 'orderedRep', label: 'Ordered, With Repetition (n^r)' },
+            { value: 'orderedNoRep', label: 'Ordered, Without Repetition (nPr)' },
+            { value: 'unorderedNoRep', label: 'Unordered, Without Repetition (nCr)' },
+            { value: 'unorderedRep', label: 'Unordered, With Repetition (C(n+r-1,r))' }
+          ])}
+        `,
+        calc: (out) => {
+          const n = num('sssN'), r = num('sssR'), mode = str('sssMode');
+          if (n === null || r === null || n < 0 || r < 0 || !Number.isInteger(n) || !Number.isInteger(r)) { out.innerHTML = errorBox(t('tool_err_2fields')); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          let result;
+          if (mode === 'orderedRep') {
+            result = Math.pow(n, r);
+          } else if (mode === 'orderedNoRep') {
+            if (r > n) { out.innerHTML = errorBox('r cannot exceed n without repetition.'); return; }
+            result = fact(n) / fact(n - r);
+          } else if (mode === 'unorderedNoRep') {
+            if (r > n) { out.innerHTML = errorBox('r cannot exceed n without repetition.'); return; }
+            result = fact(n) / (fact(r) * fact(n - r));
+          } else {
+            if (n < 1) { out.innerHTML = errorBox('n must be at least 1 for this mode.'); return; }
+            const a = n + r - 1;
+            result = fact(a) / (fact(r) * fact(a - r));
+          }
+          out.innerHTML = resultCell('Sample Space Size', result);
+        }
+      },
+      {
+        id: 'unionOfThreeEvents',
+        label: 'Union of Three Events P(A∪B∪C)',
+        render: () => `
+          <p class="tool-hint">P(A∪B∪C) = P(A)+P(B)+P(C) − P(A∩B) − P(A∩C) − P(B∩C) + P(A∩B∩C).</p>
+          ${field('u3A', 'P(A)', '', 'number')}
+          ${field('u3B', 'P(B)', '', 'number')}
+          ${field('u3C', 'P(C)', '', 'number')}
+          ${field('u3AB', 'P(A ∩ B)', '', 'number')}
+          ${field('u3AC', 'P(A ∩ C)', '', 'number')}
+          ${field('u3BC', 'P(B ∩ C)', '', 'number')}
+          ${field('u3ABC', 'P(A ∩ B ∩ C)', '', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('u3A'), b = num('u3B'), c = num('u3C'), ab = num('u3AB'), ac = num('u3AC'), bc = num('u3BC'), abc = num('u3ABC');
+          const vals = [a, b, c, ab, ac, bc, abc];
+          if (vals.some(v => v === null || v < 0 || v > 1)) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1 for every field.'); return; }
+          const union = a + b + c - ab - ac - bc + abc;
+          if (union < 0 || union > 1) { out.innerHTML = errorBox('These values give an impossible result (outside 0–1) — check your inputs.'); return; }
+          out.innerHTML =
+            resultCell('P(A∪B∪C)', round(union, 6)) +
+            resultCell('As Percent', round(union * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'normalBetween',
+        label: 'Normal Distribution — Probability Between Two Values',
+        render: () => `
+          <p class="tool-hint">P(a < X < b) for a normal distribution with the given mean and standard deviation.</p>
+          ${field('nbtA', 'a (lower value)', '', 'number')}
+          ${field('nbtB', 'b (upper value)', '', 'number')}
+          ${field('nbtMean', 'Mean (μ)', '', 'number')}
+          ${field('nbtStd', 'Std Dev (σ)', '', 'number')}
+        `,
+        calc: (out) => {
+          const a = num('nbtA'), b = num('nbtB'), mean = num('nbtMean'), std = num('nbtStd');
+          if (a === null || b === null || mean === null || std === null || std <= 0 || b <= a) { out.innerHTML = errorBox('Enter valid values with b > a and σ > 0.'); return; }
+          function erf(v) {
+            const sign = v < 0 ? -1 : 1; v = Math.abs(v);
+            const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+            const t2 = 1 / (1 + p * v);
+            const y = 1 - (((((a5*t2+a4)*t2)+a3)*t2+a2)*t2+a1)*t2*Math.exp(-v*v);
+            return sign * y;
+          }
+          function cdf(x) { const z = (x - mean) / std; return 0.5 * (1 + erf(z / Math.sqrt(2))); }
+          const prob = cdf(b) - cdf(a);
+          out.innerHTML =
+            resultCell('P(a < X < b)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'zToPercentile',
+        label: 'Z-score to Percentile Rank',
+        render: () => `
+          <p class="tool-hint">Converts a standard normal z-score into a percentile rank.</p>
+          ${field('ztpZ', 'z-score', 'e.g. 1.28', 'number')}
+        `,
+        calc: (out) => {
+          const z = num('ztpZ');
+          if (z === null) { out.innerHTML = errorBox('Enter a valid z-score.'); return; }
+          function erf(v) {
+            const sign = v < 0 ? -1 : 1; v = Math.abs(v);
+            const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+            const t2 = 1 / (1 + p * v);
+            const y = 1 - (((((a5*t2+a4)*t2)+a3)*t2+a2)*t2+a1)*t2*Math.exp(-v*v);
+            return sign * y;
+          }
+          const cdf = 0.5 * (1 + erf(z / Math.sqrt(2)));
+          out.innerHTML =
+            resultCell('Percentile Rank', round(cdf * 100, 4) + '%') +
+            resultCell('P(X ≤ z)', round(cdf, 6));
+        }
+      },
+      {
+        id: 'intersectionFromUnion',
+        label: 'Intersection from Union P(A∩B)',
+        render: () => `
+          <p class="tool-hint">P(A∩B) = P(A) + P(B) − P(A∪B).</p>
+          ${field('ifuA', 'P(A)', '', 'number')}
+          ${field('ifuB', 'P(B)', '', 'number')}
+          ${field('ifuUnion', 'P(A∪B)', '', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('ifuA'), pB = num('ifuB'), pUnion = num('ifuUnion');
+          if (pA === null || pB === null || pUnion === null || pA < 0 || pA > 1 || pB < 0 || pB > 1 || pUnion < 0 || pUnion > 1) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const result = pA + pB - pUnion;
+          if (result < 0 || result > Math.min(pA, pB) + 1e-9) { out.innerHTML = errorBox('These values give an impossible result — check your inputs.'); return; }
+          out.innerHTML =
+            resultCell('P(A∩B)', round(result, 6)) +
+            resultCell('As Percent', round(result * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'exactlyOneOfTwoEvents',
+        label: 'Probability of Exactly One of Two Events',
+        render: () => `
+          <p class="tool-hint">P(exactly one of A, B) = P(A) + P(B) − 2·P(A∩B).</p>
+          ${field('eooA', 'P(A)', '', 'number')}
+          ${field('eooB', 'P(B)', '', 'number')}
+          ${field('eooAB', 'P(A ∩ B)', '', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('eooA'), pB = num('eooB'), pAB = num('eooAB');
+          if (pA === null || pB === null || pAB === null || pA < 0 || pA > 1 || pB < 0 || pB > 1 || pAB < 0 || pAB > Math.min(pA, pB)) { out.innerHTML = errorBox('Enter valid probabilities with 0 ≤ P(A∩B) ≤ min(P(A), P(B)).'); return; }
+          const result = pA + pB - 2 * pAB;
+          out.innerHTML =
+            resultCell('P(Exactly One)', round(result, 6)) +
+            resultCell('As Percent', round(result * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'neitherEventProbability',
+        label: 'Probability of Neither Event',
+        render: () => `
+          <p class="tool-hint">P(neither A nor B) = 1 − P(A) − P(B) + P(A∩B).</p>
+          ${field('neA', 'P(A)', '', 'number')}
+          ${field('neB', 'P(B)', '', 'number')}
+          ${field('neAB', 'P(A ∩ B)', '0 if mutually exclusive', 'number')}
+        `,
+        calc: (out) => {
+          const pA = num('neA'), pB = num('neB'), pAB = num('neAB');
+          if (pA === null || pB === null || pAB === null || pA < 0 || pA > 1 || pB < 0 || pB > 1 || pAB < 0) { out.innerHTML = errorBox('Enter valid probabilities between 0 and 1.'); return; }
+          const pUnion = pA + pB - pAB;
+          if (pUnion > 1 || pUnion < 0) { out.innerHTML = errorBox('These values give an impossible result — check your inputs.'); return; }
+          const result = 1 - pUnion;
+          out.innerHTML =
+            resultCell('P(Neither)', round(result, 6)) +
+            resultCell('As Percent', round(result * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'conditionalComplement',
+        label: "Conditional Probability Complement P(A'|B)",
+        render: () => `
+          <p class="tool-hint">P(A'|B) = 1 − P(A|B).</p>
+          ${field('ccpAB', 'P(A|B)', '', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('ccpAB');
+          if (p === null || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid probability between 0 and 1.'); return; }
+          out.innerHTML =
+            resultCell("P(A'|B)", round(1 - p, 6)) +
+            resultCell('As Percent', round((1 - p) * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'birthdayProblem',
+        label: 'Birthday Problem — Shared Birthday Probability',
+        render: () => `
+          <p class="tool-hint">Probability that at least two people in a group share a birthday (365 equally likely days, no leap years).</p>
+          ${field('bpN', 'Number of People', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('bpN');
+          if (n === null || n < 0 || !Number.isInteger(n)) { out.innerHTML = errorBox('Enter a valid integer number of people ≥ 0.'); return; }
+          if (n > 365) { out.innerHTML = resultCell('P(Shared Birthday)', '1 (certain — more people than days)'); return; }
+          let noMatch = 1;
+          for (let i = 0; i < n; i++) noMatch *= (365 - i) / 365;
+          const prob = 1 - noMatch;
+          out.innerHTML =
+            resultCell('P(Shared Birthday)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%') +
+            resultCell('P(All Different)', round(noMatch, 6));
+        }
+      },
+      {
+        id: 'couponCollector',
+        label: "Coupon Collector's Problem",
+        render: () => `
+          <p class="tool-hint">Expected number of random draws (with replacement) needed to collect all n distinct coupon types: E[T] = n·(1 + 1/2 + ... + 1/n).</p>
+          ${field('ccN', 'n (distinct coupon types)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('ccN');
+          if (n === null || n < 1 || !Number.isInteger(n)) { out.innerHTML = errorBox('Enter a valid integer n ≥ 1.'); return; }
+          let harmonic = 0;
+          for (let i = 1; i <= n; i++) harmonic += 1 / i;
+          const expected = n * harmonic;
+          out.innerHTML =
+            resultCell('Expected Draws', round(expected, 4)) +
+            resultCell('Harmonic Sum (Hₙ)', round(harmonic, 6));
+        }
+      },
+      {
+        id: 'hypergeometricMeanVariance',
+        label: 'Hypergeometric Distribution — Mean, Variance & SD',
+        render: () => `
+          ${field('hmvN', 'N (population size)', '', 'number')}
+          ${field('hmvK', 'K (successes in population)', '', 'number')}
+          ${field('hmvn', 'n (sample size)', '', 'number')}
+        `,
+        calc: (out) => {
+          const N = num('hmvN'), K = num('hmvK'), n = num('hmvn');
+          if (N === null || K === null || n === null || !Number.isInteger(N) || !Number.isInteger(K) || !Number.isInteger(n) || N < 2 || K < 0 || K > N || n < 0 || n > N) { out.innerHTML = errorBox('Enter valid integers with N ≥ 2, 0 ≤ K ≤ N, and 0 ≤ n ≤ N.'); return; }
+          const mean = n * (K / N);
+          const variance = n * (K / N) * (1 - K / N) * ((N - n) / (N - 1));
+          out.innerHTML =
+            resultCell('Mean (μ)', round(mean, 6)) +
+            resultCell('Variance (σ²)', round(variance, 6)) +
+            resultCell('SD (σ)', round(Math.sqrt(variance), 6));
+        }
+      },
+      {
+        id: 'multinomialProbability',
+        label: 'Multinomial Probability (Three Categories)',
+        render: () => `
+          <p class="tool-hint">P = n! / (n₁!n₂!n₃!) · p₁^n₁·p₂^n₂·p₃^n₃, where n = n₁+n₂+n₃.</p>
+          ${field('mnN1', 'n₁ (count in category 1)', '', 'number')}
+          ${field('mnN2', 'n₂ (count in category 2)', '', 'number')}
+          ${field('mnN3', 'n₃ (count in category 3)', '', 'number')}
+          ${field('mnP1', 'p₁ (probability of category 1)', '', 'number')}
+          ${field('mnP2', 'p₂ (probability of category 2)', '', 'number')}
+          ${field('mnP3', 'p₃ (probability of category 3)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n1 = num('mnN1'), n2 = num('mnN2'), n3 = num('mnN3'), p1 = num('mnP1'), p2 = num('mnP2'), p3 = num('mnP3');
+          const counts = [n1, n2, n3];
+          const probs = [p1, p2, p3];
+          if (counts.some(v => v === null || v < 0 || !Number.isInteger(v)) || probs.some(v => v === null || v < 0 || v > 1)) { out.innerHTML = errorBox('Enter valid non-negative integer counts and probabilities between 0 and 1.'); return; }
+          const probSum = p1 + p2 + p3;
+          if (Math.abs(probSum - 1) > 0.01) { out.innerHTML = errorBox('p₁ + p₂ + p₃ must sum to 1 (currently ' + round(probSum, 4) + ').'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const n = n1 + n2 + n3;
+          const coeff = fact(n) / (fact(n1) * fact(n2) * fact(n3));
+          const prob = coeff * Math.pow(p1, n1) * Math.pow(p2, n2) * Math.pow(p3, n3);
+          out.innerHTML =
+            resultCell('Multinomial Coefficient', coeff) +
+            resultCell('P(Outcome)', round(prob, 6)) +
+            resultCell('As Percent', round(prob * 100, 4) + '%');
+        }
+      },
+      {
+        id: 'standardErrorProportion',
+        label: 'Standard Error of a Sample Proportion',
+        render: () => `
+          <p class="tool-hint">SE = √(p(1−p) / n), used when estimating a population proportion from a sample.</p>
+          ${field('sepP', 'p (sample proportion)', 'e.g. 0.4', 'number')}
+          ${field('sepN', 'n (sample size)', '', 'number')}
+        `,
+        calc: (out) => {
+          const p = num('sepP'), n = num('sepN');
+          if (p === null || n === null || p < 0 || p > 1 || n < 1 || !Number.isInteger(n)) { out.innerHTML = errorBox('Enter a valid p between 0 and 1 and integer n ≥ 1.'); return; }
+          const se = Math.sqrt((p * (1 - p)) / n);
+          out.innerHTML = resultCell('Standard Error', round(se, 6));
+        }
+      },
+      {
+        id: 'poissonApproxBinomial',
+        label: 'Poisson Approximation to Binomial',
+        render: () => `
+          <p class="tool-hint">For large n and small p, Binomial(n, p) ≈ Poisson(λ = n·p). Compares the exact binomial P(X = k) with the Poisson approximation.</p>
+          ${field('pabN', 'n (trials)', '', 'number')}
+          ${field('pabP', 'p (success probability)', 'e.g. 0.01', 'number')}
+          ${field('pabK', 'k (successes)', '', 'number')}
+        `,
+        calc: (out) => {
+          const n = num('pabN'), p = num('pabP'), k = num('pabK');
+          if (n === null || p === null || k === null || n < 0 || !Number.isInteger(n) || !Number.isInteger(k) || k < 0 || k > n || p < 0 || p > 1) { out.innerHTML = errorBox('Enter a valid n, p (0–1), and integer k (0 ≤ k ≤ n).'); return; }
+          function fact(x) { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; }
+          const nCk = fact(n) / (fact(k) * fact(n - k));
+          const exact = nCk * Math.pow(p, k) * Math.pow(1 - p, n - k);
+          const lambda = n * p;
+          const approx = Math.exp(-lambda) * Math.pow(lambda, k) / fact(k);
+          out.innerHTML =
+            resultCell('Exact Binomial P(X = k)', round(exact, 6)) +
+            resultCell('Poisson Approximation', round(approx, 6)) +
+            resultCell('λ = np', round(lambda, 6)) +
+            resultCell('Difference', round(Math.abs(exact - approx), 6));
         }
       }
     ]
