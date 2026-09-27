@@ -13027,6 +13027,28 @@ setTimeout(() => {
   const polarThetaMaxInput = document.getElementById('graphPolarThetaMax');
   const polarError = document.getElementById('graphPolarError');
   const quickPolarBtns = document.getElementById('graphPolarQuickBtns');
+  const modeParametricBtn = document.getElementById('graphModeParametricBtn');
+  const paramPanel = document.getElementById('graphParametricPanel');
+  const paramXInput = document.getElementById('graphParamXInput');
+  const paramYInput = document.getElementById('graphParamYInput');
+  const paramQuickBtns = document.getElementById('graphParamQuickBtns');
+  const paramTMinInput = document.getElementById('graphParamTMin');
+  const paramTMaxInput = document.getElementById('graphParamTMax');
+  const paramError = document.getElementById('graphParamError');
+  const modeIneqBtn = document.getElementById('graphModeInequalityBtn');
+  const ineqPanel = document.getElementById('graphInequalityPanel');
+  const ineqInput = document.getElementById('graphIneqInput');
+  const ineqQuickBtns = document.getElementById('graphIneqQuickBtns');
+  const ineqXMinInput = document.getElementById('graphIneqXMin');
+  const ineqXMaxInput = document.getElementById('graphIneqXMax');
+  const ineqError = document.getElementById('graphIneqError');
+  const modeDataBtn = document.getElementById('graphModeDataBtn');
+  const dataPanel = document.getElementById('graphDataPanel');
+  const dataInput = document.getElementById('graphDataInput');
+  const dataBarBtn = document.getElementById('graphDataBarBtn');
+  const dataScatterBtn = document.getElementById('graphDataScatterBtn');
+  const dataError = document.getElementById('graphDataError');
+  let dataChartType = 'bar';
 
   let graphMode = 'function';
 
@@ -13425,6 +13447,191 @@ setTimeout(() => {
     ctx.stroke();
   }
 
+  function plotParametric() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    if (paramError) paramError.textContent = '';
+
+    const xFn = compilePolarFn(paramXInput ? paramXInput.value : '');
+    const yFn = compilePolarFn(paramYInput ? paramYInput.value : '');
+    if (!xFn || !yFn) {
+      if (paramError) paramError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    const tMin = paramTMinInput ? parseFloat(paramTMinInput.value) : 0;
+    const tMax = paramTMaxInput ? parseFloat(paramTMaxInput.value) : 6.283;
+    if (!isFinite(tMin) || !isFinite(tMax) || tMin >= tMax) {
+      if (paramError) paramError.textContent = t('graph_error_range');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    const samples = 600;
+    const pts = [];
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    for (let i = 0; i <= samples; i++) {
+      const tt = tMin + (tMax - tMin) * i / samples;
+      let px, py;
+      try { px = xFn(tt); py = yFn(tt); } catch (e) { px = NaN; py = NaN; }
+      pts.push([px, py]);
+      if (isFinite(px)) { if (px < xmin) xmin = px; if (px > xmax) xmax = px; }
+      if (isFinite(py)) { if (py < ymin) ymin = py; if (py > ymax) ymax = py; }
+    }
+    if (!isFinite(xmin) || !isFinite(xmax) || !isFinite(ymin) || !isFinite(ymax)) {
+      if (paramError) paramError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+    // keep equal aspect so circles/ellipses aren't distorted
+    const cx0 = (xmin + xmax) / 2, cy0 = (ymin + ymax) / 2;
+    let half = Math.max((xmax - xmin) / 2, (ymax - ymin) / 2, 1e-6) * 1.15;
+    const xmin2 = cx0 - half, xmax2 = cx0 + half, ymin2 = cy0 - half, ymax2 = cy0 + half;
+
+    const toPx = drawAxes(w, h, xmin2, xmax2, ymin2, ymax2);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let started = false;
+    pts.forEach(([x, y]) => {
+      if (!isFinite(x) || !isFinite(y)) { started = false; return; }
+      const [px, py] = toPx(x, y);
+      if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    renderLegend([{ color: accent, label: 'x(t)=' + paramXInput.value + ', y(t)=' + paramYInput.value }]);
+  }
+
+  // Parses "y > expr", "y >= expr", "y < expr" or "y <= expr" (expr in x)
+  function parseInequality(exprRaw) {
+    const s = (exprRaw || '').trim();
+    const m = s.match(/^y\s*(>=|<=|>|<)\s*(.+)$/i);
+    if (!m) return null;
+    const fn = compileFn(m[2]);
+    if (!fn) return null;
+    return { op: m[1], fn, rhsText: m[2] };
+  }
+
+  function plotInequality() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    if (ineqError) ineqError.textContent = '';
+
+    const xmin = ineqXMinInput ? parseFloat(ineqXMinInput.value) : -10;
+    const xmax = ineqXMaxInput ? parseFloat(ineqXMaxInput.value) : 10;
+    if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) {
+      if (ineqError) ineqError.textContent = t('graph_error_range');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    const parsed = parseInequality(ineqInput ? ineqInput.value : '');
+    if (!parsed) {
+      if (ineqError) ineqError.textContent = t('graph_ineq_error');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+    const { op, fn, rhsText } = parsed;
+
+    const samples = 300;
+    const pts = samplePts(fn, xmin, xmax, samples);
+    let ymin = Infinity, ymax = -Infinity;
+    pts.forEach(([, y]) => { if (isFinite(y)) { if (y < ymin) ymin = y; if (y > ymax) ymax = y; } });
+    if (!isFinite(ymin) || !isFinite(ymax)) {
+      if (ineqError) ineqError.textContent = t('graph_error_expr');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+    if (ymin === ymax) { ymin -= 1; ymax += 1; }
+    const pad = (ymax - ymin) * 0.6;
+    ymin -= pad; ymax += pad;
+    const yspan0 = ymax - ymin;
+    const cap = Math.min(yspan0, (xmax - xmin) * 4);
+    if (yspan0 > cap) { const mid = (ymax + ymin) / 2; ymin = mid - cap / 2; ymax = mid + cap / 2; }
+
+    const toPx = drawAxes(w, h, xmin, xmax, ymin, ymax);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+    const above = (op === '>' || op === '>=');
+    const boundaryY = above ? ymax : ymin;
+
+    ctx.fillStyle = 'rgba(255,138,31,0.22)';
+    ctx.beginPath();
+    let started = false;
+    pts.forEach(([x, y]) => {
+      const yy = isFinite(y) ? y : boundaryY;
+      const [px, py] = toPx(x, yy);
+      if (!started) { const [bx, by] = toPx(x, boundaryY); ctx.moveTo(bx, by); ctx.lineTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
+    });
+    if (pts.length) {
+      const lastX = pts[pts.length - 1][0];
+      const [ex, ey] = toPx(lastX, boundaryY);
+      ctx.lineTo(ex, ey);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    const dashed = (op === '>' || op === '<');
+    drawCurve(pts, toPx, accent, ymin, yspan0, dashed);
+    renderLegend([{ color: accent, label: 'y ' + op + ' ' + rhsText, dashed }]);
+  }
+
+  function parseDataPairs(raw) {
+    const lines = (raw || '').split('\n').map(l => l.trim()).filter(l => l.length);
+    const pts = [];
+    lines.forEach((line, idx) => {
+      const parts = line.split(',').map(s => s.trim());
+      let x, y;
+      if (parts.length >= 2) { x = parseFloat(parts[0]); y = parseFloat(parts[1]); }
+      else { x = idx + 1; y = parseFloat(parts[0]); }
+      if (isFinite(x) && isFinite(y)) pts.push([x, y]);
+    });
+    return pts;
+  }
+
+  function plotDataChart() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    if (dataError) dataError.textContent = '';
+
+    const pts = parseDataPairs(dataInput ? dataInput.value : '');
+    if (!pts.length) {
+      if (dataError) dataError.textContent = t('graph_data_error');
+      ctx.clearRect(0, 0, w, h);
+      return;
+    }
+
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    pts.forEach(([x, y]) => { if (x < xmin) xmin = x; if (x > xmax) xmax = x; if (y < ymin) ymin = y; if (y > ymax) ymax = y; });
+    if (ymin > 0) ymin = 0;
+    if (ymax < 0) ymax = 0;
+    if (xmin === xmax) { xmin -= 1; xmax += 1; }
+    if (ymin === ymax) { ymin -= 1; ymax += 1; }
+    const padX = (xmax - xmin) * 0.15 || 1;
+    const padY = (ymax - ymin) * 0.15 || 1;
+    const dxmin = xmin - padX, dxmax = xmax + padX, dymin = ymin - padY, dymax = ymax + padY;
+
+    const toPx = drawAxes(w, h, dxmin, dxmax, dymin, dymax);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+
+    if (dataChartType === 'bar') {
+      const barW = Math.max(6, Math.min(46, (w / pts.length) * 0.5));
+      const [, zeroPy] = toPx(0, 0);
+      ctx.fillStyle = accent;
+      pts.forEach(([x, y]) => {
+        const [px, py] = toPx(x, y);
+        ctx.fillRect(px - barW / 2, Math.min(py, zeroPy), barW, Math.abs(zeroPy - py) || 1);
+      });
+    } else {
+      ctx.fillStyle = accent;
+      pts.forEach(([x, y]) => {
+        const [px, py] = toPx(x, y);
+        ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    const label = (dataChartType === 'bar' ? t('graph_data_bar') : t('graph_data_scatter')) + ' — ' + pts.length + (pts.length === 1 ? ' pt' : ' pts');
+    renderLegend([{ color: accent, label }]);
+  }
+
   function drawUnitCircle(angleDegVal) {
     const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
     ctx.clearRect(0, 0, w, h);
@@ -13653,6 +13860,12 @@ setTimeout(() => {
       draw3DSized(w, h);
     } else if (graphMode === 'polar') {
       plotPolarSized(w, h);
+    } else if (graphMode === 'parametric') {
+      plotParametricSized(w, h);
+    } else if (graphMode === 'inequality') {
+      plotInequalitySized(w, h);
+    } else if (graphMode === 'data') {
+      plotDataChartSized(w, h);
     } else {
       drawUnitCircleSized(w, h, parseFloat(angleSlider.value));
     }
@@ -13662,6 +13875,9 @@ setTimeout(() => {
   function plotFunctionSized(w, h) { canvas.__w = w; canvas.__h = h; plotFunction(); }
   function drawUnitCircleSized(w, h, a) { canvas.__w = w; canvas.__h = h; drawUnitCircle(a); }
   function plotPolarSized(w, h) { canvas.__w = w; canvas.__h = h; plotPolar(); }
+  function plotParametricSized(w, h) { canvas.__w = w; canvas.__h = h; plotParametric(); }
+  function plotInequalitySized(w, h) { canvas.__w = w; canvas.__h = h; plotInequality(); }
+  function plotDataChartSized(w, h) { canvas.__w = w; canvas.__h = h; plotDataChart(); }
 
   function setGraphMode(mode) {
     graphMode = mode;
@@ -13669,10 +13885,16 @@ setTimeout(() => {
     modeCircleBtn.classList.toggle('active', mode === 'unitcircle');
     if (mode3DBtn) mode3DBtn.classList.toggle('active', mode === 'surface3d');
     if (modePolarBtn) modePolarBtn.classList.toggle('active', mode === 'polar');
+    if (modeParametricBtn) modeParametricBtn.classList.toggle('active', mode === 'parametric');
+    if (modeIneqBtn) modeIneqBtn.classList.toggle('active', mode === 'inequality');
+    if (modeDataBtn) modeDataBtn.classList.toggle('active', mode === 'data');
     fnPanel.style.display = mode === 'function' ? 'block' : 'none';
     circlePanel.style.display = mode === 'unitcircle' ? 'block' : 'none';
     if (panel3D) panel3D.style.display = mode === 'surface3d' ? 'block' : 'none';
     if (polarPanel) polarPanel.style.display = mode === 'polar' ? 'block' : 'none';
+    if (paramPanel) paramPanel.style.display = mode === 'parametric' ? 'block' : 'none';
+    if (ineqPanel) ineqPanel.style.display = mode === 'inequality' ? 'block' : 'none';
+    if (dataPanel) dataPanel.style.display = mode === 'data' ? 'block' : 'none';
     canvas.style.display = mode === 'surface3d' ? 'none' : 'block';
     if (canvas3D) canvas3D.style.display = mode === 'surface3d' ? 'block' : 'none';
     redraw();
@@ -13682,6 +13904,9 @@ setTimeout(() => {
   modeCircleBtn.addEventListener('click', () => setGraphMode('unitcircle'));
   if (mode3DBtn) mode3DBtn.addEventListener('click', () => setGraphMode('surface3d'));
   if (modePolarBtn) modePolarBtn.addEventListener('click', () => setGraphMode('polar'));
+  if (modeParametricBtn) modeParametricBtn.addEventListener('click', () => setGraphMode('parametric'));
+  if (modeIneqBtn) modeIneqBtn.addEventListener('click', () => setGraphMode('inequality'));
+  if (modeDataBtn) modeDataBtn.addEventListener('click', () => setGraphMode('data'));
 
   let debounceTimer;
   function debounceRedraw() {
@@ -13726,6 +13951,43 @@ setTimeout(() => {
   });
   angleSlider.addEventListener('input', () => {
     drawUnitCircle(parseFloat(angleSlider.value));
+  });
+
+  if (paramXInput) paramXInput.addEventListener('input', debounceRedraw);
+  if (paramYInput) paramYInput.addEventListener('input', debounceRedraw);
+  if (paramTMinInput) paramTMinInput.addEventListener('input', debounceRedraw);
+  if (paramTMaxInput) paramTMaxInput.addEventListener('input', debounceRedraw);
+  if (paramQuickBtns) paramQuickBtns.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-fnx]');
+    if (!btn) return;
+    paramXInput.value = btn.dataset.fnx;
+    paramYInput.value = btn.dataset.fny;
+    if (btn.dataset.tmax) paramTMaxInput.value = btn.dataset.tmax;
+    redraw();
+  });
+
+  if (ineqInput) ineqInput.addEventListener('input', debounceRedraw);
+  if (ineqXMinInput) ineqXMinInput.addEventListener('input', debounceRedraw);
+  if (ineqXMaxInput) ineqXMaxInput.addEventListener('input', debounceRedraw);
+  if (ineqQuickBtns) ineqQuickBtns.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-ineq]');
+    if (!btn) return;
+    ineqInput.value = btn.dataset.ineq;
+    redraw();
+  });
+
+  if (dataInput) dataInput.addEventListener('input', debounceRedraw);
+  if (dataBarBtn) dataBarBtn.addEventListener('click', () => {
+    dataChartType = 'bar';
+    dataBarBtn.classList.add('active');
+    if (dataScatterBtn) dataScatterBtn.classList.remove('active');
+    redraw();
+  });
+  if (dataScatterBtn) dataScatterBtn.addEventListener('click', () => {
+    dataChartType = 'scatter';
+    dataScatterBtn.classList.add('active');
+    if (dataBarBtn) dataBarBtn.classList.remove('active');
+    redraw();
   });
 
   window.addEventListener('resize', debounceRedraw);
