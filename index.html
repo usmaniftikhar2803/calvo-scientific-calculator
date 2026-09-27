@@ -861,6 +861,9 @@
         <button class="subject-pill" data-graphmode="unitcircle" id="graphModeCircleBtn" data-i18n="graph_mode_unitcircle">Unit Circle</button>
         <button class="subject-pill" data-graphmode="surface3d" id="graphMode3DBtn" data-i18n="graph_mode_3d">3D Surface</button>
         <button class="subject-pill" data-graphmode="polar" id="graphModePolarBtn" data-i18n="graph_mode_polar">Polar Graph</button>
+        <button class="subject-pill" data-graphmode="parametric" id="graphModeParametricBtn" data-i18n="graph_mode_parametric">Parametric</button>
+        <button class="subject-pill" data-graphmode="inequality" id="graphModeInequalityBtn" data-i18n="graph_mode_inequality">Inequality</button>
+        <button class="subject-pill" data-graphmode="data" id="graphModeDataBtn" data-i18n="graph_mode_data">Bar/Scatter</button>
       </div>
 
       <div id="graphFunctionPanel">
@@ -948,6 +951,57 @@
           <span class="graph-range-sep">π</span>
         </div>
         <div class="graph-error" id="graphPolarError"></div>
+      </div>
+
+      <div id="graphParametricPanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graphParamXInput" placeholder="x(t) e.g. cos(t)" data-i18n-placeholder="graph_param_x_placeholder" value="cos(t)">
+        <input type="text" class="formula-search convert-input" id="graphParamYInput" placeholder="y(t) e.g. sin(t)" data-i18n-placeholder="graph_param_y_placeholder" value="sin(t)">
+        <div class="graph-quick-row" id="graphParamQuickBtns">
+          <button class="pill-btn small" data-fnx="cos(t)" data-fny="sin(t)" data-tmax="6.283">Circle</button>
+          <button class="pill-btn small" data-fnx="2*cos(t)" data-fny="sin(t)" data-tmax="6.283">Ellipse</button>
+          <button class="pill-btn small" data-fnx="sin(2*t)" data-fny="sin(3*t)" data-tmax="6.283">Lissajous</button>
+          <button class="pill-btn small" data-fnx="t*cos(t)" data-fny="t*sin(t)" data-tmax="18.85">Spiral</button>
+          <button class="pill-btn small" data-fnx="cos(t)^3" data-fny="sin(t)^3" data-tmax="6.283">Astroid</button>
+          <button class="pill-btn small" data-fnx="t-sin(t)" data-fny="1-cos(t)" data-tmax="12.57">Cycloid</button>
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_range_t_label">t from</span>
+          <input type="number" class="formula-search convert-input" id="graphParamTMin" value="0">
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphParamTMax" value="6.283" step="0.1">
+        </div>
+        <div class="graph-error" id="graphParamError"></div>
+      </div>
+
+      <div id="graphInequalityPanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graphIneqInput" placeholder="e.g. y > x^2 - 1" data-i18n-placeholder="graph_ineq_placeholder" value="y > x^2 - 1">
+        <div class="graph-quick-row" id="graphIneqQuickBtns">
+          <button class="pill-btn small" data-ineq="y > x^2 - 1">y &gt; x²−1</button>
+          <button class="pill-btn small" data-ineq="y <= 2x + 1">y ≤ 2x+1</button>
+          <button class="pill-btn small" data-ineq="y >= sin(x)">y ≥ sin(x)</button>
+          <button class="pill-btn small" data-ineq="y < 1/x">y &lt; 1/x</button>
+          <button class="pill-btn small" data-ineq="y <= sqrt(x)">y ≤ √x</button>
+          <button class="pill-btn small" data-ineq="y > abs(x)">y &gt; |x|</button>
+        </div>
+        <div class="graph-range-row">
+          <input type="number" class="formula-search convert-input" id="graphIneqXMin" value="-10">
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphIneqXMax" value="10">
+        </div>
+        <div class="graph-error" id="graphIneqError"></div>
+      </div>
+
+      <div id="graphDataPanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphDataInput" rows="4" placeholder="x,y per line e.g.&#10;1,4&#10;2,7&#10;3,5" data-i18n-placeholder="graph_data_placeholder">1,4
+2,7
+3,5
+4,9
+5,6</textarea>
+        <div class="graph-quick-row">
+          <button class="subject-pill active small" data-datatype="bar" id="graphDataBarBtn" data-i18n="graph_data_bar">Bar Chart</button>
+          <button class="subject-pill small" data-datatype="scatter" id="graphDataScatterBtn" data-i18n="graph_data_scatter">Scatter Plot</button>
+        </div>
+        <div class="graph-error" id="graphDataError"></div>
       </div>
 
       <div class="graph-canvas-wrap">
