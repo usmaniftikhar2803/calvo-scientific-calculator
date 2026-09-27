@@ -3054,6 +3054,18 @@ body {
 }
 .graph-table-wrap th { color: var(--accent); font-weight: 700; }
 
+.graph-data-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 74px;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.5;
+}
+.subject-pill.small {
+  padding: 6px 12px;
+  font-size: 0.72rem;
+}
+
 .graph-canvas-wrap {
   flex: 1;
   min-height: 220px;
