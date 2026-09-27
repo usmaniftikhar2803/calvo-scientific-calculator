@@ -12462,6 +12462,10 @@ setTimeout(() => {
   const quizLengthSelect = document.getElementById('quizLengthSelect');
   const quizStartBtn = document.getElementById('quizStartBtn');
   const quizSetupScreen = document.getElementById('quizSetupScreen');
+  const quizCountScreen = document.getElementById('quizCountScreen');
+  const quizBackBtn = document.getElementById('quizBackBtn');
+  const quizCountSubjectLabel = document.getElementById('quizCountSubjectLabel');
+  const quizCountNumberLabel = document.getElementById('quizCountNumberLabel');
   const quizPlayScreen = document.getElementById('quizPlayScreen');
   const quizResultScreen = document.getElementById('quizResultScreen');
   const quizEmptyNote = document.getElementById('quizEmptyNote');
@@ -12578,6 +12582,7 @@ setTimeout(() => {
         quizDifficulty = btn.dataset.difficulty;
         buildQuizDifficultyPills();
         checkQuizPoolSize();
+        updateQuizCountLabels();
       });
     });
   }
@@ -12609,6 +12614,8 @@ setTimeout(() => {
       quizEmptyNote.setAttribute('data-i18n', emptyKey);
       quizEmptyNote.textContent = t(emptyKey);
     }
+    quizSetupScreen.style.display = 'block';
+    if (quizCountScreen) quizCountScreen.style.display = 'none';
     buildQuizSubjectPills();
     buildQuizDifficultyPills();
     checkQuizPoolSize();
@@ -12630,11 +12637,38 @@ setTimeout(() => {
       btn.addEventListener('click', () => {
         quizSubject = btn.dataset.quizsubj;
         buildQuizSubjectPills();
-        checkQuizPoolSize();
-        updateFlashcardDueNote();
+        goToQuizCountScreen();
       });
     });
   }
+
+  // Page 2: shows the chosen subject and how many quiz questions
+  // (or flashcards) are available for it, before the quiz actually starts.
+  function updateQuizCountLabels() {
+    if (!quizCountSubjectLabel || !quizCountNumberLabel) return;
+    quizCountSubjectLabel.textContent = quizSubject === 'All' ? t('quiz_all_subjects') : quizSubject;
+    const n = quizMode === 'practice' ? practicePool().length : pool().length;
+    const key = quizMode === 'flashcards' ? 'flashcard_cards_available' : 'quiz_questions_available';
+    quizCountNumberLabel.textContent = t(key).replace('{n}', n);
+  }
+
+  function goToQuizCountScreen() {
+    if (!quizCountScreen) return;
+    quizSetupScreen.style.display = 'none';
+    quizCountScreen.style.display = 'block';
+    updateQuizCountLabels();
+    buildQuizDifficultyPills();
+    checkQuizPoolSize();
+    updateFlashcardDueNote();
+  }
+
+  function goToQuizSubjectScreen() {
+    if (!quizCountScreen) return;
+    quizCountScreen.style.display = 'none';
+    quizSetupScreen.style.display = 'block';
+  }
+
+  if (quizBackBtn) quizBackBtn.addEventListener('click', goToQuizSubjectScreen);
 
   function checkQuizPoolSize() {
     if (quizMode === 'flashcards') {
@@ -12682,6 +12716,7 @@ setTimeout(() => {
     quizIndex = 0;
     quizScore = 0;
     quizWrongAnswers = [];
+    if (quizCountScreen) quizCountScreen.style.display = 'none';
     quizSetupScreen.style.display = 'none';
     quizResultScreen.style.display = 'none';
     quizPlayScreen.style.display = 'block';
@@ -12790,7 +12825,7 @@ setTimeout(() => {
   function quitQuiz() {
     quizPlayScreen.style.display = 'none';
     quizResultScreen.style.display = 'none';
-    quizSetupScreen.style.display = 'block';
+    goToQuizCountScreen();
   }
 
   quizStartBtn.addEventListener('click', () => {
@@ -12801,7 +12836,7 @@ setTimeout(() => {
   quizQuitBtn.addEventListener('click', quitQuiz);
   quizRestartBtn.addEventListener('click', () => {
     quizResultScreen.style.display = 'none';
-    quizSetupScreen.style.display = 'block';
+    goToQuizCountScreen();
   });
 
   /* ============================================
@@ -12870,6 +12905,7 @@ setTimeout(() => {
     flashcardIndex = 0;
     flashcardStats = { reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 };
 
+    if (quizCountScreen) quizCountScreen.style.display = 'none';
     quizSetupScreen.style.display = 'none';
     quizResultScreen.style.display = 'none';
     flashcardResultScreen.style.display = 'none';
@@ -12949,7 +12985,7 @@ setTimeout(() => {
   function quitFlashcards() {
     flashcardPlayScreen.style.display = 'none';
     flashcardResultScreen.style.display = 'none';
-    quizSetupScreen.style.display = 'block';
+    goToQuizCountScreen();
     updateFlashcardDueNote();
   }
 
@@ -12965,7 +13001,7 @@ setTimeout(() => {
   if (flashcardRestartBtn) {
     flashcardRestartBtn.addEventListener('click', () => {
       flashcardResultScreen.style.display = 'none';
-      quizSetupScreen.style.display = 'block';
+      goToQuizCountScreen();
       updateFlashcardDueNote();
     });
   }
@@ -12980,6 +13016,7 @@ setTimeout(() => {
     buildQuizDifficultyPills();
     checkQuizPoolSize();
     updateFlashcardDueNote();
+    if (quizCountScreen && quizCountScreen.style.display === 'block') updateQuizCountLabels();
     if (quizPlayScreen.style.display === 'block' && quizQuestions.length) renderQuizQuestion();
   };
 })();
