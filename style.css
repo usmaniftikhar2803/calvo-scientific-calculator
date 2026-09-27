@@ -1251,6 +1251,35 @@ body {
   text-align: left;
 }
 
+/* Formula Quiz: show one subject per line (stacked list) on the
+   subject-picker screen, matching the Equation Solver pattern. */
+#quizSubjectPills {
+  flex-direction: column;
+  align-items: stretch;
+}
+#quizSubjectPills .subject-pill {
+  width: 100%;
+  text-align: left;
+}
+
+.quiz-back-btn {
+  margin-bottom: 14px;
+}
+.quiz-count-subject {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.quiz-count-number {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
 /* Converter category pills: wrap onto multiple lines instead of
    horizontally scrolling, so every category (including the last
    ones like Time/Data) is always fully visible, never cut off
