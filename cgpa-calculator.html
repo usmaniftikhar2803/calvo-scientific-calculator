@@ -80,6 +80,39 @@
 <div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
 </footer>
 <script>
+
+/* Custom grade picker: replaces the native (Android) select popup, which scrolls
+   the list to the selected item and hides A+ above the visible area. All grades
+   are shown at once in a grid. The <select> stays as the source of truth. */
+function attachGradePicker(sel) {
+  function open(e) {
+    e.preventDefault(); e.stopPropagation();
+    if (sel.blur) sel.blur();
+    if (document.getElementById('gradePickerOv')) return;
+    var opened = Date.now();
+    var ov = document.createElement('div'); ov.id = 'gradePickerOv'; ov.className = 'gp-overlay';
+    var box = document.createElement('div'); box.className = 'gp-box';
+    var ttl = document.createElement('div'); ttl.className = 'gp-title'; ttl.textContent = 'Select grade';
+    var grid = document.createElement('div'); grid.className = 'gp-grid';
+    function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    Array.prototype.forEach.call(sel.options, function (o) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.className = 'gp-btn' + (o.value === sel.value ? ' active' : '');
+      b.textContent = o.value;
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        sel.value = o.value;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        close();
+      });
+      grid.appendChild(b);
+    });
+    ov.addEventListener('click', function (ev) { if (ev.target === ov && Date.now() - opened > 300) close(); });
+    box.appendChild(ttl); box.appendChild(grid); ov.appendChild(box); document.body.appendChild(ov);
+  }
+  sel.addEventListener('mousedown', open);
+  sel.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') open(e); });
+}
 var HEC={'A+':4,'A':4,'A-':3.66,'B+':3.33,'B':3,'B-':2.66,'C+':2.33,'C':2,'C-':1.66,'D+':1.3,'D':1,'F':0};
 var UET={'A+':4,'A':4,'A-':3.7,'B+':3.4,'B':3,'B-':2.7,'C+':2.4,'C':2,'C-':1.7,'D+':1.4,'D':1,'F':0};
 var STD={'A+':4,'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'C-':1.7,'D+':1.3,'D':1,'F':0};
@@ -91,7 +124,7 @@ function gradeOpts(){return Object.keys(scale()).map(function(g){return '<option
 function addSub(){var d=document.createElement('div');d.className='subj';
 d.innerHTML='<input placeholder="Subject (optional)"><input type="number" min="0" max="100" step="any" placeholder="Marks %"><select>'+gradeOpts()+'</select><input type="number" min="0" step="0.5" placeholder="Credit hrs" value="3"><button class="btn ghost" title="Remove">&times;</button>';
 d.children[1].oninput=function(){var g=gradeFromMarks(parseFloat(d.children[1].value)),s=d.children[2];if(g){for(var i=0;i<s.options.length;i++){if(s.options[i].value===g){s.value=g;break}}}};
-d.lastChild.onclick=function(){d.remove()};$('subjects').appendChild(d)}
+attachGradePicker(d.children[2]);d.lastChild.onclick=function(){d.remove()};$('subjects').appendChild(d)}
 function addSem(){var d=document.createElement('div');d.className='subj';d.style.gridTemplateColumns='1fr 1fr auto';
 d.innerHTML='<input type="number" min="0" max="4" step="0.01" placeholder="Semester GPA"><input type="number" min="0" step="0.5" placeholder="Credit hrs"><button class="btn ghost" title="Remove">&times;</button>';
 d.lastChild.onclick=function(){d.remove()};$('sems').appendChild(d)}
