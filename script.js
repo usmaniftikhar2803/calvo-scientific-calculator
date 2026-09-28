@@ -12121,6 +12121,40 @@ const cgpaScaleEl = document.getElementById('cgpaScale');
 const cgpaResultEl = document.getElementById('cgpaResult');
 let cgpaSemesterCount = 1;
 
+
+/* Custom grade picker: replaces the native (Android) select popup, which scrolls
+   the list to the selected item and hides A+ above the visible area. All grades
+   are shown at once in a grid. The <select> stays as the source of truth. */
+function attachGradePicker(sel) {
+  function open(e) {
+    e.preventDefault(); e.stopPropagation();
+    if (sel.blur) sel.blur();
+    if (document.getElementById('gradePickerOv')) return;
+    var opened = Date.now();
+    var ov = document.createElement('div'); ov.id = 'gradePickerOv'; ov.className = 'gp-overlay';
+    var box = document.createElement('div'); box.className = 'gp-box';
+    var ttl = document.createElement('div'); ttl.className = 'gp-title'; ttl.textContent = 'Select grade';
+    var grid = document.createElement('div'); grid.className = 'gp-grid';
+    function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    Array.prototype.forEach.call(sel.options, function (o) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.className = 'gp-btn' + (o.value === sel.value ? ' active' : '');
+      b.textContent = o.value;
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        sel.value = o.value;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        close();
+      });
+      grid.appendChild(b);
+    });
+    ov.addEventListener('click', function (ev) { if (ev.target === ov && Date.now() - opened > 300) close(); });
+    box.appendChild(ttl); box.appendChild(grid); ov.appendChild(box); document.body.appendChild(ov);
+  }
+  sel.addEventListener('mousedown', open);
+  sel.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') open(e); });
+}
+
 /* HEC (Pakistan) official fractionalized grading table, section 13.1 of the
    HEC Policy Guidelines for Uniform Semester System. Grade points are the
    upper limit of each HEC range; `min` is the lowest percentage for the grade.
@@ -12170,6 +12204,7 @@ function addCgpaRow(semester) {
     if (g && [...sel.options].some(o => o.value === g)) sel.value = g;
     calcCgpa();
   });
+  attachGradePicker(row.querySelector('.cgpa-grade'));
   cgpaTableEl.appendChild(row);
 }
 
