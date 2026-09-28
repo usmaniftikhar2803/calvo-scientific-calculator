@@ -12121,7 +12121,24 @@ const cgpaScaleEl = document.getElementById('cgpaScale');
 const cgpaResultEl = document.getElementById('cgpaResult');
 let cgpaSemesterCount = 1;
 
+/* HEC (Pakistan) official fractionalized grading table, section 13.1 of the
+   HEC Policy Guidelines for Uniform Semester System. Grade points are the
+   upper limit of each HEC range; `min` is the lowest percentage for the grade.
+   A+ is not in the HEC table, so it is selectable by hand (4.0) but never auto-picked. */
+const hecMarksBands = [
+  { min: 85, grade: 'A' },  { min: 80, grade: 'A-' }, { min: 75, grade: 'B+' },
+  { min: 71, grade: 'B' },  { min: 68, grade: 'B-' }, { min: 64, grade: 'C+' },
+  { min: 61, grade: 'C' },  { min: 58, grade: 'C-' }, { min: 54, grade: 'D+' },
+  { min: 50, grade: 'D' },  { min: 0,  grade: 'F' }
+];
+function gradeFromMarks(percent) {
+  if (isNaN(percent) || percent < 0 || percent > 100) return null;
+  for (const b of hecMarksBands) { if (percent >= b.min) return b.grade; }
+  return 'F';
+}
+
 const gradeScales = {
+  'hec': { 'A+': 4.0, 'A': 4.0, 'A-': 3.66, 'B+': 3.33, 'B': 3.0, 'B-': 2.66, 'C+': 2.33, 'C': 2.0, 'C-': 1.66, 'D+': 1.30, 'D': 1.0, 'F': 0.0 },
   '4': { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.0, 'F': 0.0 },
   '4uet': { 'A+': 4.0, 'A': 4.0, 'A-': 3.7, 'B+': 3.4, 'B': 3.0, 'B-': 2.7, 'C+': 2.4, 'C': 2.0, 'C-': 1.7, 'D+': 1.4, 'D': 1.0, 'F': 0.0 },
 };
@@ -12139,6 +12156,7 @@ function addCgpaRow(semester) {
   row.innerHTML = `
     <input type="text" class="cgpa-subject" placeholder="${t('subject_name_placeholder')}">
     <input type="number" class="cgpa-credit" placeholder="${t('credit_hrs_placeholder')}" min="0" step="0.5">
+    <input type="number" class="cgpa-marks" placeholder="Marks %" min="0" max="100" step="any" title="Enter marks (out of 100) and the grade is selected automatically (HEC table)">
     <select class="cgpa-grade">${gradeOptionsHtml(scaleId)}</select>
     <button class="cgpa-del" title="${t('remove_title')}">&#10005;</button>
   `;
@@ -12146,6 +12164,12 @@ function addCgpaRow(semester) {
   row.querySelector('.cgpa-subject').addEventListener('input', calcCgpa);
   row.querySelector('.cgpa-credit').addEventListener('input', calcCgpa);
   row.querySelector('.cgpa-grade').addEventListener('change', calcCgpa);
+  row.querySelector('.cgpa-marks').addEventListener('input', () => {
+    const g = gradeFromMarks(parseFloat(row.querySelector('.cgpa-marks').value));
+    const sel = row.querySelector('.cgpa-grade');
+    if (g && [...sel.options].some(o => o.value === g)) sel.value = g;
+    calcCgpa();
+  });
   cgpaTableEl.appendChild(row);
 }
 
@@ -12217,7 +12241,13 @@ if (cgpaTableEl) {
   });
   cgpaScaleEl.addEventListener('change', () => {
     cgpaTableEl.querySelectorAll('.cgpa-grade').forEach(sel => {
+      const prev = sel.value;
       sel.innerHTML = gradeOptionsHtml(cgpaScaleEl.value);
+      if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+      else {
+        const g = gradeFromMarks(parseFloat(sel.closest('.cgpa-row').querySelector('.cgpa-marks').value));
+        if (g && [...sel.options].some(o => o.value === g)) sel.value = g;
+      }
     });
     calcCgpa();
   });
