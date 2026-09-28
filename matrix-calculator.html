@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Calculator — Determinant, Inverse, Multiply, Transpose (2x2, 3x3) | Calvo</title>
+<meta name="description" content="Free online matrix calculator for 2x2 and 3x3 matrices. Find the determinant, inverse and transpose, or add and multiply two matrices with instant results.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/matrix-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/matrix-calculator.html">
+<meta property="og:title" content="Matrix Calculator — Determinant, Inverse, Multiply, Transpose (2x2, 3x3) | Calvo">
+<meta property="og:description" content="Free online matrix calculator for 2x2 and 3x3 matrices. Find the determinant, inverse and transpose, or add and multiply two matrices with instant results.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Matrix Calculator", "url": "https://calvoscientificcalculator.online/matrix-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online matrix calculator for 2x2 and 3x3 matrices. Find the determinant, inverse and transpose, or add and multiply two matrices with instant results."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "When does a matrix have no inverse?", "acceptedAnswer": {"@type": "Answer", "text": "When its determinant is 0. Such a matrix is called singular."}}, {"@type": "Question", "name": "Can I multiply matrices of different sizes?", "acceptedAnswer": {"@type": "Answer", "text": "In general yes if the columns of A equal the rows of B, but this page uses square matrices of the same size. Use the full Calvo calculator's Matrix tab for more."}}, {"@type": "Question", "name": "Why is A\u00d7B different from B\u00d7A?", "acceptedAnswer": {"@type": "Answer", "text": "Matrix multiplication is not commutative. The row-by-column rule gives different results when the order changes."}}, {"@type": "Question", "name": "Does it support 4\u00d74?", "acceptedAnswer": {"@type": "Answer", "text": "The full Calvo calculator supports up to 4\u00d74. This page focuses on 2\u00d72 and 3\u00d73."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Matrix Calculator", "item": "https://calvoscientificcalculator.online/matrix-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Matrix <span>Calculator</span> — Determinant, Inverse &amp; More</h1>
+<p class="lead">Choose 2&times;2 or 3&times;3, fill in the matrices, and pick an operation. For 4&times;4 matrices use the Matrix tab in the full Calvo calculator.</p>
+<div class="tool">
+<div class="row"><label>Size</label><select id="size"><option value="2">2 × 2</option><option value="3" selected>3 × 3</option></select></div>
+<div class="matwrap"><div><b>Matrix A</b><table class="m" id="ma"></table></div><div><b>Matrix B</b><table class="m" id="mb"></table></div></div>
+<div class="row" style="margin-top:8px">
+<button class="btn" data-op="det">det(A)</button><button class="btn" data-op="inv">A⁻¹</button><button class="btn" data-op="tr">Aᵀ</button>
+<button class="btn ghost" data-op="add">A + B</button><button class="btn ghost" data-op="sub">A − B</button><button class="btn ghost" data-op="mul">A × B</button></div>
+<div class="result empty" id="out">Result will appear here.</div>
+</div>
+<h2>How each operation works</h2>
+<ul>
+<li><b>Determinant (2&times;2):</b> for [[a, b], [c, d]] it is ad &minus; bc. For 3&times;3, expand along the first row using cofactors.</li>
+<li><b>Inverse:</b> A&sup1; exists only when det(A) &ne; 0. It equals the adjugate divided by the determinant. For a 2&times;2 matrix: (1/det) &times; [[d, &minus;b], [&minus;c, a]].</li>
+<li><b>Transpose:</b> swap rows and columns.</li>
+<li><b>Multiplication:</b> each entry is the dot product of a row of A with a column of B. Order matters: A&times;B is usually not equal to B&times;A.</li></ul>
+<p>Worked example: for A = [[1, 2], [3, 4]], det = 1&times;4 &minus; 2&times;3 = <b>&minus;2</b>, and the inverse is (1/&minus;2) &times; [[4, &minus;2], [&minus;3, 1]] = [[&minus;2, 1], [1.5, &minus;0.5]].</p>
+<h2>FAQ</h2>
+<details><summary>When does a matrix have no inverse?</summary><p>When its determinant is 0. Such a matrix is called singular.</p></details>
+<details><summary>Can I multiply matrices of different sizes?</summary><p>In general yes if the columns of A equal the rows of B, but this page uses square matrices of the same size. Use the full Calvo calculator's Matrix tab for more.</p></details>
+<details><summary>Why is A×B different from B×A?</summary><p>Matrix multiplication is not commutative. The row-by-column rule gives different results when the order changes.</p></details>
+<details><summary>Does it support 4×4?</summary><p>The full Calvo calculator supports up to 4×4. This page focuses on 2×2 and 3×3.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script>
+var $=function(i){return document.getElementById(i)};
+function n(){return parseInt($('size').value,10)}
+function grid(id,fill){var N=n(),h='';for(var i=0;i<N;i++){h+='<tr>';for(var j=0;j<N;j++)h+='<td><input type="number" step="any" value="'+(fill?(i===j?1:0):0)+'"></td>';h+='</tr>'}$(id).innerHTML=h}
+function read(id){var N=n(),r=[],t=$(id).querySelectorAll('tr');for(var i=0;i<N;i++){r.push([]);var c=t[i].querySelectorAll('input');for(var j=0;j<N;j++){var v=parseFloat(c[j].value);r[i].push(isNaN(v)?0:v)}}return r}
+function det(m){var N=m.length;if(N===1)return m[0][0];if(N===2)return m[0][0]*m[1][1]-m[0][1]*m[1][0];
+var d=0;for(var j=0;j<N;j++){var s=m.slice(1).map(function(r){return r.filter(function(_,k){return k!==j})});d+=(j%2?-1:1)*m[0][j]*det(s)}return d}
+function inv(m){var N=m.length,d=det(m);if(Math.abs(d)<1e-12)return null;var c=[];
+for(var i=0;i<N;i++){c.push([]);for(var j=0;j<N;j++){var s;if(N===2){s=[[m[1-i][1-j]]]}else{s=m.filter(function(_,r){return r!==i}).map(function(r){return r.filter(function(_,k){return k!==j})})}
+c[i].push(((i+j)%2?-1:1)*det(s))}}
+var r=[];for(var a=0;a<N;a++){r.push([]);for(var b=0;b<N;b++)r[a].push(c[b][a]/d)}return r}
+function fmt(m){return m.map(function(r){return '[ '+r.map(function(v){return parseFloat(v.toFixed(6))}).join(',  ')+' ]'}).join('\n')}
+grid('ma',true);grid('mb',true);$('size').onchange=function(){grid('ma',true);grid('mb',true)};
+document.querySelectorAll('[data-op]').forEach(function(b){b.onclick=function(){var A=read('ma'),B=read('mb'),op=b.dataset.op,o=$('out'),N=n(),R;o.className='result';
+if(op==='det'){o.innerHTML='det(A) = <span class="big">'+parseFloat(det(A).toFixed(6))+'</span>';return}
+if(op==='inv'){R=inv(A);o.textContent=R?'A⁻¹ =\n'+fmt(R):'A is singular (det = 0), so it has no inverse.';return}
+if(op==='tr'){R=A.map(function(_,i){return A.map(function(r){return r[i]})});o.textContent='Aᵀ =\n'+fmt(R);return}
+if(op==='add'||op==='sub'){R=A.map(function(r,i){return r.map(function(v,j){return op==='add'?v+B[i][j]:v-B[i][j]})});o.textContent=(op==='add'?'A + B':'A − B')+' =\n'+fmt(R);return}
+R=[];for(var i=0;i<N;i++){R.push([]);for(var j=0;j<N;j++){var s=0;for(var k=0;k<N;k++)s+=A[i][k]*B[k][j];R[i].push(s)}}o.textContent='A × B =\n'+fmt(R)}});
+</script>
+</body>
+</html>
