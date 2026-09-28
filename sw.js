@@ -10,7 +10,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v33';
+const CACHE_VERSION = 'calvo-cache-v38';
 
 const CORE_ASSETS = [
   './',
@@ -24,6 +24,12 @@ const CORE_ASSETS = [
   './manifest.json',
   './privacy.html',
   './how-to-use.html',
+  './tools.css',
+  './cgpa-calculator.html',
+  './quadratic-equation-solver.html',
+  './matrix-calculator.html',
+  './percentage-calculator.html',
+  './ohms-law-calculator.html',
   './favicon.ico',
   './favicon-16x16.png',
   './favicon-32x32.png',
