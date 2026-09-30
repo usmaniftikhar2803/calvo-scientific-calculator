@@ -3730,3 +3730,50 @@ body {
 .gp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .gp-btn{background:#0d0d0f;color:#fff;border:1px solid #2a2a30;border-radius:10px;padding:14px 0;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;}
 .gp-btn.active{background:#ff8a1f;color:#17171a;border-color:#ff8a1f;}
+
+/* ---------- Admission merit links (Percent/GPA tab) ---------- */
+.merit-links {
+  margin: 4px 0 14px;
+  padding: 12px;
+  border: 1px solid var(--case-border);
+  border-radius: 14px;
+  background: rgba(255,138,31,0.06);
+}
+.merit-links-title {
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ff8a1f;
+  margin-bottom: 10px;
+}
+.merit-links-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.merit-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--case-border);
+  background: rgba(255,255,255,0.05);
+  color: inherit;
+  text-decoration: none;
+}
+.merit-link b { font-size: 0.85rem; font-weight: 700; }
+.merit-link span { font-size: 0.66rem; opacity: 0.7; }
+.merit-link:hover { border-color: #ff8a1f; background: rgba(255,138,31,0.1); }
+.merit-more {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.68rem;
+  color: #ff8a1f;
+  text-decoration: none;
+}
+.merit-more:hover { text-decoration: underline; }
+@media (min-width: 560px) {
+  .merit-links-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
