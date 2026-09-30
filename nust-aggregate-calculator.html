@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NUST Aggregate Calculator 2026 — NET Merit (10% Matric + 15% FSc + 75% NET) | Calvo</title>
+<meta name="description" content="Free NUST merit calculator. Enter Matric, FSc and NET marks (out of 200) to get your aggregate, or find the NET score you need for your target merit.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/nust-aggregate-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/nust-aggregate-calculator.html">
+<meta property="og:title" content="NUST Aggregate Calculator 2026 — NET Merit (10% Matric + 15% FSc + 75% NET) | Calvo">
+<meta property="og:description" content="Free NUST merit calculator. Enter Matric, FSc and NET marks (out of 200) to get your aggregate, or find the NET score you need for your target merit.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "NUST NET Aggregate Calculator", "url": "https://calvoscientificcalculator.online/nust-aggregate-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free NUST merit calculator. Enter Matric, FSc and NET marks (out of 200) to get your aggregate, or find the NET score you need for your target merit."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the NUST merit formula?", "acceptedAnswer": {"@type": "Answer", "text": "Aggregate = 10% Matric + 15% FSc + 75% NET for NET-based undergraduate admission. Convert each result to a percentage, multiply by its weightage and add them."}}, {"@type": "Question", "name": "How many marks is the NET out of?", "acceptedAnswer": {"@type": "Answer", "text": "The NET is out of 200. Enter 200 as the total in the NET row."}}, {"@type": "Question", "name": "Which NET score counts if I gave it more than once?", "acceptedAnswer": {"@type": "Answer", "text": "NUST considers your best NET score across attempts for merit. Enter that best score."}}, {"@type": "Question", "name": "Do business and social sciences programs use the same weights?", "acceptedAnswer": {"@type": "Answer", "text": "Some programs use a different split. This page uses the engineering and computing split (10 / 15 / 75). Edit the weights if your program differs."}}, {"@type": "Question", "name": "How many NET marks do I need for my target merit?", "acceptedAnswer": {"@type": "Answer", "text": "Enter your Matric and FSc marks, type your target aggregate in the second box and press the button."}}, {"@type": "Question", "name": "Is the result my official merit?", "acceptedAnswer": {"@type": "Answer", "text": "No. It is an estimate. NUST's published merit list is final."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Aggregate Calculator", "item": "https://calvoscientificcalculator.online/aggregate-calculator.html"}, {"@type": "ListItem", "position": 3, "name": "NUST NET Aggregate Calculator", "item": "https://calvoscientificcalculator.online/nust-aggregate-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>NUST NET Aggregate <span>Calculator</span></h1>
+<p class="lead">Calculate your NUST undergraduate merit: 10% Matric (SSC), 15% FSc (HSSC) and 75% NET. Enter your marks, or set a target aggregate and see the NET score you need.</p>
+<div class="tool">
+<h3>Merit aggregate calculator</h3>
+<div class="row"><label for="preset">Formula</label><select id="preset" aria-label="Choose admission formula"></select></div>
+<div class="row note" id="presetHint"></div>
+<div id="rows"></div>
+<div class="row"><label for="bonus">Bonus</label><input type="number" step="any" min="0" id="bonus" placeholder="Bonus marks (optional)" style="width:190px" inputmode="decimal"><span class="note">e.g. Hafiz-e-Quran marks, added directly to the aggregate.</span></div>
+<div class="row"><button class="btn ghost" id="add">+ Add row</button><button class="btn" id="go">Calculate aggregate</button></div>
+<div class="result empty" id="out">Your aggregate will appear here.</div>
+</div>
+<div class="tool">
+<h3>How many test marks do I need?</h3>
+<p class="note" style="margin:0 0 10px">Fill in the marks above (except the entry test), enter the aggregate you want, and Calvo tells you the test score you need.</p>
+<div class="row"><label for="target">Target</label><input type="number" step="any" min="0" max="100" id="target" placeholder="e.g. 85" style="width:110px" inputmode="decimal"><span class="note">% aggregate</span><button class="btn" id="needGo">Find required test marks</button></div>
+<div class="result empty" id="needOut">Enter a target aggregate and press the button.</div>
+</div>
+<h2>The formula</h2>
+<p>NUST merit for NET-based admission: <b>Aggregate = (Matric &divide; total &times; 10) + (FSc &divide; total &times; 15) + (NET &divide; 200 &times; 75)</b>. The NET carries three quarters of the merit, so it decides most of your aggregate.</p>
+<table class="f"><tr><th>Part</th><th>Weightage</th><th>Marks used</th></tr><tr><td>Matric (SSC)</td><td>10%</td><td>Total marks, e.g. 1100</td></tr><tr><td>FSc (HSSC)</td><td>15%</td><td>Part-I if Part-II is not out yet</td></tr><tr><td>NET</td><td>75%</td><td>Score out of 200</td></tr></table>
+<h2>Worked example</h2>
+<p>Matric 950 of 1100 at 10%: 950 &divide; 1100 &times; 10 = 8.64. FSc 480 of 550 at 15%: 480 &divide; 550 &times; 15 = 13.09. NET 140 of 200 at 75%: 140 &divide; 200 &times; 75 = 52.50. Aggregate = 8.64 + 13.09 + 52.50 = <b>74.23%</b>.</p>
+<h2>Eligibility</h2><p>Secondary sources for the 2026 cycle mention a minimum of 60% in both SSC and HSSC for eligibility. Confirm the exact criteria for your program on NUST's admissions page.</p>
+<h2>Important</h2>
+<p>NUST may adjust its merit criteria between admission cycles. This calculator gives an estimate. Weightages, and even which marks count, can change from one admission cycle to the next, so always confirm with the official prospectus or admission notice. The published merit list is final. You can edit the weightage and total marks in any row.</p>
+<h2>FAQ</h2>
+<details><summary>What is the NUST merit formula?</summary><p>Aggregate = 10% Matric + 15% FSc + 75% NET for NET-based undergraduate admission. Convert each result to a percentage, multiply by its weightage and add them.</p></details><details><summary>How many marks is the NET out of?</summary><p>The NET is out of 200. Enter 200 as the total in the NET row.</p></details><details><summary>Which NET score counts if I gave it more than once?</summary><p>NUST considers your best NET score across attempts for merit. Enter that best score.</p></details><details><summary>Do business and social sciences programs use the same weights?</summary><p>Some programs use a different split. This page uses the engineering and computing split (10 / 15 / 75). Edit the weights if your program differs.</p></details><details><summary>How many NET marks do I need for my target merit?</summary><p>Enter your Matric and FSc marks, type your target aggregate in the second box and press the button.</p></details><details><summary>Is the result my official merit?</summary><p>No. It is an estimate. NUST's published merit list is final.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/aggregate-calculator.html">Aggregate Calculator (all)</a><a href="/mdcat-aggregate-calculator.html">MDCAT Aggregate</a><a href="/ecat-aggregate-calculator.html">ECAT / UET Aggregate</a><a href="/fast-aggregate-calculator.html">FAST-NU Aggregate</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/cgpa-to-percentage-calculator.html">CGPA to Percentage</a><a href="/target-cgpa-calculator.html">Target CGPA Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a><a href="/lcm-hcf-calculator.html">LCM &amp; HCF Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/average-calculator.html">Average Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/merit-presets.js"></script>
+<script>MeritCalc.init('nust');</script>
+</body>
+</html>

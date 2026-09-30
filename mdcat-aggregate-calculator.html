@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDCAT Aggregate Calculator 2026 (10% Matric + 40% FSc + 50% MDCAT) | Calvo</title>
+<meta name="description" content="Free MDCAT aggregate calculator for MBBS and BDS merit. Enter Matric, FSc and MDCAT marks (out of 180) and see your aggregate. Also find the MDCAT marks you need for your target merit.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/mdcat-aggregate-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/mdcat-aggregate-calculator.html">
+<meta property="og:title" content="MDCAT Aggregate Calculator 2026 (10% Matric + 40% FSc + 50% MDCAT) | Calvo">
+<meta property="og:description" content="Free MDCAT aggregate calculator for MBBS and BDS merit. Enter Matric, FSc and MDCAT marks (out of 180) and see your aggregate. Also find the MDCAT marks you need for your target merit.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "MDCAT Aggregate Calculator 2026", "url": "https://calvoscientificcalculator.online/mdcat-aggregate-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free MDCAT aggregate calculator for MBBS and BDS merit. Enter Matric, FSc and MDCAT marks (out of 180) and see your aggregate. Also find the MDCAT marks you need for your target merit."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the MDCAT aggregate formula?", "acceptedAnswer": {"@type": "Answer", "text": "Aggregate = 10% Matric + 40% FSc + 50% MDCAT. Convert each result to a percentage of its total, multiply by its weightage and add the three parts."}}, {"@type": "Question", "name": "How many marks is the MDCAT out of?", "acceptedAnswer": {"@type": "Answer", "text": "The MDCAT is out of 180 (180 MCQs, one mark each). Enter 180 as the total in the MDCAT row."}}, {"@type": "Question", "name": "Is the MDCAT formula the same in every province?", "acceptedAnswer": {"@type": "Answer", "text": "The PMDC formula of 10/40/50 is used for public sector medical and dental colleges. Some institutions, like NUMS, use their own formula. Check your admission notice."}}, {"@type": "Question", "name": "How many MDCAT marks do I need for a target merit?", "acceptedAnswer": {"@type": "Answer", "text": "Fill in your Matric and FSc marks, type your target aggregate in the second box and press the button. Calvo works out the MDCAT score needed."}}, {"@type": "Question", "name": "Do Hafiz-e-Quran or other bonus marks count?", "acceptedAnswer": {"@type": "Answer", "text": "Some admission policies add bonus marks directly to the aggregate. Enter them in the Bonus box only if your admission notice allows them."}}, {"@type": "Question", "name": "Is the result my official merit?", "acceptedAnswer": {"@type": "Answer", "text": "No. It is an estimate. The merit list published by the admitting authority is final."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Aggregate Calculator", "item": "https://calvoscientificcalculator.online/aggregate-calculator.html"}, {"@type": "ListItem", "position": 3, "name": "MDCAT Aggregate Calculator 2026", "item": "https://calvoscientificcalculator.online/mdcat-aggregate-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>MDCAT Aggregate <span>Calculator 2026</span></h1>
+<p class="lead">Calculate your MBBS / BDS merit aggregate with the PMDC formula: 10% Matric, 40% FSc and 50% MDCAT. Enter your marks below, or set a target aggregate and see how many MDCAT marks you need.</p>
+<div class="tool">
+<h3>Merit aggregate calculator</h3>
+<div class="row"><label for="preset">Formula</label><select id="preset" aria-label="Choose admission formula"></select></div>
+<div class="row note" id="presetHint"></div>
+<div id="rows"></div>
+<div class="row"><label for="bonus">Bonus</label><input type="number" step="any" min="0" id="bonus" placeholder="Bonus marks (optional)" style="width:190px" inputmode="decimal"><span class="note">e.g. Hafiz-e-Quran marks, added directly to the aggregate.</span></div>
+<div class="row"><button class="btn ghost" id="add">+ Add row</button><button class="btn" id="go">Calculate aggregate</button></div>
+<div class="result empty" id="out">Your aggregate will appear here.</div>
+</div>
+<div class="tool">
+<h3>How many test marks do I need?</h3>
+<p class="note" style="margin:0 0 10px">Fill in the marks above (except the entry test), enter the aggregate you want, and Calvo tells you the test score you need.</p>
+<div class="row"><label for="target">Target</label><input type="number" step="any" min="0" max="100" id="target" placeholder="e.g. 85" style="width:110px" inputmode="decimal"><span class="note">% aggregate</span><button class="btn" id="needGo">Find required test marks</button></div>
+<div class="result empty" id="needOut">Enter a target aggregate and press the button.</div>
+</div>
+<h2>The formula</h2>
+<p>MDCAT merit is a weighted percentage: <b>Aggregate = (Matric &divide; Matric total &times; 10) + (FSc &divide; FSc total &times; 40) + (MDCAT &divide; 180 &times; 50)</b>. The MDCAT is marked out of 180 MCQs, one mark each, with no negative marking.</p>
+<table class="f"><tr><th>Part</th><th>Weightage</th><th>Marks used</th></tr><tr><td>Matric (SSC)</td><td>10%</td><td>Total marks, e.g. 1100</td></tr><tr><td>FSc (HSSC)</td><td>40%</td><td>Full FSc, e.g. 1100</td></tr><tr><td>MDCAT</td><td>50%</td><td>Score out of 180</td></tr></table>
+<h2>Worked example</h2>
+<p>Matric 950 of 1100 at 10%: 950 &divide; 1100 &times; 10 = 8.64. FSc 980 of 1100 at 40%: 980 &divide; 1100 &times; 40 = 35.64. MDCAT 150 of 180 at 50%: 150 &divide; 180 &times; 50 = 41.67. Aggregate = 8.64 + 35.64 + 41.67 = <b>85.94%</b>.</p>
+<h2>What about NUMS?</h2><p>NUMS (Army medical colleges) has its own test and uses a different split: <b>FSc 50% + NUMS test 50%</b> with no Matric. Pick &ldquo;NUMS&rdquo; in the formula list above to use it.</p>
+<h2>Important</h2>
+<p>The 10 / 40 / 50 split is the PMDC formula for MDCAT-based MBBS and BDS admission. This calculator gives an estimate. Weightages, and even which marks count, can change from one admission cycle to the next, so always confirm with the official prospectus or admission notice. The published merit list is final. You can edit the weightage and total marks in any row.</p>
+<h2>FAQ</h2>
+<details><summary>What is the MDCAT aggregate formula?</summary><p>Aggregate = 10% Matric + 40% FSc + 50% MDCAT. Convert each result to a percentage of its total, multiply by its weightage and add the three parts.</p></details><details><summary>How many marks is the MDCAT out of?</summary><p>The MDCAT is out of 180 (180 MCQs, one mark each). Enter 180 as the total in the MDCAT row.</p></details><details><summary>Is the MDCAT formula the same in every province?</summary><p>The PMDC formula of 10/40/50 is used for public sector medical and dental colleges. Some institutions, like NUMS, use their own formula. Check your admission notice.</p></details><details><summary>How many MDCAT marks do I need for a target merit?</summary><p>Fill in your Matric and FSc marks, type your target aggregate in the second box and press the button. Calvo works out the MDCAT score needed.</p></details><details><summary>Do Hafiz-e-Quran or other bonus marks count?</summary><p>Some admission policies add bonus marks directly to the aggregate. Enter them in the Bonus box only if your admission notice allows them.</p></details><details><summary>Is the result my official merit?</summary><p>No. It is an estimate. The merit list published by the admitting authority is final.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/aggregate-calculator.html">Aggregate Calculator (all)</a><a href="/ecat-aggregate-calculator.html">ECAT / UET Aggregate</a><a href="/nust-aggregate-calculator.html">NUST NET Aggregate</a><a href="/fast-aggregate-calculator.html">FAST-NU Aggregate</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/cgpa-to-percentage-calculator.html">CGPA to Percentage</a><a href="/target-cgpa-calculator.html">Target CGPA Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a><a href="/lcm-hcf-calculator.html">LCM &amp; HCF Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/average-calculator.html">Average Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/merit-presets.js"></script>
+<script>MeritCalc.init('mdcat');</script>
+</body>
+</html>
