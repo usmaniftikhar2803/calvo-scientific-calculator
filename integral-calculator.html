@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integral Calculator with Steps — Indefinite & Definite | Calvo</title>
+<meta name="description" content="Free integral calculator with step-by-step solutions. Power rule, substitution, integration by parts, partial fractions and definite integrals, with a numeric check of every answer.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/integral-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/integral-calculator.html">
+<meta property="og:title" content="Integral Calculator with Steps — Indefinite & Definite | Calvo">
+<meta property="og:description" content="Free integral calculator with step-by-step solutions. Power rule, substitution, integration by parts, partial fractions and definite integrals, with a numeric check of every answer.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Integral Calculator with Steps", "url": "https://calvoscientificcalculator.online/integral-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free integral calculator with step-by-step solutions. Power rule, substitution, integration by parts, partial fractions and definite integrals, with a numeric check of every answer."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I integrate step by step?", "acceptedAnswer": {"@type": "Answer", "text": "Look for the pattern: a power, a standard function, a product that suits parts, or an inside function whose derivative also appears (substitution). Calvo names the method it uses and shows each line."}}, {"@type": "Question", "name": "What is the integral of x e^x?", "acceptedAnswer": {"@type": "Answer", "text": "x e^x − e^x + C, by integration by parts with u = x and dv = e^x dx."}}, {"@type": "Question", "name": "What is the integral of 1/x?", "acceptedAnswer": {"@type": "Answer", "text": "ln|x| + C. The absolute value keeps the answer valid for negative x as well."}}, {"@type": "Question", "name": "How do I do a definite integral?", "acceptedAnswer": {"@type": "Answer", "text": "Type the lower and upper limits. Calvo finds the antiderivative F and gives F(upper) − F(lower), with the exact value and a decimal."}}, {"@type": "Question", "name": "Why does Calvo say it cannot solve my integral?", "acceptedAnswer": {"@type": "Answer", "text": "Some integrals need a method it does not use yet, or have no elementary antiderivative. It prefers to say so rather than show a wrong answer."}}, {"@type": "Question", "name": "Why is the constant C missing in a definite integral?", "acceptedAnswer": {"@type": "Answer", "text": "In a definite integral F(b) − F(a) cancels the constant, so the result is just a number."}}, {"@type": "Question", "name": "Is my answer allowed to look different from the book?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Two antiderivatives can differ by a constant, or be written in an equivalent form. Differentiate both to confirm they match."}}, {"@type": "Question", "name": "Does it work offline?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The calculation runs in your browser and the page is cached after your first visit."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Integral Calculator with Steps", "item": "https://calvoscientificcalculator.online/integral-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Integral <span>Calculator with Steps</span></h1>
+<p class="lead">Type a function and Calvo integrates it step by step, naming the method it uses. Add limits for a definite integral with the exact value and a decimal.</p>
+<div class="tool">
+<h3>Integrate step by step</h3>
+<div class="row"><input class="wide" id="fx" type="text" placeholder="e.g. x*e^x  or  2x/(x^2+1)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Function to integrate"></div>
+<div class="chips"><span class="lbl">Try:</span>
+<button type="button" data-f="x^2 + 3x">x^2+3x</button>
+<button type="button" data-f="(x+1)(x+2)">(x+1)(x+2)</button>
+<button type="button" data-f="sin(3x)">sin(3x)</button>
+<button type="button" data-f="2x/(x^2+1)">2x/(x^2+1)</button>
+<button type="button" data-f="x*e^x">x e^x</button>
+<button type="button" data-f="x*sin(x)">x sin x</button>
+<button type="button" data-f="ln(x)">ln x</button>
+<button type="button" data-f="1/((x-1)(x+2))">1/((x-1)(x+2))</button></div>
+<div class="row"><label for="lo">Limits</label><input type="text" id="lo" placeholder="lower (optional)" style="width:140px" autocomplete="off"><input type="text" id="hi" placeholder="upper (optional)" style="width:140px" autocomplete="off"><span class="note">for a definite integral, e.g. 0 and pi</span></div>
+<div class="row"><button class="btn" id="go">Integrate</button><button class="btn ghost" id="clr">Clear</button></div>
+<p class="note" style="margin:0">Type * for multiplication (2x and x sin x also work), ^ for powers, sqrt(), ln() for natural log, e^x or exp(x). For limits you can use numbers, pi and e.</p>
+<div class="result empty" id="out">The integral and its steps will appear here.</div>
+</div>
+<h2>Methods Calvo uses</h2>
+<table class="f"><tr><th>Method</th><th>When it is used</th></tr>
+<tr><td>Power rule</td><td>&int; x<sup>n</sup> dx = x<sup>n+1</sup>/(n+1) + C, for n &ne; &minus;1</td></tr>
+<tr><td>Sum and constant multiple</td><td>Split the integral into terms and pull out constants</td></tr>
+<tr><td>Standard integrals</td><td>e<sup>x</sup>, 1/x, sin, cos, sec&sup2;, 1/(x&sup2;+a&sup2;), with linear arguments such as sin(3x)</td></tr>
+<tr><td>Substitution (u-sub)</td><td>Integrals like &int; 2x/(x&sup2;+1) dx or &int; x e<sup>x&sup2;</sup> dx</td></tr>
+<tr><td>Integration by parts</td><td>&int; u dv = uv &minus; &int; v du, for x&middot;e<sup>x</sup>, x&middot;sin x, ln x</td></tr>
+<tr><td>Partial fractions</td><td>Rational functions such as 1/((x&minus;1)(x+2))</td></tr></table>
+<h2>Worked example: integration by parts</h2>
+<p>Find &int; x e<sup>x</sup> dx. Choose u = x and dv = e<sup>x</sup> dx, so du = dx and v = e<sup>x</sup>. Then &int; x e<sup>x</sup> dx = x e<sup>x</sup> &minus; &int; e<sup>x</sup> dx = <b>x e<sup>x</sup> &minus; e<sup>x</sup> + C</b>.</p>
+<h2>Why there is a &ldquo;+ C&rdquo;</h2>
+<p>An indefinite integral is a whole family of functions that differ by a constant, because the derivative of a constant is zero. Calvo shows the antiderivative and adds + C. For a definite integral (with limits) the constant cancels, so you get a number.</p>
+<h2>How Calvo checks the answer</h2>
+<p>After finding an antiderivative, Calvo differentiates it numerically and compares it with your function at several points. For definite integrals it also compares the exact value with a numerical (Simpson) estimate and warns you if they differ.</p>
+<h2>Limits</h2>
+<p>Some integrals have no closed form or need tricks Calvo does not use yet, for example &int; x&sup3;&radic;(x&sup2;+1) dx or improper integrals. In that case Calvo says so instead of guessing.</p>
+<h2>FAQ</h2>
+<details><summary>How do I integrate step by step?</summary><p>Look for the pattern: a power, a standard function, a product that suits parts, or an inside function whose derivative also appears (substitution). Calvo names the method it uses and shows each line.</p></details><details><summary>What is the integral of x e^x?</summary><p>x e^x − e^x + C, by integration by parts with u = x and dv = e^x dx.</p></details><details><summary>What is the integral of 1/x?</summary><p>ln|x| + C. The absolute value keeps the answer valid for negative x as well.</p></details><details><summary>How do I do a definite integral?</summary><p>Type the lower and upper limits. Calvo finds the antiderivative F and gives F(upper) − F(lower), with the exact value and a decimal.</p></details><details><summary>Why does Calvo say it cannot solve my integral?</summary><p>Some integrals need a method it does not use yet, or have no elementary antiderivative. It prefers to say so rather than show a wrong answer.</p></details><details><summary>Why is the constant C missing in a definite integral?</summary><p>In a definite integral F(b) − F(a) cancels the constant, so the result is just a number.</p></details><details><summary>Is my answer allowed to look different from the book?</summary><p>Yes. Two antiderivatives can differ by a constant, or be written in an equivalent form. Differentiate both to confirm they match.</p></details><details><summary>Does it work offline?</summary><p>Yes. The calculation runs in your browser and the page is cached after your first visit.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/derivative-calculator.html">Derivative Calculator (steps)</a><a href="/chemical-equation-balancer.html">Chemical Equation Balancer</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/calculus-engine.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},C=window.CalvoCalc;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function steps(list){return '<div class="steps">'+list.map(function(s){return '<div class="stp'+(s.lvl===0?' top':'')+'" style="margin-left:'+(s.lvl*18)+'px">'+s.html+'</div>'}).join('')+'</div>'}
+function wa(t,url){return '<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(t+' - '+url)+'">Share on WhatsApp</a>'}
+function run(){
+ var out=$('out'),v=$('fx').value.trim();
+ if(!v){out.className='result empty';out.textContent='Type a function first, for example x*e^x.';return}
+ var r=C.integral(v,$('lo').value,$('hi').value);
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var h='<div class="note" style="margin-bottom:6px">Read as: f('+r.v+') = '+C.fmt(r.input,'h')+'</div>';
+ h+='<div class="ans">\u222b f d'+r.v+' = '+r.html+' + C'+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
+ if(r.check!=='ok')h+='<div class="warnbox">The numeric check could not confirm this answer at every test point. Differentiate it by hand to be sure.</div>';
+ var txt='\u222b '+v+' d'+r.v+' = '+r.text+' + C';
+ if(r.def){var d=r.def;
+  if(d.warn){h+='<div class="warnbox"><b>No reliable value from '+d.lo+' to '+d.hi+'.</b> '+esc(d.warn)+'</div>';}
+  else{h+='<div class="ans" style="font-size:15px;margin-top:6px">Definite integral from '+d.lo+' to '+d.hi+': F('+d.hi+') \u2212 F('+d.lo+') = '+d.exact+' &asymp; <b>'+(Math.round(d.value*1e6)/1e6)+'</b></div>';
+   txt+='; from '+d.lo+' to '+d.hi+' = '+(Math.round(d.value*1e6)/1e6);}}
+ h+='<div class="blk"><h4>Steps</h4>'+steps(r.steps)+'</div>';
+ h+='<p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa(txt+' (Calvo)','https://calvoscientificcalculator.online/integral-calculator.html')+'</p>';
+ out.className='result';out.innerHTML=h;
+ $('cp').onclick=function(){var b=this;try{navigator.clipboard.writeText(txt).then(function(){b.textContent='Copied'})}catch(e){b.textContent='Copy not supported'}};
+}
+$('go').onclick=run;
+['fx','lo','hi'].forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')run()})});
+$('clr').onclick=function(){['fx','lo','hi'].forEach(function(i){$(i).value=''});$('out').className='result empty';$('out').textContent='The integral and its steps will appear here.';$('fx').focus()};
+document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){$('fx').value=b.getAttribute('data-f');run()}});
+})();
+</script>
+</body>
+</html>

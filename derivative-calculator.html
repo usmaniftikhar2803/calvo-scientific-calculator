@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Derivative Calculator with Steps — Product, Quotient & Chain Rule | Calvo</title>
+<meta name="description" content="Free derivative calculator with step-by-step solutions. Handles power, product, quotient and chain rules, trig, exponential and log functions, higher-order derivatives and the value at a point.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/derivative-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/derivative-calculator.html">
+<meta property="og:title" content="Derivative Calculator with Steps — Product, Quotient & Chain Rule | Calvo">
+<meta property="og:description" content="Free derivative calculator with step-by-step solutions. Handles power, product, quotient and chain rules, trig, exponential and log functions, higher-order derivatives and the value at a point.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Derivative Calculator with Steps", "url": "https://calvoscientificcalculator.online/derivative-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free derivative calculator with step-by-step solutions. Handles power, product, quotient and chain rules, trig, exponential and log functions, higher-order derivatives and the value at a point."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I find a derivative step by step?", "acceptedAnswer": {"@type": "Answer", "text": "Identify the rule: power, product, quotient or chain. Apply it, differentiate each piece, then simplify. Calvo writes every rule it applies and the value it finds."}}, {"@type": "Question", "name": "What is the derivative of x^2 sin x?", "acceptedAnswer": {"@type": "Answer", "text": "By the product rule it is 2x sin x + x^2 cos x."}}, {"@type": "Question", "name": "When do I use the chain rule?", "acceptedAnswer": {"@type": "Answer", "text": "Use it when a function sits inside another, like sin(3x^2), e^(2x) or (x^2+1)^5. Differentiate the outer function, keep the inside, then multiply by the derivative of the inside."}}, {"@type": "Question", "name": "Does it give the second or third derivative?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the order in the box. Calvo differentiates the simplified result again for each order."}}, {"@type": "Question", "name": "Can I find the derivative at a point?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Put a value such as 2 or pi in the At x box and Calvo evaluates the derivative there."}}, {"@type": "Question", "name": "What does log mean here?", "acceptedAnswer": {"@type": "Answer", "text": "log(x) is base 10 and ln(x) is the natural logarithm. d/dx[log x] = 1/(x ln 10)."}}, {"@type": "Question", "name": "Is the answer always simplified?", "acceptedAnswer": {"@type": "Answer", "text": "Calvo simplifies like terms and powers, but a textbook may present an equivalent form that looks different. Both are correct if they are equal."}}, {"@type": "Question", "name": "Does it work offline?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The calculation runs in your browser and the page is cached after your first visit."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Derivative Calculator with Steps", "item": "https://calvoscientificcalculator.online/derivative-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Derivative <span>Calculator with Steps</span></h1>
+<p class="lead">Type a function and Calvo differentiates it step by step, naming every rule it uses. Choose the 2nd, 3rd or 4th derivative, or evaluate the derivative at a point.</p>
+<div class="tool">
+<h3>Differentiate step by step</h3>
+<div class="row"><input class="wide" id="fx" type="text" placeholder="e.g. x^2*sin(x)  or  (x^2+1)/(x-1)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Function to differentiate"></div>
+<div class="chips"><span class="lbl">Try:</span>
+<button type="button" data-f="x^3 + 2x">x^3+2x</button>
+<button type="button" data-f="x^2*sin(x)">x^2 sin x</button>
+<button type="button" data-f="(x^2+1)/(x-1)">(x^2+1)/(x-1)</button>
+<button type="button" data-f="sin(3x^2)">sin(3x^2)</button>
+<button type="button" data-f="e^(2x)*ln(x)">e^(2x) ln x</button>
+<button type="button" data-f="sqrt(x^2+1)">sqrt(x^2+1)</button>
+<button type="button" data-f="x^x">x^x</button></div>
+<div class="row"><label for="ord">Order</label><select id="ord" aria-label="Derivative order"><option value="1">1st derivative</option><option value="2">2nd derivative</option><option value="3">3rd derivative</option><option value="4">4th derivative</option></select>
+<label for="at" style="min-width:auto">At x =</label><input type="text" id="at" placeholder="optional, e.g. 2 or pi" style="width:150px" autocomplete="off"></div>
+<div class="row"><button class="btn" id="go">Find derivative</button><button class="btn ghost" id="clr">Clear</button></div>
+<p class="note" style="margin:0">Type * for multiplication (2x and x sin x also work), ^ for powers, sqrt(), ln() for natural log, log() for base 10, e^x or exp(x). Write sin(x), cos(x), tan(x), arcsin(x), arctan(x) and so on.</p>
+<div class="result empty" id="out">The derivative and its steps will appear here.</div>
+</div>
+<h2>Differentiation rules used</h2>
+<table class="f"><tr><th>Rule</th><th>Formula</th></tr>
+<tr><td>Power rule</td><td>d/dx[x<sup>n</sup>] = n&middot;x<sup>n&minus;1</sup></td></tr>
+<tr><td>Constant multiple</td><td>d/dx[c&middot;f] = c&middot;f&prime;</td></tr>
+<tr><td>Sum / difference</td><td>(f &plusmn; g)&prime; = f&prime; &plusmn; g&prime;</td></tr>
+<tr><td>Product rule</td><td>(uv)&prime; = u&prime;v + uv&prime;</td></tr>
+<tr><td>Quotient rule</td><td>(u/v)&prime; = (u&prime;v &minus; uv&prime;) / v&sup2;</td></tr>
+<tr><td>Chain rule</td><td>d/dx[f(g(x))] = f&prime;(g(x))&middot;g&prime;(x)</td></tr>
+<tr><td>Exponential / log</td><td>(e<sup>x</sup>)&prime; = e<sup>x</sup>, (a<sup>x</sup>)&prime; = a<sup>x</sup>ln a, (ln x)&prime; = 1/x</td></tr>
+<tr><td>Trigonometric</td><td>(sin x)&prime; = cos x, (cos x)&prime; = &minus;sin x, (tan x)&prime; = sec&sup2;x</td></tr></table>
+<h2>Worked example: product and chain rule</h2>
+<p>Find d/dx[x&sup2; sin x]. Take u = x&sup2; and v = sin x. Then u&prime; = 2x and v&prime; = cos x. By the product rule, the derivative is u&prime;v + uv&prime; = <b>2x sin x + x&sup2; cos x</b>.</p>
+<p>For a composite function such as sin(3x&sup2;), the chain rule gives cos(3x&sup2;)&middot;6x = <b>6x cos(3x&sup2;)</b>.</p>
+<h2>How Calvo checks the answer</h2>
+<p>Calvo differentiates with exact fractions, writes each rule it uses, simplifies, and then compares the answer with a numerical derivative at several points. The answer is only shown when they agree, and you will see a &ldquo;verified&rdquo; mark next to it.</p>
+<h2>Limits</h2>
+<p>The solver works with one variable. If you type another letter along with x, it is treated as a constant. Functions with absolute value or piecewise definitions are not supported.</p>
+<h2>FAQ</h2>
+<details><summary>How do I find a derivative step by step?</summary><p>Identify the rule: power, product, quotient or chain. Apply it, differentiate each piece, then simplify. Calvo writes every rule it applies and the value it finds.</p></details><details><summary>What is the derivative of x^2 sin x?</summary><p>By the product rule it is 2x sin x + x^2 cos x.</p></details><details><summary>When do I use the chain rule?</summary><p>Use it when a function sits inside another, like sin(3x^2), e^(2x) or (x^2+1)^5. Differentiate the outer function, keep the inside, then multiply by the derivative of the inside.</p></details><details><summary>Does it give the second or third derivative?</summary><p>Yes. Choose the order in the box. Calvo differentiates the simplified result again for each order.</p></details><details><summary>Can I find the derivative at a point?</summary><p>Yes. Put a value such as 2 or pi in the At x box and Calvo evaluates the derivative there.</p></details><details><summary>What does log mean here?</summary><p>log(x) is base 10 and ln(x) is the natural logarithm. d/dx[log x] = 1/(x ln 10).</p></details><details><summary>Is the answer always simplified?</summary><p>Calvo simplifies like terms and powers, but a textbook may present an equivalent form that looks different. Both are correct if they are equal.</p></details><details><summary>Does it work offline?</summary><p>Yes. The calculation runs in your browser and the page is cached after your first visit.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/integral-calculator.html">Integral Calculator (steps)</a><a href="/chemical-equation-balancer.html">Chemical Equation Balancer</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/calculus-engine.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},C=window.CalvoCalc;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function steps(list){return '<div class="steps">'+list.map(function(s){return '<div class="stp'+(s.lvl===0?' top':'')+'" style="margin-left:'+(s.lvl*18)+'px">'+s.html+'</div>'}).join('')+'</div>'}
+function wa(t,url){return '<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(t+' - '+url)+'">Share on WhatsApp</a>'}
+function run(){
+ var out=$('out'),v=$('fx').value.trim();
+ if(!v){out.className='result empty';out.textContent='Type a function first, for example x^2*sin(x).';return}
+ var r=C.derivative(v,parseInt($('ord').value,10),$('at').value);
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var h='<div class="note" style="margin-bottom:6px">Read as: f('+r.v+') = '+C.fmt(r.input,'h')+'</div>';
+ var many=r.blocks.length>1,ords=['','1st','2nd','3rd','4th','5th'];
+ h+='<div class="ans">'+(many?ords[r.blocks.length]+' derivative: ':'f\u2032('+r.v+') = ')+r.html+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
+ if(r.at)h+='<div class="ans" style="font-size:15px">At '+r.v+' = '+esc(r.at.x)+': '+r.at.exact+' &asymp; '+(Math.round(r.at.value*1e6)/1e6)+'</div>';
+ if(r.check!=='ok')h+='<div class="warnbox">The numeric check could not confirm this answer at every test point (the function may be undefined there). Check it by hand.</div>';
+ r.blocks.forEach(function(b){h+='<div class="blk"><h4>'+(many?ords[b.order]+' derivative &mdash; steps':'Steps')+'</h4>'+steps(b.steps)+'</div>'});
+ h+='<p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa('Derivative of '+v+' = '+r.text+' (Calvo)','https://calvoscientificcalculator.online/derivative-calculator.html')+'</p>';
+ out.className='result';out.innerHTML=h;
+ $('cp').onclick=function(){var b=this;try{navigator.clipboard.writeText(r.text).then(function(){b.textContent='Copied'})}catch(e){b.textContent='Copy not supported'}};
+}
+$('go').onclick=run;
+['fx','at'].forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')run()})});
+$('clr').onclick=function(){$('fx').value='';$('at').value='';$('out').className='result empty';$('out').textContent='The derivative and its steps will appear here.';$('fx').focus()};
+document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){$('fx').value=b.getAttribute('data-f');run()}});
+})();
+</script>
+</body>
+</html>
