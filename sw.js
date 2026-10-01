@@ -10,7 +10,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v44';
+const CACHE_VERSION = 'calvo-cache-v45';
 
 const CORE_ASSETS = [
   './',
@@ -34,6 +34,9 @@ const CORE_ASSETS = [
   './nust-aggregate-calculator.html',
   './fast-aggregate-calculator.html',
   './merit-presets.js',
+  './chemical-equation-balancer.html',
+  './molar-mass-calculator.html',
+  './chem-tools.js',
   './lcm-hcf-calculator.html',
   './fraction-calculator.html',
   './average-calculator.html',
