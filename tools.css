@@ -62,3 +62,16 @@ footer{width:100%;max-width:760px;margin-top:28px;text-align:center;font-size:12
 table.f{border-collapse:collapse;width:100%;margin:6px 0 14px;font-size:13px;}
 table.f th,table.f td{border:1px solid var(--panel-border);padding:8px 10px;text-align:left;}
 table.f th{color:var(--brand-orange);font-weight:600;}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;align-items:center;}
+.chips .lbl{font-size:12px;color:var(--text-dim);margin-right:4px;}
+.chips button{background:transparent;color:var(--text);border:1px solid var(--panel-border);border-radius:20px;padding:5px 11px;font-family:inherit;font-size:12px;cursor:pointer;}
+.chips button:hover{border-color:var(--brand-orange);}
+.tool input.wide{width:100%;font-size:15px;}
+.eqout{font-family:'Space Mono',monospace;font-size:19px;line-height:1.8;color:#fff;word-break:break-word;}
+.eqout .arrow{color:var(--brand-orange);padding:0 6px;}
+.tbl-wrap{overflow-x:auto;margin-top:10px;}
+.tbl-wrap table.f{margin:0;}
+.okmark{color:#5fd38a;font-weight:700;}
+.err{color:#ff9d7a;}
+sub{font-size:.7em;}
