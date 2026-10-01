@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemical Equation Balancer — Free, With Atom Check | Calvo</title>
+<meta name="description" content="Free chemical equation balancer. Type an unbalanced equation and get the balanced coefficients with an atom count check. Supports brackets and hydrates.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/chemical-equation-balancer.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/chemical-equation-balancer.html">
+<meta property="og:title" content="Chemical Equation Balancer — Free, With Atom Check | Calvo">
+<meta property="og:description" content="Free chemical equation balancer. Type an unbalanced equation and get the balanced coefficients with an atom count check. Supports brackets and hydrates.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Chemical Equation Balancer", "url": "https://calvoscientificcalculator.online/chemical-equation-balancer.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free chemical equation balancer. Type an unbalanced equation and get the balanced coefficients with an atom count check. Supports brackets and hydrates."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I balance a chemical equation?", "acceptedAnswer": {"@type": "Answer", "text": "Count the atoms of each element on both sides and change the coefficients (not the subscripts) until all counts match, using the smallest whole numbers. Or type the equation into the balancer above."}}, {"@type": "Question", "name": "Can I use the arrow or equals sign?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use = or -> between the reactants and products, and + between compounds. Example: Fe + O2 = Fe2O3."}}, {"@type": "Question", "name": "Does it support brackets and hydrates?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Brackets like Ca(OH)2 and Al2(SO4)3 work, and hydrates can be typed as CuSO4.5H2O."}}, {"@type": "Question", "name": "Why does it say an element appears on only one side?", "acceptedAnswer": {"@type": "Answer", "text": "Every element must appear on both sides of a balanced equation. Check the formulas for a typing mistake, for example Co (cobalt) typed instead of CO (carbon monoxide)."}}, {"@type": "Question", "name": "Why does it say there is more than one way to balance?", "acceptedAnswer": {"@type": "Answer", "text": "Some equations are really two reactions written together, so many coefficient sets work. Split them into separate reactions and balance each."}}, {"@type": "Question", "name": "Is balancing by coefficients or subscripts?", "acceptedAnswer": {"@type": "Answer", "text": "Only by coefficients. Changing a subscript changes the substance, for example H2O becomes H2O2."}}, {"@type": "Question", "name": "Does it work offline?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The calculation runs in your browser and the page is cached after your first visit."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Chemical Equation Balancer", "item": "https://calvoscientificcalculator.online/chemical-equation-balancer.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Chemical Equation <span>Balancer</span></h1>
+<p class="lead">Type an unbalanced equation and Calvo returns the smallest whole-number coefficients, with an atom-by-atom check so you can see that both sides match.</p>
+<div class="tool">
+<h3>Balance a chemical equation</h3>
+<div class="row"><input class="wide" id="eq" type="text" placeholder="e.g. C3H8 + O2 = CO2 + H2O" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Chemical equation"></div>
+<div class="chips"><span class="lbl">Try:</span>
+<button type="button" data-eq="C3H8 + O2 = CO2 + H2O">C3H8 + O2</button>
+<button type="button" data-eq="Fe + O2 = Fe2O3">Fe + O2</button>
+<button type="button" data-eq="Al + H2SO4 = Al2(SO4)3 + H2">Al + H2SO4</button>
+<button type="button" data-eq="KMnO4 + HCl = KCl + MnCl2 + H2O + Cl2">KMnO4 + HCl</button>
+<button type="button" data-eq="Ca(OH)2 + H3PO4 = Ca3(PO4)2 + H2O">Ca(OH)2 + H3PO4</button></div>
+<div class="row"><button class="btn" id="go">Balance equation</button><button class="btn ghost" id="clr">Clear</button></div>
+<p class="note" style="margin:0">Use = or -&gt; between the two sides and + between compounds. Capital letters matter: Co is cobalt, CO is carbon monoxide.</p>
+<div class="result empty" id="out">The balanced equation will appear here.</div>
+</div>
+<h2>How to balance a chemical equation</h2>
+<p>A balanced equation has the same number of atoms of every element on both sides, because atoms are never created or destroyed in a reaction (law of conservation of mass). You balance it by changing the <b>coefficients</b> (the big numbers in front of formulas) and never the small subscripts.</p>
+<ol>
+<li>Write the unbalanced equation with correct formulas.</li>
+<li>Count the atoms of each element on both sides.</li>
+<li>Start with the element that appears in the fewest compounds, and leave hydrogen and oxygen for last.</li>
+<li>Adjust coefficients until every element matches. Use the smallest whole numbers.</li>
+<li>Count again to check.</li>
+</ol>
+<h2>Worked example: burning propane</h2>
+<p>Unbalanced: C<sub>3</sub>H<sub>8</sub> + O<sub>2</sub> &rarr; CO<sub>2</sub> + H<sub>2</sub>O. Carbon: 3 on the left, so put 3 in front of CO<sub>2</sub>. Hydrogen: 8 on the left, so put 4 in front of H<sub>2</sub>O. Oxygen on the right is now 3 &times; 2 + 4 = 10, so put 5 in front of O<sub>2</sub>.</p>
+<p><b>C<sub>3</sub>H<sub>8</sub> + 5O<sub>2</sub> &rarr; 3CO<sub>2</sub> + 4H<sub>2</sub>O</b></p>
+<h2>How Calvo does it</h2>
+<p>Calvo writes one atom-balance equation for every element and solves them exactly with fractions, then scales to the smallest whole numbers and checks every element again before showing the answer. It accepts brackets such as Al<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub>, hydrates such as CuSO<sub>4</sub>&middot;5H<sub>2</sub>O (typed CuSO4.5H2O), and ignores state symbols like (s), (l), (g), (aq).</p>
+<h2>What this balancer cannot do</h2>
+<p>It balances by atoms only. Equations that need electron balance with charges (ionic half-reactions such as Fe<sup>3+</sup>) are not supported, and it cannot tell you whether the reaction really happens. If an equation can be balanced in more than one way, Calvo says so instead of guessing.</p>
+<h2>FAQ</h2>
+<details><summary>How do I balance a chemical equation?</summary><p>Count the atoms of each element on both sides and change the coefficients (not the subscripts) until all counts match, using the smallest whole numbers. Or type the equation into the balancer above.</p></details><details><summary>Can I use the arrow or equals sign?</summary><p>Yes. Use = or -> between the reactants and products, and + between compounds. Example: Fe + O2 = Fe2O3.</p></details><details><summary>Does it support brackets and hydrates?</summary><p>Yes. Brackets like Ca(OH)2 and Al2(SO4)3 work, and hydrates can be typed as CuSO4.5H2O.</p></details><details><summary>Why does it say an element appears on only one side?</summary><p>Every element must appear on both sides of a balanced equation. Check the formulas for a typing mistake, for example Co (cobalt) typed instead of CO (carbon monoxide).</p></details><details><summary>Why does it say there is more than one way to balance?</summary><p>Some equations are really two reactions written together, so many coefficient sets work. Split them into separate reactions and balance each.</p></details><details><summary>Is balancing by coefficients or subscripts?</summary><p>Only by coefficients. Changing a subscript changes the substance, for example H2O becomes H2O2.</p></details><details><summary>Does it work offline?</summary><p>Yes. The calculation runs in your browser and the page is cached after your first visit.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/mdcat-aggregate-calculator.html">MDCAT Aggregate</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a><a href="/lcm-hcf-calculator.html">LCM &amp; HCF Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/average-calculator.html">Average Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/chem-tools.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},C=window.CalvoChem;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function term(co,f){return (co===1?'':co)+C.fmtFormula(esc(f))}
+function plain(co,f){return (co===1?'':co)+f}
+function run(){
+ var out=$('out'),v=$('eq').value.trim();
+ if(!v){out.className='result empty';out.textContent='Type an equation first, for example H2 + O2 = H2O.';return}
+ try{
+  var r=C.balance(v),nl=r.left.length;
+  var L=r.left.map(function(f,i){return term(r.coeffs[i],f)}).join(' + ');
+  var R=r.right.map(function(f,i){return term(r.coeffs[nl+i],f)}).join(' + ');
+  var pl=r.left.map(function(f,i){return plain(r.coeffs[i],f)}).join(' + ')+' -> '+r.right.map(function(f,i){return plain(r.coeffs[nl+i],f)}).join(' + ');
+  var rows=r.table.map(function(t){return '<tr><td>'+esc(t.el)+'</td><td>'+t.left+'</td><td>'+t.right+'</td><td class="okmark">&#10003;</td></tr>'}).join('');
+  var msg='Balanced on Calvo: '+pl+' - https://calvoscientificcalculator.online/chemical-equation-balancer.html';
+  out.className='result';
+  out.innerHTML='<div class="eqout">'+L+'<span class="arrow">&rarr;</span>'+R+'</div>'+
+   '<div class="tbl-wrap"><table class="f"><tr><th>Atom</th><th>Left</th><th>Right</th><th></th></tr>'+rows+'</table></div>'+
+   '<button class="btn ghost" id="cp" type="button">Copy</button> <a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">Share on WhatsApp</a>';
+  $('cp').onclick=function(){var b=this;try{navigator.clipboard.writeText(pl).then(function(){b.textContent='Copied'})}catch(e){b.textContent='Copy not supported'}};
+ }catch(e){out.className='result';out.innerHTML='<span class="err">'+esc(e.message)+'</span>'}
+}
+$('go').onclick=run;
+$('eq').addEventListener('keydown',function(e){if(e.key==='Enter')run()});
+$('clr').onclick=function(){$('eq').value='';$('out').className='result empty';$('out').textContent='The balanced equation will appear here.';$('eq').focus()};
+document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){$('eq').value=b.getAttribute('data-eq');run()}});
+})();
+</script>
+</body>
+</html>
