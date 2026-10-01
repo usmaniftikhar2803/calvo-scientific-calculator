@@ -75,3 +75,15 @@ table.f th{color:var(--brand-orange);font-weight:600;}
 .okmark{color:#5fd38a;font-weight:700;}
 .err{color:#ff9d7a;}
 sub{font-size:.7em;}
+
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px;}
+.fr .nu{border-bottom:1px solid currentColor;padding:0 4px;}
+.fr .de{padding:0 4px;}
+.steps{margin-top:12px;}
+.stp{padding:5px 0 5px 12px;border-left:2px solid var(--panel-border);font-size:13.5px;line-height:1.9;}
+.stp.top{border-left-color:var(--brand-orange);margin-top:6px;}
+.ans{font-family:'Space Mono',monospace;font-size:18px;color:#fff;line-height:2;word-break:break-word;}
+.okbadge{display:inline-block;font-size:11px;border:1px solid #5fd38a;color:#5fd38a;border-radius:20px;padding:1px 8px;margin-left:8px;vertical-align:middle;}
+.warnbox{margin-top:8px;color:#ff9d7a;font-size:13px;}
+.blk{margin-top:14px;padding-top:10px;border-top:1px dashed var(--panel-border);}
+.blk>h4{margin:0 0 6px;font-size:13px;color:var(--brand-orange);font-family:'Space Mono',monospace;}
