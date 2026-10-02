@@ -10,7 +10,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v46';
+const CACHE_VERSION = 'calvo-cache-v48';
 
 const CORE_ASSETS = [
   './',
@@ -40,6 +40,14 @@ const CORE_ASSETS = [
   './derivative-calculator.html',
   './integral-calculator.html',
   './calculus-engine.js',
+  './age-calculator.html',
+  './date-difference-calculator.html',
+  './attendance-calculator.html',
+  './complex-number-calculator.html',
+  './vector-calculator.html',
+  './word-counter.html',
+  './periodic-table.html',
+  './trigonometry-cheat-sheet.html',
   './lcm-hcf-calculator.html',
   './fraction-calculator.html',
   './average-calculator.html',
