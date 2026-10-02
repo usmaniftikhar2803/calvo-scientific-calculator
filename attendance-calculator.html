@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Calculator — Percentage & How Many Leaves Left | Calvo</title>
+<meta name="description" content="Free attendance percentage calculator. Find your attendance, how many classes you can miss to keep 75%, or how many you must attend to reach the target.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/attendance-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/attendance-calculator.html">
+<meta property="og:title" content="Attendance Calculator — Percentage & How Many Leaves Left | Calvo">
+<meta property="og:description" content="Free attendance percentage calculator. Find your attendance, how many classes you can miss to keep 75%, or how many you must attend to reach the target.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Attendance Calculator", "url": "https://calvoscientificcalculator.online/attendance-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free attendance percentage calculator. Find your attendance, how many classes you can miss to keep 75%, or how many you must attend to reach the target."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I calculate attendance percentage?", "acceptedAnswer": {"@type": "Answer", "text": "Divide the classes you attended by the classes held and multiply by 100."}}, {"@type": "Question", "name": "How many classes can I miss and still keep 75%?", "acceptedAnswer": {"@type": "Answer", "text": "Enter classes held and attended, and the required percentage. Calvo shows how many you can miss in a row. Add the semester total to see leaves left across the whole semester."}}, {"@type": "Question", "name": "What if my attendance is already below the required percentage?", "acceptedAnswer": {"@type": "Answer", "text": "Calvo shows how many classes in a row you must attend to reach the target, and warns if it is impossible within the semester."}}, {"@type": "Question", "name": "Does 75% mean exactly 75 or at least 75?", "acceptedAnswer": {"@type": "Answer", "text": "Most institutes need at least the required percentage. Some round up, so check your own policy."}}, {"@type": "Question", "name": "Does it save my data?", "acceptedAnswer": {"@type": "Answer", "text": "No. Everything is calculated in your browser and nothing is stored."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Attendance Calculator", "item": "https://calvoscientificcalculator.online/attendance-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Attendance <span>Calculator</span></h1>
+<p class="lead">Find your attendance percentage, how many classes you can still miss, and how many leaves are left in the semester.</p>
+<div class="tool"><h3>Attendance percentage and leaves left</h3>
+<div class="row"><label for="held">Classes held</label><input type="number" id="held" min="0" step="1" placeholder="so far" style="width:120px" inputmode="numeric"><label for="att" style="min-width:auto">Attended</label><input type="number" id="att" min="0" step="1" placeholder="so far" style="width:120px" inputmode="numeric"></div>
+<div class="row"><label for="tg">Required %</label><input type="number" id="tg" value="75" min="1" max="100" step="any" style="width:120px" inputmode="decimal"><label for="sem" style="min-width:auto">Total classes in semester</label><input type="number" id="sem" min="0" step="1" placeholder="optional" style="width:130px" inputmode="numeric"></div>
+<div class="row"><button class="btn" id="go">Calculate</button><button class="btn ghost" id="clr">Clear</button></div>
+<p class="note" style="margin:0">Add the total classes of the semester to see how many leaves you have left.</p>
+<div class="result empty" id="out">Your attendance will appear here.</div></div>
+<h2>The formulas</h2>
+<p><b>Attendance % = (classes attended &divide; classes held) &times; 100.</b></p>
+<p>If you are below the required percentage, the classes you must attend in a row are <b>ceil((T &times; held &minus; 100 &times; attended) &divide; (100 &minus; T))</b>, where T is the required percentage. If you are above it, the classes you can still miss in a row are <b>floor((100 &times; attended &minus; T &times; held) &divide; T)</b>.</p>
+<h2>Worked example</h2>
+<p>You attended 30 of 40 classes. That is 75%. With 75% required you can miss <b>0</b> more classes in a row. If you attended 28 of 40 (70%), you must attend <b>8</b> classes in a row: (75 &times; 40 &minus; 100 &times; 28) &divide; 25 = 8, and 36 of 48 = 75%.</p>
+<h2>Leaves left in the semester</h2>
+<p>If the semester has S classes in total, you need ceil(T &times; S &divide; 100) attended classes by the end. The leaves you can still take are the remaining classes minus the ones you still need to attend.</p>
+<h2>Note</h2>
+<p>Your institute may count medical leave, rounding or lab hours differently. Use this as a planning tool and follow your own policy.</p>
+<h2>FAQ</h2>
+<details><summary>How do I calculate attendance percentage?</summary><p>Divide the classes you attended by the classes held and multiply by 100.</p></details><details><summary>How many classes can I miss and still keep 75%?</summary><p>Enter classes held and attended, and the required percentage. Calvo shows how many you can miss in a row. Add the semester total to see leaves left across the whole semester.</p></details><details><summary>What if my attendance is already below the required percentage?</summary><p>Calvo shows how many classes in a row you must attend to reach the target, and warns if it is impossible within the semester.</p></details><details><summary>Does 75% mean exactly 75 or at least 75?</summary><p>Most institutes need at least the required percentage. Some round up, so check your own policy.</p></details><details><summary>Does it save my data?</summary><p>No. Everything is calculated in your browser and nothing is stored.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/age-calculator.html">Age Calculator</a><a href="/date-difference-calculator.html">Date Difference</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/vector-calculator.html">Vector Calculator</a><a href="/word-counter.html">Word Counter</a><a href="/periodic-table.html">Periodic Table</a><a href="/trigonometry-cheat-sheet.html">Trig Identities &amp; Unit Circle</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var $=function(i){return document.getElementById(i)};
+function R(x,d){d=d===undefined?6:d;var p=Math.pow(10,d),v=Math.round(x*p)/p;return Object.is(v,-0)?0:v}
+function onEnter(ids,fn){ids.forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')fn()})})}
+function run(){
+ var out=$('out'),held=parseFloat($('held').value),att=parseFloat($('att').value),T=parseFloat($('tg').value),sem=$('sem').value===''?null:parseFloat($('sem').value);
+ if(isNaN(held)||isNaN(att)||held<=0){out.className='result empty';out.textContent='Enter the classes held and attended.';return}
+ if(att>held||att<0){out.className='result';out.innerHTML='<span class="err">Attended classes cannot be more than classes held.</span>';return}
+ if(isNaN(T)||T<=0||T>100)T=75;
+ var pct=att/held*100,h='Attendance: <span class="big">'+R(pct,2)+'%</span> ('+att+' of '+held+') &mdash; required '+T+'%';
+ var ok=pct+1e-9>=T,lines=[];
+ if(ok){
+  if(T<100){var miss=Math.floor((100*att-T*held)/T+1e-9);lines.push('You are above the requirement. If you attend every class from now on you stay above it; if you miss classes you can miss up to <b>'+miss+'</b> in a row and still stay at '+T+'% or more.')}
+  else lines.push('You have full attendance. You cannot miss any class.')
+ }else{
+  if(T>=100)lines.push('A requirement of 100% cannot be reached again.');
+  else{var need=Math.ceil((T*held-100*att)/(100-T)-1e-9);lines.push('You are below the requirement. Attend the next <b>'+need+'</b> classes in a row (without missing any) to reach '+T+'%: '+(att+need)+' of '+(held+need)+' = '+R((att+need)/(held+need)*100,2)+'%.')}
+ }
+ if(sem!==null&&!isNaN(sem)){
+  if(sem<held)lines.push('<span class="err">Total classes in the semester cannot be less than classes held.</span>');
+  else{var rem=sem-held,needTotal=Math.ceil(T*sem/100-1e-9),needMore=Math.max(0,needTotal-att);
+   if(needMore>rem){lines=[];lines.push('<b>Not possible this semester.</b> Even if you attend all remaining '+rem+' classes you reach '+R((att+rem)/sem*100,2)+'%.');}
+   else lines.push('Semester total '+sem+': '+rem+' classes remain. You need <b>'+needMore+'</b> more attended, so you can take <b>'+(rem-needMore)+' leave'+((rem-needMore)===1?'':'s')+'</b> in the rest of the semester.')}
+ }
+ out.className='result';out.innerHTML=h+'<div style="margin-top:8px;white-space:normal">'+lines.join('<br><br>')+'</div>'}
+$('go').onclick=run;onEnter(['held','att','tg','sem'],run);
+$('clr').onclick=function(){['held','att','sem'].forEach(function(i){$(i).value=''});$('tg').value=75;$('out').className='result empty';$('out').textContent='Your attendance will appear here.'};
+</script>
+</body>
+</html>

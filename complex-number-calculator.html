@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complex Number Calculator — Add, Multiply, Divide, Polar Form | Calvo</title>
+<meta name="description" content="Free complex number calculator. Add, subtract, multiply, divide, raise to a power and take square roots, with modulus, argument, conjugate and polar form.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/complex-number-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/complex-number-calculator.html">
+<meta property="og:title" content="Complex Number Calculator — Add, Multiply, Divide, Polar Form | Calvo">
+<meta property="og:description" content="Free complex number calculator. Add, subtract, multiply, divide, raise to a power and take square roots, with modulus, argument, conjugate and polar form.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Complex Number Calculator", "url": "https://calvoscientificcalculator.online/complex-number-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free complex number calculator. Add, subtract, multiply, divide, raise to a power and take square roots, with modulus, argument, conjugate and polar form."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I multiply complex numbers?", "acceptedAnswer": {"@type": "Answer", "text": "Use (a + bi)(c + di) = (ac - bd) + (ad + bc)i, because i squared is -1."}}, {"@type": "Question", "name": "How do I divide complex numbers?", "acceptedAnswer": {"@type": "Answer", "text": "Multiply the top and bottom by the conjugate of the denominator, then divide by c squared plus d squared."}}, {"@type": "Question", "name": "What is the modulus of a complex number?", "acceptedAnswer": {"@type": "Answer", "text": "The distance from the origin: square root of a squared plus b squared."}}, {"@type": "Question", "name": "What angle does Calvo give?", "acceptedAnswer": {"@type": "Answer", "text": "The principal argument between -180 and 180 degrees, also shown in radians."}}, {"@type": "Question", "name": "Does the square root show both roots?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. A non-zero complex number has two square roots, the principal one and its negative."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Complex Number Calculator", "item": "https://calvoscientificcalculator.online/complex-number-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Complex Number <span>Calculator</span></h1>
+<p class="lead">Enter two complex numbers a + bi and choose an operation. Calvo gives the result with modulus, argument, conjugate and polar form.</p>
+<div class="tool"><h3>Complex number calculator</h3>
+<div class="row"><label>z&#8321;</label><input type="number" step="any" id="a1" placeholder="real a" style="width:110px" inputmode="decimal"><span>+</span><input type="number" step="any" id="b1" placeholder="imag b" style="width:110px" inputmode="decimal"><span>i</span></div>
+<div class="row"><label>z&#8322;</label><input type="number" step="any" id="a2" placeholder="real c" style="width:110px" inputmode="decimal"><span>+</span><input type="number" step="any" id="b2" placeholder="imag d" style="width:110px" inputmode="decimal"><span>i</span><span class="note">(only needed for + &minus; &times; &divide;)</span></div>
+<div class="row"><label for="op">Operation</label><select id="op"><option value="add">z&#8321; + z&#8322;</option><option value="sub">z&#8321; &minus; z&#8322;</option><option value="mul">z&#8321; &times; z&#8322;</option><option value="div">z&#8321; &divide; z&#8322;</option><option value="pow">z&#8321; to the power n</option><option value="sqrt">square root of z&#8321;</option></select><input type="number" id="pn" step="1" value="2" style="width:80px" aria-label="power n" inputmode="numeric"><span class="note">n (for power)</span></div>
+<div class="row"><button class="btn" id="go">Calculate</button><button class="btn ghost" id="clr">Clear</button></div>
+<div class="result empty" id="out">The result will appear here.</div></div>
+<h2>Formulas</h2>
+<table class="f"><tr><th>Operation</th><th>Formula</th></tr>
+<tr><td>Add / subtract</td><td>(a + bi) &plusmn; (c + di) = (a &plusmn; c) + (b &plusmn; d)i</td></tr>
+<tr><td>Multiply</td><td>(a + bi)(c + di) = (ac &minus; bd) + (ad + bc)i</td></tr>
+<tr><td>Divide</td><td>(a + bi)/(c + di) = [(ac + bd) + (bc &minus; ad)i] / (c&sup2; + d&sup2;)</td></tr>
+<tr><td>Modulus</td><td>|z| = &radic;(a&sup2; + b&sup2;)</td></tr>
+<tr><td>Argument</td><td>&theta; = atan2(b, a)</td></tr>
+<tr><td>Conjugate</td><td>z&#772; = a &minus; bi</td></tr>
+<tr><td>Polar form</td><td>z = r(cos &theta; + i sin &theta;)</td></tr>
+<tr><td>De Moivre</td><td>z<sup>n</sup> = r<sup>n</sup>(cos n&theta; + i sin n&theta;)</td></tr></table>
+<h2>Worked example</h2>
+<p>(3 + 4i)(1 &minus; 2i) = (3&middot;1 &minus; 4&middot;(&minus;2)) + (3&middot;(&minus;2) + 4&middot;1)i = <b>11 &minus; 2i</b>. The modulus of 3 + 4i is &radic;(9 + 16) = 5.</p>
+<h2>FAQ</h2>
+<details><summary>How do I multiply complex numbers?</summary><p>Use (a + bi)(c + di) = (ac - bd) + (ad + bc)i, because i squared is -1.</p></details><details><summary>How do I divide complex numbers?</summary><p>Multiply the top and bottom by the conjugate of the denominator, then divide by c squared plus d squared.</p></details><details><summary>What is the modulus of a complex number?</summary><p>The distance from the origin: square root of a squared plus b squared.</p></details><details><summary>What angle does Calvo give?</summary><p>The principal argument between -180 and 180 degrees, also shown in radians.</p></details><details><summary>Does the square root show both roots?</summary><p>Yes. A non-zero complex number has two square roots, the principal one and its negative.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/age-calculator.html">Age Calculator</a><a href="/date-difference-calculator.html">Date Difference</a><a href="/attendance-calculator.html">Attendance Calculator</a><a href="/vector-calculator.html">Vector Calculator</a><a href="/word-counter.html">Word Counter</a><a href="/periodic-table.html">Periodic Table</a><a href="/trigonometry-cheat-sheet.html">Trig Identities &amp; Unit Circle</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var $=function(i){return document.getElementById(i)};
+function R(x,d){d=d===undefined?6:d;var p=Math.pow(10,d),v=Math.round(x*p)/p;return Object.is(v,-0)?0:v}
+function onEnter(ids,fn){ids.forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')fn()})})}
+function cl(x){return Math.abs(x)<1e-9?0:x}
+function ms(x){return (x<0?'\u2212':'')+Math.abs(x)}
+function F(re,im){re=R(cl(re));im=R(cl(im));if(im===0)return ms(re);var s=Math.abs(im)===1?'':String(Math.abs(im));if(re===0)return (im<0?'\u2212':'')+s+'i';return ms(re)+(im<0?' \u2212 ':' + ')+s+'i'}
+function polar(re,im){var r=Math.hypot(re,im),th=Math.atan2(im,re);return r===0?'0':R(r)+' (cos '+R(th*180/Math.PI,4)+'\u00b0 + i sin '+R(th*180/Math.PI,4)+'\u00b0), \u03b8 = '+R(th)+' rad'}
+function mul(x,y){return[x[0]*y[0]-x[1]*y[1],x[0]*y[1]+x[1]*y[0]]}
+function num(id){var v=$(id).value;return v===''?0:parseFloat(v)}
+function run(){
+ var out=$('out'),z1=[num('a1'),num('b1')],z2=[num('a2'),num('b2')],op=$('op').value,n=parseInt($('pn').value,10),res,label,extra='';
+ if(op==='add'){res=[z1[0]+z2[0],z1[1]+z2[1]];label='z\u2081 + z\u2082'}
+ else if(op==='sub'){res=[z1[0]-z2[0],z1[1]-z2[1]];label='z\u2081 \u2212 z\u2082'}
+ else if(op==='mul'){res=mul(z1,z2);label='z\u2081 \u00d7 z\u2082'}
+ else if(op==='div'){var d=z2[0]*z2[0]+z2[1]*z2[1];if(d===0){out.className='result';out.innerHTML='<span class="err">Cannot divide by zero (z\u2082 = 0).</span>';return}res=[(z1[0]*z2[0]+z1[1]*z2[1])/d,(z1[1]*z2[0]-z1[0]*z2[1])/d];label='z\u2081 \u00f7 z\u2082'}
+ else if(op==='pow'){if(isNaN(n)||Math.abs(n)>200){out.className='result';out.innerHTML='<span class="err">Enter a whole number n between -200 and 200.</span>';return}
+  if(n<0&&z1[0]===0&&z1[1]===0){out.className='result';out.innerHTML='<span class="err">0 cannot be raised to a negative power.</span>';return}
+  var p=[1,0],k=Math.abs(n),r=Math.hypot(z1[0],z1[1]),th=Math.atan2(z1[1],z1[0]);
+  if(k<=30){for(var i=0;i<k;i++)p=mul(p,z1)}else{p=[Math.pow(r,k)*Math.cos(k*th),Math.pow(r,k)*Math.sin(k*th)]}
+  if(n<0){var dd=p[0]*p[0]+p[1]*p[1];p=[p[0]/dd,-p[1]/dd]}res=p;label='z\u2081<sup>'+n+'</sup>'}
+ else{var rr=Math.hypot(z1[0],z1[1]),re=Math.sqrt((rr+z1[0])/2),im=Math.sqrt(Math.max(0,(rr-z1[0])/2));if(z1[1]<0)im=-im;res=[re,im];label='\u221az\u2081';extra='<br>The two square roots are \u00b1('+F(re,im)+').'}
+ var h='<div class="note">z\u2081 = '+F(z1[0],z1[1])+(op==='add'||op==='sub'||op==='mul'||op==='div'?', z\u2082 = '+F(z2[0],z2[1]):'')+'</div>';
+ h+=label+' = <span class="big">'+F(res[0],res[1])+'</span>'+extra;
+ h+='<div style="margin-top:8px">Polar form of the result: '+polar(cl(res[0]),cl(res[1]))+'</div>';
+ h+='<div class="note" style="margin-top:8px">z\u2081: modulus '+R(Math.hypot(z1[0],z1[1]))+', conjugate '+F(z1[0],-z1[1])+'</div>';
+ out.className='result';out.innerHTML=h}
+$('go').onclick=run;onEnter(['a1','b1','a2','b2','pn'],run);
+$('clr').onclick=function(){['a1','b1','a2','b2'].forEach(function(i){$(i).value=''});$('out').className='result empty';$('out').textContent='The result will appear here.'};
+</script>
+</body>
+</html>

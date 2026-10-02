@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Calculator — Dot Product, Cross Product, Angle & Magnitude | Calvo</title>
+<meta name="description" content="Free vector calculator for 2D and 3D vectors. Add, subtract, dot product, cross product, magnitude, unit vector, angle between vectors and projection.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/vector-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/vector-calculator.html">
+<meta property="og:title" content="Vector Calculator — Dot Product, Cross Product, Angle & Magnitude | Calvo">
+<meta property="og:description" content="Free vector calculator for 2D and 3D vectors. Add, subtract, dot product, cross product, magnitude, unit vector, angle between vectors and projection.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Vector Calculator", "url": "https://calvoscientificcalculator.online/vector-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free vector calculator for 2D and 3D vectors. Add, subtract, dot product, cross product, magnitude, unit vector, angle between vectors and projection."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I find the dot product?", "acceptedAnswer": {"@type": "Answer", "text": "Multiply matching components and add them. For (1,2,3) and (4,-1,2) it is 1*4 + 2*(-1) + 3*2 = 8."}}, {"@type": "Question", "name": "What does the cross product give?", "acceptedAnswer": {"@type": "Answer", "text": "A vector perpendicular to both A and B, defined in 3D. Its length is the area of the parallelogram they span."}}, {"@type": "Question", "name": "How do I enter a 2D vector?", "acceptedAnswer": {"@type": "Answer", "text": "Type two numbers such as 3, 4. For 2D vectors Calvo shows the scalar z-part of the cross product."}}, {"@type": "Question", "name": "How is the angle found?", "acceptedAnswer": {"@type": "Answer", "text": "From the dot product: the angle is the inverse cosine of A dot B divided by the product of the magnitudes."}}, {"@type": "Question", "name": "What if a vector is zero?", "acceptedAnswer": {"@type": "Answer", "text": "Angle, unit vector and projection are undefined for a zero vector, and Calvo tells you so."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Vector Calculator", "item": "https://calvoscientificcalculator.online/vector-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Vector <span>Calculator</span></h1>
+<p class="lead">Enter two vectors and get the sum, difference, dot and cross product, magnitudes, unit vector, angle and projection.</p>
+<div class="tool"><h3>Vector calculator (2D and 3D)</h3>
+<div class="row"><label for="va">Vector A</label><input type="text" id="va" placeholder="e.g. 1, 2, 3" style="width:180px" autocomplete="off"></div>
+<div class="row"><label for="vb">Vector B</label><input type="text" id="vb" placeholder="e.g. 4, -1, 2" style="width:180px" autocomplete="off"><span class="note">same number of components as A</span></div>
+<div class="chips"><span class="lbl">Try:</span><button type="button" data-a="1,2,3" data-b="4,-1,2">3D example</button><button type="button" data-a="3,4" data-b="1,-2">2D example</button></div>
+<div class="row"><button class="btn" id="go">Calculate</button><button class="btn ghost" id="clr">Clear</button></div>
+<div class="result empty" id="out">The results will appear here.</div></div>
+<h2>Formulas</h2>
+<table class="f"><tr><th>Quantity</th><th>Formula</th></tr>
+<tr><td>Magnitude</td><td>|A| = &radic;(a&#8321;&sup2; + a&#8322;&sup2; + a&#8323;&sup2;)</td></tr>
+<tr><td>Dot product</td><td>A &middot; B = a&#8321;b&#8321; + a&#8322;b&#8322; + a&#8323;b&#8323; = |A||B| cos &theta;</td></tr>
+<tr><td>Cross product (3D)</td><td>A &times; B = (a&#8322;b&#8323; &minus; a&#8323;b&#8322;, a&#8323;b&#8321; &minus; a&#8321;b&#8323;, a&#8321;b&#8322; &minus; a&#8322;b&#8321;)</td></tr>
+<tr><td>Angle</td><td>&theta; = cos<sup>&minus;1</sup>[(A &middot; B)/(|A||B|)]</td></tr>
+<tr><td>Unit vector</td><td>&acirc; = A/|A|</td></tr>
+<tr><td>Projection of A on B</td><td>[(A &middot; B)/|B|&sup2;] B</td></tr></table>
+<h2>Worked example</h2>
+<p>A = (1, 2, 3), B = (4, &minus;1, 2). A &middot; B = 4 &minus; 2 + 6 = <b>8</b>. A &times; B = (2&middot;2 &minus; 3&middot;(&minus;1), 3&middot;4 &minus; 1&middot;2, 1&middot;(&minus;1) &minus; 2&middot;4) = <b>(7, 10, &minus;9)</b>. |A| = &radic;14 &asymp; 3.7417.</p>
+<h2>FAQ</h2>
+<details><summary>How do I find the dot product?</summary><p>Multiply matching components and add them. For (1,2,3) and (4,-1,2) it is 1*4 + 2*(-1) + 3*2 = 8.</p></details><details><summary>What does the cross product give?</summary><p>A vector perpendicular to both A and B, defined in 3D. Its length is the area of the parallelogram they span.</p></details><details><summary>How do I enter a 2D vector?</summary><p>Type two numbers such as 3, 4. For 2D vectors Calvo shows the scalar z-part of the cross product.</p></details><details><summary>How is the angle found?</summary><p>From the dot product: the angle is the inverse cosine of A dot B divided by the product of the magnitudes.</p></details><details><summary>What if a vector is zero?</summary><p>Angle, unit vector and projection are undefined for a zero vector, and Calvo tells you so.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/age-calculator.html">Age Calculator</a><a href="/date-difference-calculator.html">Date Difference</a><a href="/attendance-calculator.html">Attendance Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/word-counter.html">Word Counter</a><a href="/periodic-table.html">Periodic Table</a><a href="/trigonometry-cheat-sheet.html">Trig Identities &amp; Unit Circle</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var $=function(i){return document.getElementById(i)};
+function R(x,d){d=d===undefined?6:d;var p=Math.pow(10,d),v=Math.round(x*p)/p;return Object.is(v,-0)?0:v}
+function onEnter(ids,fn){ids.forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')fn()})})}
+function pv(s){var p=String(s).trim().split(/[\s,;]+/).filter(Boolean).map(Number);if(!p.length||p.some(isNaN))return null;return p}
+function V(a){return '('+a.map(function(x){return R(x)}).join(', ')+')'}
+function mag(a){return Math.sqrt(a.reduce(function(s,x){return s+x*x},0))}
+function dot(a,b){return a.reduce(function(s,x,i){return s+x*b[i]},0)}
+function run(){
+ var out=$('out'),a=pv($('va').value),b=pv($('vb').value);
+ if(!a||!b){out.className='result empty';out.textContent='Enter both vectors as numbers separated by commas, for example 1, 2, 3.';return}
+ if(a.length!==b.length||a.length<2||a.length>3){out.className='result';out.innerHTML='<span class="err">Both vectors must have the same size, 2 or 3 components.</span>';return}
+ var ma=mag(a),mb=mag(b),d=dot(a,b),L=[];
+ L.push('A + B = <b>'+V(a.map(function(x,i){return x+b[i]}))+'</b>');
+ L.push('A \u2212 B = <b>'+V(a.map(function(x,i){return x-b[i]}))+'</b>');
+ L.push('A \u00b7 B = <b>'+R(d)+'</b>');
+ if(a.length===3)L.push('A \u00d7 B = <b>'+V([a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]])+'</b>');
+ else L.push('A \u00d7 B (z-component) = <b>'+R(a[0]*b[1]-a[1]*b[0])+'</b>');
+ L.push('|A| = <b>'+R(ma)+'</b>, |B| = <b>'+R(mb)+'</b>');
+ if(ma>0)L.push('Unit vector of A = <b>'+V(a.map(function(x){return x/ma}))+'</b>'); else L.push('Unit vector of A is undefined (A is the zero vector).');
+ if(ma>0&&mb>0){var c=Math.max(-1,Math.min(1,d/(ma*mb))),th=Math.acos(c);L.push('Angle between A and B = <b>'+R(th*180/Math.PI,4)+'\u00b0</b> ('+R(th)+' rad)');
+  var k=d/(mb*mb);L.push('Projection of A on B = <b>'+V(b.map(function(x){return x*k}))+'</b>');}
+ else L.push('Angle and projection are undefined when a vector is the zero vector.');
+ out.className='result';out.innerHTML=L.join('<br>')}
+$('go').onclick=run;onEnter(['va','vb'],run);
+$('clr').onclick=function(){$('va').value='';$('vb').value='';$('out').className='result empty';$('out').textContent='The results will appear here.'};
+document.querySelectorAll('.chips button').forEach(function(x){x.onclick=function(){$('va').value=x.getAttribute('data-a');$('vb').value=x.getAttribute('data-b');run()}});
+</script>
+</body>
+</html>
