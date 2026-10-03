@@ -130,13 +130,14 @@
   }
 
   function calculate() {
-    var out = $('out'), rows = readRows(), tot = 0, wsum = 0, lines = [], warns = [];
+    var out = $('out'), rows = readRows(), tot = 0, wsum = 0, lines = [], pairs = [], warns = [];
     rows.forEach(function (r) {
       if (isNaN(r.o) || isNaN(r.t) || r.t <= 0 || isNaN(r.w)) return;
       if (r.o > r.t) { warns.push(r.name + ': obtained marks are more than total marks.'); return; }
       var c = r.o / r.t * r.w;
       tot += c; wsum += r.w;
       lines.push(esc(r.name) + ': ' + fmt(r.o / r.t * 100) + '% x ' + r.w + '% = ' + fmt(c));
+      pairs.push([r.name + ' (' + fmt(r.o / r.t * 100) + '%)', fmt(c) + ' / ' + r.w]);
     });
     if (!lines.length) {
       out.className = 'result empty';
@@ -144,15 +145,27 @@
       return;
     }
     var b = bonus();
-    if (b) { tot += b; lines.push('Bonus marks: +' + fmt(b)); }
+    if (b) { tot += b; lines.push('Bonus marks: +' + fmt(b)); pairs.push(['Bonus marks', '+' + fmt(b)]); }
     var label = PRESETS[current] ? PRESETS[current].label : 'Aggregate';
     var msg = 'My ' + label.split(' (')[0] + ' aggregate is ' + fmt(tot) + '% - calculated on Calvo: https://calvoscientificcalculator.online/aggregate-calculator.html';
     var html = lines.join('\n') + '\n\nAggregate: <span class="big">' + fmt(tot) + '%</span>';
     if (warns.length) html += '\n<b>Note:</b> ' + esc(warns.join(' '));
     if (Math.abs(wsum - 100) > 0.001) html += '\n<b>Note:</b> the weightages you entered add up to ' + wsum + ', not 100.';
     html += '\n<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a>';
+    html += '\n<button class="btn" id="imgcard" type="button" style="margin-top:8px">Share as image</button>';
     out.className = 'result';
     out.innerHTML = html;
+    var ib = document.getElementById('imgcard');
+    if (ib && window.CalvoShareCard) ib.onclick = function () {
+      window.CalvoShareCard.open({
+        label: label.split(' (')[0] + (label.indexOf('Aggregate') < 0 ? ' aggregate' : ''),
+        value: fmt(tot) + '%',
+        sub: 'My merit aggregate',
+        lines: pairs,
+        filename: 'calvo-aggregate',
+        text: msg
+      });
+    };
   }
 
   /* Reverse calculator: how many test marks do I need for a target aggregate? */
