@@ -3777,3 +3777,14 @@ body {
 @media (min-width: 560px) {
   .merit-links-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+
+
+/* ---------- Urdu explanation in formula light-bulb box ---------- */
+.urdu-note {
+  direction: rtl; text-align: right;
+  font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', 'Jameel Noori Nastaleeq', 'Segoe UI', Tahoma, sans-serif;
+  font-size: 1.05em; line-height: 2.1; margin: 4px 0 10px; word-break: break-word;
+}
+.explain-ai-btn { margin: 2px 0 6px; }
+.explain-ai-out { margin-top: 6px; }
