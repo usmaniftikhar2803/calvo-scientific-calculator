@@ -12540,9 +12540,10 @@ function addCgpaSemesterLabel(semester) {
    points/credits without recomputing them. */
 let lastSemesterTotals = {};
 
+let lastCgpaMeta = null;
 function calcCgpa() {
   const rows = cgpaTableEl.querySelectorAll('.cgpa-row');
-  let totalPoints = 0, totalCredits = 0;
+  let totalPoints = 0, totalCredits = 0, validRows = 0;
   const semesterTotals = {};
   rows.forEach(row => {
     const credit = parseFloat(row.querySelector('.cgpa-credit').value);
@@ -12552,6 +12553,7 @@ function calcCgpa() {
     const points = scale[grade] * credit;
     totalPoints += points;
     totalCredits += credit;
+    validRows++;
     const sem = row.dataset.semester;
     if (!semesterTotals[sem]) semesterTotals[sem] = { points: 0, credits: 0 };
     semesterTotals[sem].points += points;
@@ -12561,6 +12563,7 @@ function calcCgpa() {
   const overall = totalCredits > 0 ? totalPoints / totalCredits : 0;
   let detail = '';
   const semKeys = Object.keys(semesterTotals);
+  lastCgpaMeta = { overall, totalCredits, subjects: validRows, semesters: semKeys.length };
   if (semKeys.length > 1) {
     detail = semKeys.map(s => {
       const gpa = semesterTotals[s].credits > 0 ? semesterTotals[s].points / semesterTotals[s].credits : 0;
@@ -12571,6 +12574,36 @@ function calcCgpa() {
     cgpaResultEl.textContent = t('gpa_prefix') + ' ' + overall.toFixed(2);
   }
   return overall;
+}
+
+const shareCgpaImgBtn = document.getElementById('shareCgpaImgBtn');
+if (shareCgpaImgBtn) {
+  shareCgpaImgBtn.addEventListener('click', () => {
+    const v = calcCgpa();
+    const m = lastCgpaMeta;
+    if (!m || !m.totalCredits || !window.CalvoShareCard) { showToast(t('share_card_need_data')); return; }
+    const scaleVals = Object.values(gradeScales[cgpaScaleEl.value] || { A: 4 });
+    const scaleMax = Math.max.apply(null, scaleVals);
+    const scaleName = cgpaScaleEl.options[cgpaScaleEl.selectedIndex].text.split(' (')[0];
+    const multi = m.semesters > 1;
+    const lines = [];
+    if (multi) lines.push(['Semesters', String(m.semesters)]);
+    lines.push(['Subjects', String(m.subjects)], ['Credit hours', String(m.totalCredits)]);
+    if (multi) {
+      Object.keys(lastSemesterTotals).slice(0, 4).forEach(k => {
+        const s = lastSemesterTotals[k];
+        if (s.credits > 0) lines.push(['Semester ' + k + ' GPA', (s.points / s.credits).toFixed(2)]);
+      });
+    }
+    window.CalvoShareCard.open({
+      label: multi ? 'My CGPA' : 'My GPA',
+      value: v.toFixed(2),
+      sub: 'out of ' + scaleMax.toFixed(2) + ' (' + scaleName + ')',
+      lines: lines,
+      filename: 'calvo-' + (multi ? 'cgpa' : 'gpa'),
+      text: (multi ? 'My CGPA is ' : 'My GPA is ') + v.toFixed(2) + ' - calculated on Calvo: https://calvoscientificcalculator.online/'
+    });
+  });
 }
 
 if (cgpaTableEl) {
