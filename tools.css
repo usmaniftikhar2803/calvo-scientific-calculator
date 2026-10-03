@@ -115,3 +115,6 @@ sub{font-size:.7em;}
  .uc text{fill:#000!important}.uc .ax{stroke:#000!important}.uc .ring{stroke:#000!important}.uc .pt2{fill:#000!important}
  h2{page-break-after:avoid}table.f,.uc-box{page-break-inside:avoid}
 }
+
+.ur{direction:rtl;text-align:right;font-family:'Noto Naskh Arabic','Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Segoe UI',Tahoma,sans-serif;font-size:14px;line-height:2;margin-top:6px;padding-top:6px;border-top:1px dashed var(--panel-border);color:var(--text);}
+@media print{.ur{color:#000!important;border-top-color:#999!important}}
