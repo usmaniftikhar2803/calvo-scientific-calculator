@@ -11813,6 +11813,24 @@ formulaList.addEventListener('click', (e) => {
     shareToWhatsApp(`${name}: ${exprText}`);
     return;
   }
+  const aiMoreBtn = e.target.closest('.explain-ai-btn');
+  if (aiMoreBtn) {
+    const aiBox = aiMoreBtn.closest('.formula-explain-box');
+    const aiRow = aiBox ? aiBox.closest('.formula-item') : null;
+    const aiOut = aiBox ? aiBox.querySelector('.explain-ai-out') : null;
+    if (!aiRow || !aiOut) return;
+    const aiName = aiRow.querySelector('.formula-name').textContent;
+    const aiExpr = aiRow.querySelector('.formula-expr').textContent;
+    if (typeof window.calvoExplainFormula !== 'function') {
+      aiOut.innerHTML = `<span class="ai-error">${t('explain_unavailable')}</span>`;
+      return;
+    }
+    aiOut.innerHTML = `<span class="ai-loading">${t('explain_loading')}</span>`;
+    window.calvoExplainFormula(aiName, aiExpr, (result) => {
+      aiOut.innerHTML = result.error ? `<span class="ai-error">${result.error}</span>` : result.html;
+    });
+    return;
+  }
   const explainBtn = e.target.closest('.formula-explain-btn');
   if (explainBtn) {
     const row = explainBtn.closest('.formula-item');
@@ -11831,6 +11849,16 @@ formulaList.addEventListener('click', (e) => {
     const expr = row.querySelector('.formula-expr').textContent;
 
     const closeBtnHtml = `<button class="formula-explain-close" title="Close">&#10005;</button>`;
+
+    // Built-in Urdu explanation (no API key needed). Plain text nodes only, so tags like the subject label are ignored.
+    const nameEl = row.querySelector('.formula-name');
+    const lookupName = Array.from(nameEl.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim() || name;
+    const urduNote = (typeof window.urduNoteFor === 'function') ? window.urduNoteFor(lookupName) : null;
+    if (urduNote) {
+      box.innerHTML = `${closeBtnHtml}<div class="urdu-note" dir="rtl" lang="ur">${urduNote}</div><button class="pill-btn explain-ai-btn">${t('explain_ai_more')}</button><div class="explain-ai-out"></div>`;
+      box.dataset.loaded = '1';
+      return;
+    }
 
     if (typeof window.calvoExplainFormula !== 'function') {
       box.innerHTML = `${closeBtnHtml}<span class="ai-error">${t('explain_unavailable')}</span>`;
