@@ -609,19 +609,13 @@
       <div class="app-card-header">
         <div>
           <h2 class="formulas-title" data-i18n="history_title">Calculation History</h2>
-          <p class="formulas-subtitle" data-i18n="history_subtitle">Every equal-sign result, saved automatically</p>
+          <p class="formulas-subtitle" id="historySubtitle">Every equal-sign result, saved automatically</p>
         </div>
         <button class="pill-btn" id="clearHistoryBtn" data-i18n="clear_all">Clear All</button>
       </div>
+      <div class="subject-pills" id="historyKindPills"></div>
       <div class="formula-list" id="historyList"></div>
-
-      <div class="app-card-header" style="margin-top:22px;">
-        <div>
-          <h3 class="formulas-title" style="font-size:1.05rem;" data-i18n="history_saved_title">Saved Results</h3>
-          <p class="formulas-subtitle" data-i18n="history_saved_subtitle">Percentage, GPA, CGPA and semester results you saved</p>
-        </div>
-      </div>
-      <div class="formula-list" id="historySavedList"></div>
+      <div class="formula-list" id="historySavedList" style="display:none;"></div>
     </div>
   </div>
 </section>
@@ -681,6 +675,7 @@
         <button class="pill-btn add-subject-btn" id="gradeAddSubjectBtn" data-i18n="add_subject">+ Add Subject</button>
         <div class="grade-result-box" id="gradeResultBox">0.00%</div>
         <button class="pill-btn save-btn" id="savePercentBtn" data-i18n="save_result">&#128190; Save Result</button>
+        <div class="save-note" id="percentSaveNote" style="display:none;"></div>
       </div>
 
       <!-- CGPA tools -->
@@ -702,6 +697,7 @@
         <button class="pill-btn save-btn" id="saveCgpaBtn" data-i18n="save_result">&#128190; Save Result</button>
         <button class="pill-btn save-btn" id="saveSemesterHistoryBtn" data-i18n="save_semester_btn">&#128200; Save Semester(s) to History</button>
         <button class="pill-btn save-btn" id="shareCgpaImgBtn" data-i18n="share_card_btn">&#128444; Share as Image</button>
+        <div class="save-note" id="cgpaSaveNote" style="display:none;"></div>
 
         <!-- Semester-wise GPA history + running CGPA trend -->
         <div class="saved-header">
@@ -712,12 +708,12 @@
         <div class="formula-list" id="gpaHistoryList"></div>
       </div>
 
-      <!-- Saved results -->
-      <div class="saved-header">
+      <!-- Saved results (now shown in the History tab; kept hidden so older code still finds it) -->
+      <div class="saved-header" style="display:none;">
         <span data-i18n="saved_results">Saved Results</span>
         <button class="pill-btn small" id="clearSavedBtn" data-i18n="clear">Clear</button>
       </div>
-      <div class="formula-list" id="savedResultsList"></div>
+      <div class="formula-list" id="savedResultsList" style="display:none;"></div>
     </div>
   </div>
 </section>
