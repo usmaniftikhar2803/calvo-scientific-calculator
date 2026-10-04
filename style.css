@@ -3838,3 +3838,14 @@ body {
   .grade-remove-btn { width: 22px; }
 }
 .grade-input::placeholder { font-size: 0.72rem; font-weight: 600; color: #8a8a8a; }
+
+
+/* ---------- History views + save note ---------- */
+#historyKindPills { margin: 6px 0 12px; }
+.save-note {
+  margin: 8px 2px 0; font-size: 0.78rem; line-height: 1.6; color: #7ee0a0;
+}
+.save-note-link {
+  background: none; border: 0; padding: 0; margin: 0; font: inherit; font-weight: 700;
+  color: var(--accent, #ff8a1f); text-decoration: underline; cursor: pointer;
+}
