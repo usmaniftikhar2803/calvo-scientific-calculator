@@ -12343,16 +12343,37 @@ const gradeResultBoxEl = document.getElementById('gradeResultBox');
 const gradeAddSubjectBtn = document.getElementById('gradeAddSubjectBtn');
 let gradeSubjects = [];
 let gradeSubjectSeq = 0;
+const GRADE_STORE_KEY = 'calvo_percent_v1';
 
-function addGradeSubject(obtained = '', total = '100') {
+/* Autosave the subject table so marks and names are still there after a reload. */
+function persistGradeSubjects() {
+  try {
+    localStorage.setItem(GRADE_STORE_KEY, JSON.stringify(gradeSubjects.map(s => ({ name: s.name || '', obtained: s.obtained, total: s.total }))));
+  } catch (e) {}
+}
+function loadGradeSubjects() {
+  try {
+    const a = JSON.parse(localStorage.getItem(GRADE_STORE_KEY) || '[]');
+    if (!Array.isArray(a)) return [];
+    return a.slice(0, 40).map(x => ({ name: String((x && x.name) || '').slice(0, 60), obtained: String((x && x.obtained) ?? ''), total: String((x && x.total) ?? '100') }));
+  } catch (e) { return []; }
+}
+
+function addGradeSubject(obtained = '', total = '100', name = '') {
   gradeSubjectSeq += 1;
-  gradeSubjects.push({ id: gradeSubjectSeq, obtained, total });
+  gradeSubjects.push({ id: gradeSubjectSeq, name, obtained, total });
   renderGradeSubjects();
+  persistGradeSubjects();
 }
 
 function removeGradeSubject(id) {
   gradeSubjects = gradeSubjects.filter(s => s.id !== id);
   renderGradeSubjects();
+  persistGradeSubjects();
+}
+
+function gradeSubjectLabel(s, idx) {
+  return (s.name && s.name.trim()) || `${t('subject_label')} ${idx + 1}`;
 }
 
 function calcGradePercent() {
@@ -12372,9 +12393,17 @@ function renderGradeSubjects() {
     const row = document.createElement('div');
     row.className = 'grade-subject-row';
 
-    const name = document.createElement('span');
-    name.className = 'grade-subject-name';
-    name.textContent = `${t('subject_label')} ${idx + 1}`;
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.className = 'grade-subject-name grade-subject-name-input';
+    name.placeholder = `${t('subject_label')} ${idx + 1}`;
+    name.maxLength = 60;
+    name.value = s.name || '';
+    name.setAttribute('aria-label', `${t('subject_label')} ${idx + 1}`);
+    name.addEventListener('input', () => {
+      s.name = name.value;
+      persistGradeSubjects();
+    });
     row.appendChild(name);
 
     const obtainedInput = document.createElement('input');
@@ -12385,6 +12414,7 @@ function renderGradeSubjects() {
     obtainedInput.addEventListener('input', () => {
       s.obtained = obtainedInput.value;
       updateGradeResult();
+      persistGradeSubjects();
     });
     row.appendChild(obtainedInput);
 
@@ -12401,6 +12431,7 @@ function renderGradeSubjects() {
     totalInput.addEventListener('input', () => {
       s.total = totalInput.value;
       updateGradeResult();
+      persistGradeSubjects();
     });
     row.appendChild(totalInput);
 
@@ -12424,9 +12455,15 @@ function updateGradeResult() {
 
 if (gradeAddSubjectBtn) {
   gradeAddSubjectBtn.addEventListener('click', () => addGradeSubject());
-  // Start with a couple of blank subjects, like a fresh gradebook.
-  addGradeSubject();
-  addGradeSubject();
+  // Restore the last table; otherwise start with a couple of blank subjects, like a fresh gradebook.
+  const savedGrade = loadGradeSubjects();
+  if (savedGrade.length) {
+    savedGrade.forEach(x => { gradeSubjectSeq += 1; gradeSubjects.push({ id: gradeSubjectSeq, name: x.name, obtained: x.obtained, total: x.total }); });
+    renderGradeSubjects();
+  } else {
+    addGradeSubject();
+    addGradeSubject();
+  }
 }
 
 /* ---- CGPA / GPA calculator ---- */
@@ -12541,6 +12578,56 @@ function addCgpaSemesterLabel(semester) {
 let lastSemesterTotals = {};
 
 let lastCgpaMeta = null;
+const CGPA_STORE_KEY = 'calvo_cgpa_table_v1';
+let cgpaRestoring = false;
+
+/* Autosave the GPA/CGPA table (scale, semester names, subjects, credits, marks, grades). */
+function persistCgpaTable() {
+  if (cgpaRestoring || !cgpaTableEl) return;
+  try {
+    const sems = [];
+    const rows = [];
+    cgpaTableEl.querySelectorAll('.cgpa-semester-label').forEach(l => sems.push({ n: Number(l.dataset.semester), label: l.value }));
+    cgpaTableEl.querySelectorAll('.cgpa-row').forEach(r => rows.push({
+      sem: Number(r.dataset.semester),
+      subject: r.querySelector('.cgpa-subject').value,
+      credit: r.querySelector('.cgpa-credit').value,
+      marks: r.querySelector('.cgpa-marks').value,
+      grade: r.querySelector('.cgpa-grade').value
+    }));
+    localStorage.setItem(CGPA_STORE_KEY, JSON.stringify({ scale: cgpaScaleEl.value, sems, rows }));
+  } catch (e) {}
+}
+function restoreCgpaTable() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(CGPA_STORE_KEY) || 'null'); } catch (e) { d = null; }
+  if (!d || !Array.isArray(d.sems) || !d.sems.length || !Array.isArray(d.rows) || !d.rows.length) return false;
+  cgpaRestoring = true;
+  try {
+    if (d.scale && [...cgpaScaleEl.options].some(o => o.value === d.scale)) cgpaScaleEl.value = d.scale;
+    cgpaTableEl.innerHTML = '';
+    let maxSem = 1;
+    d.sems.slice(0, 12).forEach(sm => {
+      const n = Number(sm.n) || 1;
+      maxSem = Math.max(maxSem, n);
+      addCgpaSemesterLabel(n);
+      const lab = cgpaTableEl.querySelector('.cgpa-semester-label[data-semester="' + n + '"]');
+      if (lab && typeof sm.label === 'string') lab.value = sm.label.slice(0, 40);
+      d.rows.filter(r => Number(r.sem) === n).slice(0, 40).forEach(r => {
+        addCgpaRow(n);
+        const row = cgpaTableEl.lastElementChild;
+        row.querySelector('.cgpa-subject').value = String(r.subject || '').slice(0, 60);
+        row.querySelector('.cgpa-credit').value = String(r.credit ?? '');
+        row.querySelector('.cgpa-marks').value = String(r.marks ?? '');
+        const sel = row.querySelector('.cgpa-grade');
+        if ([...sel.options].some(o => o.value === r.grade)) sel.value = r.grade;
+      });
+    });
+    cgpaSemesterCount = maxSem;
+  } finally { cgpaRestoring = false; }
+  return true;
+}
+
 function calcCgpa() {
   const rows = cgpaTableEl.querySelectorAll('.cgpa-row');
   let totalPoints = 0, totalCredits = 0, validRows = 0;
@@ -12573,6 +12660,7 @@ function calcCgpa() {
   } else {
     cgpaResultEl.textContent = t('gpa_prefix') + ' ' + overall.toFixed(2);
   }
+  persistCgpaTable();
   return overall;
 }
 
@@ -12607,9 +12695,12 @@ if (shareCgpaImgBtn) {
 }
 
 if (cgpaTableEl) {
-  addCgpaSemesterLabel(1);
-  addCgpaRow(1);
-  addCgpaRow(1);
+  if (!restoreCgpaTable()) {
+    addCgpaSemesterLabel(1);
+    addCgpaRow(1);
+    addCgpaRow(1);
+  }
+  cgpaTableEl.addEventListener('input', (e) => { if (e.target.classList.contains('cgpa-semester-label')) persistCgpaTable(); });
 
   document.getElementById('cgpaAddRow').addEventListener('click', () => {
     addCgpaRow(cgpaSemesterCount);
@@ -12656,12 +12747,21 @@ function renderSavedResults() {
   savedResults.forEach((r, idx) => {
     const div = document.createElement('div');
     div.className = 'saved-item';
-    div.innerHTML = `<span>${r.label}</span><span style="display:flex;align-items:center;gap:8px;"><b style="color:var(--accent);">${r.value}</b><button class="icon-action-btn saved-share-btn" title="${t('share_title')}">&#128228;</button>${whatsappBtnHtml('saved-whatsapp-btn')}<button class="saved-del" title="${t('delete_title')}">&#10005;</button></span>`;
+    div.innerHTML = `<span class="saved-label"></span><span style="display:flex;align-items:center;gap:8px;"><b style="color:var(--accent);">${r.value}</b><button class="icon-action-btn saved-share-btn" title="${t('share_title')}">&#128228;</button>${whatsappBtnHtml('saved-whatsapp-btn')}<button class="saved-del" title="${t('delete_title')}">&#10005;</button></span>`;
+    const savedLab = div.querySelector('.saved-label');
+    savedLab.textContent = r.label;
+    if (r.details) {
+      const det = document.createElement('div');
+      det.className = 'saved-details';
+      det.textContent = r.details;
+      savedLab.appendChild(det);
+    }
+    const savedText = `${r.label}: ${r.value}` + (r.details ? `\n${r.details}` : '');
     div.querySelector('.saved-share-btn').addEventListener('click', () => {
-      shareOrCopyText(`${r.label}: ${r.value}`);
+      shareOrCopyText(savedText);
     });
     div.querySelector('.saved-whatsapp-btn').addEventListener('click', () => {
-      shareToWhatsApp(`${r.label}: ${r.value}`);
+      shareToWhatsApp(savedText);
     });
     div.querySelector('.saved-del').addEventListener('click', () => {
       savedResults.splice(idx, 1);
@@ -12672,10 +12772,14 @@ function renderSavedResults() {
   });
 }
 
-function saveResult(label, value) {
-  savedResults.unshift({ label, value, time: Date.now() });
+function saveResult(label, value, details) {
+  savedResults.unshift({ label, value, details: details || '', time: Date.now() });
   persistSavedResults();
   renderSavedResults();
+  showToast(t('result_saved_toast'));
+  if (savedResultsListEl && savedResultsListEl.scrollIntoView) {
+    try { savedResultsListEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+  }
 }
 
 const savePercentBtn = document.getElementById('savePercentBtn');
@@ -12683,12 +12787,14 @@ if (savePercentBtn) {
   savePercentBtn.addEventListener('click', () => {
     const pct = calcGradePercent();
     if (pct === null) { showToast(t('alert_enter_marks')); return; }
-    const validCount = gradeSubjects.filter(s => {
+    const validRows = [];
+    gradeSubjects.forEach((s, idx) => {
       const o = parseFloat(s.obtained), tt = parseFloat(s.total);
-      return !isNaN(o) && !isNaN(tt) && tt > 0;
-    }).length;
+      if (!isNaN(o) && !isNaN(tt) && tt > 0) validRows.push(`${gradeSubjectLabel(s, idx)}: ${o}/${tt}`);
+    });
+    const validCount = validRows.length;
     const subjWord = validCount === 1 ? t('subject_word') : t('subjects_word');
-    saveResult(`${t('percentage_word')} (${validCount} ${subjWord})`, `${pct.toFixed(2)}%`);
+    saveResult(`${t('percentage_word')} (${validCount} ${subjWord})`, `${pct.toFixed(2)}%`, validRows.slice(0, 15).join(', '));
   });
 }
 
@@ -12696,8 +12802,14 @@ const saveCgpaBtn = document.getElementById('saveCgpaBtn');
 if (saveCgpaBtn) {
   saveCgpaBtn.addEventListener('click', () => {
     const gpa = calcCgpa();
-    const subjectCount = cgpaTableEl.querySelectorAll('.cgpa-row').length;
-    saveResult(`${t('cgpa_word')} (${subjectCount} ${t('subjects_word')})`, gpa.toFixed(2));
+    const parts = [];
+    cgpaTableEl.querySelectorAll('.cgpa-row').forEach((r, i) => {
+      const c = parseFloat(r.querySelector('.cgpa-credit').value);
+      if (isNaN(c) || c <= 0) return;
+      const nm = r.querySelector('.cgpa-subject').value.trim() || `${t('subject_label')} ${i + 1}`;
+      parts.push(`${nm}: ${r.querySelector('.cgpa-grade').value} (${c})`);
+    });
+    saveResult(`${t('cgpa_word')} (${parts.length} ${t('subjects_word')})`, gpa.toFixed(2), parts.slice(0, 15).join(', '));
   });
 }
 
