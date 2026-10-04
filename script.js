@@ -12902,6 +12902,63 @@ function renderGpaHistory() {
 }
 
 if (saveSemesterHistoryBtn) saveSemesterHistoryBtn.addEventListener('click', saveSemesterHistory);
+
+/* ---- History tab: show saved Percentage / GPA / CGPA results and saved semesters ---- */
+const historySavedListEl = document.getElementById('historySavedList');
+
+function renderHistorySaved() {
+  if (!historySavedListEl) return;
+  const items = [];
+  try {
+    savedResults.forEach((r, i) => items.push({ kind: 'saved', idx: i, label: r.label, value: String(r.value), details: r.details || '', time: r.time || 0 }));
+    gpaHistory.forEach((r, i) => items.push({ kind: 'sem', idx: i, label: r.label, value: r.gpa.toFixed(2), details: t('semester_gpa_tag'), time: r.time || 0 }));
+  } catch (e) { return; }
+  items.sort((a, b) => b.time - a.time);
+  historySavedListEl.innerHTML = '';
+  if (!items.length) {
+    historySavedListEl.innerHTML = `<div class="formula-empty">${t('history_saved_empty')}</div>`;
+    return;
+  }
+  items.forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<div class="history-item-row">
+        <div class="history-item-text">
+          <div class="history-expr"></div>
+          <div class="history-result"></div>
+          <div class="saved-details"></div>
+          <div class="history-time"></div>
+        </div>
+        <button class="icon-action-btn hs-share-btn" title="${t('share_title')}">&#128228;</button>
+        ${whatsappBtnHtml('hs-whatsapp-btn')}
+        <button class="icon-action-btn hs-del-btn" title="${t('remove_title')}">&#10005;</button>
+      </div>`;
+    div.querySelector('.history-expr').textContent = it.label;
+    div.querySelector('.history-result').textContent = it.value;
+    div.querySelector('.saved-details').textContent = it.details;
+    div.querySelector('.history-time').textContent = it.time ? formatHistoryTime(it.time) : '';
+    const text = it.kind === 'sem' ? `${it.label}: GPA ${it.value}` : `${it.label}: ${it.value}` + (it.details ? `\n${it.details}` : '');
+    div.querySelector('.hs-share-btn').addEventListener('click', () => shareOrCopyText(text));
+    div.querySelector('.hs-whatsapp-btn').addEventListener('click', () => shareToWhatsApp(text));
+    div.querySelector('.hs-del-btn').addEventListener('click', () => {
+      if (it.kind === 'sem') { gpaHistory.splice(it.idx, 1); persistGpaHistory(); renderGpaHistory(); }
+      else { savedResults.splice(it.idx, 1); persistSavedResults(); renderSavedResults(); }
+    });
+    historySavedListEl.appendChild(div);
+  });
+}
+
+// Keep the History tab in sync whenever a saved result or a semester is added, changed or removed.
+(function () {
+  const baseRenderSaved = renderSavedResults;
+  renderSavedResults = function () { baseRenderSaved(); renderHistorySaved(); };
+  const baseRenderGpa = renderGpaHistory;
+  renderGpaHistory = function () { baseRenderGpa(); renderHistorySaved(); };
+})();
+renderHistorySaved();
+const historyTabBtn = document.querySelector('.topbar-tab[data-tab="history"]');
+if (historyTabBtn) historyTabBtn.addEventListener('click', renderHistorySaved);
+
 if (clearGpaHistoryBtn) {
   armConfirmButton(clearGpaHistoryBtn, 'ai_tap_again_confirm', () => {
     gpaHistory = [];
