@@ -1,7 +1,9 @@
 /* ============================================
    CALVO — SERVICE WORKER (Offline PWA support)
-   Strategy: cache-first app shell, then
-   stale-while-revalidate for same-origin GETs.
+   Strategy: pages, scripts, styles and data files are NETWORK-FIRST
+   (a new deploy shows on the very next reload); the cache is only used
+   when offline. Other same-origin files (images, icons) use
+   stale-while-revalidate.
    Cross-origin requests (Gemini API, exchange
    rates, Google Fonts) are left untouched and
    always go straight to the network.
@@ -10,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v55';
+const CACHE_VERSION = 'calvo-cache-v57';
 
 const CORE_ASSETS = [
   './',
@@ -117,7 +119,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else (css/js/images) keeps the fast stale-while-revalidate
+  // Scripts, styles and data files are also NETWORK-FIRST. If they were served
+  // from cache first, a fresh index.html could run with an old script.js after
+  // a deploy. The cache is only a fallback for offline use.
+  if (/\.(js|css|json|webmanifest|html)$/i.test(url.pathname)) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const resClone = res.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(req, resClone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Everything else (images, icons) keeps the fast stale-while-revalidate
   // strategy: serve cached instantly, refresh cache in the background.
   event.respondWith(
     caches.match(req).then((cached) => {
