@@ -153,8 +153,28 @@
     if (Math.abs(wsum - 100) > 0.001) html += '\n<b>Note:</b> the weightages you entered add up to ' + wsum + ', not 100.';
     html += '\n<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a>';
     html += '\n<button class="btn" id="imgcard" type="button" style="margin-top:8px">Share as image</button>';
+    html += ' <button class="btn ghost" id="savehist" type="button" style="margin-top:8px">Save to History</button>\n<div class="note" id="savedmsg" style="margin-top:6px"></div>';
     out.className = 'result';
     out.innerHTML = html;
+    var sb = document.getElementById('savehist');
+    if (sb) sb.onclick = function () {
+      var entry = {
+        label: label.split(' (')[0] + (label.indexOf('Aggregate') < 0 ? ' aggregate' : ''),
+        value: fmt(tot) + '%',
+        details: pairs.map(function (q) { return q[0] + ': ' + q[1]; }).join(', '),
+        time: Date.now(), kind: 'merit'
+      };
+      var ok = false;
+      try {
+        var arr = JSON.parse(localStorage.getItem('calvo_saved_results') || '[]');
+        if (!Array.isArray(arr)) arr = [];
+        arr.unshift(entry); localStorage.setItem('calvo_saved_results', JSON.stringify(arr.slice(0, 300))); ok = true;
+      } catch (e) { ok = false; }
+      var m = document.getElementById('savedmsg');
+      if (m) m.innerHTML = ok
+        ? '\u2713 Saved in Calvo \u203A History \u203A Merit. Check it there. <a href="/#history-merit"><b>Open History</b></a>'
+        : '<span class="err">Could not save (your browser blocks storage).</span>';
+    };
     var ib = document.getElementById('imgcard');
     if (ib && window.CalvoShareCard) ib.onclick = function () {
       window.CalvoShareCard.open({
