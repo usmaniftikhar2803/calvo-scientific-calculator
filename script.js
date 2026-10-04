@@ -11949,6 +11949,7 @@ function renderCalcHistory() {
 
 if (clearHistoryBtn) {
   armConfirmButton(clearHistoryBtn, 'ai_tap_again_confirm', () => {
+    if (historyKind !== 'calc') { clearHistoryKind(historyKind); return; }
     calcHistory = [];
     saveCalcHistory();
     renderCalcHistory();
@@ -12772,14 +12773,13 @@ function renderSavedResults() {
   });
 }
 
-function saveResult(label, value, details) {
-  savedResults.unshift({ label, value, details: details || '', time: Date.now() });
+function saveResult(label, value, details, kind) {
+  kind = kind || 'percent';
+  savedResults.unshift({ label, value, details: details || '', time: Date.now(), kind });
   persistSavedResults();
   renderSavedResults();
-  showToast(t('result_saved_toast'));
-  if (savedResultsListEl && savedResultsListEl.scrollIntoView) {
-    try { savedResultsListEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
-  }
+  showToast(hsText('saved_to_history_toast', 'Saved to History'));
+  showSaveNote(kind === 'percent' ? 'percentSaveNote' : 'cgpaSaveNote', kind);
 }
 
 const savePercentBtn = document.getElementById('savePercentBtn');
@@ -12794,7 +12794,7 @@ if (savePercentBtn) {
     });
     const validCount = validRows.length;
     const subjWord = validCount === 1 ? t('subject_word') : t('subjects_word');
-    saveResult(`${t('percentage_word')} (${validCount} ${subjWord})`, `${pct.toFixed(2)}%`, validRows.slice(0, 15).join(', '));
+    saveResult(`${t('percentage_word')} (${validCount} ${subjWord})`, `${pct.toFixed(2)}%`, validRows.slice(0, 15).join(', '), 'percent');
   });
 }
 
@@ -12809,7 +12809,7 @@ if (saveCgpaBtn) {
       const nm = r.querySelector('.cgpa-subject').value.trim() || `${t('subject_label')} ${i + 1}`;
       parts.push(`${nm}: ${r.querySelector('.cgpa-grade').value} (${c})`);
     });
-    saveResult(`${t('cgpa_word')} (${parts.length} ${t('subjects_word')})`, gpa.toFixed(2), parts.slice(0, 15).join(', '));
+    saveResult(`${t('cgpa_word')} (${parts.length} ${t('subjects_word')})`, gpa.toFixed(2), parts.slice(0, 15).join(', '), 'gpa');
   });
 }
 
@@ -12855,7 +12855,8 @@ function saveSemesterHistory() {
   });
   persistGpaHistory();
   renderGpaHistory();
-  showToast(t('semester_saved_toast'));
+  showToast(hsText('saved_to_history_toast', 'Saved to History'));
+  showSaveNote('cgpaSaveNote', 'gpa');
 }
 
 function renderGpaHistory() {
@@ -12903,20 +12904,89 @@ function renderGpaHistory() {
 
 if (saveSemesterHistoryBtn) saveSemesterHistoryBtn.addEventListener('click', saveSemesterHistory);
 
-/* ---- History tab: show saved Percentage / GPA / CGPA results and saved semesters ---- */
-const historySavedListEl = document.getElementById('historySavedList');
+/* ---- History tab: 4 views - Calculator / Percentage / GPA-CGPA / Merit (ECAT etc.) ---- */
+function hsText(key, fallback) { const v = t(key); return (!v || v === key) ? fallback : v; }
+const HISTORY_KINDS = ['calc', 'percent', 'gpa', 'merit'];
+const HISTORY_KIND_FALLBACK = { calc: 'Calculator', percent: 'Percentage', gpa: 'GPA / CGPA', merit: 'Merit (ECAT etc.)' };
+const HISTORY_SUB_FALLBACK = {
+  calc: 'Every equal-sign result, saved automatically',
+  percent: 'Percentage results you saved',
+  gpa: 'GPA, CGPA and semester results you saved',
+  merit: 'ECAT, MDCAT, NUST, FAST and other merit results you saved'
+};
+const HISTORY_EMPTY_FALLBACK = {
+  percent: 'No percentage saved yet. On the Percent/GPA tab, tap Save Result.',
+  gpa: 'No GPA or CGPA saved yet. On the Percent/GPA tab, tap Save Result or Save Semester(s) to History.',
+  merit: 'No merit result saved yet. Calculate on an ECAT, MDCAT, NUST or FAST page and tap Save to History.'
+};
+let historyKind = 'calc';
+
+/* Works even if an older index.html (without the new markup) is being served. */
+const historyCard = document.querySelector('#tab-history .formulas-card');
+let historyKindPillsEl = document.getElementById('historyKindPills');
+let historySavedListEl = document.getElementById('historySavedList');
+let historySubtitleEl = document.getElementById('historySubtitle') || document.querySelector('#tab-history .formulas-subtitle');
+if (historyCard && historyListEl) {
+  if (!historyKindPillsEl) {
+    historyKindPillsEl = document.createElement('div');
+    historyKindPillsEl.className = 'subject-pills';
+    historyKindPillsEl.id = 'historyKindPills';
+    historyCard.insertBefore(historyKindPillsEl, historyListEl);
+  }
+  if (!historySavedListEl) {
+    historySavedListEl = document.createElement('div');
+    historySavedListEl.className = 'formula-list';
+    historySavedListEl.id = 'historySavedList';
+    historyCard.appendChild(historySavedListEl);
+  }
+  const strayHeaders = historyCard.querySelectorAll('.app-card-header');
+  if (strayHeaders.length > 1) { for (let i = 1; i < strayHeaders.length; i++) strayHeaders[i].style.display = 'none'; }
+}
+if (historySubtitleEl && historySubtitleEl.hasAttribute('data-i18n')) historySubtitleEl.removeAttribute('data-i18n');
+
+function savedKindOf(r) { return r.kind || (/%\s*$/.test(String(r.value)) ? 'percent' : 'gpa'); }
+function kindLabel(k) { return hsText('hk_' + k, HISTORY_KIND_FALLBACK[k]); }
+function historyCount(k) {
+  if (k === 'calc') return calcHistory.length;
+  let n = savedResults.filter(r => savedKindOf(r) === k).length;
+  if (k === 'gpa') n += gpaHistory.length;
+  return n;
+}
+
+function buildHistoryPills() {
+  if (!historyKindPillsEl) return;
+  historyKindPillsEl.innerHTML = '';
+  HISTORY_KINDS.forEach(k => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'subject-pill' + (k === historyKind ? ' active' : '');
+    btn.textContent = `${kindLabel(k)} (${historyCount(k)})`;
+    btn.addEventListener('click', () => setHistoryKind(k));
+    historyKindPillsEl.appendChild(btn);
+  });
+}
+
+function setHistoryKind(k) {
+  if (HISTORY_KINDS.indexOf(k) < 0) k = 'calc';
+  historyKind = k;
+  if (historyListEl) historyListEl.style.display = k === 'calc' ? '' : 'none';
+  if (historySavedListEl) historySavedListEl.style.display = k === 'calc' ? 'none' : '';
+  if (historySubtitleEl) historySubtitleEl.textContent = k === 'calc' ? t('history_subtitle') : hsText('hs_' + k, HISTORY_SUB_FALLBACK[k]);
+  buildHistoryPills();
+  renderHistorySaved();
+}
 
 function renderHistorySaved() {
   if (!historySavedListEl) return;
+  buildHistoryPills();
+  if (historyKind === 'calc') return;
   const items = [];
-  try {
-    savedResults.forEach((r, i) => items.push({ kind: 'saved', idx: i, label: r.label, value: String(r.value), details: r.details || '', time: r.time || 0 }));
-    gpaHistory.forEach((r, i) => items.push({ kind: 'sem', idx: i, label: r.label, value: r.gpa.toFixed(2), details: t('semester_gpa_tag'), time: r.time || 0 }));
-  } catch (e) { return; }
+  savedResults.forEach(r => { if (savedKindOf(r) === historyKind) items.push({ ref: r, label: r.label, value: String(r.value), details: r.details || '', time: r.time || 0 }); });
+  if (historyKind === 'gpa') gpaHistory.forEach(r => items.push({ sem: r, label: r.label, value: r.gpa.toFixed(2), details: hsText('semester_gpa_tag', 'Semester GPA'), time: r.time || 0 }));
   items.sort((a, b) => b.time - a.time);
   historySavedListEl.innerHTML = '';
   if (!items.length) {
-    historySavedListEl.innerHTML = `<div class="formula-empty">${t('history_saved_empty')}</div>`;
+    historySavedListEl.innerHTML = `<div class="formula-empty">${hsText('he_' + historyKind, HISTORY_EMPTY_FALLBACK[historyKind])}</div>`;
     return;
   }
   items.forEach(it => {
@@ -12937,25 +13007,75 @@ function renderHistorySaved() {
     div.querySelector('.history-result').textContent = it.value;
     div.querySelector('.saved-details').textContent = it.details;
     div.querySelector('.history-time').textContent = it.time ? formatHistoryTime(it.time) : '';
-    const text = it.kind === 'sem' ? `${it.label}: GPA ${it.value}` : `${it.label}: ${it.value}` + (it.details ? `\n${it.details}` : '');
+    const text = it.sem ? `${it.label}: GPA ${it.value}` : `${it.label}: ${it.value}` + (it.details ? `\n${it.details}` : '');
     div.querySelector('.hs-share-btn').addEventListener('click', () => shareOrCopyText(text));
     div.querySelector('.hs-whatsapp-btn').addEventListener('click', () => shareToWhatsApp(text));
     div.querySelector('.hs-del-btn').addEventListener('click', () => {
-      if (it.kind === 'sem') { gpaHistory.splice(it.idx, 1); persistGpaHistory(); renderGpaHistory(); }
-      else { savedResults.splice(it.idx, 1); persistSavedResults(); renderSavedResults(); }
+      if (it.sem) { const i = gpaHistory.indexOf(it.sem); if (i >= 0) gpaHistory.splice(i, 1); persistGpaHistory(); renderGpaHistory(); }
+      else { const i = savedResults.indexOf(it.ref); if (i >= 0) savedResults.splice(i, 1); persistSavedResults(); renderSavedResults(); }
     });
     historySavedListEl.appendChild(div);
   });
 }
 
-// Keep the History tab in sync whenever a saved result or a semester is added, changed or removed.
+function clearHistoryKind(k) {
+  savedResults = savedResults.filter(r => savedKindOf(r) !== k);
+  persistSavedResults();
+  if (k === 'gpa') { gpaHistory = []; persistGpaHistory(); renderGpaHistory(); }
+  renderSavedResults();
+}
+
+/* Message shown under the Save buttons: points the student to the History tab. */
+function showSaveNote(noteId, kind) {
+  const el = document.getElementById(noteId);
+  if (!el) return;
+  el.innerHTML = '';
+  const span = document.createElement('span');
+  span.textContent = `\u2713 ${hsText('save_note_saved', 'Saved in History')} \u203A ${kindLabel(kind)}. ${hsText('save_note_check', 'Check it there.')} `;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'save-note-link';
+  btn.textContent = hsText('save_note_open', 'Open History');
+  btn.addEventListener('click', () => {
+    navigateToTab('history', true);
+    setHistoryKind(kind);
+    window.scrollTo(0, 0);
+  });
+  el.appendChild(span);
+  el.appendChild(btn);
+  el.style.display = 'block';
+  clearTimeout(el._noteTimer);
+  el._noteTimer = setTimeout(() => { el.style.display = 'none'; }, 20000);
+}
+
+// Keep the History views and counts in sync whenever anything is added, changed or removed.
 (function () {
-  const baseRenderSaved = renderSavedResults;
-  renderSavedResults = function () { baseRenderSaved(); renderHistorySaved(); };
-  const baseRenderGpa = renderGpaHistory;
-  renderGpaHistory = function () { baseRenderGpa(); renderHistorySaved(); };
+  const baseSaved = renderSavedResults;
+  renderSavedResults = function () { baseSaved(); renderHistorySaved(); };
+  const baseGpa = renderGpaHistory;
+  renderGpaHistory = function () { baseGpa(); renderHistorySaved(); };
+  const baseCalc = renderCalcHistory;
+  renderCalcHistory = function () { baseCalc(); buildHistoryPills(); };
 })();
-renderHistorySaved();
+setHistoryKind('calc');
+
+// Saves made on another page (e.g. the ECAT / MDCAT calculators) arrive through localStorage.
+window.addEventListener('storage', e => {
+  if (e.key === 'calvo_saved_results') {
+    try { savedResults = JSON.parse(e.newValue || '[]'); } catch (err) { savedResults = []; }
+    renderSavedResults();
+  }
+});
+// Links like /#history-merit open the History tab on that view.
+function openHistoryFromHash() {
+  const m = /^#history(?:-(calc|percent|gpa|merit))?$/.exec(location.hash);
+  if (!m) return;
+  navigateToTab('history', true);
+  if (m[1]) setHistoryKind(m[1]);
+  try { history.replaceState(history.state, '', location.pathname + location.search); } catch (err) {}
+}
+openHistoryFromHash();
+window.addEventListener('hashchange', openHistoryFromHash);
 const historyTabBtn = document.querySelector('.topbar-tab[data-tab="history"]');
 if (historyTabBtn) historyTabBtn.addEventListener('click', renderHistorySaved);
 
