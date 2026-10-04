@@ -3810,3 +3810,31 @@ body {
   word-break: break-word;
 }
 .saved-item > .saved-label { min-width: 0; flex: 1 1 auto; padding-right: 10px; }
+
+
+/* ---------- Percentage rows: smaller subject box, bigger number boxes ---------- */
+.grade-subject-row { gap: 8px; }
+.grade-subject-name-input {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 80px;
+  font-size: 0.78rem;
+  padding: 7px 8px;
+}
+.grade-input {
+  width: 74px;
+  padding: 10px 6px;
+  font-size: 1.05rem;
+}
+@media (max-width: 380px) {
+  .grade-subject-row { padding: 12px 10px; gap: 6px; }
+  .grade-subject-name-input { min-width: 76px; }
+  .grade-input { width: 60px; padding: 10px 4px; font-size: 1rem; }
+}
+@media (max-width: 340px) {
+  .grade-subject-row { padding: 10px 8px; gap: 4px; }
+  .grade-subject-name-input { min-width: 60px; }
+  .grade-input { width: 52px; font-size: 0.95rem; }
+  .grade-remove-btn { width: 22px; }
+}
+.grade-input::placeholder { font-size: 0.72rem; font-weight: 600; color: #8a8a8a; }
