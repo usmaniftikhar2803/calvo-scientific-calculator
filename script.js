@@ -12314,27 +12314,24 @@ if (convertFromEl) {
    PERCENTAGE + GPA/CGPA CALCULATOR + SAVE RESULTS
    ============================================ */
 let percentMode = 'basic';
-const percentModePills = document.getElementById('percentModePills');
 const percentPanelBasic = document.getElementById('percentPanelBasic');
 const percentPanelCgpa = document.getElementById('percentPanelCgpa');
 
+/* Three modes: Percentage / GPA (one semester) / CGPA (all semesters). */
+function setPercentMode(id) {
+  if (['basic', 'gpa', 'cgpa'].indexOf(id) < 0) id = 'basic';
+  percentMode = id;
+  document.querySelectorAll('#percentModeGrid .merit-mode').forEach(b => b.classList.toggle('active', b.dataset.mode === id));
+  if (percentPanelBasic) percentPanelBasic.style.display = id === 'basic' ? 'block' : 'none';
+  if (percentPanelCgpa) {
+    percentPanelCgpa.style.display = id === 'basic' ? 'none' : 'block';
+    percentPanelCgpa.classList.toggle('gpa-only', id === 'gpa');
+  }
+  if (id !== 'basic') { try { calcCgpa(); } catch (e) { /* table not built yet */ } }
+}
 function buildPercentPills() {
-  if (!percentModePills) return;
-  const modes = [{ id: 'basic', label: t('mode_percentage') }, { id: 'cgpa', label: t('mode_cgpa') }];
-  percentModePills.innerHTML = '';
-  modes.forEach(m => {
-    const btn = document.createElement('button');
-    btn.className = 'subject-pill' + (m.id === percentMode ? ' active' : '');
-    btn.textContent = m.label;
-    btn.addEventListener('click', () => {
-      percentMode = m.id;
-      document.querySelectorAll('#percentModePills .subject-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      percentPanelBasic.style.display = percentMode === 'basic' ? 'block' : 'none';
-      percentPanelCgpa.style.display = percentMode === 'cgpa' ? 'block' : 'none';
-    });
-    percentModePills.appendChild(btn);
-  });
+  document.querySelectorAll('#percentModeGrid .merit-mode').forEach(b => { b.onclick = () => setPercentMode(b.dataset.mode); });
+  setPercentMode(percentMode);
 }
 buildPercentPills();
 
@@ -12630,7 +12627,7 @@ function restoreCgpaTable() {
 }
 
 function calcCgpa() {
-  const rows = cgpaTableEl.querySelectorAll('.cgpa-row');
+  const rows = Array.from(cgpaTableEl.querySelectorAll('.cgpa-row')).filter(r => percentMode !== 'gpa' || r.dataset.semester === '1');
   let totalPoints = 0, totalCredits = 0, validRows = 0;
   const semesterTotals = {};
   rows.forEach(row => {
@@ -12674,7 +12671,7 @@ if (shareCgpaImgBtn) {
     const scaleVals = Object.values(gradeScales[cgpaScaleEl.value] || { A: 4 });
     const scaleMax = Math.max.apply(null, scaleVals);
     const scaleName = cgpaScaleEl.options[cgpaScaleEl.selectedIndex].text.split(' (')[0];
-    const multi = m.semesters > 1;
+    const multi = m.semesters > 1 || percentMode === 'cgpa';
     const lines = [];
     if (multi) lines.push(['Semesters', String(m.semesters)]);
     lines.push(['Subjects', String(m.subjects)], ['Credit hours', String(m.totalCredits)]);
@@ -12704,7 +12701,13 @@ if (cgpaTableEl) {
   cgpaTableEl.addEventListener('input', (e) => { if (e.target.classList.contains('cgpa-semester-label')) persistCgpaTable(); });
 
   document.getElementById('cgpaAddRow').addEventListener('click', () => {
-    addCgpaRow(cgpaSemesterCount);
+    if (percentMode === 'gpa') {
+      addCgpaRow(1);
+      const sem1 = Array.from(cgpaTableEl.querySelectorAll('.cgpa-row')).filter(r => r.dataset.semester === '1');
+      if (sem1.length > 1) sem1[sem1.length - 2].after(sem1[sem1.length - 1]);
+    } else {
+      addCgpaRow(cgpaSemesterCount);
+    }
     calcCgpa();
   });
   document.getElementById('cgpaAddSemester').addEventListener('click', () => {
@@ -12804,12 +12807,15 @@ if (saveCgpaBtn) {
     const gpa = calcCgpa();
     const parts = [];
     cgpaTableEl.querySelectorAll('.cgpa-row').forEach((r, i) => {
+      if (percentMode === 'gpa' && r.dataset.semester !== '1') return;
       const c = parseFloat(r.querySelector('.cgpa-credit').value);
       if (isNaN(c) || c <= 0) return;
       const nm = r.querySelector('.cgpa-subject').value.trim() || `${t('subject_label')} ${i + 1}`;
       parts.push(`${nm}: ${r.querySelector('.cgpa-grade').value} (${c})`);
     });
-    saveResult(`${t('cgpa_word')} (${parts.length} ${t('subjects_word')})`, gpa.toFixed(2), parts.slice(0, 15).join(', '), 'gpa');
+    const isGpa = percentMode === 'gpa';
+    const word = isGpa ? hsText('gpa_word', 'GPA') : t('cgpa_word');
+    saveResult(`${word} (${parts.length} ${t('subjects_word')})`, gpa.toFixed(2), parts.slice(0, 15).join(', '), isGpa ? 'gpa' : 'cgpa');
   });
 }
 
@@ -12856,7 +12862,7 @@ function saveSemesterHistory() {
   persistGpaHistory();
   renderGpaHistory();
   showToast(hsText('saved_to_history_toast', 'Saved to History'));
-  showSaveNote('cgpaSaveNote', 'gpa');
+  showSaveNote('cgpaSaveNote', 'cgpa');
 }
 
 function renderGpaHistory() {
@@ -12906,17 +12912,19 @@ if (saveSemesterHistoryBtn) saveSemesterHistoryBtn.addEventListener('click', sav
 
 /* ---- History tab: 4 views - Calculator / Percentage / GPA-CGPA / Merit (ECAT etc.) ---- */
 function hsText(key, fallback) { const v = t(key); return (!v || v === key) ? fallback : v; }
-const HISTORY_KINDS = ['calc', 'percent', 'gpa', 'merit'];
-const HISTORY_KIND_FALLBACK = { calc: 'Calculator', percent: 'Percentage', gpa: 'GPA / CGPA', merit: 'Merit (ECAT etc.)' };
+const HISTORY_KINDS = ['calc', 'percent', 'gpa', 'cgpa', 'merit'];
+const HISTORY_KIND_FALLBACK = { calc: 'Calculator', percent: 'Percentage', gpa: 'GPA', cgpa: 'CGPA', merit: 'Merit (ECAT etc.)' };
 const HISTORY_SUB_FALLBACK = {
   calc: 'Every equal-sign result, saved automatically',
   percent: 'Percentage results you saved',
-  gpa: 'GPA, CGPA and semester results you saved',
+  gpa: 'GPA results you saved',
+  cgpa: 'CGPA and semester results you saved',
   merit: 'ECAT, MDCAT, NUST, FAST and other merit results you saved'
 };
 const HISTORY_EMPTY_FALLBACK = {
   percent: 'No percentage saved yet. On the Percent/GPA tab, tap Save Result.',
-  gpa: 'No GPA or CGPA saved yet. On the Percent/GPA tab, tap Save Result or Save Semester(s) to History.',
+  gpa: 'No GPA saved yet. On the Percent/GPA tab, open GPA and tap Save Result.',
+  cgpa: 'No CGPA saved yet. On the Percent/GPA tab, open CGPA and tap Save Result or Save Semester(s) to History.',
   merit: 'No merit result saved yet. Calculate on an ECAT, MDCAT, NUST or FAST page and tap Save to History.'
 };
 let historyKind = 'calc';
@@ -12944,12 +12952,19 @@ if (historyCard && historyListEl) {
 }
 if (historySubtitleEl && historySubtitleEl.hasAttribute('data-i18n')) historySubtitleEl.removeAttribute('data-i18n');
 
-function savedKindOf(r) { return r.kind || (/%\s*$/.test(String(r.value)) ? 'percent' : 'gpa'); }
+function savedKindOf(r) {
+  const lab = String(r.label || '').toUpperCase();
+  if (r.kind === 'gpa' || !r.kind) {
+    if (!r.kind && /%\s*$/.test(String(r.value))) return 'percent';
+    return lab.indexOf('CGPA') === 0 ? 'cgpa' : 'gpa';
+  }
+  return r.kind;
+}
 function kindLabel(k) { return hsText('hk_' + k, HISTORY_KIND_FALLBACK[k]); }
 function historyCount(k) {
   if (k === 'calc') return calcHistory.length;
   let n = savedResults.filter(r => savedKindOf(r) === k).length;
-  if (k === 'gpa') n += gpaHistory.length;
+  if (k === 'cgpa') n += gpaHistory.length;
   return n;
 }
 
@@ -12982,7 +12997,7 @@ function renderHistorySaved() {
   if (historyKind === 'calc') return;
   const items = [];
   savedResults.forEach(r => { if (savedKindOf(r) === historyKind) items.push({ ref: r, label: r.label, value: String(r.value), details: r.details || '', time: r.time || 0 }); });
-  if (historyKind === 'gpa') gpaHistory.forEach(r => items.push({ sem: r, label: r.label, value: r.gpa.toFixed(2), details: hsText('semester_gpa_tag', 'Semester GPA'), time: r.time || 0 }));
+  if (historyKind === 'cgpa') gpaHistory.forEach(r => items.push({ sem: r, label: r.label, value: r.gpa.toFixed(2), details: hsText('semester_gpa_tag', 'Semester GPA'), time: r.time || 0 }));
   items.sort((a, b) => b.time - a.time);
   historySavedListEl.innerHTML = '';
   if (!items.length) {
@@ -13021,7 +13036,7 @@ function renderHistorySaved() {
 function clearHistoryKind(k) {
   savedResults = savedResults.filter(r => savedKindOf(r) !== k);
   persistSavedResults();
-  if (k === 'gpa') { gpaHistory = []; persistGpaHistory(); renderGpaHistory(); }
+  if (k === 'cgpa') { gpaHistory = []; persistGpaHistory(); renderGpaHistory(); }
   renderSavedResults();
 }
 
@@ -13068,7 +13083,7 @@ window.addEventListener('storage', e => {
 });
 // Links like /#history-merit open the History tab on that view.
 function openHistoryFromHash() {
-  const m = /^#history(?:-(calc|percent|gpa|merit))?$/.exec(location.hash);
+  const m = /^#history(?:-(calc|percent|gpa|cgpa|merit))?$/.exec(location.hash);
   if (!m) return;
   navigateToTab('history', true);
   if (m[1]) setHistoryKind(m[1]);
@@ -13101,8 +13116,9 @@ renderSavedResults();
 
 /* ---------- LANGUAGE CHANGE RE-RENDER ---------- */
 function onLanguageChange() {
-  // Percent/GPA mode pills (labels are translated)
-  if (percentModePills) buildPercentPills();
+  // Percentage / GPA / CGPA buttons (their labels are translated through data-i18n)
+  setPercentMode(percentMode);
+  if (typeof buildHistoryPills === 'function') buildHistoryPills();
 
   // Grade (percentage) subject rows — rebuilt from state, values preserved
   renderGradeSubjects();
