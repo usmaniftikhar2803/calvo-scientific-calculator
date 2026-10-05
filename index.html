@@ -655,7 +655,13 @@
 
       <!-- Admission merit calculators (own pages) -->
       <div class="merit-links" id="meritLinks">
-        <div class="merit-links-title">Admission Merit / Aggregate</div>
+        <div class="merit-links-title" data-i18n="pm_title">Calculators</div>
+        <div class="merit-links-grid three" id="percentModeGrid">
+          <button type="button" class="merit-link merit-mode active" data-mode="basic"><b data-i18n="mode_percentage">Percentage</b><span data-i18n="pm_percentage_sub">marks to %</span></button>
+          <button type="button" class="merit-link merit-mode" data-mode="gpa"><b data-i18n="pm_gpa">GPA</b><span data-i18n="pm_gpa_sub">one semester</span></button>
+          <button type="button" class="merit-link merit-mode" data-mode="cgpa"><b data-i18n="pm_cgpa">CGPA</b><span data-i18n="pm_cgpa_sub">all semesters</span></button>
+        </div>
+        <div class="merit-links-title" style="margin-top:14px;">Admission Merit / Aggregate</div>
         <div class="merit-links-grid">
           <a class="merit-link" href="mdcat-aggregate-calculator.html"><b>MDCAT</b><span>MBBS / BDS</span></a>
           <a class="merit-link" href="ecat-aggregate-calculator.html"><b>ECAT</b><span>UET Lahore</span></a>
@@ -667,7 +673,6 @@
 
 
 
-      <div class="subject-pills" id="percentModePills"></div>
 
       <!-- Percentage tools (subject-wise, like a gradebook) -->
       <div id="percentPanelBasic" class="percent-panel">
@@ -699,13 +704,15 @@
         <button class="pill-btn save-btn" id="shareCgpaImgBtn" data-i18n="share_card_btn">&#128444; Share as Image</button>
         <div class="save-note" id="cgpaSaveNote" style="display:none;"></div>
 
-        <!-- Semester-wise GPA history + running CGPA trend -->
+        <!-- Semester-wise GPA history + running CGPA trend (CGPA mode only) -->
+        <div id="cgpaSemesterBlock">
         <div class="saved-header">
           <span data-i18n="gpa_history_title">Semester History &amp; CGPA Trend</span>
           <button class="pill-btn small" id="clearGpaHistoryBtn" data-i18n="clear">Clear</button>
         </div>
         <div class="cgpa-trend-result" id="gpaTrendResult" style="display:none;"></div>
         <div class="formula-list" id="gpaHistoryList"></div>
+        </div>
       </div>
 
       <!-- Saved results (now shown in the History tab; kept hidden so older code still finds it) -->
