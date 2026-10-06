@@ -3998,5 +3998,9 @@ button, a, .key, input, select, textarea, label { touch-action: manipulation; }
 }
 
 /* Home is long on phones: html/body/tab-panel are locked to the viewport, so the panel itself must scroll */
-#tab-home { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--case-border) transparent; }
+#tab-home { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--case-border) transparent; }
 #tab-home .home-wrap { padding-bottom: 48px; }
+
+/* Study Timer: when a label wraps to 2 lines on a narrow phone, keep the
+   input boxes in each row lined up on the same baseline. */
+#timerPomodoroSettings .eq-input-group { justify-content: flex-end; }
