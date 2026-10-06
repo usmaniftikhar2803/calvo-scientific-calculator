@@ -532,6 +532,8 @@ function activateTab(tabName, remember) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   tabBtn.classList.add('active');
   tabPanel.classList.add('active');
+  const moreBtn = document.querySelector('.topbar-more');
+  if (moreBtn) moreBtn.classList.toggle('active', tabBtn.classList.contains('secondary'));
   if (remember) {
     try { sessionStorage.setItem(ACTIVE_TAB_KEY, tabName); } catch (e) {}
   }
@@ -578,8 +580,108 @@ window.addEventListener('popstate', (e) => {
   // back press normally (this is what actually exits the site/app).
 });
 
-document.querySelectorAll('.topbar-tab').forEach(tab => {
+document.querySelectorAll('.topbar-tab[data-tab]').forEach(tab => {
   tab.addEventListener('click', () => navigateToTab(tab.dataset.tab, true));
+});
+
+/* ---------- Home screen + "More" popover (one tool list feeds both) ---------- */
+const HOME_TOOL_GROUPS = [
+  { title: 'Math & Science', items: [
+    { go: 'graph',        gl: 'f(x)', t: 'Graph',         s: 'Plot functions' },
+    { go: 'eqsolver',     gl: 'x\u00B2',   t: 'Equations',     s: 'Solve equations' },
+    { go: 'matrix',       gl: '[ ]',  t: 'Matrix',        s: 'Matrix operations' },
+    { go: 'stats',        gl: '\u03C3',    t: 'Statistics',    s: 'Statistical calculator' },
+    { go: 'programmer',   gl: '</>',  t: 'Programmer',    s: 'Binary, octal and hex' },
+    { go: 'subjecttools', gl: 'H\u2082O',  t: 'Subject Tools', s: 'Chemistry, Physics, Biology, Commerce' },
+  ]},
+  { title: 'Convert & Results', items: [
+    { go: 'convert',    gl: '\u21C4',   t: 'Unit Converter',  s: 'Length, currency and more' },
+    { go: 'percentage', gl: '%',        t: 'Percent & Merit', s: 'MDCAT, ECAT, NUST, FAST-NU' },
+    { href: 'gpa-calculator.html',             gl: 'GPA', t: 'GPA',         s: 'One semester' },
+    { href: 'cgpa-calculator.html',            gl: 'CG',  t: 'CGPA',        s: 'All semesters', onlyMore: true },
+    { href: 'marks-percentage-calculator.html', gl: '%\u2191', t: 'Marks to %', s: 'Subject-wise percentage' },
+  ]},
+  { title: 'Study & Tools', items: [
+    { go: 'quiz',    gl: '?',   t: 'Quiz',    s: 'Test yourself' },
+    { go: 'timer',   gl: '\u25F7', t: 'Timer',   s: 'Study timer' },
+    { go: 'history', gl: '\u21BA', t: 'History', s: 'Your saved results' },
+  ]},
+];
+
+function buildToolGroups(container, forMore) {
+  if (!container) return;
+  container.innerHTML = '';
+  HOME_TOOL_GROUPS.forEach(g => {
+    const items = g.items.filter(it => forMore || !it.onlyMore);
+    if (!items.length) return;
+    const col = document.createElement('div');
+    col.className = 'home-group';
+    const h = document.createElement('h3');
+    h.textContent = g.title;
+    col.appendChild(h);
+    items.forEach(it => {
+      const el = document.createElement(it.href ? 'a' : 'button');
+      el.className = 'tool-row';
+      if (it.href) el.href = it.href; else { el.type = 'button'; el.dataset.go = it.go; }
+      const gl = document.createElement('span');
+      gl.className = 'tool-gl' + (it.gl.length === 1 ? ' sym' : '');
+      gl.textContent = it.gl;
+      const tx = document.createElement('span');
+      tx.className = 'tool-tx';
+      const b = document.createElement('b'); b.textContent = it.t;
+      const sm = document.createElement('small'); sm.textContent = it.s;
+      tx.appendChild(b); tx.appendChild(sm);
+      el.appendChild(gl); el.appendChild(tx);
+      col.appendChild(el);
+    });
+    container.appendChild(col);
+  });
+}
+buildToolGroups(document.getElementById('homeTools'), false);
+buildToolGroups(document.getElementById('morePopTools'), true);
+
+/* "All tools" crumb above every tool page (everything except Calculator / Home) */
+document.querySelectorAll('.tab-panel').forEach(panel => {
+  if (panel.id === 'tab-calc' || panel.id === 'tab-home') return;
+  const wrap = panel.querySelector('.formulas-wrap');
+  if (!wrap || wrap.querySelector('.tool-crumb')) return;
+  const crumb = document.createElement('div');
+  crumb.className = 'tool-crumb';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tool-back';
+  btn.textContent = '\u2190 All tools';
+  btn.addEventListener('click', () => { navigateToTab('home', true); window.scrollTo(0, 0); });
+  crumb.appendChild(btn);
+  wrap.insertBefore(crumb, wrap.firstChild);
+});
+
+const brandBtn = document.getElementById('topbarBrand');
+if (brandBtn) {
+  const goHome = () => { setMoreOpen(false); navigateToTab('home', true); window.scrollTo(0, 0); };
+  brandBtn.addEventListener('click', goHome);
+  brandBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(); } });
+}
+const moreBtn = document.getElementById('topbarMoreBtn');
+const morePop = document.getElementById('morePop');
+const moreBackdrop = document.getElementById('moreBackdrop');
+function setMoreOpen(open) {
+  if (!morePop) return;
+  morePop.classList.toggle('open', open);
+  if (moreBackdrop) moreBackdrop.classList.toggle('open', open);
+  if (moreBtn) moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+if (moreBtn) moreBtn.addEventListener('click', (e) => { e.stopPropagation(); setMoreOpen(!morePop.classList.contains('open')); });
+if (moreBackdrop) moreBackdrop.addEventListener('click', () => setMoreOpen(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMoreOpen(false); });
+
+/* Any [data-go] card / row / skip button on Home or in the More popover */
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('#tab-home [data-go], #morePop [data-go]');
+  if (!el) return;
+  setMoreOpen(false);
+  navigateToTab(el.dataset.go, true);
+  window.scrollTo(0, 0);
 });
 
 // On a page REFRESH (same browser session), reopen on whichever tab was
@@ -589,6 +691,12 @@ let restoredTab = 'calc';
 try {
   const remembered = sessionStorage.getItem(ACTIVE_TAB_KEY);
   if (remembered && document.getElementById('tab-' + remembered)) restoredTab = remembered;
+  else if (!localStorage.getItem('calvo_home_seen') && !location.hash &&
+           !/bot|crawl|spider|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) {
+    restoredTab = 'home';
+    localStorage.setItem('calvo_home_seen', '1');
+    sessionStorage.setItem(ACTIVE_TAB_KEY, 'home');
+  }
 } catch (e) {}
 activateTab(restoredTab, false);
 currentHistoryTab = restoredTab;
