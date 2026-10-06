@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v58';
+const CACHE_VERSION = 'calvo-cache-v60';
 
 const CORE_ASSETS = [
   './',
@@ -30,6 +30,7 @@ const CORE_ASSETS = [
   './how-to-use.html',
   './tools.css',
   './cgpa-calculator.html',
+  './gpa-calculator.html',
   './cgpa-to-percentage-calculator.html',
   './target-cgpa-calculator.html',
   './aggregate-calculator.html',
@@ -59,6 +60,7 @@ const CORE_ASSETS = [
   './quadratic-equation-solver.html',
   './matrix-calculator.html',
   './percentage-calculator.html',
+  './marks-percentage-calculator.html',
   './ohms-law-calculator.html',
   './favicon.ico',
   './favicon-16x16.png',
