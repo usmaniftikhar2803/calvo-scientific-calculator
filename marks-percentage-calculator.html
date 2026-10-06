@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marks to Percentage Calculator (Subject-wise) | Calvo</title>
+<meta name="description" content="Free marks to percentage calculator. Add each subject with obtained and total marks and get your overall percentage instantly. Works for 9th, 10th, FSc, BS and university results.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/marks-percentage-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/marks-percentage-calculator.html">
+<meta property="og:title" content="Marks to Percentage Calculator (Subject-wise) | Calvo">
+<meta property="og:description" content="Free marks to percentage calculator. Add each subject with obtained and total marks and get your overall percentage instantly. Works for 9th, 10th, FSc, BS and university results.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Marks to Percentage Calculator","url":"https://calvoscientificcalculator.online/marks-percentage-calculator.html","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free marks to percentage calculator. Add each subject with obtained and total marks and get your overall percentage instantly. Works for 9th, 10th, FSc, BS and university results."}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Marks to <span>Percentage</span> Calculator</h1>
+<p class="lead">Add your subjects with obtained and total marks. Your overall percentage updates as you type, and your entries are remembered on this device.</p>
+<div class="tool">
+<div id="subs"></div>
+<div class="row"><button class="btn ghost" id="addSub">+ Add subject</button><button class="btn ghost" id="clr">Clear all</button><button class="btn" id="saveHist">Save to History</button></div>
+<div class="note" id="histMsg" style="font-size:12px;color:var(--brand-orange);margin:0 0 10px"></div>
+<div class="result" id="out"><span class="big">0.00%</span></div>
+<div class="row" id="meta" style="margin:10px 0 0;font-size:12px;color:var(--text-dim)"></div>
+</div>
+<h2>Formula</h2>
+<p><b>Percentage = (Total obtained marks &divide; Total marks) &times; 100</b>. Marks of all subjects are added first, then divided by the combined total.</p>
+<h2>Example</h2>
+<p>Mathematics 50/100, Computer 69/100, Urdu 71/100: obtained = 190, total = 300, percentage = 190 &divide; 300 &times; 100 = <b>63.33%</b>.</p>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/cgpa-calculator.html#gpa">GPA Calculator</a><a href="/cgpa-calculator.html#cgpa">CGPA Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/cgpa-to-percentage-calculator.html">CGPA to Percentage</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<style>
+.sub{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:8px}
+.sub input{width:100%}.sub .sl{color:var(--text-dim)}
+@media(max-width:560px){.sub{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto}.sub>:first-child{grid-column:1/-1}}
+</style>
+<script>
+(function(){
+function saveHist(e,id,kind){var ok=false;try{var a=JSON.parse(localStorage.getItem('calvo_saved_results')||'[]');if(!Array.isArray(a))a=[];e.time=Date.now();e.kind=kind;a.unshift(e);localStorage.setItem('calvo_saved_results',JSON.stringify(a.slice(0,300)));ok=true}catch(x){}
+var m=document.getElementById(id);if(m)m.innerHTML=ok?'\u2713 Saved in Calvo \u203A History. <a href="/#history-'+kind+'"><b>Open History</b></a>':'<span style="color:#ff6b6b">Could not save (browser blocks storage).</span>'}
+var KEY='calvo_marks_pct_v1',$=function(i){return document.getElementById(i)};
+function add(v){v=v||{};var d=document.createElement('div');d.className='sub';
+d.innerHTML='<input placeholder="Subject (optional)"><input type="number" min="0" step="any" placeholder="Obtained" inputmode="decimal"><span class="sl">/</span><input type="number" min="0" step="any" placeholder="Total" inputmode="decimal"><button class="btn ghost" title="Remove">&times;</button>';
+var i=d.querySelectorAll('input');i[0].value=v.n||'';i[1].value=v.o==null?'':v.o;i[2].value=v.t==null?100:v.t;
+d.oninput=calc;d.querySelector('button').onclick=function(){d.remove();calc()};$('subs').appendChild(d)}
+function calc(){var o=0,t=0,n=0,rows=[];
+document.querySelectorAll('#subs .sub').forEach(function(r){var i=r.querySelectorAll('input'),a=parseFloat(i[1].value),b=parseFloat(i[2].value);
+rows.push({n:i[0].value,o:i[1].value,t:i[2].value});if(!isNaN(a)&&!isNaN(b)&&b>0){o+=a;t+=b;n++}});
+try{localStorage.setItem(KEY,JSON.stringify(rows))}catch(e){}
+var p=t?(o/t*100):0;$('out').innerHTML='<span class="big">'+p.toFixed(2)+'%</span>';
+$('meta').textContent=n?('Subjects: '+n+'  |  Obtained: '+(+o.toFixed(2))+' / '+(+t.toFixed(2))):''}
+$('addSub').onclick=function(){add({});calc()};
+$('saveHist').onclick=function(){var parts=[],n=0,o=0,t=0;
+document.querySelectorAll('#subs .sub').forEach(function(r,i){var q=r.querySelectorAll('input'),a=parseFloat(q[1].value),b=parseFloat(q[2].value);
+if(!isNaN(a)&&!isNaN(b)&&b>0){n++;o+=a;t+=b;parts.push((q[0].value.trim()||'Subject '+(i+1))+': '+a+'/'+b)}});
+if(!n){$('histMsg').textContent='Enter marks for at least one subject first.';return}
+saveHist({label:'Percentage ('+n+(n===1?' subject)':' subjects)'),value:(o/t*100).toFixed(2)+'%',details:parts.slice(0,15).join(', ')},'histMsg','percent')};
+$('clr').onclick=function(){$('subs').innerHTML='';add({});add({});calc()};
+var saved=[];try{saved=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+if(saved&&saved.length){saved.forEach(add)}else{add({});add({});add({})}
+calc();
+})();
+</script>
+</body>
+</html>
