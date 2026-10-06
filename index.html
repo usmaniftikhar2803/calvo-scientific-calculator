@@ -175,29 +175,31 @@
 
 <!-- ========== NAVBAR ========== -->
 <nav class="topbar">
-  <div class="topbar-brand">
+  <div class="topbar-brand" id="topbarBrand" role="link" tabindex="0" aria-label="Home" title="Home">
     <div class="topbar-mark">=x</div>
     <span class="topbar-name">Calvo</span>
   </div>
   <div class="topbar-tabs-wrap">
     <button class="topbar-tabs-arrow topbar-tabs-arrow-left" id="topbarTabsLeft" aria-label="Scroll tabs left" type="button">&#10094;</button>
     <div class="topbar-tabs" id="topbarTabs">
+      <button class="topbar-tab" data-tab="home">Home</button>
       <button class="topbar-tab active" data-tab="calc" data-i18n="tab_calculator">Calculator</button>
       <button class="topbar-tab" data-tab="formulas" data-i18n="tab_formulas">Formulas</button>
-      <button class="topbar-tab" data-tab="history" data-i18n="tab_history">History</button>
-      <button class="topbar-tab" data-tab="convert" data-i18n="tab_convert">Convert</button>
-      <button class="topbar-tab" data-tab="percentage" data-i18n="tab_percentage">Percent/GPA</button>
+      <button class="topbar-tab secondary" data-tab="history" data-i18n="tab_history">History</button>
+      <button class="topbar-tab secondary" data-tab="convert" data-i18n="tab_convert">Convert</button>
+      <button class="topbar-tab secondary" data-tab="percentage" data-i18n="tab_percentage">Percent/GPA</button>
       <button class="topbar-tab" data-tab="aisolver" data-i18n="tab_aisolver">AI Solver</button>
-      <button class="topbar-tab" data-tab="quiz" data-i18n="tab_quiz">Quiz</button>
-      <button class="topbar-tab" data-tab="graph" data-i18n="tab_graph">Graph</button>
-      <button class="topbar-tab" data-tab="eqsolver" data-i18n="tab_eqsolver">Equations</button>
-      <button class="topbar-tab" data-tab="matrix" data-i18n="tab_matrix">Matrix</button>
-      <button class="topbar-tab" data-tab="programmer" data-i18n="tab_programmer">Programmer</button>
-      <button class="topbar-tab" data-tab="stats" data-i18n="tab_stats">Statistics</button>
-      <button class="topbar-tab" data-tab="subjecttools" data-i18n="tab_subjecttools">Subject Tools</button>
-      <button class="topbar-tab" data-tab="timer" data-i18n="tab_timer">Timer</button>
+      <button class="topbar-tab secondary" data-tab="quiz" data-i18n="tab_quiz">Quiz</button>
+      <button class="topbar-tab secondary" data-tab="graph" data-i18n="tab_graph">Graph</button>
+      <button class="topbar-tab secondary" data-tab="eqsolver" data-i18n="tab_eqsolver">Equations</button>
+      <button class="topbar-tab secondary" data-tab="matrix" data-i18n="tab_matrix">Matrix</button>
+      <button class="topbar-tab secondary" data-tab="programmer" data-i18n="tab_programmer">Programmer</button>
+      <button class="topbar-tab secondary" data-tab="stats" data-i18n="tab_stats">Statistics</button>
+      <button class="topbar-tab secondary" data-tab="subjecttools" data-i18n="tab_subjecttools">Subject Tools</button>
+      <button class="topbar-tab secondary" data-tab="timer" data-i18n="tab_timer">Timer</button>
     </div>
     <button class="topbar-tabs-arrow topbar-tabs-arrow-right" id="topbarTabsRight" aria-label="Scroll tabs right" type="button">&#10095;</button>
+    <button class="topbar-tab topbar-more" id="topbarMoreBtn" type="button" aria-haspopup="true" aria-expanded="false">More &#9662;</button>
   </div>
   <div class="topbar-menu-wrap">
     <button class="topbar-menu-btn" id="topbarMenuBtn" title="More" aria-label="More options">
@@ -247,6 +249,12 @@
     </div>
   </div>
 </nav>
+<div class="more-backdrop" id="moreBackdrop"></div>
+<div class="more-pop" id="morePop" role="menu" aria-label="All tools">
+  <div class="more-pop-head">All tools</div>
+  <div class="home-groups" id="morePopTools"></div>
+</div>
+
 
 <div id="offlineBadge" class="offline-badge" role="status" aria-live="polite">
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
@@ -397,6 +405,29 @@
 </div>
 
 <!-- ========== CALCULATOR TAB ========== -->
+<!-- ========== HOME TAB (What do you want to do?) ========== -->
+<section class="tab-panel" id="tab-home">
+  <div class="home-wrap">
+    <div class="home-hero">
+      <div>
+        <h2>What do you want to do?</h2>
+        <p>Pick a tool to get started. You can switch any time from the top bar.</p>
+      </div>
+      <button type="button" class="home-skip" data-go="calc">Skip to Calculator &rarr;</button>
+    </div>
+
+    <div class="home-primary">
+      <button type="button" class="home-big" data-go="calc"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="3"/><rect x="7.5" y="6" width="9" height="3.5" rx="1"/><path d="M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01"/></svg></span><b>Calculator</b><small>Scientific calculator with history</small><i class="home-arrow">&rarr;</i></button>
+      <a class="home-big" href="cgpa-calculator.html"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.5"/><path d="M22 9v6"/></svg></span><b>CGPA</b><small>Semester-wise CGPA calculator</small><i class="home-arrow">&rarr;</i></a>
+      <button type="button" class="home-big" data-go="formulas"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span><b>Formulas</b><small>2950+ formulas across 7 subjects</small><i class="home-arrow">&rarr;</i></button>
+      <button type="button" class="home-big" data-go="aisolver"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l2.3 6.2 6.2 2.3-6.2 2.3L12 19.5l-2.3-6.2L3.5 11l6.2-2.3z"/><path d="M19 3v4M17 5h4"/></svg></span><b>AI Solver</b><small>Step-by-step math solutions</small><i class="home-arrow">&rarr;</i></button>
+    </div>
+
+    <div class="home-all-title">All tools</div>
+    <div class="home-groups" id="homeTools"></div>
+  </div>
+</section>
+
 <section class="tab-panel active" id="tab-calc">
   <div class="calc-wrap">
     <div class="calculator-case">
