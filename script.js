@@ -540,45 +540,135 @@ function activateTab(tabName, remember) {
   }
 }
 
-/* ---- Mobile/hardware back button: go to Calculator first, exit on next press ----
-   Every tab except "calc" is treated as an "away" screen. Moving away from
-   Calculator pushes one history entry; hopping between other away tabs (or
-   returning to Calculator through the UI) replaces that same entry instead
-   of stacking more, so there's always at most one extra entry to pop. That
-   means: press back once on any tool -> lands on Calculator; press back
-   again on Calculator -> nothing left for our app to intercept, so the
-   phone/browser's normal back action (leaving the site) happens. */
+/* ---- Mobile/hardware back button: step back ONE screen at a time ----
+   Every screen change pushes its own history entry: tab -> tab (Home ->
+   Calculator -> Graph ...) AND inside a tool (Subject Tools: subjects ->
+   tools list -> one tool; Formulas: subjects -> formula list; Quiz: setup ->
+   count -> play; Equations / Matrix: list -> detail). Back therefore walks
+   back through the exact path the user took. Home is the very first entry,
+   so only a back press on Home leaves the site / closes the app. If a popup
+   (More menu, Languages, About) is open, back closes just that popup. */
 let currentHistoryTab = 'home';
-let ignoreNextPopstate = false;
+
+// Sub-screens ("levels") inside each tool tab. depth() = how many levels deep
+// the tab currently is; closeBtn(d) = the on-screen Back button that leaves level d.
+const SUB_SCREENS = {
+  subjecttools: {
+    depth() { return shown('subjectToolsDetailView') ? 2 : shown('subjectToolsListView') ? 1 : 0; },
+    closeBtn(d) { return d >= 2 ? 'subjectToolsBackBtn' : 'subjectToolsListBackBtn'; }
+  },
+  formulas: {
+    depth() { return shown('formulaDetailView') ? 1 : 0; },
+    closeBtn() { return 'formulaBackBtn'; }
+  },
+  eqsolver: {
+    depth() { return shown('eqDetailView') ? 1 : 0; },
+    closeBtn() { return 'eqDetailBackBtn'; }
+  },
+  matrix: {
+    depth() { return shown('matrixDetailView') ? 1 : 0; },
+    closeBtn() { return 'matrixDetailBackBtn'; }
+  },
+  quiz: {
+    depth() {
+      if (shown('quizPlayScreen') || shown('quizResultScreen') || shown('flashcardPlayScreen') || shown('flashcardResultScreen')) return 2;
+      return shown('quizCountScreen') ? 1 : 0;
+    },
+    closeBtn(d) {
+      if (d < 2) return 'quizBackBtn';
+      if (shown('quizPlayScreen')) return 'quizQuitBtn';
+      if (shown('quizResultScreen')) return 'quizRestartBtn';
+      if (shown('flashcardPlayScreen')) return 'flashcardQuitBtn';
+      return 'flashcardRestartBtn';
+    }
+  }
+};
+const subDepthRecorded = {};
+
+function shown(id) {
+  const el = document.getElementById(id);
+  return !!el && el.style.display !== 'none';
+}
+function subDepth(tab) { return SUB_SCREENS[tab] ? SUB_SCREENS[tab].depth() : 0; }
+
+function closeOneSubScreen(tab) {
+  const cfg = SUB_SCREENS[tab];
+  const d = subDepth(tab);
+  if (!cfg || d === 0) return false;
+  const btn = document.getElementById(cfg.closeBtn(d));
+  if (btn) btn.click();
+  return subDepth(tab) < d;
+}
+
+function resetSubScreens(tab) {
+  let guard = 6;
+  while (subDepth(tab) > 0 && guard-- > 0) { if (!closeOneSubScreen(tab)) break; }
+  subDepthRecorded[tab] = subDepth(tab);
+}
+
+function closeOpenPopups() {
+  let closed = false;
+  ['languagesOverlay', 'aboutOverlay', 'morePop', 'moreBackdrop'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('open')) { el.classList.remove('open'); closed = true; }
+  });
+  const mb = document.getElementById('topbarMoreBtn');
+  if (mb) mb.setAttribute('aria-expanded', 'false');
+  return closed;
+}
 
 function navigateToTab(tabName, remember) {
-  const wasAway = currentHistoryTab !== 'home';
-  const goingAway = tabName !== 'home';
-
+  // Opening a tool from outside always starts at its first screen, so the
+  // history entries and the visible screen can never disagree.
+  resetSubScreens(tabName);
+  if (tabName === currentHistoryTab) { activateTab(tabName, remember); return; }
   activateTab(tabName, remember);
-
-  if (goingAway && !wasAway) {
-    history.pushState({ tab: tabName }, '', location.href);
-  } else if (goingAway && wasAway) {
-    history.replaceState({ tab: tabName }, '', location.href);
-  } else if (!goingAway && wasAway) {
-    // Leaving an away tab back to Home via the UI (not the back
-    // button) - pop the extra entry so back-button bookkeeping stays clean.
-    ignoreNextPopstate = true;
-    history.back();
-  }
+  history.pushState({ tab: tabName, sub: 0 }, '', location.href);
   currentHistoryTab = tabName;
 }
 
-window.addEventListener('popstate', (e) => {
-  if (ignoreNextPopstate) { ignoreNextPopstate = false; return; }
-  const state = e.state;
-  if (state && state.tab) {
-    activateTab(state.tab, true);
-    currentHistoryTab = state.tab;
+// A tool moved to a deeper screen (push an entry) or the person used the
+// on-screen Back button (pop the matching entry so history stays in step).
+function syncSubScreens(tab) {
+  const d = subDepth(tab);
+  const r = subDepthRecorded[tab] || 0;
+  if (d === r) return;
+  subDepthRecorded[tab] = d;
+  if (tab !== currentHistoryTab) return;
+  if (d > r) {
+    for (let i = r + 1; i <= d; i++) history.pushState({ tab, sub: i }, '', location.href);
+  } else {
+    history.go(-(r - d));
   }
-  // No state left in our app's history -> let the phone/browser handle the
-  // back press normally (this is what actually exits the site/app).
+}
+Object.keys(SUB_SCREENS).forEach(tab => {
+  const panel = document.getElementById('tab-' + tab);
+  if (!panel || typeof MutationObserver === 'undefined') return;
+  new MutationObserver(() => syncSubScreens(tab)).observe(panel, { subtree: true, attributes: true, attributeFilter: ['style'] });
+});
+
+window.addEventListener('popstate', (e) => {
+  // A popup is open: back only closes it, and we stay on the same screen.
+  if (closeOpenPopups()) {
+    history.pushState({ tab: currentHistoryTab, sub: subDepth(currentHistoryTab) }, '', location.href);
+    return;
+  }
+  const state = e.state;
+  if (!state || !state.tab) return;
+  const tab = state.tab, sub = state.sub || 0;
+  if (tab !== currentHistoryTab) {
+    activateTab(tab, true);
+    currentHistoryTab = tab;
+    window.scrollTo(0, 0);
+  }
+  // Close inner screens until we are as deep as this history entry says.
+  let guard = 6;
+  while (subDepth(tab) > sub && guard-- > 0) { if (!closeOneSubScreen(tab)) break; }
+  subDepthRecorded[tab] = subDepth(tab);
+  // Stale entry (that inner screen is no longer open): skip it.
+  if (subDepth(tab) < sub) history.back();
+  // No entry left (we were on the very first Home entry) -> the phone/browser
+  // handles back normally, which closes the site/app.
 });
 
 document.querySelectorAll('.topbar-tab[data-tab]').forEach(tab => {
@@ -693,11 +783,11 @@ try {
 } catch (e) {}
 activateTab(restoredTab, false);
 currentHistoryTab = restoredTab;
-history.replaceState({ tab: 'home' }, '', location.href);
+history.replaceState({ tab: 'home', sub: 0 }, '', location.href);
 if (restoredTab !== 'home') {
   // Not on Home (bots only) - still push the one extra entry so the back
   // button behaves the same as normal in-app navigation.
-  history.pushState({ tab: restoredTab }, '', location.href);
+  history.pushState({ tab: restoredTab, sub: 0 }, '', location.href);
 }
 
 /* ---------- DISPLAY ---------- */
@@ -17531,4 +17621,84 @@ setTimeout(() => {
   resetTimerState();
   setControlsRunning(false);
   updateNotifyUI();
+})();
+
+/* ============================================
+   PULL-TO-REFRESH (phone / installed app)
+   The page is locked to the screen (html/body overflow:hidden) and each tool
+   scrolls inside its own panel, so the browser's built-in pull-to-refresh
+   often never fires. This adds our own: at the very top of a screen, pull
+   down ~130px and let go to reload. Not active on the Calculator, Graph,
+   Timer, Quiz or Programmer screens (a slip there would lose work).
+   ============================================ */
+(function () {
+  try {
+    const touchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!touchCapable) return;
+    const NO_PULL = ['calc', 'graph', 'timer', 'quiz', 'programmer'];
+    const THRESHOLD = 130;
+    let startY = 0, startX = 0, pulling = false, dist = 0, ind = null;
+
+    function makeIndicator() {
+      ind = document.createElement('div');
+      ind.setAttribute('aria-hidden', 'true');
+      ind.style.cssText = 'position:fixed;top:60px;left:50%;width:38px;height:38px;margin-left:-19px;border-radius:50%;' +
+        'background:#1c1c20;border:2px solid #ff9500;color:#ff9500;font-size:20px;line-height:34px;text-align:center;' +
+        'z-index:99999;pointer-events:none;opacity:0;transform:translateY(-60px);transition:opacity .15s;box-shadow:0 4px 14px rgba(0,0,0,.45);';
+      ind.textContent = '\u21BB';
+      document.body.appendChild(ind);
+    }
+    function hideIndicator() {
+      if (!ind) return;
+      ind.style.transition = 'opacity .15s, transform .2s';
+      ind.style.opacity = '0';
+      ind.style.transform = 'translateY(-60px)';
+    }
+    function popupOpen() {
+      return !!document.querySelector('.app-modal-overlay.open, .more-pop.open, #morePop.open, .ai-crop-overlay.open');
+    }
+
+    document.addEventListener('touchstart', (e) => {
+      pulling = false; dist = 0;
+      if (e.touches.length !== 1 || popupOpen()) return;
+      const panel = document.querySelector('.tab-panel.active');
+      if (!panel) return;
+      if (NO_PULL.indexOf(panel.id.replace('tab-', '')) !== -1) return;
+      const t = e.target;
+      if (t.closest && t.closest('input, textarea, select, canvas, [contenteditable="true"]')) return;
+      // Every scrollable parent must already be at its very top.
+      for (let el = t; el && el !== document.documentElement; el = el.parentElement) {
+        if (el.scrollTop > 0) return;
+      }
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      pulling = true;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (!pulling) return;
+      const dy = e.touches[0].clientY - startY;
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      if (dy <= 0 || dx > dy) { dist = 0; hideIndicator(); return; }
+      dist = dy;
+      if (!ind) makeIndicator();
+      const shift = Math.min(dy * 0.5, 80) - 60;
+      ind.style.transition = 'none';
+      ind.style.opacity = String(Math.min(dy / THRESHOLD, 1));
+      ind.style.transform = 'translateY(' + (shift + 60) + 'px) rotate(' + Math.round(dy * 3) + 'deg)';
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+      if (!pulling) return;
+      pulling = false;
+      if (dist >= THRESHOLD) {
+        if (ind) { ind.style.transition = 'transform .6s linear'; ind.style.transform = 'translateY(60px) rotate(720deg)'; }
+        setTimeout(() => location.reload(), 150);
+      } else {
+        hideIndicator();
+      }
+      dist = 0;
+    }, { passive: true });
+    document.addEventListener('touchcancel', () => { pulling = false; hideIndicator(); }, { passive: true });
+  } catch (err) { /* pull-to-refresh is optional */ }
 })();
