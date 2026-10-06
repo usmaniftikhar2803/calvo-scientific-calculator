@@ -47,7 +47,8 @@
 <div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
 </footer>
 <style>
-.sub{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:8px}
+.sub{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:8px;background:rgba(255,138,31,.10);border:1px solid rgba(255,138,31,.55);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.sub:focus-within{border-color:var(--brand-orange);background:rgba(255,138,31,.14)}
 .sub input{width:100%}.sub .sl{color:var(--text-dim)}
 @media(max-width:560px){.sub{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto}.sub>:first-child{grid-column:1/-1}}
 </style>
@@ -57,7 +58,7 @@ function saveHist(e,id,kind){var ok=false;try{var a=JSON.parse(localStorage.getI
 var m=document.getElementById(id);if(m)m.innerHTML=ok?'\u2713 Saved in Calvo \u203A History. <a href="/#history-'+kind+'"><b>Open History</b></a>':'<span style="color:#ff6b6b">Could not save (browser blocks storage).</span>'}
 var KEY='calvo_marks_pct_v1',$=function(i){return document.getElementById(i)};
 function add(v){v=v||{};var d=document.createElement('div');d.className='sub';
-d.innerHTML='<input placeholder="Subject (optional)"><input type="number" min="0" step="any" placeholder="Obtained" inputmode="decimal"><span class="sl">/</span><input type="number" min="0" step="any" placeholder="Total" inputmode="decimal"><button class="btn ghost" title="Remove">&times;</button>';
+d.innerHTML='<input placeholder="Subject (optional)"><input type="number" min="0" step="any" placeholder="Marks" inputmode="decimal"><span class="sl">/</span><input type="number" min="0" step="any" placeholder="Total" inputmode="decimal"><button class="btn ghost" title="Remove">&times;</button>';
 var i=d.querySelectorAll('input');i[0].value=v.n||'';i[1].value=v.o==null?'':v.o;i[2].value=v.t==null?100:v.t;
 d.oninput=calc;d.querySelector('button').onclick=function(){d.remove();calc()};$('subs').appendChild(d)}
 function calc(){var o=0,t=0,n=0,rows=[];
