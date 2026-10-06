@@ -657,9 +657,9 @@
       <div class="merit-links" id="meritLinks">
         <div class="merit-links-title" data-i18n="pm_title">Calculators</div>
         <div class="merit-links-grid three" id="percentModeGrid">
-          <button type="button" class="merit-link merit-mode active" data-mode="basic"><b data-i18n="mode_percentage">Percentage</b><span data-i18n="pm_percentage_sub">marks to %</span></button>
-          <button type="button" class="merit-link merit-mode" data-mode="gpa"><b data-i18n="pm_gpa">GPA</b><span data-i18n="pm_gpa_sub">one semester</span></button>
-          <button type="button" class="merit-link merit-mode" data-mode="cgpa"><b data-i18n="pm_cgpa">CGPA</b><span data-i18n="pm_cgpa_sub">all semesters</span></button>
+          <a class="merit-link merit-mode" href="marks-percentage-calculator.html"><b data-i18n="mode_percentage">Percentage</b><span data-i18n="pm_percentage_sub">marks to %</span></a>
+          <a class="merit-link merit-mode" href="gpa-calculator.html"><b data-i18n="pm_gpa">GPA</b><span data-i18n="pm_gpa_sub">one semester</span></a>
+          <a class="merit-link merit-mode" href="cgpa-calculator.html"><b data-i18n="pm_cgpa">CGPA</b><span data-i18n="pm_cgpa_sub">all semesters</span></a>
         </div>
         <div class="merit-links-title" style="margin-top:14px;">Admission Merit / Aggregate</div>
         <div class="merit-links-grid">
@@ -674,6 +674,8 @@
 
 
 
+      <!-- Old in-page calculators: calculators now open on their own pages; kept hidden so script.js still finds them -->
+      <div id="legacyPercentPanels" style="display:none;">
       <!-- Percentage tools (subject-wise, like a gradebook) -->
       <div id="percentPanelBasic" class="percent-panel">
         <div class="grade-subject-list" id="gradeSubjectList"></div>
@@ -713,6 +715,8 @@
         <div class="cgpa-trend-result" id="gpaTrendResult" style="display:none;"></div>
         <div class="formula-list" id="gpaHistoryList"></div>
         </div>
+      </div>
+
       </div>
 
       <!-- Saved results (now shown in the History tab; kept hidden so older code still finds it) -->
