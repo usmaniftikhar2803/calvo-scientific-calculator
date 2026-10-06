@@ -12045,24 +12045,25 @@ formulaList.addEventListener('click', (e) => {
     const nameEl = row.querySelector('.formula-name');
     const lookupName = Array.from(nameEl.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim() || name;
     const urduNote = (typeof window.urduNoteFor === 'function') ? window.urduNoteFor(lookupName) : null;
+    const solvedEx = (typeof window.solvedExampleHtml === 'function') ? window.solvedExampleHtml(lookupName, typeof currentLang !== 'undefined' && currentLang === 'ur') : '';
     if (urduNote) {
-      box.innerHTML = `${closeBtnHtml}<div class="urdu-note" dir="rtl" lang="ur">${urduNote}</div><button class="pill-btn explain-ai-btn">${t('explain_ai_more')}</button><div class="explain-ai-out"></div>`;
+      box.innerHTML = `${closeBtnHtml}<div class="urdu-note" dir="rtl" lang="ur">${urduNote}</div>${solvedEx}<button class="pill-btn explain-ai-btn">${t('explain_ai_more')}</button><div class="explain-ai-out"></div>`;
       box.dataset.loaded = '1';
       return;
     }
 
     if (typeof window.calvoExplainFormula !== 'function') {
-      box.innerHTML = `${closeBtnHtml}<span class="ai-error">${t('explain_unavailable')}</span>`;
+      box.innerHTML = `${closeBtnHtml}${solvedEx}<span class="ai-error">${t('explain_unavailable')}</span>`;
       return;
     }
 
-    box.innerHTML = `${closeBtnHtml}<span class="ai-loading">${t('explain_loading')}</span>`;
+    box.innerHTML = `${closeBtnHtml}${solvedEx}<span class="ai-loading">${t('explain_loading')}</span>`;
     window.calvoExplainFormula(name, expr, (result) => {
       if (result.error) {
-        box.innerHTML = `${closeBtnHtml}<span class="ai-error">${result.error}</span>`;
+        box.innerHTML = `${closeBtnHtml}${solvedEx}<span class="ai-error">${result.error}</span>`;
         return;
       }
-      box.innerHTML = `${closeBtnHtml}${result.html}`;
+      box.innerHTML = `${closeBtnHtml}${solvedEx}${result.html}`;
       box.dataset.loaded = '1';
     });
   }
