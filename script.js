@@ -534,6 +534,7 @@ function activateTab(tabName, remember) {
   tabPanel.classList.add('active');
   const moreBtn = document.querySelector('.topbar-more');
   if (moreBtn) moreBtn.classList.toggle('active', tabBtn.classList.contains('secondary'));
+  if (tabName === 'home') tabPanel.scrollTop = 0;
   if (remember) {
     try { sessionStorage.setItem(ACTIVE_TAB_KEY, tabName); } catch (e) {}
   }
@@ -547,12 +548,12 @@ function activateTab(tabName, remember) {
    means: press back once on any tool -> lands on Calculator; press back
    again on Calculator -> nothing left for our app to intercept, so the
    phone/browser's normal back action (leaving the site) happens. */
-let currentHistoryTab = 'calc';
+let currentHistoryTab = 'home';
 let ignoreNextPopstate = false;
 
 function navigateToTab(tabName, remember) {
-  const wasAway = currentHistoryTab !== 'calc';
-  const goingAway = tabName !== 'calc';
+  const wasAway = currentHistoryTab !== 'home';
+  const goingAway = tabName !== 'home';
 
   activateTab(tabName, remember);
 
@@ -561,7 +562,7 @@ function navigateToTab(tabName, remember) {
   } else if (goingAway && wasAway) {
     history.replaceState({ tab: tabName }, '', location.href);
   } else if (!goingAway && wasAway) {
-    // Leaving an away tab back to Calculator via the UI (not the back
+    // Leaving an away tab back to Home via the UI (not the back
     // button) - pop the extra entry so back-button bookkeeping stays clean.
     ignoreNextPopstate = true;
     history.back();
@@ -684,26 +685,18 @@ document.addEventListener('click', (e) => {
   window.scrollTo(0, 0);
 });
 
-// On a page REFRESH (same browser session), reopen on whichever tab was
-// active — sessionStorage survives reloads but is cleared when the tab/
-// browser is closed, so a fresh open of the site always lands on Calculator.
-let restoredTab = 'calc';
+// Everyone (new or returning) lands on the Home screen first. Search-engine
+// bots get the Calculator instead, so Google still indexes the real tool.
+let restoredTab = 'home';
 try {
-  const remembered = sessionStorage.getItem(ACTIVE_TAB_KEY);
-  if (remembered && document.getElementById('tab-' + remembered)) restoredTab = remembered;
-  else if (!localStorage.getItem('calvo_home_seen') && !location.hash &&
-           !/bot|crawl|spider|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) {
-    restoredTab = 'home';
-    localStorage.setItem('calvo_home_seen', '1');
-    sessionStorage.setItem(ACTIVE_TAB_KEY, 'home');
-  }
+  if (/bot|crawl|spider|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) restoredTab = 'calc';
 } catch (e) {}
 activateTab(restoredTab, false);
 currentHistoryTab = restoredTab;
-history.replaceState({ tab: 'calc' }, '', location.href);
-if (restoredTab !== 'calc') {
-  // Landed straight on a sub-tab after a refresh - still push the one
-  // extra entry so the back button behaves the same as normal in-app nav.
+history.replaceState({ tab: 'home' }, '', location.href);
+if (restoredTab !== 'home') {
+  // Not on Home (bots only) - still push the one extra entry so the back
+  // button behaves the same as normal in-app navigation.
   history.pushState({ tab: restoredTab }, '', location.href);
 }
 
