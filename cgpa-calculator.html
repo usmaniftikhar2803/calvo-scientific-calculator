@@ -5,8 +5,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CGPA Calculator (HEC Marks to Grade) — Free | Calvo</title>
-<meta name="description" content="Free GPA and CGPA calculator with the HEC Pakistan table. Enter marks, the grade is picked automatically, add credit hours and get your CGPA.">
+<title>CGPA Calculator (Semester-wise) — Free | Calvo</title>
+<meta name="description" content="Free CGPA calculator. Enter each semester's GPA and total credit hours and get your overall CGPA instantly.">
 <link rel="canonical" href="https://calvoscientificcalculator.online/cgpa-calculator.html">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,68 +14,60 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://calvoscientificcalculator.online/cgpa-calculator.html">
-<meta property="og:title" content="CGPA Calculator (HEC Marks to Grade) — Free | Calvo">
-<meta property="og:description" content="Free GPA and CGPA calculator with the HEC Pakistan table. Enter marks, the grade is picked automatically, add credit hours and get your CGPA.">
+<meta property="og:title" content="CGPA Calculator (Semester-wise) — Free | Calvo">
+<meta property="og:description" content="Free CGPA calculator. Enter each semester's GPA and total credit hours and get your overall CGPA instantly.">
 <meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
 <meta property="og:site_name" content="Calvo">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "CGPA Calculator", "url": "https://calvoscientificcalculator.online/cgpa-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free GPA and CGPA calculator with the HEC Pakistan table. Enter marks, the grade is picked automatically, add credit hours and get your CGPA."}</script>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I find my grade from marks under the HEC system?", "acceptedAnswer": {"@type": "Answer", "text": "Enter your percentage in the marks box. For example, 85 and above is A, 80 to 84 is A-, 75 to 79 is B+, 71 to 74 is B, and below 50 is F, as per the HEC table."}}, {"@type": "Question", "name": "What is the difference between GPA and CGPA?", "acceptedAnswer": {"@type": "Answer", "text": "GPA is your average for one semester. CGPA is the cumulative average across all completed semesters, weighted by credit hours."}}, {"@type": "Question", "name": "How do I calculate CGPA from semester GPAs?", "acceptedAnswer": {"@type": "Answer", "text": "Multiply each semester's GPA by its credit hours, add these values, then divide by the total credit hours of all semesters."}}, {"@type": "Question", "name": "Can I share or save my result?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use Share result to send it on WhatsApp, Copy link to get a link that reopens your entries, or Print / Save as PDF. Your entries are also remembered on this device."}}, {"@type": "Question", "name": "Will my university's result match this calculator?", "acceptedAnswer": {"@type": "Answer", "text": "Not always. Some universities use relative grading or their own marks ranges and grade points. Check your university's grading policy and transcript."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "CGPA Calculator", "url": "https://calvoscientificcalculator.online/cgpa-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free CGPA calculator. Enter each semester's GPA and total credit hours and get your overall CGPA instantly."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I calculate CGPA from semester GPAs?", "acceptedAnswer": {"@type": "Answer", "text": "Multiply each semester's GPA by that semester's total credit hours, add these values, then divide by the total credit hours of all semesters."}}, {"@type": "Question", "name": "What is the difference between GPA and CGPA?", "acceptedAnswer": {"@type": "Answer", "text": "GPA is your average for one semester. CGPA is the cumulative average across all completed semesters, weighted by credit hours."}}, {"@type": "Question", "name": "Can I share or save my CGPA?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use Share result to send it on WhatsApp, Copy link to get a link that reopens your entries, or Print / Save as PDF. Your entries are also remembered on this device."}}]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "CGPA Calculator", "item": "https://calvoscientificcalculator.online/cgpa-calculator.html"}]}</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/tools.css">
+<style>.tool{scroll-margin-top:12px}.tool:target{border-color:var(--brand-orange);box-shadow:0 0 0 1px rgba(255,138,31,.4)}
+.lb{font-size:10px;color:var(--text-dim);letter-spacing:.04em;text-transform:uppercase;align-self:end}
+.subj.lab>:nth-child(-n+5){grid-row:2}
+.subj.lab>.lb{grid-row:1}
+.subj.lab2>:nth-child(-n+3){grid-row:3}
+.subj.lab2>.lb{grid-row:2}
+.subj.lab2>.semt{grid-row:1;grid-column:1/-1;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--brand-orange)}
+.subj.lab>:nth-child(1){grid-column:1}.subj.lab>:nth-child(2){grid-column:2}.subj.lab>:nth-child(3){grid-column:3}.subj.lab>:nth-child(4){grid-column:4}.subj.lab>:nth-child(5){grid-column:5}
+.subj.lab>:nth-child(6){grid-column:1}.subj.lab>:nth-child(7){grid-column:2}.subj.lab>:nth-child(8){grid-column:3}.subj.lab>:nth-child(9){grid-column:4}
+.subj.lab2>:nth-child(1),.subj.lab2>:nth-child(4){grid-column:1}.subj.lab2>:nth-child(2),.subj.lab2>:nth-child(5){grid-column:2}.subj.lab2>:nth-child(3){grid-column:3}
+.subj.lab,.subj.lab2{margin-bottom:12px}
+@media(max-width:560px){
+.subj.lab>:nth-child(1){grid-column:1/-1;grid-row:1}
+.subj.lab>:nth-child(2),.subj.lab>:nth-child(3),.subj.lab>:nth-child(4),.subj.lab>:nth-child(5){grid-row:3}
+.subj.lab>:nth-child(2){grid-column:1}.subj.lab>:nth-child(3){grid-column:2}.subj.lab>:nth-child(4){grid-column:3}.subj.lab>:nth-child(5){grid-column:4}
+.subj.lab>:nth-child(6){display:none}
+.subj.lab>.lb{grid-row:2}
+.subj.lab>:nth-child(7){grid-column:1}.subj.lab>:nth-child(8){grid-column:2}.subj.lab>:nth-child(9){grid-column:3}
+.subj.lab{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) auto}
+}
+</style>
 </head>
 <body>
 <div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
 <main class="doc">
-<h1>CGPA <span>Calculator</span> — HEC Marks to Grade</h1>
-<p class="lead">Enter your marks (out of 100) and the grade is picked automatically from the HEC table. Add credit hours to get your semester GPA, then combine semesters for your overall CGPA. You can share your result, save it as a PDF, and your entries are remembered on this device.</p>
+<h1>CGPA <span>Calculator</span> — All Semesters</h1>
+<p class="lead">Enter each semester's GPA and its total credit hours, add as many semesters as you need, and get your overall CGPA. Don't know a semester's GPA yet? Find it with the <a href="/gpa-calculator.html">GPA calculator</a> first.</p>
 <div class="tool">
-<h2 style="margin-top:0">1. Semester GPA</h2>
-<div class="row"><label>Scale</label><select id="scale"><option value="hec">HEC Official (Pakistan)</option><option value="uet">UET-style (A+ = 4.0)</option><option value="std">Standard 4.0 (A = 4.0)</option></select></div>
-<div class="row" style="font-size:12px;color:var(--text-dim)">Type marks % and the grade fills in by itself. You can still change the grade by hand.</div>
-<div id="subjects"></div>
-<div class="row"><button class="btn ghost" id="addSub">+ Add subject</button><button class="btn" id="calcGpa">Calculate GPA</button></div>
-<div class="result empty" id="gpaOut">Your GPA will appear here.</div>
-</div>
-<div class="tool" style="margin-top:14px">
-<h2 style="margin-top:0">2. Overall CGPA (multiple semesters)</h2>
+<h2 style="margin-top:0">Overall CGPA (semester-wise)</h2>
 <div id="sems"></div>
 <div class="row"><button class="btn ghost" id="addSem">+ Add semester</button><button class="btn" id="calcCgpa">Calculate CGPA</button></div>
 <div class="result empty" id="cgpaOut">Enter each semester's GPA and total credit hours.</div>
 </div>
 <div class="row" id="actions" style="display:none;margin-top:12px">
-<button class="btn" id="imgBtn">Share as image</button><button class="btn ghost" id="shBtn">Share result</button><button class="btn ghost" id="cpBtn">Copy link</button><button class="btn ghost" id="prBtn">Print / Save as PDF</button><span id="actMsg" style="font-size:12px;color:var(--brand-orange)"></span>
+<button class="btn" id="imgBtn">Share as image</button><button class="btn ghost" id="histBtn">Save to History</button><button class="btn ghost" id="shBtn">Share result</button><button class="btn ghost" id="cpBtn">Copy link</button><button class="btn ghost" id="prBtn">Print / Save as PDF</button><span id="actMsg" style="font-size:12px;color:var(--brand-orange)"></span><span id="histMsg" style="font-size:12px;color:var(--brand-orange);flex-basis:100%"></span>
 </div>
-<h2>HEC marks to grade table</h2>
-<p>This is the grading table from the HEC Policy Guidelines for the Uniform Semester System (Pakistan):</p>
-<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:13px">
-<tr style="color:var(--brand-orange);text-align:left"><th style="padding:6px;border-bottom:1px solid var(--panel-border)">Marks %</th><th style="padding:6px;border-bottom:1px solid var(--panel-border)">Grade</th><th style="padding:6px;border-bottom:1px solid var(--panel-border)">Grade points (HEC range)</th></tr>
-<tr><td style="padding:5px 6px">85 and above</td><td>A</td><td>3.67 - 4.00</td></tr>
-<tr><td style="padding:5px 6px">80 - 84</td><td>A-</td><td>3.34 - 3.66</td></tr>
-<tr><td style="padding:5px 6px">75 - 79</td><td>B+</td><td>3.01 - 3.33</td></tr>
-<tr><td style="padding:5px 6px">71 - 74</td><td>B</td><td>2.67 - 3.00</td></tr>
-<tr><td style="padding:5px 6px">68 - 70</td><td>B-</td><td>2.34 - 2.66</td></tr>
-<tr><td style="padding:5px 6px">64 - 67</td><td>C+</td><td>2.01 - 2.33</td></tr>
-<tr><td style="padding:5px 6px">61 - 63</td><td>C</td><td>1.67 - 2.00</td></tr>
-<tr><td style="padding:5px 6px">58 - 60</td><td>C-</td><td>1.31 - 1.66</td></tr>
-<tr><td style="padding:5px 6px">54 - 57</td><td>D+</td><td>1.01 - 1.30</td></tr>
-<tr><td style="padding:5px 6px">50 - 53</td><td>D</td><td>0.10 - 1.00</td></tr>
-<tr><td style="padding:5px 6px">Below 50</td><td>F</td><td>0.00</td></tr></table></div>
-<p style="margin-top:12px">The HEC table has no A+ grade (A covers 85 and above). If your university awards A+, pick it from the grade box by hand; it counts as 4.00. Marks alone always select A at 85+.</p>
-<p>HEC gives a range of grade points for each grade. This calculator uses the top value of each range (A = 4.00, A- = 3.66, B+ = 3.33, B = 3.00, B- = 2.66, C+ = 2.33, C = 2.00, C- = 1.66, D+ = 1.30, D = 1.00), which is the value most universities print on transcripts.</p>
 <h2>How CGPA is calculated</h2>
-<p><b>GPA</b> for one semester = (sum of grade points &times; credit hours) &divide; (total credit hours). <b>CGPA</b> is the same idea across all semesters: multiply each semester's GPA by that semester's credit hours, add them up, and divide by the total credit hours so far.</p>
-<p><b>Example:</b> Subject A: 88 marks = grade A (4.00), 3 credit hours = 12.00 points. Subject B: 72 marks = grade B (3.00), 3 credit hours = 9.00 points. Subject C: 76 marks = grade B+ (3.33), 2 credit hours = 6.66 points. Total = 27.66 points over 8 credit hours, so GPA = 27.66 &divide; 8 = <b>3.46</b>.</p>
-<p><b>Important:</b> HEC recommends this table, but some universities use relative grading (grades on a curve) or their own scale, so the marks needed for a grade can differ. Always check your university's policy. This calculator is for estimating; your official transcript is the final word.</p>
-<p>Related tools: <a href="/cgpa-to-percentage-calculator.html">CGPA to percentage converter</a> and <a href="/target-cgpa-calculator.html">target CGPA calculator</a>. Want to understand the difference in more detail? Read <a href="/blog/gpa-vs-cgpa-difference.html">GPA vs CGPA: What's the difference?</a></p>
+<p><b>CGPA</b> = (&Sigma; semester GPA &times; semester credit hours) &divide; (total credit hours of all semesters).</p>
+<p><b>Example:</b> Semester 1: GPA 3.50 with 18 credit hours = 63.00 points. Semester 2: GPA 3.20 with 18 credit hours = 57.60 points. Total = 120.60 points over 36 credit hours, so CGPA = 120.60 &divide; 36 = <b>3.35</b>.</p>
+<p><b>Important:</b> universities differ in grading scale and in how failed or repeated courses count, so always confirm with your official transcript. This calculator is for estimating.</p>
+<p>Related tools: <a href="/gpa-calculator.html">GPA calculator (one semester)</a>, <a href="/cgpa-to-percentage-calculator.html">CGPA to percentage converter</a> and <a href="/target-cgpa-calculator.html">target CGPA calculator</a>. Read <a href="/blog/gpa-vs-cgpa-difference.html">GPA vs CGPA: What's the difference?</a></p>
 <h2>FAQ</h2>
-<details><summary>How do I find my grade from marks under the HEC system?</summary><p>Enter your percentage in the marks box. For example, 85 and above is A, 80 to 84 is A-, 75 to 79 is B+, 71 to 74 is B, and below 50 is F, as per the HEC table.</p></details>
-<details><summary>What is the difference between GPA and CGPA?</summary><p>GPA is your average for one semester. CGPA is the cumulative average across all completed semesters, weighted by credit hours.</p></details>
-<details><summary>How do I calculate CGPA from semester GPAs?</summary><p>Multiply each semester's GPA by its credit hours, add these values, then divide by the total credit hours of all semesters.</p></details>
-<details><summary>Can I share or save my result?</summary><p>Yes. Use Share result to send it on WhatsApp, Copy link to get a link that reopens your entries, or Print / Save as PDF. Your entries are also remembered on this device.</p></details>
-<details><summary>Will my university's result match this calculator?</summary><p>Not always. Some universities use relative grading or their own marks ranges and grade points. Check your university's grading policy and transcript.</p></details>
+<details><summary>How do I calculate CGPA from semester GPAs?</summary><p>Multiply each semester's GPA by that semester's total credit hours, add these values, then divide by the total credit hours of all semesters.</p></details><details><summary>What is the difference between GPA and CGPA?</summary><p>GPA is your average for one semester. CGPA is the cumulative average across all completed semesters, weighted by credit hours.</p></details><details><summary>Can I share or save my CGPA?</summary><p>Yes. Use Share result to send it on WhatsApp, Copy link to get a link that reopens your entries, or Print / Save as PDF. Your entries are also remembered on this device.</p></details>
 <h2>More Calvo tools</h2>
-<div class="related"><a href="/cgpa-to-percentage-calculator.html">CGPA to Percentage</a><a href="/target-cgpa-calculator.html">Target CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a><a href="/lcm-hcf-calculator.html">LCM & HCF Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/average-calculator.html">Average Calculator</a></div>
+<div class="related"><a href="/gpa-calculator.html">GPA Calculator</a><a href="/cgpa-to-percentage-calculator.html">CGPA to Percentage</a><a href="/target-cgpa-calculator.html">Target CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/marks-percentage-calculator.html">Marks to Percentage</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
 </main>
 <footer>
@@ -126,50 +118,49 @@ var $=function(i){return document.getElementById(i)};
 function scale(){var v=$('scale').value;return v==='hec'?HEC:v==='uet'?UET:STD}
 function gradeFromMarks(m){if(isNaN(m)||m<0||m>100)return null;for(var i=0;i<BANDS.length;i++){if(m>=BANDS[i][0])return BANDS[i][1]}return 'F'}
 function gradeOpts(){return Object.keys(scale()).map(function(g){return '<option>'+g+'</option>'}).join('')}
-function addSub(v){v=v||{};var d=document.createElement('div');d.className='subj';
-d.innerHTML='<input placeholder="Subject (optional)"><input type="number" min="0" max="100" step="any" placeholder="Marks %"><select>'+gradeOpts()+'</select><input type="number" min="0" step="0.5" placeholder="Credit hrs">';
+function addSub(v){v=v||{};var d=document.createElement('div');d.className='subj lab';
+d.innerHTML='<input placeholder="Subject (optional)"><input type="number" min="0" max="100" step="any" placeholder="85" inputmode="decimal"><select>'+gradeOpts()+'</select><input type="number" min="0" step="0.5" placeholder="e.g. 3" inputmode="decimal">';
 var x=document.createElement('button');x.className='btn ghost';x.title='Remove';x.innerHTML='&times;';d.appendChild(x);
+['Subject','Marks %','Grade','Credit hrs'].forEach(function(t){var l=document.createElement('span');l.className='lb';l.textContent=t;d.appendChild(l)});
 d.children[0].value=v.n||'';d.children[1].value=v.m||'';d.children[3].value=(v.c===undefined||v.c===null)?'3':v.c;
 if(v.g){for(var i=0;i<d.children[2].options.length;i++){if(d.children[2].options[i].value===v.g){d.children[2].value=v.g;break}}}
 d.children[1].oninput=function(){var g=gradeFromMarks(parseFloat(d.children[1].value)),s=d.children[2];if(g){for(var i=0;i<s.options.length;i++){if(s.options[i].value===g){s.value=g;break}}}};
 attachGradePicker(d.children[2]);x.onclick=function(){d.remove()};$('subjects').appendChild(d)}
-function addSem(v){v=v||{};var d=document.createElement('div');d.className='subj';d.style.gridTemplateColumns='1fr 1fr auto';
-d.innerHTML='<input type="number" min="0" max="4" step="0.01" placeholder="Semester GPA"><input type="number" min="0" step="0.5" placeholder="Credit hrs"><button class="btn ghost" title="Remove">&times;</button>';
-d.children[0].value=v.g||'';d.children[1].value=v.c||'';d.lastChild.onclick=function(){d.remove()};$('sems').appendChild(d)}
+function renumSems(){document.querySelectorAll('#sems .semt').forEach(function(e,i){e.textContent='Semester '+(i+1)})}
+function addSem(v){v=v||{};var d=document.createElement('div');d.className='subj lab2';d.style.gridTemplateColumns='1fr 1fr auto';
+d.innerHTML='<input type="number" min="0" max="4" step="0.01" placeholder="e.g. 3.50" inputmode="decimal"><input type="number" min="0" step="0.5" placeholder="e.g. 18" inputmode="decimal"><button class="btn ghost" title="Remove semester">&times;</button><span class="lb">Semester GPA</span><span class="lb">Total credit hrs</span><span class="semt"></span>';
+d.children[0].value=v.g||'';d.children[1].value=v.c||'';d.children[2].onclick=function(){d.remove();renumSems()};$('sems').appendChild(d);renumSems()}
 function getState(){var r=[],q=[];document.querySelectorAll('#subjects .subj').forEach(function(e){r.push({n:e.children[0].value,m:e.children[1].value,g:e.children[2].value,c:e.children[3].value})});
-document.querySelectorAll('#sems .subj').forEach(function(e){q.push({g:e.children[0].value,c:e.children[1].value})});return{s:$('scale').value,r:r,q:q}}
-function setState(st){$('scale').value=st.s||'hec';$('subjects').innerHTML='';$('sems').innerHTML='';
-(st.r&&st.r.length?st.r:[{},{},{},{}]).forEach(addSub);(st.q&&st.q.length?st.q:[{},{}]).forEach(addSem)}
+document.querySelectorAll('#sems .subj').forEach(function(e){q.push({g:e.children[0].value,c:e.children[1].value})});return{r:r,q:q}}
+function setState(st){$('sems').innerHTML='';(st.q&&st.q.length?st.q:[{},{},{}]).forEach(addSem)}
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(getState()))}catch(e){}}
 function shareLink(){return location.origin+location.pathname+'#d='+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(getState())))))}
 function msg(t){$('actMsg').textContent=t;setTimeout(function(){$('actMsg').textContent=''},2500)}
-var lastCard=null;
-function done(txt,card){lastRes=txt;lastCard=card||null;$('actions').style.display='flex';saveLocal()}
+var lastCard=null,lastSave=null;
+function saveHist(e,id,kind){var ok=false;try{var a=JSON.parse(localStorage.getItem('calvo_saved_results')||'[]');if(!Array.isArray(a))a=[];e.time=Date.now();e.kind=kind;a.unshift(e);localStorage.setItem('calvo_saved_results',JSON.stringify(a.slice(0,300)));ok=true}catch(x){}
+var m=document.getElementById(id);if(m)m.innerHTML=ok?'\u2713 Saved in Calvo \u203A History. <a href="/#history-'+kind+'"><b>Open History</b></a>':'<span style="color:#ff6b6b">Could not save (browser blocks storage).</span>'}
+function done(txt,card,sv){lastRes=txt;lastCard=card||null;lastSave=sv||null;$('histMsg').innerHTML='';$('actions').style.display='flex';saveLocal()}
 (function init(){var st=null;
 try{var h=location.hash.match(/d=([^&]+)/);if(h)st=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(h[1])))))}catch(e){st=null}
 if(!st){try{var s=localStorage.getItem(KEY);if(s)st=JSON.parse(s)}catch(e){st=null}}
 setState(st||{})})();
-$('scale').onchange=function(){document.querySelectorAll('#subjects .subj').forEach(function(r){var s=r.children[2],prev=s.value;s.innerHTML=gradeOpts();
-var has=function(v){for(var i=0;i<s.options.length;i++){if(s.options[i].value===v)return true}return false};
-if(has(prev))s.value=prev;else{var g=gradeFromMarks(parseFloat(r.children[1].value));if(g&&has(g))s.value=g}})};
-$('addSub').onclick=function(){addSub()};$('addSem').onclick=function(){addSem()};
-$('calcGpa').onclick=function(){var pts=0,cr=0,s=scale();
-document.querySelectorAll('#subjects .subj').forEach(function(r){var g=r.children[2].value,c=parseFloat(r.children[3].value);
-if(!isNaN(c)&&c>0&&g in s){pts+=s[g]*c;cr+=c}});
-var o=$('gpaOut');if(!cr){o.className='result empty';o.textContent='Enter credit hours for at least one subject.';return}
-var gpa=(pts/cr).toFixed(2);
-o.className='result';o.innerHTML='Semester GPA: <span class="big">'+gpa+'</span>\nTotal credit hours: '+cr+' | Total grade points: '+pts.toFixed(2);
-done('My semester GPA is '+gpa+' ('+$('scale').options[$('scale').selectedIndex].text+')',{label:'My GPA',value:gpa,sub:'out of 4.00 ('+$('scale').options[$('scale').selectedIndex].text.split(' (')[0]+')',lines:[['Credit hours',String(cr)],['Grade points',pts.toFixed(2)]],filename:'calvo-gpa',text:'My semester GPA is '+gpa+' - calculated on Calvo: https://calvoscientificcalculator.online/cgpa-calculator.html'})};
-$('calcCgpa').onclick=function(){var pts=0,cr=0;
-document.querySelectorAll('#sems .subj').forEach(function(r){var g=parseFloat(r.children[0].value),c=parseFloat(r.children[1].value);
-if(!isNaN(g)&&!isNaN(c)&&c>0){pts+=g*c;cr+=c}});
-var o=$('cgpaOut');if(!cr){o.className='result empty';o.textContent='Enter GPA and credit hours for at least one semester.';return}
+$('addSem').onclick=function(){addSem()};
+$('calcCgpa').onclick=function(){var pts=0,cr=0,sp=[],bad=0;
+document.querySelectorAll('#sems .subj').forEach(function(r,i){var g=parseFloat(r.children[0].value),k=parseFloat(r.children[1].value);
+if(!isNaN(g)&&!isNaN(k)&&k>0){if(g>4||g<0){bad++;return}pts+=g*k;cr+=k;sp.push({n:i+1,g:g,k:k})}});
+var o=$('cgpaOut');
+if(bad){o.className='result empty';o.textContent='Semester GPA must be between 0 and 4.00.';return}
+if(!cr){o.className='result empty';o.textContent='Enter semester GPA and total credit hours for at least one semester.';return}
 var cg=(pts/cr).toFixed(2);
-o.className='result';o.innerHTML='Overall CGPA: <span class="big">'+cg+'</span>\nTotal credit hours: '+cr;var sc=0;document.querySelectorAll('#sems .subj').forEach(function(r){var g=parseFloat(r.children[0].value),c=parseFloat(r.children[1].value);if(!isNaN(g)&&!isNaN(c)&&c>0)sc++});done('My overall CGPA is '+cg,{label:'My CGPA',value:cg,sub:'out of 4.00',lines:[['Semesters',String(sc)],['Credit hours',String(cr)]],filename:'calvo-cgpa',text:'My overall CGPA is '+cg+' - calculated on Calvo: https://calvoscientificcalculator.online/cgpa-calculator.html'})};
+var det=sp.map(function(x){return 'Semester '+x.n+': GPA '+x.g+' | '+x.k+' credit hrs'}).join('\n');
+o.className='result';o.innerHTML=det+'\n\nTotal credit hours: '+(+cr.toFixed(2))+' | Semesters: '+sp.length+'\nOverall CGPA: <span class="big">'+cg+'</span>';
+var sv={kind:'cgpa',e:{label:'CGPA ('+sp.length+(sp.length===1?' semester)':' semesters)'),value:cg,details:sp.map(function(x){return 'Semester '+x.n+': '+x.g+' ('+x.k+')'}).join(', ')}};
+done('My overall CGPA is '+cg,{label:'My CGPA',value:cg,sub:'out of 4.00',lines:[['Semesters',String(sp.length)],['Credit hours',String(+cr.toFixed(2))]],filename:'calvo-cgpa',text:'My overall CGPA is '+cg+' - calculated on Calvo: https://calvoscientificcalculator.online/cgpa-calculator.html'},sv)};
 $('shBtn').onclick=function(){var t=lastRes+' (calculated on Calvo)',u=shareLink();
 if(navigator.share){navigator.share({title:'My result',text:t,url:u}).catch(function(){})}else{window.open('https://wa.me/?text='+encodeURIComponent(t+' '+u),'_blank')}};
 $('cpBtn').onclick=function(){var u=shareLink();
 if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){msg('Link copied')},function(){prompt('Copy this link',u)})}else{prompt('Copy this link',u)}};
+$('histBtn').onclick=function(){if(lastSave)saveHist(lastSave.e,'histMsg',lastSave.kind)};
 $('prBtn').onclick=function(){window.print()};
 $('imgBtn').onclick=function(){if(lastCard&&window.CalvoShareCard)window.CalvoShareCard.open(lastCard)};
 document.addEventListener('change',saveLocal);
