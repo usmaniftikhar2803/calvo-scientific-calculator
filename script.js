@@ -11967,7 +11967,8 @@ const convertData = {
     units: {
       Meter: 1, Kilometer: 1000, Centimeter: 0.01, Millimeter: 0.001,
       Mile: 1609.344, Yard: 0.9144, Foot: 0.3048, Inch: 0.0254,
-      'Nautical Mile': 1852,
+      'Nautical Mile': 1852, Micrometer: 0.000001, Nanometer: 0.000000001,
+      'Light Year': 9460730472580800,
     }
   },
   Weight: {
@@ -11983,7 +11984,8 @@ const convertData = {
     units: {
       'Square Meter': 1, 'Square Kilometer': 1000000, 'Square Foot': 0.09290304,
       'Square Yard': 0.83612736, Acre: 4046.8564224, Hectare: 10000,
-      Marla: 25.2929, Kanal: 505.857,
+      Marla: 25.2929, Kanal: 505.857, 'Square Centimeter': 0.0001,
+      'Square Inch': 0.00064516, 'Square Mile': 2589988.110336,
     }
   },
   Volume: {
@@ -11991,27 +11993,84 @@ const convertData = {
     units: {
       Liter: 1, Milliliter: 0.001, 'Cubic Meter': 1000, Gallon: 3.785411784,
       Quart: 0.946352946, Pint: 0.473176473, 'Cubic Foot': 28.316846592,
+      'Cubic Centimeter': 0.001, 'Imperial Gallon': 4.54609,
+      'Cup (US)': 0.2365882365, 'Tablespoon (US)': 0.01478676478125,
+      'Teaspoon (US)': 0.00492892159375, 'Fluid Ounce (US)': 0.0295735295625,
     }
   },
   Speed: {
     base: 'mps',
     units: {
       'Meters/sec': 1, 'Kilometers/hour': 0.277778, 'Miles/hour': 0.44704,
-      Knot: 0.514444, 'Feet/sec': 0.3048,
+      Knot: 0.514444, 'Feet/sec': 0.3048, Mach: 340.29, 'Speed of Light': 299792458,
     }
   },
   Time: {
     base: 's',
     units: {
       Second: 1, Minute: 60, Hour: 3600, Day: 86400, Week: 604800,
-      Month: 2629800, Year: 31557600,
+      Month: 2629800, Year: 31557600, Millisecond: 0.001,
+      Microsecond: 0.000001, Nanosecond: 0.000000001,
     }
   },
   Data: {
     base: 'byte',
     units: {
       Byte: 1, Kilobyte: 1024, Megabyte: 1024 ** 2, Gigabyte: 1024 ** 3,
-      Terabyte: 1024 ** 4, Bit: 0.125,
+      Terabyte: 1024 ** 4, Petabyte: 1024 ** 5, Bit: 0.125,
+    }
+  },
+  Pressure: {
+    base: 'Pa',
+    units: {
+      Pascal: 1, Kilopascal: 1000, Megapascal: 1000000, Bar: 100000,
+      Millibar: 100, 'Atmosphere (atm)': 101325, PSI: 6894.757293168,
+      'mmHg (Torr)': 133.322368,
+    }
+  },
+  Energy: {
+    base: 'J',
+    units: {
+      Joule: 1, Kilojoule: 1000, Calorie: 4.184, Kilocalorie: 4184,
+      'Watt-hour': 3600, 'Kilowatt-hour': 3600000, Electronvolt: 1.602176634e-19,
+      BTU: 1055.05585262, 'Foot-pound': 1.3558179483,
+    }
+  },
+  Power: {
+    base: 'W',
+    units: {
+      Watt: 1, Kilowatt: 1000, Megawatt: 1000000,
+      'Horsepower (mechanical)': 745.69987158, 'Horsepower (metric)': 735.49875,
+      'BTU/hour': 0.29307107,
+    }
+  },
+  Force: {
+    base: 'N',
+    units: {
+      Newton: 1, Kilonewton: 1000, Dyne: 0.00001,
+      'Pound-force': 4.4482216152605, 'Kilogram-force': 9.80665,
+    }
+  },
+  Angle: {
+    base: 'deg',
+    units: {
+      Degree: 1, Radian: 180 / Math.PI, Gradian: 0.9, Arcminute: 1 / 60,
+      Arcsecond: 1 / 3600, Revolution: 360,
+    }
+  },
+  Frequency: {
+    base: 'Hz',
+    units: {
+      Hertz: 1, Kilohertz: 1000, Megahertz: 1000000, Gigahertz: 1000000000,
+      'RPM (per minute)': 1 / 60,
+    }
+  },
+  'Fuel Economy': { special: true, fuel: true },
+  'Tola / Maund': {
+    base: 'g',
+    units: {
+      Ratti: 0.121498, Masha: 0.971984, Tola: 11.6638038, Gram: 1,
+      Kilogram: 1000, Seer: 933.105, Maund: 37324.2,
     }
   },
   Currency: { special: true, currency: true },
@@ -12210,6 +12269,11 @@ function buildConvertUnitOptions() {
     });
     convertFromUnitEl.appendChild(cryptoGroupFrom);
     convertToUnitEl.appendChild(cryptoGroupTo);
+  } else if (cat.fuel) {
+    ['Kilometers/Liter', 'Liters/100 km', 'Miles/Gallon (US)', 'Miles/Gallon (UK)'].forEach((u, i) => {
+      convertFromUnitEl.add(new Option(u, u, false, i === 0));
+      convertToUnitEl.add(new Option(u, u, false, i === 1));
+    });
   } else if (cat.special) {
     ['Celsius', 'Fahrenheit', 'Kelvin'].forEach((u, i) => {
       convertFromUnitEl.add(new Option(u, u, false, i === 0));
@@ -12222,6 +12286,19 @@ function buildConvertUnitOptions() {
       convertToUnitEl.add(new Option(u, u, false, i === 1));
     });
   }
+}
+
+function convertFuelEconomy(val, from, to) {
+  // Everything goes through km/L. L/100km is the inverse of the others.
+  let kmpl;
+  if (from === 'Kilometers/Liter') kmpl = val;
+  else if (from === 'Liters/100 km') kmpl = val === 0 ? NaN : 100 / val;
+  else if (from === 'Miles/Gallon (US)') kmpl = val * 0.425143707;
+  else kmpl = val * 0.354006189;
+  if (to === 'Kilometers/Liter') return kmpl;
+  if (to === 'Liters/100 km') return kmpl === 0 ? NaN : 100 / kmpl;
+  if (to === 'Miles/Gallon (US)') return kmpl / 0.425143707;
+  return kmpl / 0.354006189;
 }
 
 function convertTemperature(val, from, to) {
@@ -12247,7 +12324,10 @@ function runConvert() {
   }
 
   let result;
-  if (cat.special) {
+  if (cat.fuel) {
+    result = convertFuelEconomy(val, fromU, toU);
+    if (!isFinite(result)) { convertToEl.value = ''; convertHintEl.textContent = ''; return; }
+  } else if (cat.special) {
     result = convertTemperature(val, fromU, toU);
   } else {
     const baseVal = val * cat.units[fromU];
