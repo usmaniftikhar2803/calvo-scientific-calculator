@@ -57,7 +57,7 @@
 <div class="row"><label>Scale</label><select id="scale"><option value="hec">HEC Official (Pakistan)</option><option value="uet">UET-style (A+ = 4.0)</option><option value="std">Standard 4.0 (A = 4.0)</option></select></div>
 <div class="row" style="font-size:12px;color:var(--text-dim)">Type marks % and the grade fills in by itself. You can still change the grade by hand.</div>
 <div id="subjects"></div>
-<div class="row"><button class="btn ghost" id="addSub">+ Add subject</button><button class="btn" id="calcGpa">Calculate GPA</button></div>
+<div class="row"><button class="btn ghost" id="addSub">+ Add subject</button><button class="btn ghost" id="clrGpa">Clear all</button><button class="btn" id="calcGpa">Calculate GPA</button></div>
 <div class="result empty" id="gpaOut">Your GPA will appear here.</div>
 </div>
 <div class="row" id="actions" style="display:none;margin-top:12px">
@@ -168,6 +168,7 @@ $('scale').onchange=function(){document.querySelectorAll('#subjects .subj').forE
 var has=function(v){for(var i=0;i<s.options.length;i++){if(s.options[i].value===v)return true}return false};
 if(has(prev))s.value=prev;else{var g=gradeFromMarks(parseFloat(r.children[1].value));if(g&&has(g))s.value=g}})};
 $('addSub').onclick=function(){addSub()};
+$('clrGpa').onclick=function(){$('subjects').innerHTML='';[{},{},{},{}].forEach(addSub);var o=$('gpaOut');o.className='result empty';o.textContent='Your GPA will appear here.';lastRes='';lastCard=null;lastSave=null;$('histMsg').innerHTML='';$('actions').style.display='none';saveLocal()};
 $('calcGpa').onclick=function(){var pts=0,cr=0,s=scale();
 document.querySelectorAll('#subjects .subj').forEach(function(r){var g=r.children[2].value,c=parseFloat(r.children[3].value);
 if(!isNaN(c)&&c>0&&g in s){pts+=s[g]*c;cr+=c}});
