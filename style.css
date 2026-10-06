@@ -3861,3 +3861,13 @@ button.merit-link b { font-size: 0.85rem; }
 #percentPanelCgpa.gpa-only #cgpaAddSemester,
 #percentPanelCgpa.gpa-only #saveSemesterHistoryBtn,
 #percentPanelCgpa.gpa-only #cgpaSemesterBlock { display: none !important; }
+
+/* ---------- Mobile fix: card text must never spill out of its box ---------- */
+.merit-link { min-width: 0; overflow: hidden; }
+.merit-link b { max-width: 100%; white-space: nowrap; }
+.merit-link span { max-width: 100%; overflow-wrap: break-word; }
+@media (max-width: 480px) {
+  .merit-link { padding: 9px 6px 9px 8px; }
+  .merit-links-grid.three .merit-link b { font-size: min(0.85rem, 2.9vw); letter-spacing: -0.01em; }
+  .merit-links-grid.three .merit-link span { font-size: min(0.66rem, 2.6vw); }
+}
