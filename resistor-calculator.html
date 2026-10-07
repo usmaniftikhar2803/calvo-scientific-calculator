@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resistor Calculator — Series, Parallel &amp; Colour Code | Calvo</title>
+<meta name="description" content="Free resistor calculator: total resistance in series and parallel with steps, 4/5/6-band resistor colour code decoder, and colour code finder for any value. Includes voltage, current and power.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/resistor-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/resistor-calculator.html">
+<meta property="og:title" content="Resistor Calculator — Series, Parallel &amp; Colour Code | Calvo">
+<meta property="og:description" content="Free resistor calculator: total resistance in series and parallel with steps, 4/5/6-band resistor colour code decoder, and colour code finder for any value. Includes voltage, current and power.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Resistor Calculator", "url": "https://calvoscientificcalculator.online/resistor-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free resistor calculator: total resistance in series and parallel with steps, 4/5/6-band resistor colour code decoder, and colour code finder for any value. Includes voltage, current and power."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I calculate resistors in series?", "acceptedAnswer": {"@type": "Answer", "text": "Add them: R = R1 + R2 + R3. For example 100 ohm, 220 ohm and 330 ohm in series give 650 ohm."}}, {"@type": "Question", "name": "How do I calculate resistors in parallel?", "acceptedAnswer": {"@type": "Answer", "text": "Add the reciprocals and flip the result: 1/R = 1/R1 + 1/R2 + ... For two resistors, R = R1 x R2 / (R1 + R2). The total is always smaller than the smallest resistor."}}, {"@type": "Question", "name": "How do I read a 4-band resistor?", "acceptedAnswer": {"@type": "Answer", "text": "The first two bands are digits, the third is the multiplier and the fourth is the tolerance. Brown, black, red, gold is 10 x 100 = 1000 ohm with 5 percent tolerance."}}, {"@type": "Question", "name": "What does a 5-band resistor mean?", "acceptedAnswer": {"@type": "Answer", "text": "The first three bands are digits, the fourth is the multiplier and the fifth is the tolerance. It shows three digits, so it is more precise than a 4-band resistor."}}, {"@type": "Question", "name": "What are the resistor colour code values?", "acceptedAnswer": {"@type": "Answer", "text": "Black 0, brown 1, red 2, orange 3, yellow 4, green 5, blue 6, violet 7, grey 8, white 9. Gold and silver as multipliers are x0.1 and x0.01, and as tolerance +/-5 and +/-10 percent."}}, {"@type": "Question", "name": "What does 4k7 mean on a resistor?", "acceptedAnswer": {"@type": "Answer", "text": "It is the electronics way of writing 4.7 kilo-ohm, with the letter k in the place of the decimal point. In the same way 2M2 is 2.2 mega-ohm and 4R7 is 4.7 ohm."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Resistor Calculator", "item": "https://calvoscientificcalculator.online/resistor-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Resistor <span>Calculator</span></h1>
+<p class="lead">Add resistors in series or parallel, read a resistor&rsquo;s colour bands, or find the colour bands for a value. Every answer comes with simple steps, one at a time.</p>
+<div class="tool">
+<div class="modes" id="modes" role="tablist"><button type="button" class="active" data-m="sp">Series &amp; Parallel</button><button type="button" data-m="dec">Colour &rarr; value</button><button type="button" data-m="enc">Value &rarr; colour</button></div>
+
+<div id="p-sp">
+<div class="row"><input class="wide" id="vals" type="text" placeholder="e.g. 100, 220, 330  or  4.7k 10k" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Resistor values"></div>
+<div class="chips"><span class="lbl">Try:</span>
+<button type="button" data-v="100, 220, 330">100, 220, 330</button>
+<button type="button" data-v="4.7k, 10k">4.7k, 10k</button>
+<button type="button" data-v="1k, 1k, 1k, 1k">four 1k</button>
+<button type="button" data-v="330, 470" data-volt="9">330, 470 on 9 V</button></div>
+<div class="grid2"><label class="fld">Supply voltage (V), optional<input type="number" id="volt" placeholder="e.g. 12" step="any" inputmode="decimal"></label></div>
+<div class="row"><button class="btn" id="go-sp">Calculate</button></div>
+<p class="note" style="margin:0">Type values separated by commas or spaces. You can write 470, 4.7k, 2.2M, or the electronics style 4k7 and 2M2.</p>
+</div>
+
+<div id="p-dec" style="display:none">
+<div class="cc-sel"><label>Number of bands<select id="nb"><option value="4">4 bands</option><option value="5">5 bands</option><option value="6">6 bands</option></select></label></div>
+<div class="cc-sel" id="bsel"></div>
+<div id="svg-dec"></div>
+<div class="row" style="margin-top:10px"><button class="btn" id="go-dec">Read the value</button></div>
+<p class="note" style="margin:0">Hold the resistor so the bands close together are on the left, and pick the colours from left to right.</p>
+</div>
+
+<div id="p-enc" style="display:none">
+<div class="grid2">
+<label class="fld">Resistance<input type="text" id="ev" value="4.7k" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. 4.7k, 220, 1M"></label>
+<label class="fld">Bands<select id="en"><option value="4">4 bands</option><option value="5">5 bands</option></select></label>
+<label class="fld">Tolerance<select id="et"><option value="5">&plusmn;5% (gold)</option><option value="10">&plusmn;10% (silver)</option><option value="1">&plusmn;1% (brown)</option><option value="2">&plusmn;2% (red)</option><option value="0.5">&plusmn;0.5% (green)</option></select></label>
+</div>
+<div class="row"><button class="btn" id="go-enc">Show the colours</button></div>
+</div>
+
+<div class="result empty" id="out">The answer and its steps will appear here.</div>
+</div>
+
+<h2>Series and parallel formulas</h2>
+<table class="f"><tr><th>Connection</th><th>Total resistance</th><th>Note</th></tr>
+<tr><td>Series</td><td>R = R<sub>1</sub> + R<sub>2</sub> + &hellip;</td><td>Same current in every resistor</td></tr>
+<tr><td>Parallel</td><td>1/R = 1/R<sub>1</sub> + 1/R<sub>2</sub> + &hellip;</td><td>Same voltage across every resistor</td></tr>
+<tr><td>Two in parallel</td><td>R = R<sub>1</sub>R<sub>2</sub> / (R<sub>1</sub> + R<sub>2</sub>)</td><td>Always smaller than the smaller one</td></tr></table>
+<h2>Resistor colour code chart</h2>
+<table class="cctable" id="cctab"><tr><th>Colour</th><th>Digit</th><th>Multiplier</th><th>Tolerance</th><th>Temp. (ppm/&deg;C)</th></tr></table>
+<h2>How to read the bands</h2>
+<p>For 4 bands: the first two are digits, the third is the multiplier, the fourth is the tolerance. For 5 bands the first three are digits. A sixth band gives the temperature coefficient. Example: brown, black, red, gold = 1, 0, &times;100, &plusmn;5% = <b>1 k&Omega; &plusmn;5%</b>.</p>
+<h2>FAQ</h2>
+<details><summary>How do I calculate resistors in series?</summary><p>Add them: R = R1 + R2 + R3. For example 100 ohm, 220 ohm and 330 ohm in series give 650 ohm.</p></details>
+<details><summary>How do I calculate resistors in parallel?</summary><p>Add the reciprocals and flip the result: 1/R = 1/R1 + 1/R2 + ... For two resistors, R = R1 x R2 / (R1 + R2). The total is always smaller than the smallest resistor.</p></details>
+<details><summary>How do I read a 4-band resistor?</summary><p>The first two bands are digits, the third is the multiplier and the fourth is the tolerance. Brown, black, red, gold is 10 x 100 = 1000 ohm with 5 percent tolerance.</p></details>
+<details><summary>What does a 5-band resistor mean?</summary><p>The first three bands are digits, the fourth is the multiplier and the fifth is the tolerance. It shows three digits, so it is more precise than a 4-band resistor.</p></details>
+<details><summary>What are the resistor colour code values?</summary><p>Black 0, brown 1, red 2, orange 3, yellow 4, green 5, blue 6, violet 7, grey 8, white 9. Gold and silver as multipliers are x0.1 and x0.01, and as tolerance +/-5 and +/-10 percent.</p></details>
+<details><summary>What does 4k7 mean on a resistor?</summary><p>It is the electronics way of writing 4.7 kilo-ohm, with the letter k in the place of the decimal point. In the same way 2M2 is 2.2 mega-ohm and 4R7 is 4.7 ohm.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/projectile-motion-calculator.html">Projectile Motion Calculator</a><a href="/physical-constants.html">Physical Constants & SI Prefixes</a><a href="/10th-class-physics-formulas.html">10th Class Physics Formulas</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/physics-tools.js"></script>
+<script src="/simple-steps.js"></script>
+<script>
+
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function wa(t,url){return '<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(t+' - '+url)+'">Share on WhatsApp</a>'}
+function copyBtn(id,text){var b=$(id);if(!b)return;b.onclick=function(){var x=this;try{navigator.clipboard.writeText(text).then(function(){x.textContent='Copied'})}catch(e){x.textContent='Copy not supported'}}}
+
+var P=window.CalvoPhys,mode='sp';
+var DIG=['black','brown','red','orange','yellow','green','blue','violet','grey','white'],MULT=DIG.concat(['gold','silver']),TOLC=['brown','red','green','blue','violet','grey','gold','silver'],TEMPC=['brown','red','orange','yellow','blue','violet'];
+var DEF={4:['brown','black','red','gold'],5:['brown','black','black','brown','brown'],6:['brown','black','black','brown','brown','brown']};
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+/* chart table */
+(function(){var t=$('cctab'),h='';P.COLORS.forEach(function(c){var d=P.DIGIT[c],m=P.MUL[c],tl=P.TOL[c],tp=P.TEMP[c];h+='<tr><td><span class="swatch" style="background:'+P.HEX[c]+'"></span>'+cap(c)+'</td><td>'+(d===undefined?'&ndash;':d)+'</td><td>'+(m===undefined?'&ndash;':'&times;'+P.sig(Math.pow(10,m),3))+'</td><td>'+(tl===undefined?'&ndash;':'&plusmn;'+tl+'%')+'</td><td>'+(tp===undefined?'&ndash;':tp)+'</td></tr>'});t.insertAdjacentHTML('beforeend',h)})();
+function resSVG(bands){
+ var n=bands.length,pos={1:[150],4:[78,104,130,206],5:[74,96,118,140,206],6:[70,90,110,130,150,206]}[n]||[78,104,130,206];
+ var o='<svg class="plot" viewBox="0 0 300 90" role="img" aria-label="Resistor with colour bands" style="max-width:420px"><line x1="8" y1="45" x2="292" y2="45" stroke="#aaa" stroke-width="3"/><rect x="48" y="14" width="204" height="62" rx="26" fill="#d9c7a1"/>';
+ bands.forEach(function(c,i){var x=pos[i];o+='<rect x="'+(x-5)+'" y="'+(i===n-1&&n>1?14:16)+'" width="10" height="'+(i===n-1&&n>1?62:58)+'" fill="'+P.HEX[c]+'" stroke="'+(c==='black'?'#555':'#00000033')+'" stroke-width="1"/>'});
+ return o+'</svg>';
+}
+function opts(list,sel){return list.map(function(c){return '<option value="'+c+'"'+(c===sel?' selected':'')+'>'+cap(c)+'</option>'}).join('')}
+function buildBands(){
+ var n=Number($('nb').value),d=DEF[n],nd=n===4?2:3,h='',i;
+ for(i=0;i<nd;i++)h+='<label>Digit '+(i+1)+'<select data-b="'+i+'">'+opts(DIG,d[i])+'</select></label>';
+ h+='<label>Multiplier<select data-b="'+nd+'">'+opts(MULT,d[nd])+'</select></label><label>Tolerance<select data-b="'+(nd+1)+'">'+opts(TOLC,d[nd+1])+'</select></label>';
+ if(n===6)h+='<label>Temp. coeff.<select data-b="'+(nd+2)+'">'+opts(TEMPC,d[nd+2])+'</select></label>';
+ $('bsel').innerHTML=h;$('bsel').querySelectorAll('select').forEach(function(s){s.onchange=preview});preview();
+}
+function curBands(){var a=[];$('bsel').querySelectorAll('select').forEach(function(s){a.push(s.value)});return a}
+function preview(){var b=curBands();$('svg-dec').innerHTML=resSVG(b)}
+function setMode(m){
+ mode=m;['sp','dec','enc'].forEach(function(k){$('p-'+k).style.display=k===m?'block':'none'});
+ document.querySelectorAll('#modes button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-m')===m)});
+ $('out').className='result empty';$('out').textContent='The answer and its steps will appear here.';
+}
+function show(r,kind,ans,txt,share){
+ var out=$('out');
+ out.className='result';
+ out.innerHTML='<div class="blk"><h4>Step by step</h4><div id="ssmount"></div></div><p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa(share+' (Calvo)','https://calvoscientificcalculator.online/resistor-calculator.html')+'</p>';
+ copyBtn('cp',txt);window.SimpleSteps.mount($('ssmount'),{steps:r.steps,kind:kind,answerHtml:ans});
+}
+function runSP(){
+ var out=$('out'),L=P.parseList($('vals').value);
+ if(L.bad.length){out.className='result';out.innerHTML='<span class="err">I could not read: '+esc(L.bad.join(', '))+'. Use values like 470, 4.7k, 2.2M or 4k7.</span>';return}
+ var V=$('volt').value.trim()===''?null:Number($('volt').value),r=P.seriesParallel(L.vals,V);
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var f=P.fmtR,ah='<div class="stats"><div class="stat"><span>In series</span><b>'+f(r.series)+'</b></div><div class="stat"><span>In parallel</span><b>'+f(r.parallel)+'</b></div></div>';
+ function tab(rows,h){return '<table class="f"><tr><th>Resistor</th><th>Voltage</th><th>Current</th><th>Power</th></tr>'+rows.map(function(x){return '<tr><td>'+x.name+'</td><td>'+P.sig(x.v,4)+' V</td><td>'+P.sig(x.i,4)+' A</td><td>'+P.sig(x.p,4)+' W</td></tr>'}).join('')+'</table>'}
+ if(r.seriesRows)ah+='<h4>Series with '+P.sig(r.V,4)+' V</h4><div class="note">Total current '+P.sig(r.seriesI,4)+' A, total power '+P.sig(r.seriesP,4)+' W</div>'+tab(r.seriesRows);
+ if(r.parRows)ah+='<h4>Parallel with '+P.sig(r.V,4)+' V</h4><div class="note">Total current '+P.sig(r.parI,4)+' A, total power '+P.sig(r.parP,4)+' W</div>'+tab(r.parRows);
+ show(r,'resistor',ah,'Series '+f(r.series)+', parallel '+f(r.parallel),'Resistors '+$('vals').value+': series '+f(r.series)+', parallel '+f(r.parallel));
+}
+function runDec(){
+ var out=$('out'),r=P.colorDecode(curBands());
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var ah='<div class="ans">'+esc(r.text)+'</div>'+resSVG(r.bands)+'<div class="note" style="margin-top:6px">The real value is between '+P.fmtR(r.lo)+' and '+P.fmtR(r.hi)+(r.temp?'. Temperature coefficient '+r.temp+' ppm/&deg;C':'')+'.</div>';
+ show(r,'colorcode',ah,r.text,'Resistor '+r.bands.join(', ')+' = '+r.text);
+}
+function runEnc(){
+ var out=$('out'),v=P.parseR($('ev').value);
+ if(v===null){out.className='result';out.innerHTML='<span class="err">I could not read that value. Try 4.7k, 220 or 1M.</span>';return}
+ var r=P.colorEncode(v,Number($('en').value),Number($('et').value));
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var ah='<div class="ans">'+r.bands.map(function(c){return '<span class="swatch" style="background:'+P.HEX[c]+'"></span>'+cap(c)}).join(' &nbsp; ')+'</div>'+resSVG(r.bands)+(r.exact?'':'<div class="note">Nearest value these bands can show: '+P.fmtR(r.coded)+'.</div>');
+ show(r,'colorcode',ah,r.text,'Resistor '+P.fmtR(v)+' colour bands: '+r.bands.join(', '));
+}
+document.querySelectorAll('#modes button').forEach(function(b){b.onclick=function(){setMode(b.getAttribute('data-m'))}});
+$('go-sp').onclick=runSP;$('go-dec').onclick=runDec;$('go-enc').onclick=runEnc;
+['vals','volt'].forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')runSP()})});
+$('ev').addEventListener('keydown',function(e){if(e.key==='Enter')runEnc()});
+$('nb').onchange=buildBands;
+document.querySelectorAll('#p-sp .chips button').forEach(function(b){b.onclick=function(){$('vals').value=b.getAttribute('data-v');$('volt').value=b.getAttribute('data-volt')||'';runSP()}});
+buildBands();
+var q=(location.hash||'').replace('#','');if(q==='colour'||q==='color')setMode('dec');
+
+</script>
+</body>
+</html>

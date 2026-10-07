@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projectile Motion Calculator — Range, Height, Time of Flight | Calvo</title>
+<meta name="description" content="Free projectile motion calculator with steps and a path diagram. Find range, maximum height, time of flight and landing speed from speed, angle and starting height. Works on Earth, Moon and Mars.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/projectile-motion-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/projectile-motion-calculator.html">
+<meta property="og:title" content="Projectile Motion Calculator — Range, Height, Time of Flight | Calvo">
+<meta property="og:description" content="Free projectile motion calculator with steps and a path diagram. Find range, maximum height, time of flight and landing speed from speed, angle and starting height. Works on Earth, Moon and Mars.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Projectile Motion Calculator", "url": "https://calvoscientificcalculator.online/projectile-motion-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free projectile motion calculator with steps and a path diagram. Find range, maximum height, time of flight and landing speed from speed, angle and starting height. Works on Earth, Moon and Mars."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do you find the range of a projectile?", "acceptedAnswer": {"@type": "Answer", "text": "From level ground use R = v0^2 x sin(2 theta) / g. If it starts from a height h0, find the time of flight T = (vy + sqrt(vy^2 + 2 g h0)) / g and then R = vx x T."}}, {"@type": "Question", "name": "What angle gives the maximum range?", "acceptedAnswer": {"@type": "Answer", "text": "45 degrees, when the ball starts and lands at the same height and air resistance is ignored. Launching from a height makes the best angle a little smaller than 45 degrees."}}, {"@type": "Question", "name": "What is the time of flight of a projectile?", "acceptedAnswer": {"@type": "Answer", "text": "From the ground, T = 2 v0 sin(theta) / g. It is the time between launch and landing."}}, {"@type": "Question", "name": "What is the maximum height of a projectile?", "acceptedAnswer": {"@type": "Answer", "text": "H = h0 + (v0 sin(theta))^2 / (2 g). The ball is highest when its upward speed becomes zero."}}, {"@type": "Question", "name": "Does mass change the path of a projectile?", "acceptedAnswer": {"@type": "Answer", "text": "No. Without air resistance every object follows the same path, whatever its mass, because gravity speeds up all objects equally."}}, {"@type": "Question", "name": "Can I use it for objects thrown downwards or off a cliff?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use a negative angle to throw downwards, or enter a starting height for a cliff or table. Angle 0 means thrown straight sideways."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Projectile Motion Calculator", "item": "https://calvoscientificcalculator.online/projectile-motion-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Projectile Motion <span>Calculator</span></h1>
+<p class="lead">Find the time of flight, maximum height, range and landing speed of anything thrown or launched. Enter the speed, angle and starting height. Calvo shows a picture of the path and explains every step, one at a time.</p>
+<div class="tool">
+<h3>Projectile motion</h3>
+<div class="grid2">
+<label class="fld">Launch speed v&#8320; (m/s)<input type="number" id="v0" value="20" step="any" inputmode="decimal"></label>
+<label class="fld">Angle &theta; (degrees)<input type="number" id="th" value="45" step="any" inputmode="decimal"></label>
+<label class="fld">Starting height h&#8320; (m)<input type="number" id="h0" value="0" step="any" inputmode="decimal"></label>
+<label class="fld">Gravity g<select id="gsel"><option value="9.81">Earth 9.81 m/s&sup2;</option><option value="9.80665">Earth (standard) 9.80665</option><option value="1.62">Moon 1.62</option><option value="3.71">Mars 3.71</option><option value="24.79">Jupiter 24.79</option><option value="custom">Custom&hellip;</option></select></label>
+<label class="fld" id="gcwrap" style="display:none">Custom g (m/s&sup2;)<input type="number" id="gc" value="9.81" step="any" inputmode="decimal"></label>
+<label class="fld">Time t (s), optional<input type="number" id="tq" placeholder="e.g. 1.5" step="any" inputmode="decimal"></label>
+</div>
+<div class="chips"><span class="lbl">Try:</span>
+<button type="button" data-v="20" data-a="45" data-h="0">20 m/s at 45&deg;</button>
+<button type="button" data-v="50" data-a="30" data-h="10">cannon from a 10 m cliff</button>
+<button type="button" data-v="15" data-a="0" data-h="20">thrown sideways from 20 m</button>
+<button type="button" data-v="10" data-a="90" data-h="0">straight up</button>
+<button type="button" data-v="25" data-a="60" data-h="0" data-g="1.62">on the Moon</button></div>
+<div class="row"><button class="btn" id="go">Calculate</button><button class="btn ghost" id="clr">Reset</button></div>
+<p class="note" style="margin:0">Air resistance is ignored (ideal projectile). Use a negative angle to throw downwards. Speeds in m/s, distances in metres.</p>
+<div class="result empty" id="out">The answer, a picture of the path and the steps will appear here.</div>
+</div>
+<h2>The formulas</h2>
+<table class="f"><tr><th>Quantity</th><th>Formula (from the ground)</th><th>With starting height h&#8320;</th></tr>
+<tr><td>Sideways speed</td><td>v<sub>x</sub> = v&#8320; cos&theta;</td><td>same</td></tr>
+<tr><td>Up speed</td><td>v<sub>y</sub> = v&#8320; sin&theta;</td><td>same</td></tr>
+<tr><td>Time to top</td><td>t = v<sub>y</sub> / g</td><td>same</td></tr>
+<tr><td>Maximum height</td><td>H = v<sub>y</sub>&sup2; / 2g</td><td>H = h&#8320; + v<sub>y</sub>&sup2; / 2g</td></tr>
+<tr><td>Time of flight</td><td>T = 2v<sub>y</sub> / g</td><td>T = (v<sub>y</sub> + &radic;(v<sub>y</sub>&sup2; + 2gh&#8320;)) / g</td></tr>
+<tr><td>Range</td><td>R = v&#8320;&sup2; sin 2&theta; / g</td><td>R = v<sub>x</sub> &times; T</td></tr></table>
+<h2>Worked example</h2>
+<p>A ball is kicked at 20 m/s at 45&deg; from the ground (g = 9.81). Then v<sub>x</sub> = v<sub>y</sub> = 14.14 m/s. Time to the top = 14.14 / 9.81 = 1.44 s, so the total time is 2.88 s. Maximum height = 14.14&sup2; / (2 &times; 9.81) = 10.19 m. Range = 14.14 &times; 2.88 = <b>40.77 m</b>.</p>
+<h2>Useful facts</h2>
+<p>On level ground the longest range is at <b>45&deg;</b>. Two angles that add up to 90&deg; (like 30&deg; and 60&deg;) give the same range, but the higher angle stays in the air longer. On the Moon, with gravity about six times smaller, the same throw goes about six times farther.</p>
+<h2>FAQ</h2>
+<details><summary>How do you find the range of a projectile?</summary><p>From level ground use R = v0^2 x sin(2 theta) / g. If it starts from a height h0, find the time of flight T = (vy + sqrt(vy^2 + 2 g h0)) / g and then R = vx x T.</p></details>
+<details><summary>What angle gives the maximum range?</summary><p>45 degrees, when the ball starts and lands at the same height and air resistance is ignored. Launching from a height makes the best angle a little smaller than 45 degrees.</p></details>
+<details><summary>What is the time of flight of a projectile?</summary><p>From the ground, T = 2 v0 sin(theta) / g. It is the time between launch and landing.</p></details>
+<details><summary>What is the maximum height of a projectile?</summary><p>H = h0 + (v0 sin(theta))^2 / (2 g). The ball is highest when its upward speed becomes zero.</p></details>
+<details><summary>Does mass change the path of a projectile?</summary><p>No. Without air resistance every object follows the same path, whatever its mass, because gravity speeds up all objects equally.</p></details>
+<details><summary>Can I use it for objects thrown downwards or off a cliff?</summary><p>Yes. Use a negative angle to throw downwards, or enter a starting height for a cliff or table. Angle 0 means thrown straight sideways.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/physical-constants.html">Physical Constants & SI Prefixes</a><a href="/resistor-calculator.html">Resistor Calculator (series, parallel, colour code)</a><a href="/1st-year-physics-formulas.html">1st Year Physics Formulas</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/physics-tools.js"></script>
+<script src="/simple-steps.js"></script>
+<script>
+
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function wa(t,url){return '<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(t+' - '+url)+'">Share on WhatsApp</a>'}
+function copyBtn(id,text){var b=$(id);if(!b)return;b.onclick=function(){var x=this;try{navigator.clipboard.writeText(text).then(function(){x.textContent='Copied'})}catch(e){x.textContent='Copy not supported'}}}
+
+var P=window.CalvoPhys;
+function num(id){var v=$(id).value.trim();return v===''?null:Number(v)}
+function curG(){return $('gsel').value==='custom'?Number($('gc').value):Number($('gsel').value)}
+$('gsel').onchange=function(){$('gcwrap').style.display=this.value==='custom'?'flex':'none'};
+function nice(range){var r=range/5,p=Math.pow(10,Math.floor(Math.log10(r))),m=r/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
+function plot(r){
+ var W=640,H=300,L=54,B=36,T=18,Rt=18,pw=W-L-Rt,ph=H-B-T;
+ var xmax=r.R>0?r.R*1.08:Math.max(r.H*0.6,1),ymax=Math.max(r.H,1e-9)*1.18;
+ var s=Math.min(pw/xmax,ph/ymax),sx=function(x){return L+x*s},sy=function(y){return T+ph-y*s};
+ var xs=nice(pw/s),ys=nice(ph/s),o='<svg class="plot" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Path of the projectile">';
+ for(var gx=0;gx*s<=pw+1;gx+=xs){o+='<line x1="'+sx(gx)+'" y1="'+T+'" x2="'+sx(gx)+'" y2="'+(T+ph)+'" stroke="#2a2a30"/><text x="'+sx(gx)+'" y="'+(H-18)+'" fill="#9c968a" font-size="11" text-anchor="middle">'+P.plainNum(gx,3)+'</text>'}
+ for(var gy=0;gy*s<=ph+1;gy+=ys){o+='<line x1="'+L+'" y1="'+sy(gy)+'" x2="'+(L+pw)+'" y2="'+sy(gy)+'" stroke="#2a2a30"/><text x="'+(L-6)+'" y="'+(sy(gy)+4)+'" fill="#9c968a" font-size="11" text-anchor="end">'+P.plainNum(gy,3)+'</text>'}
+ o+='<line x1="'+L+'" y1="'+sy(0)+'" x2="'+(L+pw)+'" y2="'+sy(0)+'" stroke="#9c968a" stroke-width="1.5"/>';
+ if(r.h0>0)o+='<rect x="'+(L-10)+'" y="'+sy(r.h0)+'" width="10" height="'+(r.h0*s)+'" fill="#3a3a42"/>';
+ o+='<polyline fill="none" stroke="#ff8a1f" stroke-width="2.5" points="'+r.pts.map(function(p){return sx(p[0]).toFixed(1)+','+sy(p[1]).toFixed(1)}).join(' ')+'"/>';
+ o+='<circle cx="'+sx(0)+'" cy="'+sy(r.h0)+'" r="5" fill="#ff8a1f"/>';
+ if(r.vy>0){o+='<circle cx="'+sx(r.xTop)+'" cy="'+sy(r.H)+'" r="5" fill="#f6d83a"/><text x="'+sx(r.xTop)+'" y="'+(sy(r.H)-9)+'" fill="#f6d83a" font-size="12" text-anchor="middle">top '+P.plainNum(r.H,4)+' m</text>'}
+ o+='<circle cx="'+sx(r.R)+'" cy="'+sy(0)+'" r="5" fill="#5fd38a"/><text x="'+Math.min(sx(r.R),W-60)+'" y="'+(sy(0)-10)+'" fill="#5fd38a" font-size="12" text-anchor="middle">lands '+P.plainNum(r.R,4)+' m</text>';
+ if(r.at&&!r.at.landed){o+='<circle cx="'+sx(r.at.x)+'" cy="'+sy(r.at.y)+'" r="5" fill="#fff"/><text x="'+sx(r.at.x)+'" y="'+(sy(r.at.y)-9)+'" fill="#fff" font-size="12" text-anchor="middle">t = '+P.plainNum(r.at.t,3)+' s</text>'}
+ o+='<text x="'+(L+pw/2)+'" y="'+(H-3)+'" fill="#9c968a" font-size="11" text-anchor="middle">distance (m)</text><text x="12" y="'+(T+ph/2)+'" fill="#9c968a" font-size="11" text-anchor="middle" transform="rotate(-90 12 '+(T+ph/2)+')">height (m)</text></svg>';
+ return o;
+}
+function stat(l,v){return '<div class="stat"><span>'+l+'</span><b>'+v+'</b></div>'}
+function run(){
+ var out=$('out'),v0=num('v0'),th=num('th'),h0=num('h0'),g=curG(),tq=num('tq');
+ if(v0===null||th===null){out.className='result empty';out.textContent='Enter the launch speed and the angle.';return}
+ var r=P.projectile(v0,th,h0===null?0:h0,g,tq);
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var n=function(x){return P.sig(x,5)};
+ var ah='<div class="stats">'+stat('Time of flight',n(r.T)+' s')+stat('Maximum height',n(r.H)+' m')+stat('Range',n(r.R)+' m')+stat('Time to the top',n(r.tUp)+' s')+stat('Landing speed',n(r.vEnd)+' m/s')+stat('Landing angle',n(r.angEnd)+'&deg; below horizontal')+'</div>';
+ if(r.at)ah+='<div class="stats">'+stat('At t = '+n(r.at.t)+' s: distance',n(r.at.x)+' m')+stat('height',n(r.at.y)+' m')+stat('speed',n(r.at.speed)+' m/s')+'</div>';
+ ah+=plot(r);
+ var txt='Projectile v0='+v0+' m/s, angle '+th+' deg, h0='+(h0||0)+' m: time '+P.plainNum(r.T,4)+' s, max height '+P.plainNum(r.H,4)+' m, range '+P.plainNum(r.R,4)+' m';
+ out.className='result';
+ out.innerHTML='<div class="note" style="margin-bottom:6px">Read as: speed '+n(v0)+' m/s, angle '+n(th)+'&deg;, start height '+n(h0||0)+' m, g = '+n(g)+' m/s&sup2;</div><div class="blk"><h4>Step by step</h4><div id="ssmount"></div></div><p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa(txt+' (Calvo)','https://calvoscientificcalculator.online/projectile-motion-calculator.html')+'</p>';
+ copyBtn('cp',txt);
+ window.SimpleSteps.mount($('ssmount'),{steps:r.steps,kind:'projectile',answerHtml:ah});
+}
+$('go').onclick=run;
+['v0','th','h0','gc','tq'].forEach(function(i){$(i).addEventListener('keydown',function(e){if(e.key==='Enter')run()})});
+$('clr').onclick=function(){$('v0').value=20;$('th').value=45;$('h0').value=0;$('tq').value='';$('gsel').value='9.81';$('gcwrap').style.display='none';$('out').className='result empty';$('out').textContent='The answer, a picture of the path and the steps will appear here.'};
+document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){$('v0').value=b.getAttribute('data-v');$('th').value=b.getAttribute('data-a');$('h0').value=b.getAttribute('data-h');var g=b.getAttribute('data-g');$('gsel').value=g||'9.81';$('gcwrap').style.display='none';run()}});
+
+</script>
+</body>
+</html>

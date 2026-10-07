@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physical Constants Table &amp; SI Prefixes Converter | Calvo</title>
+<meta name="description" content="Table of physical constants (speed of light, Planck constant, electron charge, gas constant and more) with values and units, plus all SI prefixes from quecto to quetta and a prefix converter.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/physical-constants.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/physical-constants.html">
+<meta property="og:title" content="Physical Constants Table &amp; SI Prefixes Converter | Calvo">
+<meta property="og:description" content="Table of physical constants (speed of light, Planck constant, electron charge, gas constant and more) with values and units, plus all SI prefixes from quecto to quetta and a prefix converter.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Physical Constants & SI Prefixes", "url": "https://calvoscientificcalculator.online/physical-constants.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Table of physical constants (speed of light, Planck constant, electron charge, gas constant and more) with values and units, plus all SI prefixes from quecto to quetta and a prefix converter."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the value of the speed of light?", "acceptedAnswer": {"@type": "Answer", "text": "299,792,458 m/s, which is 2.99792458 x 10^8 m/s. It is an exact value by definition, and 3 x 10^8 m/s is used in most calculations."}}, {"@type": "Question", "name": "What is the value of the Planck constant?", "acceptedAnswer": {"@type": "Answer", "text": "h = 6.62607015 x 10^-34 joule-seconds. It is exact by definition since 2019. The reduced Planck constant h-bar is h divided by 2 pi, about 1.0546 x 10^-34 J s."}}, {"@type": "Question", "name": "What is the charge of an electron?", "acceptedAnswer": {"@type": "Answer", "text": "The elementary charge is e = 1.602176634 x 10^-19 coulomb. An electron has charge minus e and a proton has plus e."}}, {"@type": "Question", "name": "What are the SI prefixes in order?", "acceptedAnswer": {"@type": "Answer", "text": "From largest to smallest: quetta, ronna, yotta, zetta, exa, peta, tera, giga, mega, kilo, hecto, deca, deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto, ronto, quecto."}}, {"@type": "Question", "name": "How do I convert between prefixes?", "acceptedAnswer": {"@type": "Answer", "text": "Subtract the powers of ten. To go from kilo (10^3) to milli (10^-3), multiply by 10^(3 - (-3)) = 10^6. To go the other way, divide."}}, {"@type": "Question", "name": "Which value of g should I use?", "acceptedAnswer": {"@type": "Answer", "text": "Use 9.8 or 9.81 m/s^2 for most school problems, or 10 m/s^2 if your question says so. The standard value is exactly 9.80665 m/s^2."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Physical Constants & SI Prefixes", "item": "https://calvoscientificcalculator.online/physical-constants.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Physical Constants <span>& SI Prefixes</span></h1>
+<p class="lead">A quick reference for the numbers every physics and chemistry student needs: speed of light, Planck constant, charge of an electron, gas constant and many more, plus the full list of SI prefixes with a converter. Tap any row to copy its value.</p>
+<div class="tool">
+<h3>Physical constants</h3>
+<div class="row"><input class="wide" id="q" type="text" placeholder="Search: speed of light, Planck, electron, kg, J/K&hellip;" autocomplete="off" spellcheck="false" aria-label="Search constants"></div>
+<div class="chips" id="cats"></div>
+<div class="ctab-wrap"><table class="consts"><thead><tr><th>Constant</th><th>Value</th><th>Unit</th></tr></thead><tbody id="tb"></tbody></table></div>
+<p class="note" id="cnt" style="margin:8px 0 0"></p>
+<p class="note" style="margin:6px 0 0"><span class="tagx">exact</span> means the value is exact by definition. Other values are rounded to 8 digits or fewer from the CODATA recommended values (the usual small measurement uncertainty applies). Use the values your textbook gives for exams.</p>
+</div>
+
+<div class="tool">
+<h3>SI prefixes</h3>
+<div class="ctab-wrap"><table class="consts" style="min-width:420px"><thead><tr><th>Prefix</th><th>Symbol</th><th>Power of ten</th><th>Meaning</th></tr></thead><tbody id="pb"></tbody></table></div>
+</div>
+
+<div class="tool">
+<h3>Prefix converter</h3>
+<div class="grid2">
+<label class="fld">Value<input type="number" id="pv" value="2.5" step="any" inputmode="decimal"></label>
+<label class="fld">From<select id="pf"></select></label>
+<label class="fld">To<select id="pt"></select></label>
+</div>
+<div class="row"><button class="btn" id="pgo">Convert</button></div>
+<div class="result empty" id="pout">The converted value will appear here.</div>
+</div>
+
+<h2>How prefixes work</h2>
+<p>A prefix is a short word in front of a unit that means &ldquo;times a power of ten&rdquo;. <b>kilo</b> means &times;1000, so 1 km = 1000 m. <b>milli</b> means &times;0.001, so 1 mm = 0.001 m. To change from one prefix to another, count how many powers of ten apart they are. From kilo (10<sup>3</sup>) to milli (10<sup>&minus;3</sup>) is 6 steps, so 1 kg = 1,000,000 mg.</p>
+<h2>Scientific notation</h2>
+<p>Very big and very small numbers are written as a number between 1 and 10 times a power of ten. For example the speed of light, 299,792,458 m/s, is 2.99792458 &times; 10<sup>8</sup> m/s, and the charge of an electron is 1.602176634 &times; 10<sup>&minus;19</sup> C. On a scientific calculator the &times;10<sup>x</sup> key (or EXP) types this.</p>
+<h2>FAQ</h2>
+<details><summary>What is the value of the speed of light?</summary><p>299,792,458 m/s, which is 2.99792458 x 10^8 m/s. It is an exact value by definition, and 3 x 10^8 m/s is used in most calculations.</p></details>
+<details><summary>What is the value of the Planck constant?</summary><p>h = 6.62607015 x 10^-34 joule-seconds. It is exact by definition since 2019. The reduced Planck constant h-bar is h divided by 2 pi, about 1.0546 x 10^-34 J s.</p></details>
+<details><summary>What is the charge of an electron?</summary><p>The elementary charge is e = 1.602176634 x 10^-19 coulomb. An electron has charge minus e and a proton has plus e.</p></details>
+<details><summary>What are the SI prefixes in order?</summary><p>From largest to smallest: quetta, ronna, yotta, zetta, exa, peta, tera, giga, mega, kilo, hecto, deca, deci, centi, milli, micro, nano, pico, femto, atto, zepto, yocto, ronto, quecto.</p></details>
+<details><summary>How do I convert between prefixes?</summary><p>Subtract the powers of ten. To go from kilo (10^3) to milli (10^-3), multiply by 10^(3 - (-3)) = 10^6. To go the other way, divide.</p></details>
+<details><summary>Which value of g should I use?</summary><p>Use 9.8 or 9.81 m/s^2 for most school problems, or 10 m/s^2 if your question says so. The standard value is exactly 9.80665 m/s^2.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/projectile-motion-calculator.html">Projectile Motion Calculator</a><a href="/resistor-calculator.html">Resistor Calculator</a><a href="/periodic-table.html">Periodic Table</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script>
+
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function wa(t,url){return '<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(t+' - '+url)+'">Share on WhatsApp</a>'}
+function copyBtn(id,text){var b=$(id);if(!b)return;b.onclick=function(){var x=this;try{navigator.clipboard.writeText(text).then(function(){x.textContent='Copied'})}catch(e){x.textContent='Copy not supported'}}}
+
+var C=[
+ ['Fundamental','Speed of light in vacuum','c','2.99792458',8,'m/s','x'],
+ ['Fundamental','Planck constant','h','6.62607015',-34,'J\u00b7s','x'],
+ ['Fundamental','Reduced Planck constant','\u0127','1.054571817',-34,'J\u00b7s','a','h / 2\u03c0'],
+ ['Fundamental','Gravitational constant','G','6.6743',-11,'m\u00b3 kg\u207b\u00b9 s\u207b\u00b2','a','uncertainty about \u00b10.00015 \u00d7 10\u207b\u00b9\u00b9'],
+ ['Fundamental','Standard gravity','g\u2099','9.80665',0,'m/s\u00b2','x','conventional value'],
+ ['Fundamental','Planck length','l\u209a','1.616255',-35,'m','a'],
+ ['Fundamental','Planck mass','m\u209a','2.176434',-8,'kg','a'],
+ ['Fundamental','Planck time','t\u209a','5.391247',-44,'s','a'],
+ ['Fundamental','Planck temperature','T\u209a','1.416784',32,'K','a'],
+ ['Electricity & magnetism','Elementary charge','e','1.602176634',-19,'C','x'],
+ ['Electricity & magnetism','Vacuum permittivity','\u03b5\u2080','8.8541878',-12,'F/m','a'],
+ ['Electricity & magnetism','Vacuum permeability','\u03bc\u2080','1.2566371',-6,'N/A\u00b2','a'],
+ ['Electricity & magnetism','Coulomb constant','k\u2091','8.9875518',9,'N\u00b7m\u00b2/C\u00b2','a','1 / (4\u03c0\u03b5\u2080)'],
+ ['Electricity & magnetism','Impedance of free space','Z\u2080','3.7673031',2,'\u03a9','a'],
+ ['Electricity & magnetism','Magnetic flux quantum','\u03a6\u2080','2.067833848',-15,'Wb','x'],
+ ['Electricity & magnetism','Conductance quantum','G\u2080','7.748091729',-5,'S','x'],
+ ['Electricity & magnetism','Josephson constant','K\u2c7c','4.835978484',14,'Hz/V','x'],
+ ['Electricity & magnetism','von Klitzing constant','R\u2096','2.581280745',4,'\u03a9','x'],
+ ['Electricity & magnetism','Bohr magneton','\u03bc\u1d2e','9.2740101',-24,'J/T','a'],
+ ['Electricity & magnetism','Nuclear magneton','\u03bc\u2099','5.0507837',-27,'J/T','a'],
+ ['Atomic & nuclear','Electron mass','m\u2091','9.1093837',-31,'kg','a'],
+ ['Atomic & nuclear','Proton mass','m\u209a (proton)','1.6726219',-27,'kg','a'],
+ ['Atomic & nuclear','Neutron mass','m\u2099','1.6749275',-27,'kg','a'],
+ ['Atomic & nuclear','Atomic mass unit','u','1.6605391',-27,'kg','a'],
+ ['Atomic & nuclear','Electron volt','eV','1.602176634',-19,'J','x'],
+ ['Atomic & nuclear','Fine-structure constant','\u03b1','7.2973526',-3,'(no unit)','a','about 1/137.036'],
+ ['Atomic & nuclear','Rydberg constant','R\u221e','1.0973732',7,'m\u207b\u00b9','a'],
+ ['Atomic & nuclear','Bohr radius','a\u2080','5.2917721',-11,'m','a'],
+ ['Atomic & nuclear','Classical electron radius','r\u2091','2.8179403',-15,'m','a'],
+ ['Atomic & nuclear','Compton wavelength (electron)','\u03bb\u1d04','2.4263102',-12,'m','a'],
+ ['Atomic & nuclear','Hartree energy','E\u2095','4.3597447',-18,'J','a'],
+ ['Atomic & nuclear','Proton\u2013electron mass ratio','m\u209a/m\u2091','1.8361527',3,'(no unit)','a','about 1836.15'],
+ ['Atomic & nuclear','Electron charge-to-mass ratio','e/m\u2091','1.75882',11,'C/kg','a'],
+ ['Heat & chemistry','Boltzmann constant','k\u1d2e','1.380649',-23,'J/K','x'],
+ ['Heat & chemistry','Avogadro constant','N\u2090','6.02214076',23,'mol\u207b\u00b9','x'],
+ ['Heat & chemistry','Molar gas constant','R','8.314462618',0,'J/(mol\u00b7K)','x','N\u2090 \u00d7 k\u1d2e'],
+ ['Heat & chemistry','Boltzmann constant (in eV)','k\u1d2e','8.6173333',-5,'eV/K','a'],
+ ['Heat & chemistry','Stefan\u2013Boltzmann constant','\u03c3','5.6703744',-8,'W/(m\u00b2\u00b7K\u2074)','a'],
+ ['Heat & chemistry','Wien displacement constant','b','2.897772',-3,'m\u00b7K','a'],
+ ['Heat & chemistry','Faraday constant','F','9.6485332',4,'C/mol','a'],
+ ['Heat & chemistry','Molar volume of ideal gas (0 \u00b0C, 1 atm)','V\u2098','2.241397',-2,'m\u00b3/mol','a','= 22.414 litres per mole'],
+ ['Heat & chemistry','Standard atmosphere','atm','1.01325',5,'Pa','x'],
+ ['Heat & chemistry','Absolute zero','0 K','-2.7315',2,'\u00b0C','x'],
+ ['Heat & chemistry','Triple point of water','T\u209c\u1d63','2.7316',2,'K','a'],
+ ['Astronomy & Earth','Astronomical unit','au','1.495978707',11,'m','x'],
+ ['Astronomy & Earth','Light-year','ly','9.460730473',15,'m','x'],
+ ['Astronomy & Earth','Parsec','pc','3.085677581',16,'m','x'],
+ ['Astronomy & Earth','Earth mass','M\u2295','5.9722',24,'kg','a'],
+ ['Astronomy & Earth','Earth mean radius','R\u2295','6.371',6,'m','a'],
+ ['Astronomy & Earth','Earth\u2013Moon distance (mean)','','3.844',8,'m','a'],
+ ['Astronomy & Earth','Moon mass','M\u263e','7.342',22,'kg','a'],
+ ['Astronomy & Earth','Moon radius','R\u263e','1.7374',6,'m','a'],
+ ['Astronomy & Earth','Sun mass','M\u2609','1.98847',30,'kg','a'],
+ ['Astronomy & Earth','Sun radius (nominal)','R\u2609','6.957',8,'m','x'],
+ ['Astronomy & Earth','Sun luminosity (nominal)','L\u2609','3.828',26,'W','x'],
+ ['Everyday values','Speed of sound in air (20 \u00b0C)','','3.43',2,'m/s','a'],
+ ['Everyday values','Density of water (4 \u00b0C)','\u03c1','1.0',3,'kg/m\u00b3','a'],
+ ['Everyday values','Density of air (0 \u00b0C, 1 atm)','\u03c1','1.293',0,'kg/m\u00b3','a'],
+ ['Everyday values','Specific heat capacity of water','c','4.186',3,'J/(kg\u00b7K)','a'],
+ ['Everyday values','Latent heat of fusion of ice','L\u1da0','3.34',5,'J/kg','a'],
+ ['Everyday values','Latent heat of vaporisation of water','L\u1d65','2.26',6,'J/kg','a']
+];
+var PRE=[['quetta','Q',30],['ronna','R',27],['yotta','Y',24],['zetta','Z',21],['exa','E',18],['peta','P',15],['tera','T',12],['giga','G',9],['mega','M',6],['kilo','k',3],['hecto','h',2],['deca','da',1],['(none)','',0],['deci','d',-1],['centi','c',-2],['milli','m',-3],['micro','\u00b5',-6],['nano','n',-9],['pico','p',-12],['femto','f',-15],['atto','a',-18],['zepto','z',-21],['yocto','y',-24],['ronto','r',-27],['quecto','q',-30]];
+var cat='All',cats=['All'];
+C.forEach(function(r){if(cats.indexOf(r[0])<0)cats.push(r[0])});
+function grp(m){var p=m.split('.');if(!p[1]||p[1].length<4)return m;return p[0]+'.'+p[1].replace(/(\d{3})(?=\d)/g,'$1 ')}
+function valHtml(r){var m=r[3],e=r[4],g=grp(m);return e===0?g:g+' \u00d7 10<sup>'+(e<0?'\u2212'+(-e):e)+'</sup>'}
+function toast(t){var d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},1400)}
+function render(){
+ var q=$('q').value.trim().toLowerCase(),h='',n=0;
+ C.forEach(function(r,i){
+  if(cat!=='All'&&r[0]!==cat)return;
+  if(q&&(r[1]+' '+r[2]+' '+r[5]+' '+r[0]+' '+(r[7]||'')).toLowerCase().indexOf(q)<0)return;
+  n++;
+  h+='<tr class="row-click" data-i="'+i+'" title="Tap to copy the value"><td>'+esc(r[1])+(r[2]?' <span style="color:var(--text-dim)">('+esc(r[2])+')</span>':'')+(r[6]==='x'?'<span class="tagx">exact</span>':'')+(r[7]?'<div class="note" style="margin:2px 0 0;font-size:11.5px">'+esc(r[7])+'</div>':'')+'</td><td class="v">'+valHtml(r)+'</td><td>'+esc(r[5])+'</td></tr>';
+ });
+ $('tb').innerHTML=h||'<tr><td colspan="3" style="color:var(--text-dim)">Nothing matches. Try another word.</td></tr>';
+ $('cnt').textContent=n+' of '+C.length+' constants shown. Tap a row to copy its value.';
+}
+$('cats').innerHTML='<span class="lbl">Show:</span>'+cats.map(function(c){return '<button type="button" data-c="'+esc(c)+'"'+(c==='All'?' style="border-color:var(--brand-orange)"':'')+'>'+esc(c)+'</button>'}).join('');
+$('cats').onclick=function(e){var b=e.target.closest('button');if(!b)return;cat=b.getAttribute('data-c');$('cats').querySelectorAll('button').forEach(function(x){x.style.borderColor=x===b?'var(--brand-orange)':''});render()};
+$('q').addEventListener('input',render);
+$('tb').onclick=function(e){var tr=e.target.closest('tr[data-i]');if(!tr)return;var r=C[tr.getAttribute('data-i')],t=r[4]===0?r[3]:r[3]+'e'+r[4];try{navigator.clipboard.writeText(t).then(function(){toast('Copied '+t)})}catch(er){toast(t)}};
+render();
+/* prefixes */
+$('pb').innerHTML=PRE.map(function(p){return '<tr><td>'+p[0]+(p[2]>=27||p[2]<=-27?'<span class="tagc">2022</span>':'')+'</td><td class="v">'+(p[1]||'&ndash;')+'</td><td class="v">10<sup>'+(p[2]<0?'\u2212'+(-p[2]):p[2])+'</sup></td><td>'+(p[2]===0?'1':(p[2]>0?('1'+new Array(p[2]+1).join('0')).replace(/\B(?=(\d{3})+(?!\d))/g,','):'0.'+new Array(-p[2]).join('0')+'1'))+'</td></tr>'}).join('');
+var opt=PRE.map(function(p,i){return '<option value="'+i+'">'+p[0]+(p[1]?' ('+p[1]+')':'')+' 10^'+p[2]+'</option>'}).join('');
+$('pf').innerHTML=opt;$('pt').innerHTML=opt;$('pf').value=PRE.findIndex(function(p){return p[1]==='k'});$('pt').value=PRE.findIndex(function(p){return p[1]==='m'});
+function sciStr(x){if(x===0)return '0';var s=x.toExponential(8).replace(/\.?0+e/,'e'),a=s.split('e'),e=Number(a[1]);return a[0]+' \u00d7 10<sup>'+(e<0?'\u2212'+(-e):e)+'</sup>'}
+function conv(){
+ var v=Number($('pv').value),o=$('pout'),f=PRE[$('pf').value],t=PRE[$('pt').value];
+ if(!isFinite(v)){o.className='result empty';o.textContent='Enter a number.';return}
+ var d=f[2]-t[2],res=v*Math.pow(10,d);
+ var how=d===0?'Both prefixes are the same power of ten, so the number does not change.':('The powers of ten are '+f[2]+' and '+t[2]+', which are '+Math.abs(d)+' apart. So '+(d>0?'multiply':'divide')+' by 10<sup>'+Math.abs(d)+'</sup>.');
+ var plain=Math.abs(res)>=1e-6&&Math.abs(res)<1e15?'<div class="note">= '+Number(res.toPrecision(12)).toLocaleString('en-US',{maximumFractionDigits:12})+'</div>':'';
+ o.className='result';o.innerHTML='<div class="ans">'+esc(String(v))+' '+(f[1]||'(base unit)')+' = '+sciStr(res)+' '+(t[1]||'(base unit)')+'</div>'+plain+'<div class="note">'+how+'</div>';
+}
+$('pgo').onclick=conv;$('pv').addEventListener('keydown',function(e){if(e.key==='Enter')conv()});$('pf').onchange=conv;$('pt').onchange=conv;
+
+</script>
+</body>
+</html>
