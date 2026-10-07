@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algebra Simplifier — Expand, Factor, Simplify &amp; Partial Fractions | Calvo</title>
+<meta name="description" content="Free algebra calculator with steps: expand brackets, factorise polynomials, simplify algebraic fractions and split into partial fractions. Every answer is checked exactly.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/algebra-simplifier.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/algebra-simplifier.html">
+<meta property="og:title" content="Algebra Simplifier — Expand, Factor, Simplify &amp; Partial Fractions | Calvo">
+<meta property="og:description" content="Free algebra calculator with steps: expand brackets, factorise polynomials, simplify algebraic fractions and split into partial fractions. Every answer is checked exactly.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Algebra Simplifier with Steps", "url": "https://calvoscientificcalculator.online/algebra-simplifier.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free algebra calculator with steps: expand brackets, factorise polynomials, simplify algebraic fractions and split into partial fractions. Every answer is checked exactly."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I factor a quadratic step by step?", "acceptedAnswer": {"@type": "Answer", "text": "Take out any common factor, then look for two numbers that multiply to ac and add to b, or use the rational root test. Calvo shows the root it finds and the division that follows."}}, {"@type": "Question", "name": "How do I expand (x+2)^3?", "acceptedAnswer": {"@type": "Answer", "text": "Use the binomial theorem: x^3 + 3x^2(2) + 3x(2^2) + 2^3 = x^3 + 6x^2 + 12x + 8."}}, {"@type": "Question", "name": "How do I simplify an algebraic fraction?", "acceptedAnswer": {"@type": "Answer", "text": "Factor the top and the bottom, cancel the common factors, and remember the cancelled factor cannot be zero in the original expression."}}, {"@type": "Question", "name": "What are partial fractions?", "acceptedAnswer": {"@type": "Answer", "text": "A way to split one fraction into simpler ones, such as 1/(x^2-1) = 1/(2(x-1)) - 1/(2(x+1)). It is used for integration and in solving equations."}}, {"@type": "Question", "name": "Does it factor expressions with two letters?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. It handles common factors, differences of squares and cubes, perfect squares and factoring by grouping, for example xy + 2x + 3y + 6 = (x + 3)(y + 2)."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Algebra Simplifier with Steps", "item": "https://calvoscientificcalculator.online/algebra-simplifier.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Algebra <span>Simplifier with Steps</span></h1>
+<p class="lead">Expand brackets, factorise, simplify fractions and split into partial fractions. Calvo works with exact fractions, shows each step, and checks the answer by multiplying it back out.</p>
+<div class="tool">
+<div class="modes" id="modes" role="tablist"><button type="button" class="active" data-m="expand">Expand</button><button type="button" data-m="factor">Factor</button><button type="button" data-m="simplify">Simplify</button><button type="button" data-m="partial">Partial fractions</button></div>
+<div class="row"><input class="wide" id="fx" type="text" placeholder="e.g. (x+2)(x-3)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Expression"></div>
+<div class="chips" id="chips"><span class="lbl">Try:</span></div>
+<div class="row"><button class="btn" id="go">Expand</button><button class="btn ghost" id="clr">Clear</button></div>
+<p class="note" style="margin:0" id="hint">Use * for multiplication (2x and (x+1)(x-1) also work), ^ for powers, and / for fractions. Several letters are fine for Expand, Factor and Simplify.</p>
+<div class="result empty" id="out">The answer and its steps will appear here.</div>
+</div>
+<h2>What each mode does</h2>
+<table class="f"><tr><th>Mode</th><th>Example</th><th>Result</th></tr>
+<tr><td>Expand</td><td>(x + 2)(x &minus; 3)</td><td>x&sup2; &minus; x &minus; 6</td></tr>
+<tr><td>Factor</td><td>x&sup2; &minus; 5x + 6</td><td>(x &minus; 2)(x &minus; 3)</td></tr>
+<tr><td>Simplify</td><td>(x&sup2; &minus; 4)/(x &minus; 2)</td><td>x + 2</td></tr>
+<tr><td>Partial fractions</td><td>(3x + 5)/(x&sup2; + x &minus; 2)</td><td>8/(3(x &minus; 1)) + 1/(3(x + 2))</td></tr></table>
+<h2>Worked example: partial fractions</h2>
+<p>Split (3x + 5)/((x &minus; 1)(x + 2)). Write A/(x &minus; 1) + B/(x + 2). Multiply out: 3x + 5 = A(x + 2) + B(x &minus; 1). Matching coefficients gives A + B = 3 and 2A &minus; B = 5, so A = 8/3 and B = 1/3.</p>
+<h2>How Calvo checks the answer</h2>
+<p>Every factorisation is multiplied back out with exact fractions and must equal the original. Expand, Simplify and Partial fractions answers are also compared with the original expression at several test values.</p>
+<h2>What is not supported</h2>
+<p>Only polynomials and fractions of polynomials: no sin, ln, e<sup>x</sup> or square roots. Factoring is over the rational numbers, so x&sup2; &minus; 2 is left as it is. Partial fractions needs one letter and a denominator whose factors are linear or quadratic.</p>
+<h2>FAQ</h2>
+<details><summary>How do I factor a quadratic step by step?</summary><p>Take out any common factor, then look for two numbers that multiply to ac and add to b, or use the rational root test. Calvo shows the root it finds and the division that follows.</p></details>
+<details><summary>How do I expand (x+2)^3?</summary><p>Use the binomial theorem: x^3 + 3x^2(2) + 3x(2^2) + 2^3 = x^3 + 6x^2 + 12x + 8.</p></details>
+<details><summary>How do I simplify an algebraic fraction?</summary><p>Factor the top and the bottom, cancel the common factors, and remember the cancelled factor cannot be zero in the original expression.</p></details>
+<details><summary>What are partial fractions?</summary><p>A way to split one fraction into simpler ones, such as 1/(x^2-1) = 1/(2(x-1)) - 1/(2(x+1)). It is used for integration and in solving equations.</p></details>
+<details><summary>Does it factor expressions with two letters?</summary><p>Yes. It handles common factors, differences of squares and cubes, perfect squares and factoring by grouping, for example xy + 2x + 3y + 6 = (x + 3)(y + 2).</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/derivative-calculator.html">Derivative Calculator (steps)</a><a href="/integral-calculator.html">Integral Calculator (steps)</a><a href="/limit-calculator.html">Limit Calculator (steps)</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/calculus-engine.js"></script>
+<script src="/algebra-engine.js"></script>
+<script src="/simple-steps.js"></script>
+<script>
+
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function steps(list){return '<div class="steps">'+list.map(function(s){return '<div class="stp'+(s.lvl===0?' top':'')+'" style="margin-left:'+(s.lvl*18)+'px">'+s.html+'</div>'}).join('')+'</div>'}
+function wa(t,url){return '<a class="share" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(t+' - '+url)+'">Share on WhatsApp</a>'}
+function copyBtn(id,text){var b=$(id);if(!b)return;b.onclick=function(){var x=this;try{navigator.clipboard.writeText(text).then(function(){x.textContent='Copied'})}catch(e){x.textContent='Copy not supported'}}}
+
+var A=window.CalvoAlg,C=window.CalvoCalc,mode='expand';
+var EX={expand:['(x+2)(x-3)','(x+2)^3','(2x-1)^2','(x+y)^2','3(x+1)-2(x-4)'],
+ factor:['x^2-5x+6','x^3-6x^2+11x-6','x^4+4','x^2-y^2','xy+2x+3y+6','6x^2y+9xy^2'],
+ simplify:['(x^2-4)/(x-2)','1/x+1/(x+1)','(x^3-8)/(x^2-4)','(x^2-y^2)/(x-y)'],
+ partial:['(3x+5)/(x^2+x-2)','1/(x^2-1)','1/(x^2*(x+1))','(x^2+1)/(x^3-x)','1/((x^2+1)*(x-1))']};
+var LABEL={expand:'Expand',factor:'Factor',simplify:'Simplify',partial:'Partial fractions'};
+var PH={expand:'e.g. (x+2)(x-3)',factor:'e.g. x^2-5x+6',simplify:'e.g. (x^2-4)/(x-2)',partial:'e.g. (3x+5)/(x^2+x-2)'};
+function setMode(m){
+ mode=m;
+ document.querySelectorAll('#modes button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-m')===m)});
+ $('go').textContent=LABEL[m];$('fx').placeholder=PH[m];
+ var c=$('chips');c.innerHTML='<span class="lbl">Try:</span>'+EX[m].map(function(e){return '<button type="button" data-f="'+esc(e)+'">'+esc(e)+'</button>'}).join('');
+ c.querySelectorAll('button').forEach(function(b){b.onclick=function(){$('fx').value=b.getAttribute('data-f');run()}});
+ $('out').className='result empty';$('out').textContent='The answer and its steps will appear here.';
+}
+function run(){
+ var out=$('out'),v=$('fx').value.trim();
+ if(!v){out.className='result empty';out.textContent='Type an expression first, for example '+EX[mode][0]+'.';return}
+ var r=A[mode](v);
+ if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var ah='';
+ var h='<div class="note" style="margin-bottom:6px">Read as: '+C.fmt(r.input,'h')+'</div>';
+ var label={expand:'Expanded',factor:'Factorised',simplify:'Simplified',partial:'Partial fractions'}[mode];
+ ah+='<div class="ans">'+label+': '+r.html+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
+ if(r.check==='fail')ah+='<div class="warnbox">The check could not confirm this answer. Check it by hand.</div>';
+ if(mode==='factor'&&r.unchanged)ah+='<div class="note">Nothing to factor: this expression is already as factorised as possible over the rational numbers.</div>';
+ if(mode==='simplify'&&r.unchanged)ah+='<div class="note">This fraction is already in its simplest form.</div>';
+ h+='<div class="blk"><h4>Step by step</h4><div id="ssmount"></div></div>';
+ h+='<p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa(label+' of '+v+' = '+r.text+' (Calvo)','https://calvoscientificcalculator.online/algebra-simplifier.html')+'</p>';
+ out.className='result';out.innerHTML=h;copyBtn('cp',r.text);
+ window.SimpleSteps.mount($('ssmount'),{steps:r.steps,kind:mode,answerHtml:ah});
+}
+document.querySelectorAll('#modes button').forEach(function(b){b.onclick=function(){setMode(b.getAttribute('data-m'))}});
+$('go').onclick=run;
+$('fx').addEventListener('keydown',function(e){if(e.key==='Enter')run()});
+$('clr').onclick=function(){$('fx').value='';$('out').className='result empty';$('out').textContent='The answer and its steps will appear here.';$('fx').focus()};
+var q=(location.hash||'').replace('#','');if(EX[q])setMode(q);else setMode('expand');
+
+</script>
+</body>
+</html>
