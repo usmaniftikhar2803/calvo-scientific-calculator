@@ -250,7 +250,11 @@
         var eb = expand(a.b);
         if (isInt(a.e) && a.e.n > 0n && a.e.n <= 12n && eb.t === 'add') {
           var r = eb, n = Number(a.e.n);
-          for (var i = 1; i < n; i++) r = expand(mkMul([r, eb]));
+          for (var i = 1; i < n; i++) {
+            var rs = r.t === 'add' ? r.a : [r], nt = [];
+            rs.forEach(function (x) { eb.a.forEach(function (y) { nt.push(mkMul([x, y])); }); });
+            r = mkAdd(nt);
+          }
           return r;
         }
         return mkPow(eb, a.e);
@@ -1328,6 +1332,10 @@
 
   root.CalvoCalc = {
     derivative: derivative, integral: integral, fmt: fmt, parse: parse, version: 1,
-    _internal: { mkAdd: mkAdd, mkMul: mkMul, mkPow: mkPow, mkFn: mkFn, D: Dq, ev: ev, key: key, expand: expand, setup: setup }
+    _internal: { mkAdd: mkAdd, mkMul: mkMul, mkPow: mkPow, mkFn: mkFn, D: Dq, ev: ev, key: key, expand: expand, setup: setup,
+      mkNum: mkNum, nn: nn, sym: sym, ZERO: ZERO, ONE: ONE, MINUS1: MINUS1, nAdd: nAdd, nMul: nMul, nNeg: nNeg, nInv: nInv, nv: nv,
+      isZ: isZ, isOne: isOne, isInt: isInt, isNum: isNum, splitCoef: splitCoef, has: has, symsOf: symsOf, repl: repl,
+      toPoly: toPoly, fromPoly: fromPoly, pTrim: pTrim, pDeg: pDeg, pDivide: pDivide, pMul: pMul, ratRoot: ratRoot,
+      solveLinear: solveLinear, bgcd: bgcd, lcmBig: lcmBig, parseBound: parseBound }
   };
 })(typeof window !== 'undefined' ? window : globalThis);
