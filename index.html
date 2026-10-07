@@ -931,18 +931,46 @@
 <section class="tab-panel" id="tab-graph">
   <div class="formulas-wrap">
     <div class="formulas-card" id="graphCard">
-      <div class="formulas-title" data-i18n="graph_title">Function Grapher</div>
-      <div class="formulas-subtitle" data-i18n="graph_subtitle">Plot functions or explore the unit circle</div>
 
-      <div class="subject-pills">
-        <button class="subject-pill active" data-graphmode="function" id="graphModeFnBtn" data-i18n="graph_mode_function">Function Graph</button>
-        <button class="subject-pill" data-graphmode="unitcircle" id="graphModeCircleBtn" data-i18n="graph_mode_unitcircle">Unit Circle</button>
-        <button class="subject-pill" data-graphmode="surface3d" id="graphMode3DBtn" data-i18n="graph_mode_3d">3D Surface</button>
-        <button class="subject-pill" data-graphmode="polar" id="graphModePolarBtn" data-i18n="graph_mode_polar">Polar Graph</button>
-        <button class="subject-pill" data-graphmode="parametric" id="graphModeParametricBtn" data-i18n="graph_mode_parametric">Parametric</button>
-        <button class="subject-pill" data-graphmode="inequality" id="graphModeInequalityBtn" data-i18n="graph_mode_inequality">Inequality</button>
-        <button class="subject-pill" data-graphmode="data" id="graphModeDataBtn" data-i18n="graph_mode_data">Bar/Scatter</button>
+      <!-- STEP 1 — graph names -->
+      <div id="graphStep1">
+        <div class="formulas-title" data-i18n="graph_title">Function Grapher</div>
+        <div class="formulas-subtitle" data-i18n="graph_pick_subtitle">Step 1 of 3 — choose a graph</div>
+        <div class="subject-pills" id="graphTypeList">
+          <div class="graph-group-label" data-i18n="graph_group_curves">Functions &amp; Curves</div>
+          <button class="subject-pill graph-type-btn" data-graphmode="function" id="graphModeFnBtn" data-i18n="graph_mode_function">Function Graph</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="unitcircle" id="graphModeCircleBtn" data-i18n="graph_mode_unitcircle">Unit Circle</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="surface3d" id="graphMode3DBtn" data-i18n="graph_mode_3d">3D Surface</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="polar" id="graphModePolarBtn" data-i18n="graph_mode_polar">Polar Graph</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="parametric" id="graphModeParametricBtn" data-i18n="graph_mode_parametric">Parametric</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="inequality" id="graphModeInequalityBtn" data-i18n="graph_mode_inequality">Inequality</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="implicit" id="graphModeImplicitBtn" data-i18n="graph_mode_implicit">Implicit Curve (Conics)</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="slopefield" id="graphModeSlopeBtn" data-i18n="graph_mode_slopefield">Slope Field (dy/dx)</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="contour" id="graphModeContourBtn" data-i18n="graph_mode_contour">Contour Plot</button>
+          <div class="graph-group-label" data-i18n="graph_group_stats">Statistics &amp; Data</div>
+          <button class="subject-pill graph-type-btn" data-graphmode="data" data-datatype="bar" id="graphModeDataBtn" data-i18n="graph_data_bar">Bar Chart</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="data" data-datatype="scatter" id="graphModeScatterBtn" data-i18n="graph_data_scatter">Scatter Plot</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="data" data-datatype="line" id="graphModeLineBtn" data-i18n="graph_data_line">Line Chart</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="data" data-datatype="area" id="graphModeAreaBtn" data-i18n="graph_data_area">Area Chart</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="pie" id="graphModePieBtn" data-i18n="graph_mode_pie">Pie Chart</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="histogram" id="graphModeHistBtn" data-i18n="graph_mode_hist">Histogram</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="boxplot" id="graphModeBoxBtn" data-i18n="graph_mode_box">Box Plot</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="normal" id="graphModeNormalBtn" data-i18n="graph_mode_normal">Normal Distribution</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="binomial" id="graphModeBinomialBtn" data-i18n="graph_mode_binomial">Binomial Distribution</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="regression" id="graphModeRegBtn" data-i18n="graph_mode_regression">Linear Regression</button>
+          <div class="graph-group-label" data-i18n="graph_group_math">Math Tools</div>
+          <button class="subject-pill graph-type-btn" data-graphmode="argand" id="graphModeArgandBtn" data-i18n="graph_mode_argand">Complex Plane (Argand)</button>
+          <button class="subject-pill graph-type-btn" data-graphmode="vectors" id="graphModeVectorsBtn" data-i18n="graph_mode_vectors">Vector Addition</button>
+        </div>
       </div>
+
+      <!-- STEP 2 — functions / inputs of the chosen graph -->
+      <div id="graphStep2" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="graphBackToListBtn" type="button">&larr; <span data-i18n="graph_back_list">All graphs</span></button>
+        </div>
+        <div class="formulas-title" id="graphStep2Title"></div>
+        <div class="formulas-subtitle" data-i18n="graph_step2_subtitle">Step 2 of 3 — enter the functions</div>
 
       <div id="graphFunctionPanel">
         <input type="text" class="formula-search convert-input" id="graphFnInput" placeholder="e.g. sin(x), x^2, 2x+3" data-i18n-placeholder="graph_fn_placeholder" value="sin(x)">
@@ -984,18 +1012,23 @@
           <input type="number" class="formula-search convert-input" id="graphIntA" value="0">
           <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
           <input type="number" class="formula-search convert-input" id="graphIntB" value="2">
-          <span class="graph-integral-value" id="graphIntValue"></span>
         </div>
         <div class="graph-error" id="graphError"></div>
-        <div class="graph-legend" id="graphLegend"></div>
-        <div class="graph-table-wrap" id="graphTableWrap" style="display:none;"></div>
       </div>
 
-      <div id="graphUnitCirclePanel" style="display:none;">
-        <input type="range" id="graphAngleSlider" min="0" max="360" value="45" class="graph-angle-slider">
-        <div class="graph-angle-readout" id="graphAngleReadout">
-          <span id="graphAngleDeg">45°</span>
-          <span class="graph-angle-values" id="graphAngleValues"></span>
+      <div id="graphCircleStartPanel" style="display:none;">
+        <div class="graph-3d-hint" style="margin:4px 0 10px;" data-i18n="graph_circle_note">Pick a starting angle — you can drag the slider on the graph.</div>
+        <div class="graph-quick-row" id="graphCircleQuickBtns">
+          <button class="pill-btn small" data-angle="0">0°</button>
+          <button class="pill-btn small" data-angle="30">30°</button>
+          <button class="pill-btn small active" data-angle="45">45°</button>
+          <button class="pill-btn small" data-angle="60">60°</button>
+          <button class="pill-btn small" data-angle="90">90°</button>
+          <button class="pill-btn small" data-angle="120">120°</button>
+          <button class="pill-btn small" data-angle="135">135°</button>
+          <button class="pill-btn small" data-angle="180">180°</button>
+          <button class="pill-btn small" data-angle="270">270°</button>
+          <button class="pill-btn small" data-angle="360">360°</button>
         </div>
       </div>
 
@@ -1010,7 +1043,6 @@
           <button class="pill-btn small" data-fn3d="log(x*x+y*y+1)">ln(x²+y²+1)</button>
         </div>
         <div class="graph-error" id="graph3DError"></div>
-        <div class="graph-3d-hint" data-i18n="graph_3d_hint">Drag to rotate the surface</div>
       </div>
 
       <div id="graphPolarPanel" style="display:none;">
@@ -1069,6 +1101,26 @@
         <div class="graph-error" id="graphIneqError"></div>
       </div>
 
+      <div id="graphImplicitPanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graphImplicitInput" placeholder="e.g. x^2 + y^2 = 25" data-i18n-placeholder="graph_implicit_placeholder" value="x^2 + y^2 = 25">
+        <div class="graph-quick-row" id="graphImplicitQuickBtns">
+          <button class="pill-btn small" data-impl="x^2 + y^2 = 25" data-lim="8">Circle</button>
+          <button class="pill-btn small" data-impl="x^2/9 + y^2/4 = 1" data-lim="6">Ellipse</button>
+          <button class="pill-btn small" data-impl="x^2/4 - y^2/9 = 1" data-lim="8">Hyperbola</button>
+          <button class="pill-btn small" data-impl="x^2 = 4*y" data-lim="8">Parabola</button>
+          <button class="pill-btn small" data-impl="x*y = 1" data-lim="6">xy = 1</button>
+          <button class="pill-btn small" data-impl="(x^2 + y^2)^2 = 2*(x^2 - y^2)" data-lim="2.5">Lemniscate</button>
+          <button class="pill-btn small" data-impl="(x^2 + y^2 - 1)^3 = x^2 * y^3" data-lim="1.6">Heart</button>
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_implicit_range">Range</span>
+          <input type="number" class="formula-search convert-input" id="graphImplicitMin" value="-10">
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphImplicitMax" value="10">
+        </div>
+        <div class="graph-error" id="graphImplicitError"></div>
+      </div>
+
       <div id="graphDataPanel" style="display:none;">
         <textarea class="formula-search convert-input graph-data-textarea" id="graphDataInput" rows="4" placeholder="x,y per line e.g.&#10;1,4&#10;2,7&#10;3,5" data-i18n-placeholder="graph_data_placeholder">1,4
 2,7
@@ -1078,14 +1130,160 @@
         <div class="graph-quick-row">
           <button class="subject-pill active small" data-datatype="bar" id="graphDataBarBtn" data-i18n="graph_data_bar">Bar Chart</button>
           <button class="subject-pill small" data-datatype="scatter" id="graphDataScatterBtn" data-i18n="graph_data_scatter">Scatter Plot</button>
+          <button class="subject-pill small" data-datatype="line" id="graphDataLineBtn" data-i18n="graph_data_line">Line Chart</button>
+          <button class="subject-pill small" data-datatype="area" id="graphDataAreaBtn" data-i18n="graph_data_area">Area Chart</button>
         </div>
         <div class="graph-error" id="graphDataError"></div>
       </div>
 
-      <div class="graph-canvas-wrap">
-        <canvas id="graphCanvas" width="600" height="380"></canvas>
-        <canvas id="graph3DCanvas" width="600" height="380" style="display:none;"></canvas>
+      <div id="graphPiePanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphPieInput" rows="5" placeholder="label,value per line e.g.&#10;Math,40&#10;Physics,30" data-i18n-placeholder="graph_pie_placeholder">Math,40
+Physics,30
+Chemistry,20
+Biology,10</textarea>
+        <div class="graph-error" id="graphPieError"></div>
       </div>
+
+      <div id="graphSlopePanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graphSlopeInput" placeholder="dy/dx = f(x, y) e.g. x - y" data-i18n-placeholder="graph_slope_placeholder" value="x - y">
+        <div class="graph-quick-row">
+          <button class="pill-btn small" data-set='{"graphSlopeInput":"x - y"}'>x − y</button>
+          <button class="pill-btn small" data-set='{"graphSlopeInput":"x + y"}'>x + y</button>
+          <button class="pill-btn small" data-set='{"graphSlopeInput":"y"}'>y</button>
+          <button class="pill-btn small" data-set='{"graphSlopeInput":"x*y"}'>x·y</button>
+          <button class="pill-btn small" data-set='{"graphSlopeInput":"-x/y"}'>−x/y</button>
+          <button class="pill-btn small" data-set='{"graphSlopeInput":"sin(x)*cos(y)"}'>sin(x)·cos(y)</button>
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_implicit_range">Range</span>
+          <input type="number" class="formula-search convert-input" id="graphSlopeMin" value="-5" >
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphSlopeMax" value="5" >
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_slope_start">Solution through (x₀, y₀)</span>
+          <input type="number" class="formula-search convert-input" id="graphSlopeX0" value="0" step="0.5">
+          <input type="number" class="formula-search convert-input" id="graphSlopeY0" value="1" step="0.5">
+        </div>
+        <div class="graph-error" id="graphSlopeError"></div>
+      </div>
+
+      <div id="graphContourPanel" style="display:none;">
+        <input type="text" class="formula-search convert-input" id="graphContourInput" placeholder="z = f(x, y) e.g. x^2 + y^2" data-i18n-placeholder="graph_contour_placeholder" value="x^2 + y^2">
+        <div class="graph-quick-row">
+          <button class="pill-btn small" data-set='{"graphContourInput":"x^2 + y^2"}'>x²+y²</button>
+          <button class="pill-btn small" data-set='{"graphContourInput":"x^2 - y^2"}'>x²−y²</button>
+          <button class="pill-btn small" data-set='{"graphContourInput":"x*y"}'>x·y</button>
+          <button class="pill-btn small" data-set='{"graphContourInput":"sin(x)*cos(y)"}'>sin(x)cos(y)</button>
+          <button class="pill-btn small" data-set='{"graphContourInput":"sin(sqrt(x^2 + y^2))"}'>sin(√(x²+y²))</button>
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_implicit_range">Range</span>
+          <input type="number" class="formula-search convert-input" id="graphContourMin" value="-5" >
+          <span class="graph-range-sep" data-i18n="graph_range_to">to</span>
+          <input type="number" class="formula-search convert-input" id="graphContourMax" value="5" >
+        </div>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_contour_levels">Levels</span>
+          <input type="number" class="formula-search convert-input" id="graphContourLevels" value="8" min="2" max="15">
+        </div>
+        <div class="graph-error" id="graphContourError"></div>
+      </div>
+
+      <div id="graphHistPanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphHistInput" rows="5" placeholder="numbers separated by commas or lines e.g.&#10;12, 15, 15, 18, 20" data-i18n-placeholder="graph_hist_placeholder">12, 15, 15, 18, 20, 22, 22, 23, 25, 27, 28, 30, 31, 35, 41</textarea>
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_hist_bins">Bins</span>
+          <input type="number" class="formula-search convert-input" id="graphHistBins" value="5" min="1" max="60">
+        </div>
+        <div class="graph-error" id="graphHistError"></div>
+      </div>
+
+      <div id="graphBoxPanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphBoxInput" rows="5" placeholder="numbers separated by commas or lines e.g.&#10;12, 15, 15, 18, 20" data-i18n-placeholder="graph_hist_placeholder">12, 15, 15, 18, 20, 22, 22, 23, 25, 27, 28, 30, 31, 35, 41, 70</textarea>
+        <div class="graph-error" id="graphBoxError"></div>
+      </div>
+
+      <div id="graphNormalPanel" style="display:none;">
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_norm_mean">Mean (μ)</span>
+          <input type="number" class="formula-search convert-input" id="graphNormMean" value="0" step="any">
+          <span class="graph-range-sep" data-i18n="graph_norm_sd">Std dev (σ)</span>
+          <input type="number" class="formula-search convert-input" id="graphNormSd" value="1" step="any" min="0.01">
+        </div>
+        <div class="graph-quick-row">
+          <button class="pill-btn small" data-set='{"graphNormMean":"0","graphNormSd":"1"}'>μ=0, σ=1</button>
+          <button class="pill-btn small" data-set='{"graphNormMean":"50","graphNormSd":"10"}'>μ=50, σ=10</button>
+          <button class="pill-btn small" data-set='{"graphNormMean":"100","graphNormSd":"15"}'>μ=100, σ=15</button>
+        </div>
+        <div class="graph-error" id="graphNormError"></div>
+      </div>
+
+      <div id="graphBinomialPanel" style="display:none;">
+        <div class="graph-range-row">
+          <span class="graph-range-sep" data-i18n="graph_bin_n">Trials (n)</span>
+          <input type="number" class="formula-search convert-input" id="graphBinN" value="10" min="1" max="300">
+          <span class="graph-range-sep" data-i18n="graph_bin_p">Probability (p)</span>
+          <input type="number" class="formula-search convert-input" id="graphBinP" value="0.5" step="0.05" min="0" max="1">
+        </div>
+        <div class="graph-quick-row">
+          <button class="pill-btn small" data-set='{"graphBinN":"10","graphBinP":"0.5"}'>n=10, p=0.5</button>
+          <button class="pill-btn small" data-set='{"graphBinN":"20","graphBinP":"0.3"}'>n=20, p=0.3</button>
+          <button class="pill-btn small" data-set='{"graphBinN":"50","graphBinP":"0.1"}'>n=50, p=0.1</button>
+        </div>
+        <div class="graph-error" id="graphBinError"></div>
+      </div>
+
+      <div id="graphRegressionPanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphRegInput" rows="5" placeholder="x,y per line e.g.&#10;1,2&#10;2,4.1&#10;3,5.9" data-i18n-placeholder="graph_reg_placeholder">1,2
+2,4.1
+3,5.9
+4,8.2
+5,9.8</textarea>
+        <div class="graph-error" id="graphRegError"></div>
+      </div>
+
+      <div id="graphArgandPanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphArgInput" rows="5" placeholder="one complex number per line e.g.&#10;3+4i&#10;-2+i&#10;2-3i" data-i18n-placeholder="graph_arg_placeholder">3+4i
+-2+i
+2-3i</textarea>
+        <div class="graph-error" id="graphArgError"></div>
+      </div>
+
+      <div id="graphVectorsPanel" style="display:none;">
+        <textarea class="formula-search convert-input graph-data-textarea" id="graphVecInput" rows="5" placeholder="x,y per line e.g.&#10;3,2&#10;-1,4" data-i18n-placeholder="graph_vec_placeholder">3,2
+-1,4</textarea>
+        <div class="graph-error" id="graphVecError"></div>
+      </div>
+
+        <button class="pill-btn save-btn" id="graphShowBtn" type="button" data-i18n="graph_show_btn">Show Graph</button>
+      </div>
+
+      <!-- STEP 3 — the graph -->
+      <div id="graphStep3" style="display:none;">
+        <div class="formula-detail-header">
+          <button class="subject-back-btn" id="graphBackToInputBtn" type="button">&larr; <span data-i18n="graph_back_edit">Edit functions</span></button>
+        </div>
+        <div class="formulas-title" id="graphStep3Title"></div>
+        <div class="formulas-subtitle" data-i18n="graph_step3_subtitle">Step 3 of 3 — your graph</div>
+        <div class="graph-error" id="graphStep3Error"></div>
+        <div class="graph-canvas-wrap">
+          <canvas id="graphCanvas" width="600" height="380"></canvas>
+          <canvas id="graph3DCanvas" width="600" height="380" style="display:none;"></canvas>
+        </div>
+        <div class="graph-legend" id="graphLegend"></div>
+      <div id="graphUnitCirclePanel" style="display:none;">
+        <input type="range" id="graphAngleSlider" min="0" max="360" value="45" class="graph-angle-slider">
+        <div class="graph-angle-readout" id="graphAngleReadout">
+          <span id="graphAngleDeg">45°</span>
+          <span class="graph-angle-values" id="graphAngleValues"></span>
+        </div>
+      </div>
+        <div class="graph-integral-value" id="graphIntValue"></div>
+        <div class="graph-3d-hint" id="graph3DHint" style="display:none;" data-i18n="graph_3d_hint">Drag to rotate the surface</div>
+        <div class="graph-table-wrap" id="graphTableWrap" style="display:none;"></div>
+      </div>
+
     </div>
   </div>
 </section>
