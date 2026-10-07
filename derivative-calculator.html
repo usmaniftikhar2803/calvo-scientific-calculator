@@ -66,7 +66,7 @@
 <h2>FAQ</h2>
 <details><summary>How do I find a derivative step by step?</summary><p>Identify the rule: power, product, quotient or chain. Apply it, differentiate each piece, then simplify. Calvo writes every rule it applies and the value it finds.</p></details><details><summary>What is the derivative of x^2 sin x?</summary><p>By the product rule it is 2x sin x + x^2 cos x.</p></details><details><summary>When do I use the chain rule?</summary><p>Use it when a function sits inside another, like sin(3x^2), e^(2x) or (x^2+1)^5. Differentiate the outer function, keep the inside, then multiply by the derivative of the inside.</p></details><details><summary>Does it give the second or third derivative?</summary><p>Yes. Choose the order in the box. Calvo differentiates the simplified result again for each order.</p></details><details><summary>Can I find the derivative at a point?</summary><p>Yes. Put a value such as 2 or pi in the At x box and Calvo evaluates the derivative there.</p></details><details><summary>What does log mean here?</summary><p>log(x) is base 10 and ln(x) is the natural logarithm. d/dx[log x] = 1/(x ln 10).</p></details><details><summary>Is the answer always simplified?</summary><p>Calvo simplifies like terms and powers, but a textbook may present an equivalent form that looks different. Both are correct if they are equal.</p></details><details><summary>Does it work offline?</summary><p>Yes. The calculation runs in your browser and the page is cached after your first visit.</p></details>
 <h2>More Calvo tools</h2>
-<div class="related"><a href="/integral-calculator.html">Integral Calculator (steps)</a><a href="/chemical-equation-balancer.html">Chemical Equation Balancer</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
+<div class="related"><a href="/limit-calculator.html">Limit Calculator (steps)</a><a href="/algebra-simplifier.html">Algebra Simplifier</a><a href="/integral-calculator.html">Integral Calculator (steps)</a><a href="/chemical-equation-balancer.html">Chemical Equation Balancer</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
 </main>
 <footer>
@@ -74,6 +74,7 @@
 <div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
 </footer>
 <script src="/calculus-engine.js"></script>
+<script src="/simple-steps.js"></script>
 <script>
 (function(){
 var $=function(i){return document.getElementById(i)},C=window.CalvoCalc;
@@ -85,14 +86,17 @@ function run(){
  if(!v){out.className='result empty';out.textContent='Type a function first, for example x^2*sin(x).';return}
  var r=C.derivative(v,parseInt($('ord').value,10),$('at').value);
  if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var ah='';
  var h='<div class="note" style="margin-bottom:6px">Read as: f('+r.v+') = '+C.fmt(r.input,'h')+'</div>';
  var many=r.blocks.length>1,ords=['','1st','2nd','3rd','4th','5th'];
- h+='<div class="ans">'+(many?ords[r.blocks.length]+' derivative: ':'f\u2032('+r.v+') = ')+r.html+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
- if(r.at)h+='<div class="ans" style="font-size:15px">At '+r.v+' = '+esc(r.at.x)+': '+r.at.exact+' &asymp; '+(Math.round(r.at.value*1e6)/1e6)+'</div>';
- if(r.check!=='ok')h+='<div class="warnbox">The numeric check could not confirm this answer at every test point (the function may be undefined there). Check it by hand.</div>';
- r.blocks.forEach(function(b){h+='<div class="blk"><h4>'+(many?ords[b.order]+' derivative &mdash; steps':'Steps')+'</h4>'+steps(b.steps)+'</div>'});
+ ah+='<div class="ans">'+(many?ords[r.blocks.length]+' derivative: ':'f\u2032('+r.v+') = ')+r.html+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
+ if(r.at)ah+='<div class="ans" style="font-size:15px">At '+r.v+' = '+esc(r.at.x)+': '+r.at.exact+' &asymp; '+(Math.round(r.at.value*1e6)/1e6)+'</div>';
+ if(r.check!=='ok')ah+='<div class="warnbox">The numeric check could not confirm this answer at every test point (the function may be undefined there). Check it by hand.</div>';
+ var all=[];r.blocks.forEach(function(b){if(many)all.push({lvl:0,html:'<b>'+ords[b.order]+' derivative</b>: differentiate the previous answer again.'});b.steps.forEach(function(x){all.push(x)})});
+ h+='<div class="blk"><h4>Step by step</h4><div id="ssmount"></div></div>';
  h+='<p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa('Derivative of '+v+' = '+r.text+' (Calvo)','https://calvoscientificcalculator.online/derivative-calculator.html')+'</p>';
  out.className='result';out.innerHTML=h;
+ window.SimpleSteps.mount($('ssmount'),{steps:all,kind:'derivative',answerHtml:ah});
  $('cp').onclick=function(){var b=this;try{navigator.clipboard.writeText(r.text).then(function(){b.textContent='Copied'})}catch(e){b.textContent='Copy not supported'}};
 }
 $('go').onclick=run;
