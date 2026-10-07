@@ -118,3 +118,35 @@ sub{font-size:.7em;}
 
 .ur{direction:rtl;text-align:right;font-family:'Noto Naskh Arabic','Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Segoe UI',Tahoma,sans-serif;font-size:14px;line-height:2;margin-top:6px;padding-top:6px;border-top:1px dashed var(--panel-border);color:var(--text);}
 @media print{.ur{color:#000!important;border-top-color:#999!important}}
+
+/* ---- Limit calculator / Algebra simplifier ---- */
+.modes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+.modes button{background:transparent;color:var(--text);border:1px solid var(--panel-border);border-radius:20px;padding:7px 14px;font-family:inherit;font-size:13px;cursor:pointer;}
+.modes button.active{background:var(--brand-orange);color:#17171a;border-color:var(--brand-orange);font-weight:700;}
+.estbadge{display:inline-block;font-size:11px;border:1px solid #ffb84d;color:#ffb84d;border-radius:20px;padding:1px 8px;margin-left:8px;vertical-align:middle;}
+.dnebadge{display:inline-block;font-size:11px;border:1px solid #ff9d7a;color:#ff9d7a;border-radius:20px;padding:1px 8px;margin-left:8px;vertical-align:middle;}
+table.vals{border-collapse:collapse;margin:6px 0 0;font-size:13px;}
+table.vals th,table.vals td{border:1px solid var(--panel-border);padding:5px 12px;text-align:right;}
+table.vals th{color:var(--brand-orange);font-weight:600;}
+.pt-in{width:150px;}
+
+/* ---- Simple one-step-at-a-time viewer ---- */
+.ss-top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin:2px 0 10px;}
+.ss-idea{flex:1;background:rgba(255,138,31,.08);border:1px dashed var(--brand-orange);border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.8;color:var(--text);}
+.ss-lang{background:transparent;color:var(--text);border:1px solid var(--panel-border);border-radius:20px;padding:6px 12px;font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;}
+.ss-lang:hover{border-color:var(--brand-orange);}
+.ss-card{border:1px solid var(--panel-border);border-left:3px solid var(--panel-border);border-radius:10px;padding:10px 12px;margin:8px 0;background:#101013;opacity:.82;}
+.ss-card.ss-new{border-color:var(--brand-orange);border-left-color:var(--brand-orange);opacity:1;background:#14110d;}
+.ss-head{display:flex;gap:8px;align-items:center;margin-bottom:4px;}
+.ss-num{font-family:'Space Mono',monospace;font-size:12px;color:var(--brand-orange);font-weight:700;}
+.ss-side{font-size:11px;color:var(--text-dim);border:1px solid var(--panel-border);border-radius:20px;padding:0 8px;}
+.ss-say{font-size:15px;line-height:1.9;color:#fff;margin:2px 0 8px;white-space:normal;}
+.ss-math{font-size:13.5px;line-height:1.9;background:#0d0d0f;border-radius:8px;padding:8px 10px;white-space:normal;word-break:break-word;}
+.ss-math.ss-only{font-size:14.5px;}
+.ss-lab{color:var(--text-dim);font-size:12px;margin-right:6px;}
+.ss-ur{direction:rtl;text-align:right;font-family:'Noto Naskh Arabic','Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Segoe UI',Tahoma,sans-serif;line-height:2.2;}
+.ss-nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.ss-nav .btn{padding:11px 18px;font-size:14px;}
+.ss-final{margin-top:10px;padding:12px 14px;border-radius:12px;border:2px solid #5fd38a;background:rgba(95,211,138,.07);white-space:normal;}
+.ss-final-t{font-family:'Space Mono',monospace;font-size:13px;color:#5fd38a;margin-bottom:4px;font-weight:700;}
+@media (max-width:520px){.ss-top{flex-direction:column;}.ss-nav .btn{flex:1 1 auto;}}
