@@ -2978,6 +2978,73 @@ body {
   margin-bottom: 20px;
 }
 
+/* Function Grapher: 3-step flow (1 graph names -> 2 functions -> 3 graph) */
+#graphCard { scroll-margin-top: 76px; }
+#graphTypeList {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 6px;
+}
+#graphTypeList .graph-type-btn {
+  width: 100%;
+  text-align: left;
+  white-space: normal;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  color: #e0e0e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#graphTypeList .graph-type-btn::after {
+  content: '\203A';
+  color: var(--accent);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+/* Step 3: the whole graph page (title + graph + legend/slider) must fit on one screen.
+   --gx = space the other elements need; the canvas takes the rest of the screen height. */
+#graphStep3 { --gx: 300px; }
+#graphStep3[data-gmode="unitcircle"] { --gx: 385px; }
+#graphStep3[data-gmode="pie"] { --gx: 350px; }
+#graphStep3[data-gmode="surface3d"] { --gx: 325px; }
+#graphStep3[data-gmode="function"] { --gx: 325px; }
+#graphStep3[data-gmode="contour"],
+#graphStep3[data-gmode="argand"],
+#graphStep3[data-gmode="vectors"],
+#graphStep3[data-gmode="normal"],
+#graphStep3[data-gmode="boxplot"] { --gx: 375px; }
+#graphStep3[data-gmode="regression"],
+#graphStep3[data-gmode="slopefield"] { --gx: 335px; }
+.graph-group-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 12px 2px 0;
+}
+#graphTypeList .graph-group-label:first-child { margin-top: 0; }
+#graphStep3 .graph-canvas-wrap {
+  flex: none;
+  height: clamp(190px, calc(100vh - var(--gx)), 480px);
+  height: clamp(190px, calc(100dvh - var(--gx)), 480px);
+  min-height: 0;
+}
+#graphStep3 .graph-error:empty { display: none; }
+#graphStep3 .formulas-subtitle { margin-bottom: 8px; }
+#graphStep3 .graph-error { margin-bottom: 6px; }
+#graphStep3 .graph-legend { margin-top: 8px; }
+#graphStep3 .graph-integral-value:empty { display: none; }
+#graphStep3 .graph-integral-value { margin-bottom: 8px; }
+.pill-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #17171a;
+}
+
 /* ============================================
    GRAPH / UNIT CIRCLE TAB
    ============================================ */
