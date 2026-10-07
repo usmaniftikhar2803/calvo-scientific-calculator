@@ -65,7 +65,7 @@
 <h2>FAQ</h2>
 <details><summary>How do I integrate step by step?</summary><p>Look for the pattern: a power, a standard function, a product that suits parts, or an inside function whose derivative also appears (substitution). Calvo names the method it uses and shows each line.</p></details><details><summary>What is the integral of x e^x?</summary><p>x e^x − e^x + C, by integration by parts with u = x and dv = e^x dx.</p></details><details><summary>What is the integral of 1/x?</summary><p>ln|x| + C. The absolute value keeps the answer valid for negative x as well.</p></details><details><summary>How do I do a definite integral?</summary><p>Type the lower and upper limits. Calvo finds the antiderivative F and gives F(upper) − F(lower), with the exact value and a decimal.</p></details><details><summary>Why does Calvo say it cannot solve my integral?</summary><p>Some integrals need a method it does not use yet, or have no elementary antiderivative. It prefers to say so rather than show a wrong answer.</p></details><details><summary>Why is the constant C missing in a definite integral?</summary><p>In a definite integral F(b) − F(a) cancels the constant, so the result is just a number.</p></details><details><summary>Is my answer allowed to look different from the book?</summary><p>Yes. Two antiderivatives can differ by a constant, or be written in an equivalent form. Differentiate both to confirm they match.</p></details><details><summary>Does it work offline?</summary><p>Yes. The calculation runs in your browser and the page is cached after your first visit.</p></details>
 <h2>More Calvo tools</h2>
-<div class="related"><a href="/derivative-calculator.html">Derivative Calculator (steps)</a><a href="/chemical-equation-balancer.html">Chemical Equation Balancer</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
+<div class="related"><a href="/limit-calculator.html">Limit Calculator (steps)</a><a href="/algebra-simplifier.html">Algebra Simplifier</a><a href="/derivative-calculator.html">Derivative Calculator (steps)</a><a href="/chemical-equation-balancer.html">Chemical Equation Balancer</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
 </main>
 <footer>
@@ -73,6 +73,7 @@
 <div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
 </footer>
 <script src="/calculus-engine.js"></script>
+<script src="/simple-steps.js"></script>
 <script>
 (function(){
 var $=function(i){return document.getElementById(i)},C=window.CalvoCalc;
@@ -84,17 +85,19 @@ function run(){
  if(!v){out.className='result empty';out.textContent='Type a function first, for example x*e^x.';return}
  var r=C.integral(v,$('lo').value,$('hi').value);
  if(!r.ok){out.className='result';out.innerHTML='<span class="err">'+esc(r.error)+'</span>';return}
+ var ah='';
  var h='<div class="note" style="margin-bottom:6px">Read as: f('+r.v+') = '+C.fmt(r.input,'h')+'</div>';
- h+='<div class="ans">\u222b f d'+r.v+' = '+r.html+' + C'+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
- if(r.check!=='ok')h+='<div class="warnbox">The numeric check could not confirm this answer at every test point. Differentiate it by hand to be sure.</div>';
+ ah+='<div class="ans">\u222b f d'+r.v+' = '+r.html+' + C'+(r.check==='ok'?'<span class="okbadge">verified &#10003;</span>':'')+'</div>';
+ if(r.check!=='ok')ah+='<div class="warnbox">The numeric check could not confirm this answer at every test point. Differentiate it by hand to be sure.</div>';
  var txt='\u222b '+v+' d'+r.v+' = '+r.text+' + C';
  if(r.def){var d=r.def;
-  if(d.warn){h+='<div class="warnbox"><b>No reliable value from '+d.lo+' to '+d.hi+'.</b> '+esc(d.warn)+'</div>';}
-  else{h+='<div class="ans" style="font-size:15px;margin-top:6px">Definite integral from '+d.lo+' to '+d.hi+': F('+d.hi+') \u2212 F('+d.lo+') = '+d.exact+' &asymp; <b>'+(Math.round(d.value*1e6)/1e6)+'</b></div>';
+  if(d.warn){ah+='<div class="warnbox"><b>No reliable value from '+d.lo+' to '+d.hi+'.</b> '+esc(d.warn)+'</div>';}
+  else{ah+='<div class="ans" style="font-size:15px;margin-top:6px">Definite integral from '+d.lo+' to '+d.hi+': F('+d.hi+') \u2212 F('+d.lo+') = '+d.exact+' &asymp; <b>'+(Math.round(d.value*1e6)/1e6)+'</b></div>';
    txt+='; from '+d.lo+' to '+d.hi+' = '+(Math.round(d.value*1e6)/1e6);}}
- h+='<div class="blk"><h4>Steps</h4>'+steps(r.steps)+'</div>';
+ h+='<div class="blk"><h4>Step by step</h4><div id="ssmount"></div></div>';
  h+='<p style="margin:12px 0 0"><button class="btn ghost" id="cp" type="button">Copy answer</button> '+wa(txt+' (Calvo)','https://calvoscientificcalculator.online/integral-calculator.html')+'</p>';
  out.className='result';out.innerHTML=h;
+ window.SimpleSteps.mount($('ssmount'),{steps:r.steps,kind:'integral',answerHtml:ah});
  $('cp').onclick=function(){var b=this;try{navigator.clipboard.writeText(txt).then(function(){b.textContent='Copied'})}catch(e){b.textContent='Copy not supported'}};
 }
 $('go').onclick=run;
