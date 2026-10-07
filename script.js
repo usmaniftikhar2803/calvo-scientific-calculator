@@ -557,6 +557,11 @@ const SUB_SCREENS = {
     depth() { return shown('subjectToolsDetailView') ? 2 : shown('subjectToolsListView') ? 1 : 0; },
     closeBtn(d) { return d >= 2 ? 'subjectToolsBackBtn' : 'subjectToolsListBackBtn'; }
   },
+  graph: {
+    // Function Grapher: 1 = graph names, 2 = functions, 3 = the graph
+    depth() { return shown('graphStep3') ? 2 : shown('graphStep2') ? 1 : 0; },
+    closeBtn(d) { return d >= 2 ? 'graphBackToInputBtn' : 'graphBackToListBtn'; }
+  },
   formulas: {
     depth() { return shown('formulaDetailView') ? 1 : 0; },
     closeBtn() { return 'formulaBackBtn'; }
@@ -14074,7 +14079,36 @@ setTimeout(() => {
   const dataBarBtn = document.getElementById('graphDataBarBtn');
   const dataScatterBtn = document.getElementById('graphDataScatterBtn');
   const dataError = document.getElementById('graphDataError');
+  const dataLineBtn = document.getElementById('graphDataLineBtn');
+  const dataAreaBtn = document.getElementById('graphDataAreaBtn');
   let dataChartType = 'bar';
+
+  // new graphs: implicit curve + pie chart
+  const implicitPanel = document.getElementById('graphImplicitPanel');
+  const implicitInput = document.getElementById('graphImplicitInput');
+  const implicitMinInput = document.getElementById('graphImplicitMin');
+  const implicitMaxInput = document.getElementById('graphImplicitMax');
+  const implicitQuickBtns = document.getElementById('graphImplicitQuickBtns');
+  const implicitError = document.getElementById('graphImplicitError');
+  const piePanel = document.getElementById('graphPiePanel');
+  const pieInput = document.getElementById('graphPieInput');
+  const pieError = document.getElementById('graphPieError');
+
+  // 3-step flow: 1 = graph names, 2 = functions/inputs, 3 = the graph
+  const step1El = document.getElementById('graphStep1');
+  const step2El = document.getElementById('graphStep2');
+  const step3El = document.getElementById('graphStep3');
+  const step2Title = document.getElementById('graphStep2Title');
+  const step3Title = document.getElementById('graphStep3Title');
+  const step3Error = document.getElementById('graphStep3Error');
+  const typeList = document.getElementById('graphTypeList');
+  const circleStartPanel = document.getElementById('graphCircleStartPanel');
+  const circleQuickBtns = document.getElementById('graphCircleQuickBtns');
+  const hint3D = document.getElementById('graph3DHint');
+  const showGraphBtn = document.getElementById('graphShowBtn');
+  const backToListBtn = document.getElementById('graphBackToListBtn');
+  const backToInputBtn = document.getElementById('graphBackToInputBtn');
+  let graphStep = 1;
 
   let graphMode = 'function';
 
@@ -14639,7 +14673,38 @@ setTimeout(() => {
     const toPx = drawAxes(w, h, dxmin, dxmax, dymin, dymax);
     const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
 
-    if (dataChartType === 'bar') {
+    if (dataChartType === 'area') {
+      const sortedA = pts.slice().sort((a, b) => a[0] - b[0]);
+      const [, zeroY] = toPx(0, 0);
+      ctx.fillStyle = 'rgba(255,138,31,0.28)';
+      ctx.beginPath();
+      sortedA.forEach(([x, y], i) => {
+        const [px, py] = toPx(x, y);
+        if (i === 0) { ctx.moveTo(px, zeroY); ctx.lineTo(px, py); } else ctx.lineTo(px, py);
+      });
+      ctx.lineTo(toPx(sortedA[sortedA.length - 1][0], 0)[0], zeroY);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = accent; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      sortedA.forEach(([x, y], i) => { const [px, py] = toPx(x, y); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); });
+      ctx.stroke();
+    } else if (dataChartType === 'line') {
+      const sorted = pts.slice().sort((a, b) => a[0] - b[0]);
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      sorted.forEach(([x, y], i) => {
+        const [px, py] = toPx(x, y);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+      ctx.fillStyle = accent;
+      sorted.forEach(([x, y]) => {
+        const [px, py] = toPx(x, y);
+        ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+      });
+    } else if (dataChartType === 'bar') {
       const barW = Math.max(6, Math.min(46, (w / pts.length) * 0.5));
       const [, zeroPy] = toPx(0, 0);
       ctx.fillStyle = accent;
@@ -14654,9 +14719,505 @@ setTimeout(() => {
         ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
       });
     }
-    const label = (dataChartType === 'bar' ? t('graph_data_bar') : t('graph_data_scatter')) + ' — ' + pts.length + (pts.length === 1 ? ' pt' : ' pts');
+    const label = (dataChartType === 'bar' ? t('graph_data_bar') : dataChartType === 'line' ? t('graph_data_line') : dataChartType === 'area' ? t('graph_data_area') : t('graph_data_scatter')) + ' — ' + pts.length + (pts.length === 1 ? ' pt' : ' pts');
     renderLegend([{ color: accent, label }]);
   }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Implicit curve F(x, y) = 0 (circle, ellipse, hyperbola ...) drawn with marching squares
+  function plotImplicit() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    if (implicitError) implicitError.textContent = '';
+    const bad = () => {
+      if (implicitError) implicitError.textContent = t('graph_implicit_error');
+      ctx.clearRect(0, 0, w, h);
+      renderLegend([]);
+    };
+    const xmin = parseFloat(implicitMinInput.value), xmax = parseFloat(implicitMaxInput.value);
+    if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) {
+      if (implicitError) implicitError.textContent = t('graph_error_range');
+      ctx.clearRect(0, 0, w, h);
+      renderLegend([]);
+      return;
+    }
+    const raw = (implicitInput.value || '').trim();
+    const parts = raw.split('=');
+    if (parts.length > 2 || !parts[0].trim()) return bad();
+    const lhs = parts[0], rhs = parts.length === 2 ? parts[1] : '0';
+    if (!rhs.trim()) return bad();
+    const fn = compileFn3D('(' + lhs + ')-(' + rhs + ')');
+    if (!fn) return bad();
+
+    const span = xmax - xmin;
+    const yspan = span * h / w;           // equal scale on both axes so circles look round
+    const ymin = -yspan / 2, ymax = yspan / 2;
+    const toPx = drawAxes(w, h, xmin, xmax, ymin, ymax);
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+
+    const cell = 3;
+    const nx = Math.max(20, Math.min(320, Math.floor(w / cell)));
+    const ny = Math.max(20, Math.min(320, Math.floor(h / cell)));
+    const stride = nx + 1;
+    const vals = new Float64Array(stride * (ny + 1));
+    for (let j = 0; j <= ny; j++) {
+      const y = ymax - yspan * j / ny;
+      for (let i = 0; i <= nx; i++) {
+        const x = xmin + span * i / nx;
+        let v; try { v = fn(x, y); } catch (e) { v = NaN; }
+        vals[j * stride + i] = isFinite(v) ? v : NaN;
+      }
+    }
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    let any = false;
+    for (let j = 0; j < ny; j++) {
+      for (let i = 0; i < nx; i++) {
+        const v0 = vals[j * stride + i], v1 = vals[j * stride + i + 1];
+        const v2 = vals[(j + 1) * stride + i + 1], v3 = vals[(j + 1) * stride + i];
+        if (isNaN(v0) || isNaN(v1) || isNaN(v2) || isNaN(v3)) continue;
+        const x0 = i * w / nx, x1 = (i + 1) * w / nx, y0 = j * h / ny, y1 = (j + 1) * h / ny;
+        const top = ((v0 < 0) !== (v1 < 0)) ? [x0 + v0 / (v0 - v1) * (x1 - x0), y0] : null;
+        const right = ((v1 < 0) !== (v2 < 0)) ? [x1, y0 + v1 / (v1 - v2) * (y1 - y0)] : null;
+        const bottom = ((v3 < 0) !== (v2 < 0)) ? [x0 + v3 / (v3 - v2) * (x1 - x0), y1] : null;
+        const left = ((v0 < 0) !== (v3 < 0)) ? [x0, y0 + v0 / (v0 - v3) * (y1 - y0)] : null;
+        const edges = [top, right, bottom, left].filter(Boolean);
+        const seg = (a, b) => { ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); any = true; };
+        if (edges.length === 2) seg(edges[0], edges[1]);
+        else if (edges.length === 4) {
+          const centre = (v0 + v1 + v2 + v3) / 4;
+          if ((centre < 0) === (v0 < 0)) { seg(top, right); seg(bottom, left); }
+          else { seg(top, left); seg(right, bottom); }
+        }
+      }
+    }
+    ctx.stroke();
+    if (!any && implicitError) implicitError.textContent = t('graph_implicit_nocurve');
+    renderLegend([{ color: accent, label: escHtml(raw) }]);
+  }
+
+  const PIE_COLORS = ['#ff8a1f', '#5a9ad8', '#3fbf6f', '#e8548b', '#f2c14e', '#9b6ee0', '#2fc4b2', '#ff7a59', '#7fb069', '#c06c84'];
+  function plotPie() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    if (pieError) pieError.textContent = '';
+    ctx.clearRect(0, 0, w, h);
+    const lines = (pieInput.value || '').split('\n').map(l => l.trim()).filter(Boolean);
+    const items = [];
+    lines.forEach((line, idx) => {
+      const cut = line.lastIndexOf(',');
+      let label, val;
+      if (cut === -1) { label = 'Item ' + (idx + 1); val = parseFloat(line); }
+      else { label = line.slice(0, cut).trim() || ('Item ' + (idx + 1)); val = parseFloat(line.slice(cut + 1)); }
+      if (isFinite(val) && val > 0) items.push({ label, val });
+    });
+    const total = items.reduce((a, b) => a + b.val, 0);
+    if (!items.length || total <= 0) {
+      if (pieError) pieError.textContent = t('graph_pie_error');
+      renderLegend([]);
+      return;
+    }
+    const cx = w / 2, cy = h / 2, r = Math.min(w, h) * 0.4;
+    let ang = -Math.PI / 2;
+    const legend = [];
+    items.forEach((it, i) => {
+      const frac = it.val / total;
+      const a2 = ang + frac * Math.PI * 2;
+      const color = PIE_COLORS[i % PIE_COLORS.length];
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, ang, a2); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+      if (frac >= 0.05) {
+        const mid = (ang + a2) / 2;
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 12px Inter, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText((frac * 100).toFixed(1) + '%', cx + Math.cos(mid) * r * 0.62, cy + Math.sin(mid) * r * 0.62);
+      }
+      legend.push({ color, label: escHtml(it.label) + ' — ' + (frac * 100).toFixed(1) + '%' });
+      ang = a2;
+    });
+    renderLegend(legend);
+  }
+
+  /* ====== 9 more graphs: slope field, contour, histogram, box plot, normal, binomial, regression, argand, vectors ====== */
+  const gEl = (id) => document.getElementById(id);
+  const accentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff8a1f';
+  function parseNumList(raw) {
+    return (raw || '').split(/[\s,;]+/).map(v => parseFloat(v)).filter(v => isFinite(v)).slice(0, 5000);
+  }
+  function fmtN(v, d) { return String(+Number(v).toFixed(d === undefined ? 4 : d)); }
+  function drawArrow(x0, y0, x1, y1, color, width) {
+    const ang = Math.atan2(y1 - y0, x1 - x0), hd = 9;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 2.2; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - hd * Math.cos(ang - 0.4), y1 - hd * Math.sin(ang - 0.4));
+    ctx.lineTo(x1 - hd * Math.cos(ang + 0.4), y1 - hd * Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  function failPlot(errEl, key, w, h) {
+    if (errEl) errEl.textContent = t(key);
+    ctx.clearRect(0, 0, w, h);
+    renderLegend([]);
+  }
+  // marching squares for one level of a gridded function
+  function marchLevel(vals, stride, nx, ny, w, h, level) {
+    ctx.beginPath();
+    let any = false;
+    for (let j = 0; j < ny; j++) {
+      for (let i = 0; i < nx; i++) {
+        const v0 = vals[j * stride + i] - level, v1 = vals[j * stride + i + 1] - level;
+        const v2 = vals[(j + 1) * stride + i + 1] - level, v3 = vals[(j + 1) * stride + i] - level;
+        if (isNaN(v0) || isNaN(v1) || isNaN(v2) || isNaN(v3)) continue;
+        const x0 = i * w / nx, x1 = (i + 1) * w / nx, y0 = j * h / ny, y1 = (j + 1) * h / ny;
+        const top = ((v0 < 0) !== (v1 < 0)) ? [x0 + v0 / (v0 - v1) * (x1 - x0), y0] : null;
+        const right = ((v1 < 0) !== (v2 < 0)) ? [x1, y0 + v1 / (v1 - v2) * (y1 - y0)] : null;
+        const bottom = ((v3 < 0) !== (v2 < 0)) ? [x0 + v3 / (v3 - v2) * (x1 - x0), y1] : null;
+        const left = ((v0 < 0) !== (v3 < 0)) ? [x0, y0 + v0 / (v0 - v3) * (y1 - y0)] : null;
+        const edges = [top, right, bottom, left].filter(Boolean);
+        const seg = (a, b) => { ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); any = true; };
+        if (edges.length === 2) seg(edges[0], edges[1]);
+        else if (edges.length === 4) {
+          const centre = (v0 + v1 + v2 + v3) / 4;
+          if ((centre < 0) === (v0 < 0)) { seg(top, right); seg(bottom, left); } else { seg(top, left); seg(right, bottom); }
+        }
+      }
+    }
+    ctx.stroke();
+    return any;
+  }
+
+  function plotSlopeField() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphSlopeError'); errEl.textContent = '';
+    const xmin = parseFloat(gEl('graphSlopeMin').value), xmax = parseFloat(gEl('graphSlopeMax').value);
+    if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) return failPlot(errEl, 'graph_error_range', w, h);
+    const fn = compileFn3D(gEl('graphSlopeInput').value);
+    if (!fn) return failPlot(errEl, 'graph_slope_error', w, h);
+    const span = xmax - xmin, yspan = span * h / w, ymin = -yspan / 2, ymax = yspan / 2;
+    const toPx = drawAxes(w, h, xmin, xmax, ymin, ymax);
+    const accent = accentColor();
+    const cols = 22, d = span / cols, rows = Math.max(1, Math.floor(yspan / d)), L = d * 0.4;
+    ctx.strokeStyle = 'rgba(255,138,31,0.8)'; ctx.lineWidth = 1.6; ctx.beginPath();
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        const x = xmin + (i + 0.5) * d, y = -rows * d / 2 + (j + 0.5) * d;
+        let m; try { m = fn(x, y); } catch (e) { m = NaN; }
+        if (isNaN(m)) continue;
+        const ang = isFinite(m) ? Math.atan(m) : Math.PI / 2;
+        const [ax, ay] = toPx(x - L * Math.cos(ang), y - L * Math.sin(ang));
+        const [bx, by] = toPx(x + L * Math.cos(ang), y + L * Math.sin(ang));
+        ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+      }
+    }
+    ctx.stroke();
+    // solution curve through (x0, y0) using RK4, both directions
+    const x0 = parseFloat(gEl('graphSlopeX0').value), y0 = parseFloat(gEl('graphSlopeY0').value);
+    const legend = [{ color: accent, label: 'dy/dx = ' + escHtml(gEl('graphSlopeInput').value) }];
+    if (isFinite(x0) && isFinite(y0)) {
+      const f = (x, y) => { try { return fn(x, y); } catch (e) { return NaN; } };
+      const trace = (dir) => {
+        const pts = [[x0, y0]]; let x = x0, y = y0; const hs = dir * span / 600;
+        for (let n = 0; n < 700; n++) {
+          const k1 = f(x, y), k2 = f(x + hs / 2, y + hs * k1 / 2), k3 = f(x + hs / 2, y + hs * k2 / 2), k4 = f(x + hs, y + hs * k3);
+          const yn = y + hs * (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+          x += hs;
+          if (!isFinite(yn) || Math.abs(yn) > yspan * 3 || x < xmin - 1e-9 || x > xmax + 1e-9) break;
+          y = yn; pts.push([x, y]);
+        }
+        return pts;
+      };
+      const pts = trace(-1).reverse().concat(trace(1).slice(1));
+      ctx.strokeStyle = '#5a9ad8'; ctx.lineWidth = 2.6; ctx.beginPath();
+      pts.forEach(([x, y], i) => { const [px, py] = toPx(x, y); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); });
+      ctx.stroke();
+      const [dx0, dy0] = toPx(x0, y0);
+      ctx.fillStyle = '#5a9ad8'; ctx.beginPath(); ctx.arc(dx0, dy0, 4.5, 0, Math.PI * 2); ctx.fill();
+      legend.push({ color: '#5a9ad8', label: 'y(' + fmtN(x0, 2) + ') = ' + fmtN(y0, 2) });
+    }
+    renderLegend(legend);
+  }
+
+  function plotContour() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphContourError'); errEl.textContent = '';
+    const xmin = parseFloat(gEl('graphContourMin').value), xmax = parseFloat(gEl('graphContourMax').value);
+    if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) return failPlot(errEl, 'graph_error_range', w, h);
+    const fn = compileFn3D(gEl('graphContourInput').value);
+    if (!fn) return failPlot(errEl, 'graph_contour_error', w, h);
+    const span = xmax - xmin, yspan = span * h / w, ymin = -yspan / 2, ymax = yspan / 2;
+    drawAxes(w, h, xmin, xmax, ymin, ymax);
+    const nx = Math.max(20, Math.min(240, Math.floor(w / 4))), ny = Math.max(20, Math.min(240, Math.floor(h / 4)));
+    const stride = nx + 1, vals = new Float64Array(stride * (ny + 1));
+    let zmin = Infinity, zmax = -Infinity;
+    for (let j = 0; j <= ny; j++) {
+      const y = ymax - yspan * j / ny;
+      for (let i = 0; i <= nx; i++) {
+        const x = xmin + span * i / nx;
+        let v; try { v = fn(x, y); } catch (e) { v = NaN; }
+        if (!isFinite(v)) v = NaN; else { if (v < zmin) zmin = v; if (v > zmax) zmax = v; }
+        vals[j * stride + i] = v;
+      }
+    }
+    if (!isFinite(zmin) || zmin === zmax) return failPlot(errEl, 'graph_contour_error', w, h);
+    let k = parseInt(gEl('graphContourLevels').value, 10);
+    if (!(k >= 2)) k = 8; k = Math.min(k, 15);
+    const legend = [];
+    ctx.lineWidth = 1.8;
+    for (let n = 0; n < k; n++) {
+      const level = zmin + (zmax - zmin) * (n + 1) / (k + 1);
+      const color = 'hsl(' + Math.round(220 - 200 * n / (k - 1)) + ',85%,62%)';
+      ctx.strokeStyle = color;
+      marchLevel(vals, stride, nx, ny, w, h, level);
+      legend.push({ color, label: 'z = ' + fmtN(level, 3) });
+    }
+    renderLegend(legend);
+  }
+
+  function plotHistogram() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphHistError'); errEl.textContent = '';
+    const vals = parseNumList(gEl('graphHistInput').value);
+    if (!vals.length) return failPlot(errEl, 'graph_hist_error', w, h);
+    let k = parseInt(gEl('graphHistBins').value, 10);
+    if (!(k >= 1)) k = Math.ceil(Math.log2(vals.length)) + 1;
+    k = Math.min(k, 60);
+    let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    if (lo === hi) { lo -= 0.5; hi += 0.5; }
+    const bw = (hi - lo) / k, counts = new Array(k).fill(0);
+    vals.forEach(v => { counts[Math.min(k - 1, Math.floor((v - lo) / bw))]++; });
+    const maxC = Math.max.apply(null, counts), pad = (hi - lo) * 0.08;
+    const toPx = drawAxes(w, h, lo - pad, hi + pad, -maxC * 0.06, maxC * 1.2);
+    const accent = accentColor();
+    ctx.save();
+    ctx.font = '600 11px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    counts.forEach((c, i) => {
+      const xa = lo + i * bw, [px0, py] = toPx(xa, c), [px1, pz] = toPx(xa + bw, 0);
+      ctx.fillStyle = 'rgba(255,138,31,0.75)'; ctx.fillRect(px0 + 1, py, Math.max(1, px1 - px0 - 2), pz - py);
+      ctx.strokeStyle = accent; ctx.lineWidth = 1; ctx.strokeRect(px0 + 1, py, Math.max(1, px1 - px0 - 2), pz - py);
+      if (c > 0) { ctx.fillStyle = '#ddd'; ctx.fillText(String(c), (px0 + px1) / 2, py - 2); }
+    });
+    ctx.restore();
+    renderLegend([{ color: accent, label: 'n = ' + vals.length + ' · ' + k + ' bins · width ' + fmtN(bw, 3) + ' · ' + fmtN(lo, 3) + ' → ' + fmtN(hi, 3) }]);
+  }
+
+  function quantile(sorted, q) {
+    const pos = (sorted.length - 1) * q, b = Math.floor(pos), r = pos - b;
+    return sorted[b + 1] !== undefined ? sorted[b] + r * (sorted[b + 1] - sorted[b]) : sorted[b];
+  }
+  function plotBoxPlot() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphBoxError'); errEl.textContent = '';
+    const vals = parseNumList(gEl('graphBoxInput').value).sort((a, b) => a - b);
+    if (vals.length < 2) return failPlot(errEl, 'graph_box_error', w, h);
+    const q1 = quantile(vals, 0.25), med = quantile(vals, 0.5), q3 = quantile(vals, 0.75), iqr = q3 - q1;
+    const inliers = vals.filter(v => v >= q1 - 1.5 * iqr && v <= q3 + 1.5 * iqr);
+    const wlo = inliers[0], whi = inliers[inliers.length - 1];
+    const outliers = vals.filter(v => v < wlo || v > whi);
+    let lo = vals[0], hi = vals[vals.length - 1]; if (lo === hi) { lo -= 1; hi += 1; }
+    const pad = (hi - lo) * 0.1;
+    const toPx = drawAxes(w, h, lo - pad, hi + pad, 0, 1);
+    const accent = accentColor();
+    const yT = 0.62, yB = 0.38, yM = 0.5;
+    const [pq1, pT] = toPx(q1, yT), [pq3, pB] = toPx(q3, yB), [pmed] = toPx(med, yM);
+    ctx.fillStyle = 'rgba(255,138,31,0.25)'; ctx.fillRect(pq1, pT, pq3 - pq1, pB - pT);
+    ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.strokeRect(pq1, pT, pq3 - pq1, pB - pT);
+    ctx.lineWidth = 3.2; ctx.beginPath(); ctx.moveTo(pmed, pT); ctx.lineTo(pmed, pB); ctx.stroke();
+    ctx.lineWidth = 2; ctx.beginPath();
+    const [pwl, pm] = toPx(wlo, yM), [pwh] = toPx(whi, yM), [, pc1] = toPx(wlo, 0.55), [, pc2] = toPx(wlo, 0.45);
+    ctx.moveTo(pq1, pm); ctx.lineTo(pwl, pm); ctx.moveTo(pq3, pm); ctx.lineTo(pwh, pm);
+    ctx.moveTo(pwl, pc1); ctx.lineTo(pwl, pc2); ctx.moveTo(pwh, pc1); ctx.lineTo(pwh, pc2);
+    ctx.stroke();
+    ctx.fillStyle = '#ff6b6b';
+    outliers.forEach(v => { const [ox, oy] = toPx(v, yM); ctx.beginPath(); ctx.arc(ox, oy, 4, 0, Math.PI * 2); ctx.fill(); });
+    renderLegend([
+      { color: accent, label: 'Min ' + fmtN(vals[0], 3) + ' · Q1 ' + fmtN(q1, 3) + ' · Median ' + fmtN(med, 3) + ' · Q3 ' + fmtN(q3, 3) + ' · Max ' + fmtN(vals[vals.length - 1], 3) },
+      { color: '#ff6b6b', label: 'IQR ' + fmtN(iqr, 3) + ' · outliers: ' + (outliers.length ? outliers.map(v => fmtN(v, 3)).join(', ') : '—') }
+    ]);
+  }
+
+  function plotNormal() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphNormError'); errEl.textContent = '';
+    const mu = parseFloat(gEl('graphNormMean').value), sd = parseFloat(gEl('graphNormSd').value);
+    if (!isFinite(mu) || !isFinite(sd) || sd <= 0) return failPlot(errEl, 'graph_norm_error', w, h);
+    const pdf = x => Math.exp(-0.5 * Math.pow((x - mu) / sd, 2)) / (sd * Math.sqrt(2 * Math.PI));
+    const peak = pdf(mu), xmin = mu - 4 * sd, xmax = mu + 4 * sd;
+    const toPx = drawAxes(w, h, xmin, xmax, -peak * 0.04, peak * 1.15);
+    const accent = accentColor();
+    const shade = (a, b, color) => {
+      ctx.fillStyle = color; ctx.beginPath();
+      const [sx, sz] = toPx(a, 0); ctx.moveTo(sx, sz);
+      for (let i = 0; i <= 80; i++) { const x = a + (b - a) * i / 80; const [px, py] = toPx(x, pdf(x)); ctx.lineTo(px, py); }
+      const [ex] = toPx(b, 0); ctx.lineTo(ex, sz); ctx.closePath(); ctx.fill();
+    };
+    shade(mu - 2 * sd, mu + 2 * sd, 'rgba(90,154,216,0.22)');
+    shade(mu - sd, mu + sd, 'rgba(255,138,31,0.32)');
+    ctx.strokeStyle = accent; ctx.lineWidth = 2.6; ctx.beginPath();
+    for (let i = 0; i <= 300; i++) { const x = xmin + (xmax - xmin) * i / 300; const [px, py] = toPx(x, pdf(x)); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2;
+    const [mx, m0] = toPx(mu, 0), [, mTop] = toPx(mu, peak);
+    ctx.beginPath(); ctx.moveTo(mx, m0); ctx.lineTo(mx, mTop); ctx.stroke(); ctx.setLineDash([]);
+    renderLegend([
+      { color: accent, label: 'μ = ' + fmtN(mu, 3) + ', σ = ' + fmtN(sd, 3) + ' · peak ' + fmtN(peak, 4) },
+      { color: 'rgba(255,138,31,0.7)', label: '±1σ: 68.27% (' + fmtN(mu - sd, 2) + ' → ' + fmtN(mu + sd, 2) + ')' },
+      { color: 'rgba(90,154,216,0.8)', label: '±2σ: 95.45% (' + fmtN(mu - 2 * sd, 2) + ' → ' + fmtN(mu + 2 * sd, 2) + ')' }
+    ]);
+  }
+
+  function plotBinomial() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphBinError'); errEl.textContent = '';
+    const n = parseInt(gEl('graphBinN').value, 10), p = parseFloat(gEl('graphBinP').value);
+    if (!(n >= 1 && n <= 300) || !isFinite(p) || p < 0 || p > 1) return failPlot(errEl, 'graph_bin_error', w, h);
+    const lf = [0]; for (let i = 1; i <= n; i++) lf[i] = lf[i - 1] + Math.log(i);
+    const probs = [];
+    for (let k = 0; k <= n; k++) {
+      if (p === 0) probs.push(k === 0 ? 1 : 0);
+      else if (p === 1) probs.push(k === n ? 1 : 0);
+      else probs.push(Math.exp(lf[n] - lf[k] - lf[n - k] + k * Math.log(p) + (n - k) * Math.log(1 - p)));
+    }
+    const pmax = Math.max.apply(null, probs);
+    const toPx = drawAxes(w, h, -0.8, n + 0.8, -pmax * 0.06, pmax * 1.2);
+    const accent = accentColor();
+    ctx.save(); ctx.font = '600 10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    probs.forEach((pr, k) => {
+      const [px0, py] = toPx(k - 0.4, pr), [px1, pz] = toPx(k + 0.4, 0);
+      ctx.fillStyle = 'rgba(255,138,31,0.8)'; ctx.fillRect(px0, py, Math.max(1, px1 - px0), pz - py);
+      if (n <= 20 && pr > 0.0005) { ctx.fillStyle = '#ddd'; ctx.fillText(pr.toFixed(3), (px0 + px1) / 2, py - 2); }
+    });
+    ctx.restore();
+    renderLegend([{ color: accent, label: 'Binomial(n = ' + n + ', p = ' + fmtN(p, 3) + ') · mean = ' + fmtN(n * p, 3) + ' · σ = ' + fmtN(Math.sqrt(n * p * (1 - p)), 3) }]);
+  }
+
+  function plotRegression() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphRegError'); errEl.textContent = '';
+    const pts = parseDataPairs(gEl('graphRegInput').value);
+    const n = pts.length;
+    let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+    pts.forEach(([x, y]) => { sx += x; sy += y; sxx += x * x; sxy += x * y; syy += y * y; });
+    const den = n * sxx - sx * sx;
+    if (n < 2 || Math.abs(den) < 1e-12) return failPlot(errEl, 'graph_reg_error', w, h);
+    const m = (n * sxy - sx * sy) / den, c = (sy - m * sx) / n;
+    const vy = n * syy - sy * sy;
+    const r = vy < 1e-12 ? NaN : (n * sxy - sx * sy) / Math.sqrt(den * vy);
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    pts.forEach(([x, y]) => { xmin = Math.min(xmin, x); xmax = Math.max(xmax, x); ymin = Math.min(ymin, y); ymax = Math.max(ymax, y); });
+    const px = (xmax - xmin) * 0.15, dxmin = xmin - px, dxmax = xmax + px;
+    ymin = Math.min(ymin, m * dxmin + c, m * dxmax + c); ymax = Math.max(ymax, m * dxmin + c, m * dxmax + c);
+    const py = (ymax - ymin) * 0.12 || 1;
+    const toPx = drawAxes(w, h, dxmin, dxmax, ymin - py, ymax + py);
+    const accent = accentColor();
+    ctx.strokeStyle = '#5a9ad8'; ctx.lineWidth = 2.6; ctx.beginPath();
+    const [lx0, ly0] = toPx(dxmin, m * dxmin + c), [lx1, ly1] = toPx(dxmax, m * dxmax + c);
+    ctx.moveTo(lx0, ly0); ctx.lineTo(lx1, ly1); ctx.stroke();
+    ctx.fillStyle = accent;
+    pts.forEach(([x, y]) => { const [qx, qy] = toPx(x, y); ctx.beginPath(); ctx.arc(qx, qy, 5, 0, Math.PI * 2); ctx.fill(); });
+    renderLegend([
+      { color: accent, label: 'Data (' + n + ' pts)' },
+      { color: '#5a9ad8', label: 'y = ' + fmtN(m, 4) + 'x ' + (c < 0 ? '− ' : '+ ') + fmtN(Math.abs(c), 4) + ' · r = ' + (isNaN(r) ? '—' : fmtN(r, 4)) + ' · r² = ' + (isNaN(r) ? '—' : fmtN(r * r, 4)) }
+    ]);
+  }
+
+  function parseComplex(str) {
+    let sv = (str || '').replace(/\s+/g, '').replace(/j/gi, 'i');
+    if (!sv) return null;
+    const numRe = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+    if (sv.slice(-1) !== 'i') return numRe.test(sv) ? { re: parseFloat(sv), im: 0 } : null;
+    const body = sv.slice(0, -1);
+    let split = -1;
+    for (let i = body.length - 1; i > 0; i--) { if ((body[i] === '+' || body[i] === '-') && !/e/i.test(body[i - 1])) { split = i; break; } }
+    const imStr = split === -1 ? body : body.slice(split);
+    const reStr = split === -1 ? '0' : body.slice(0, split);
+    const im = (imStr === '' || imStr === '+') ? 1 : imStr === '-' ? -1 : (numRe.test(imStr) ? parseFloat(imStr) : NaN);
+    const re = numRe.test(reStr) ? parseFloat(reStr) : NaN;
+    return (isFinite(re) && isFinite(im)) ? { re, im } : null;
+  }
+  function fmtComplexStr(re, im) { return fmtN(re, 3) + ' ' + (im < 0 ? '−' : '+') + ' ' + fmtN(Math.abs(im), 3) + 'i'; }
+
+  // shared plane drawing for Argand + vectors (equal scale, fits all arrows)
+  function planeSetup(w, h, xs, ys) {
+    const maxX = Math.max.apply(null, xs.map(Math.abs).concat([1])), maxY = Math.max.apply(null, ys.map(Math.abs).concat([1]));
+    const R = Math.max(maxX * 1.35, maxY * 1.35 * w / h);
+    const yspan = 2 * R * h / w;
+    return { xmin: -R, xmax: R, ymin: -yspan / 2, ymax: yspan / 2 };
+  }
+  function planeLabels(toPx, a, b) {
+    ctx.save(); ctx.fillStyle = '#aaa'; ctx.font = '700 11px Inter, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.textAlign = 'right'; const [rx, ry] = toPx(a.xmax, 0); ctx.fillText(a.text || '', rx - 4, ry - 10);
+    ctx.textAlign = 'left'; const [ux, uy] = toPx(0, b.ymax); ctx.fillText(b.text || '', ux + 6, uy + 10);
+    ctx.restore();
+  }
+  function plotArgand() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphArgError'); errEl.textContent = '';
+    const lines = gEl('graphArgInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const zs = lines.map(parseComplex);
+    if (!zs.length || zs.some(z => !z)) return failPlot(errEl, 'graph_arg_error', w, h);
+    const rg = planeSetup(w, h, zs.map(z => z.re), zs.map(z => z.im));
+    const toPx = drawAxes(w, h, rg.xmin, rg.xmax, rg.ymin, rg.ymax);
+    planeLabels(toPx, { xmax: rg.xmax, text: 'Re' }, { ymax: rg.ymax, text: 'Im' });
+    const [ox, oy] = toPx(0, 0), legend = [];
+    ctx.save(); ctx.font = '700 12px Inter, sans-serif'; ctx.textBaseline = 'middle';
+    zs.forEach((z, i) => {
+      const color = PIE_COLORS[i % PIE_COLORS.length], [px, py] = toPx(z.re, z.im);
+      drawArrow(ox, oy, px, py, color, 2.2);
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = px >= ox ? 'left' : 'right'; ctx.fillText('z' + (i + 1), px + (px >= ox ? 8 : -8), py + (py > oy ? 10 : -10));
+      const mod = Math.hypot(z.re, z.im), arg = Math.atan2(z.im, z.re) * 180 / Math.PI;
+      legend.push({ color, label: 'z' + (i + 1) + ' = ' + fmtComplexStr(z.re, z.im) + ' · |z| = ' + fmtN(mod, 3) + ' · arg = ' + fmtN(arg, 2) + '°' });
+    });
+    ctx.restore();
+    renderLegend(legend);
+  }
+
+  function plotVectors() {
+    const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
+    const errEl = gEl('graphVecError'); errEl.textContent = '';
+    const lines = gEl('graphVecInput').value.split('\n').map(l => l.trim()).filter(Boolean);
+    const vs = lines.map(l => { const p = l.split(/[,\s;]+/).map(parseFloat); return (p.length >= 2 && isFinite(p[0]) && isFinite(p[1])) ? { x: p[0], y: p[1] } : null; });
+    if (!vs.length || vs.some(v => !v)) return failPlot(errEl, 'graph_vec_error', w, h);
+    const R = vs.reduce((a, v) => ({ x: a.x + v.x, y: a.y + v.y }), { x: 0, y: 0 });
+    const rg = planeSetup(w, h, vs.map(v => v.x).concat([R.x]), vs.map(v => v.y).concat([R.y]));
+    const toPx = drawAxes(w, h, rg.xmin, rg.xmax, rg.ymin, rg.ymax);
+    planeLabels(toPx, { xmax: rg.xmax, text: 'x' }, { ymax: rg.ymax, text: 'y' });
+    const [ox, oy] = toPx(0, 0), legend = [];
+    ctx.save(); ctx.font = '700 12px Inter, sans-serif'; ctx.textBaseline = 'middle';
+    vs.forEach((v, i) => {
+      const color = PIE_COLORS[i % PIE_COLORS.length], [px, py] = toPx(v.x, v.y);
+      drawArrow(ox, oy, px, py, color, 2.2);
+      ctx.fillStyle = color; ctx.textAlign = px >= ox ? 'left' : 'right'; ctx.fillText('v' + (i + 1), px + (px >= ox ? 8 : -8), py + (py > oy ? 10 : -10));
+      legend.push({ color, label: 'v' + (i + 1) + ' = (' + fmtN(v.x, 3) + ', ' + fmtN(v.y, 3) + ') · |v| = ' + fmtN(Math.hypot(v.x, v.y), 3) });
+    });
+    if (vs.length > 1) {
+      const [rx, ry] = toPx(R.x, R.y);
+      drawArrow(ox, oy, rx, ry, '#ffffff', 3.2);
+      ctx.fillStyle = '#fff'; ctx.textAlign = rx >= ox ? 'left' : 'right'; ctx.fillText('R', rx + (rx >= ox ? 8 : -8), ry + (ry > oy ? 12 : -12));
+      legend.push({ color: '#ffffff', label: 'R = (' + fmtN(R.x, 3) + ', ' + fmtN(R.y, 3) + ') · |R| = ' + fmtN(Math.hypot(R.x, R.y), 3) + ' · θ = ' + fmtN(Math.atan2(R.y, R.x) * 180 / Math.PI, 2) + '°' });
+    }
+    ctx.restore();
+    renderLegend(legend);
+  }
+
+  // mode -> its step-2 panel, error element and plot function
+  const EXTRA = {
+    slopefield: { panel: 'graphSlopePanel', err: 'graphSlopeError', plot: plotSlopeField },
+    contour: { panel: 'graphContourPanel', err: 'graphContourError', plot: plotContour },
+    histogram: { panel: 'graphHistPanel', err: 'graphHistError', plot: plotHistogram },
+    boxplot: { panel: 'graphBoxPanel', err: 'graphBoxError', plot: plotBoxPlot },
+    normal: { panel: 'graphNormalPanel', err: 'graphNormError', plot: plotNormal },
+    binomial: { panel: 'graphBinomialPanel', err: 'graphBinError', plot: plotBinomial },
+    regression: { panel: 'graphRegressionPanel', err: 'graphRegError', plot: plotRegression },
+    argand: { panel: 'graphArgandPanel', err: 'graphArgError', plot: plotArgand },
+    vectors: { panel: 'graphVectorsPanel', err: 'graphVecError', plot: plotVectors }
+  };
+  Object.keys(EXTRA).forEach(k => { EXTRA[k].panelEl = gEl(EXTRA[k].panel); EXTRA[k].errEl = gEl(EXTRA[k].err); });
 
   function drawUnitCircle(angleDegVal) {
     const w = canvas.__w || canvas.width, h = canvas.__h || canvas.height;
@@ -14866,6 +15427,7 @@ setTimeout(() => {
   }
 
   function redraw() {
+    if (graphStep !== 3) return;   // only draw while the graph page (step 3) is visible
     // resize canvas to actual displayed size for crispness
     const wrapRect = canvas.parentElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
@@ -14892,9 +15454,20 @@ setTimeout(() => {
       plotInequalitySized(w, h);
     } else if (graphMode === 'data') {
       plotDataChartSized(w, h);
+    } else if (graphMode === 'implicit') {
+      canvas.__w = w; canvas.__h = h; plotImplicit();
+    } else if (graphMode === 'pie') {
+      canvas.__w = w; canvas.__h = h; plotPie();
+    } else if (EXTRA[graphMode]) {
+      canvas.__w = w; canvas.__h = h; EXTRA[graphMode].plot();
     } else {
       drawUnitCircleSized(w, h, parseFloat(angleSlider.value));
     }
+    // show whatever error the active graph reported on the graph page too
+    const errEl = ({ 'function': graphError, surface3d: error3D, polar: polarError, parametric: paramError,
+      inequality: ineqError, data: dataError, implicit: implicitError, pie: pieError })[graphMode];
+    const errShown = errEl || (EXTRA[graphMode] && EXTRA[graphMode].errEl);
+    if (step3Error) step3Error.textContent = errShown ? errShown.textContent : '';
   }
 
   // re-bind sized versions so canvas.width/height (CSS px via transform) match
@@ -14905,34 +15478,68 @@ setTimeout(() => {
   function plotInequalitySized(w, h) { canvas.__w = w; canvas.__h = h; plotInequality(); }
   function plotDataChartSized(w, h) { canvas.__w = w; canvas.__h = h; plotDataChart(); }
 
+  function setDataType(type) {
+    dataChartType = type;
+    if (dataBarBtn) dataBarBtn.classList.toggle('active', type === 'bar');
+    if (dataScatterBtn) dataScatterBtn.classList.toggle('active', type === 'scatter');
+    if (dataLineBtn) dataLineBtn.classList.toggle('active', type === 'line');
+    if (dataAreaBtn) dataAreaBtn.classList.toggle('active', type === 'area');
+  }
+
+  function showStep(n) {
+    graphStep = n;
+    step1El.style.display = n === 1 ? 'block' : 'none';
+    step2El.style.display = n === 2 ? 'block' : 'none';
+    step3El.style.display = n === 3 ? 'block' : 'none';
+    if (n === 2) {
+      // clear stale error text while the person is editing
+      [graphError, error3D, polarError, paramError, ineqError, dataError, implicitError, pieError]
+        .forEach(el => { if (el) el.textContent = ''; });
+      Object.keys(EXTRA).forEach(k => { if (EXTRA[k].errEl) EXTRA[k].errEl.textContent = ''; });
+    }
+    if (n === 3) redraw();   // step 3 is now visible, so the canvas has its real size
+    const card = document.getElementById('graphCard');
+    if (card && card.scrollIntoView) { try { card.scrollIntoView({ block: 'start' }); } catch (e) {} }
+  }
+
   function setGraphMode(mode) {
     graphMode = mode;
-    modeFnBtn.classList.toggle('active', mode === 'function');
-    modeCircleBtn.classList.toggle('active', mode === 'unitcircle');
-    if (mode3DBtn) mode3DBtn.classList.toggle('active', mode === 'surface3d');
-    if (modePolarBtn) modePolarBtn.classList.toggle('active', mode === 'polar');
-    if (modeParametricBtn) modeParametricBtn.classList.toggle('active', mode === 'parametric');
-    if (modeIneqBtn) modeIneqBtn.classList.toggle('active', mode === 'inequality');
-    if (modeDataBtn) modeDataBtn.classList.toggle('active', mode === 'data');
+    if (step3El) step3El.dataset.gmode = mode;   // CSS sizes the canvas per graph so the page fits the screen
     fnPanel.style.display = mode === 'function' ? 'block' : 'none';
-    circlePanel.style.display = mode === 'unitcircle' ? 'block' : 'none';
+    if (circleStartPanel) circleStartPanel.style.display = mode === 'unitcircle' ? 'block' : 'none';
+    circlePanel.style.display = mode === 'unitcircle' ? 'block' : 'none';   // slider sits under the graph (step 3)
     if (panel3D) panel3D.style.display = mode === 'surface3d' ? 'block' : 'none';
+    if (hint3D) hint3D.style.display = mode === 'surface3d' ? 'block' : 'none';
     if (polarPanel) polarPanel.style.display = mode === 'polar' ? 'block' : 'none';
     if (paramPanel) paramPanel.style.display = mode === 'parametric' ? 'block' : 'none';
     if (ineqPanel) ineqPanel.style.display = mode === 'inequality' ? 'block' : 'none';
+    if (implicitPanel) implicitPanel.style.display = mode === 'implicit' ? 'block' : 'none';
     if (dataPanel) dataPanel.style.display = mode === 'data' ? 'block' : 'none';
+    if (piePanel) piePanel.style.display = mode === 'pie' ? 'block' : 'none';
+    Object.keys(EXTRA).forEach(k => { if (EXTRA[k].panelEl) EXTRA[k].panelEl.style.display = mode === k ? 'block' : 'none'; });
     canvas.style.display = mode === 'surface3d' ? 'none' : 'block';
     if (canvas3D) canvas3D.style.display = mode === 'surface3d' ? 'block' : 'none';
-    redraw();
+    renderLegend([]);
+    if (intValueSpan) intValueSpan.textContent = '';
+    if (tableWrap && mode !== 'function') tableWrap.style.display = 'none';
   }
 
-  modeFnBtn.addEventListener('click', () => setGraphMode('function'));
-  modeCircleBtn.addEventListener('click', () => setGraphMode('unitcircle'));
-  if (mode3DBtn) mode3DBtn.addEventListener('click', () => setGraphMode('surface3d'));
-  if (modePolarBtn) modePolarBtn.addEventListener('click', () => setGraphMode('polar'));
-  if (modeParametricBtn) modeParametricBtn.addEventListener('click', () => setGraphMode('parametric'));
-  if (modeIneqBtn) modeIneqBtn.addEventListener('click', () => setGraphMode('inequality'));
-  if (modeDataBtn) modeDataBtn.addEventListener('click', () => setGraphMode('data'));
+  // Step 1 -> Step 2: tap a graph name
+  if (typeList) typeList.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-graphmode]');
+    if (!btn) return;
+    setGraphMode(btn.dataset.graphmode);
+    if (btn.dataset.datatype) setDataType(btn.dataset.datatype);
+    const label = btn.textContent.trim();
+    if (step2Title) step2Title.textContent = label;
+    if (step3Title) step3Title.textContent = label;
+    showStep(2);
+  });
+  // Step 2 -> Step 3: show the graph
+  if (showGraphBtn) showGraphBtn.addEventListener('click', () => showStep(3));
+  // back buttons
+  if (backToInputBtn) backToInputBtn.addEventListener('click', () => showStep(2));
+  if (backToListBtn) backToListBtn.addEventListener('click', () => showStep(1));
 
   let debounceTimer;
   function debounceRedraw() {
@@ -14965,6 +15572,7 @@ setTimeout(() => {
     const isOpen = !!tableWrap.dataset.open;
     if (isOpen) { delete tableWrap.dataset.open; tableWrap.style.display = 'none'; }
     else { tableWrap.dataset.open = '1'; redraw(); }
+    tableBtn.classList.toggle('active', !!tableWrap.dataset.open);
   });
   if (polarFnInput) polarFnInput.addEventListener('input', debounceRedraw);
   if (polarThetaMaxInput) polarThetaMaxInput.addEventListener('input', debounceRedraw);
@@ -15003,17 +15611,43 @@ setTimeout(() => {
   });
 
   if (dataInput) dataInput.addEventListener('input', debounceRedraw);
-  if (dataBarBtn) dataBarBtn.addEventListener('click', () => {
-    dataChartType = 'bar';
-    dataBarBtn.classList.add('active');
-    if (dataScatterBtn) dataScatterBtn.classList.remove('active');
+  if (dataBarBtn) dataBarBtn.addEventListener('click', () => { setDataType('bar'); redraw(); });
+  if (dataScatterBtn) dataScatterBtn.addEventListener('click', () => { setDataType('scatter'); redraw(); });
+  if (dataLineBtn) dataLineBtn.addEventListener('click', () => { setDataType('line'); redraw(); });
+  if (dataAreaBtn) dataAreaBtn.addEventListener('click', () => { setDataType('area'); redraw(); });
+
+  if (implicitInput) implicitInput.addEventListener('input', debounceRedraw);
+  if (implicitMinInput) implicitMinInput.addEventListener('input', debounceRedraw);
+  if (implicitMaxInput) implicitMaxInput.addEventListener('input', debounceRedraw);
+  if (implicitQuickBtns) implicitQuickBtns.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-impl]');
+    if (!btn) return;
+    implicitInput.value = btn.dataset.impl;
+    const lim = parseFloat(btn.dataset.lim);
+    if (isFinite(lim)) { implicitMinInput.value = -lim; implicitMaxInput.value = lim; }
     redraw();
   });
-  if (dataScatterBtn) dataScatterBtn.addEventListener('click', () => {
-    dataChartType = 'scatter';
-    dataScatterBtn.classList.add('active');
-    if (dataBarBtn) dataBarBtn.classList.remove('active');
-    redraw();
+  if (pieInput) pieInput.addEventListener('input', debounceRedraw);
+  Object.keys(EXTRA).forEach(k => {
+    const pe = EXTRA[k].panelEl;
+    if (!pe) return;
+    pe.querySelectorAll('input, textarea').forEach(el => el.addEventListener('input', debounceRedraw));
+    // quick buttons: data-set='{"inputId":"value", ...}'
+    pe.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-set]');
+      if (!btn) return;
+      try {
+        const map = JSON.parse(btn.dataset.set);
+        Object.keys(map).forEach(id => { const el = gEl(id); if (el) el.value = map[id]; });
+      } catch (err) {}
+      redraw();
+    });
+  });
+  if (circleQuickBtns) circleQuickBtns.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-angle]');
+    if (!btn) return;
+    angleSlider.value = btn.dataset.angle;
+    circleQuickBtns.querySelectorAll('[data-angle]').forEach(b => b.classList.toggle('active', b === btn));
   });
 
   window.addEventListener('resize', debounceRedraw);
