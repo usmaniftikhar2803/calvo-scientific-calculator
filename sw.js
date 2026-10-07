@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v70';
+const CACHE_VERSION = 'calvo-cache-v71';
 
 const CORE_ASSETS = [
   './',
@@ -58,6 +58,10 @@ const CORE_ASSETS = [
   './word-counter.html',
   './class-wise-formulas.html',
   './periodic-table.html',
+  './projectile-motion-calculator.html',
+  './resistor-calculator.html',
+  './physical-constants.html',
+  './physics-tools.js',
   './trigonometry-cheat-sheet.html',
   './lcm-hcf-calculator.html',
   './fraction-calculator.html',
