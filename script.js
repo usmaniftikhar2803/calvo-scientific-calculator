@@ -15205,6 +15205,977 @@ setTimeout(() => {
     renderLegend(legend);
   }
 
+  /* ====== 20 MORE GRAPHS (data-driven: each graph = inputs + plot function) ======
+     Panels and step-1 buttons are generated from the GX list below, and every
+     graph is registered in EXTRA, so it reuses the same 3-step flow, legend,
+     error line and redraw logic as the other graphs. */
+  const tx = (k, fb) => { const s = t(k); return s === k ? fb : s; };
+  const bad = (msg) => { throw { gx: msg }; };
+  const sg = (n) => (n < 0 ? '− ' : '+ ') + fmtN(Math.abs(n), 4);
+  const esc = (s) => escHtml(s);
+
+  // view box that fits the given x / y values; eq = equal scale on both axes
+  function box(xs, ys, o) {
+    o = o || {};
+    const pad = o.pad == null ? 0.15 : o.pad, ms = o.minSpan || 2;
+    if (o.zero) { xs = xs.concat([0]); ys = ys.concat([0]); }
+    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    if (x1 - x0 < ms) { const m = (x0 + x1) / 2; x0 = m - ms / 2; x1 = m + ms / 2; }
+    if (y1 - y0 < ms) { const m = (y0 + y1) / 2; y0 = m - ms / 2; y1 = m + ms / 2; }
+    const px = (x1 - x0) * pad, py = (y1 - y0) * pad;
+    x0 -= px; x1 += px; y0 -= py; y1 += py;
+    if (o.eq) {
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      const s = Math.max((x1 - x0) / o.W, (y1 - y0) / o.H);
+      x0 = cx - s * o.W / 2; x1 = cx + s * o.W / 2; y0 = cy - s * o.H / 2; y1 = cy + s * o.H / 2;
+    }
+    return { x0, x1, y0, y1 };
+  }
+  // numbers along the axes (the shared drawAxes only draws the grid)
+  function axisNums(toPx, b, W, H) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '600 10px Inter, sans-serif';
+    const xs = niceStep(b.x1 - b.x0), ys = niceStep(b.y1 - b.y0), o = toPx(0, 0);
+    const ay = Math.min(H - 13, Math.max(2, o[1] + 3)), ax = Math.min(W - 32, Math.max(3, o[0] + 4));
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let i = Math.ceil(b.x0 / xs); i <= Math.floor(b.x1 / xs); i++) { if (i) ctx.fillText(fmtN(i * xs, 3), toPx(i * xs, 0)[0], ay); }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    for (let i = Math.ceil(b.y0 / ys); i <= Math.floor(b.y1 / ys); i++) { if (i) ctx.fillText(fmtN(i * ys, 3), ax, toPx(0, i * ys)[1]); }
+    ctx.restore();
+  }
+  function view(b, W, H) { const tp = drawAxes(W, H, b.x0, b.x1, b.y0, b.y1); axisNums(tp, b, W, H); return tp; }
+  // polyline with gaps for NaN / off-screen / asymptote jumps (brk = break at big jumps)
+  function poly(pts, tp, color, b, o) {
+    o = o || {};
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = o.lw || 2.5; ctx.lineJoin = 'round';
+    ctx.setLineDash(o.dash ? [6, 4] : []); ctx.beginPath();
+    const sx = b.x1 - b.x0, sy = b.y1 - b.y0; let on = false, prev = null;
+    pts.forEach(p => {
+      const ok = isFinite(p[0]) && isFinite(p[1]) && p[1] > b.y0 - 2 * sy && p[1] < b.y1 + 2 * sy && p[0] > b.x0 - 2 * sx && p[0] < b.x1 + 2 * sx;
+      const jump = o.brk && prev && (Math.abs(p[1] - prev[1]) > sy * 0.8 || Math.abs(p[0] - prev[0]) > sx * 0.8);
+      if (!ok || jump) on = false;
+      if (ok) { const q = tp(p[0], p[1]); if (!on) { ctx.moveTo(q[0], q[1]); on = true; } else ctx.lineTo(q[0], q[1]); }
+      prev = ok ? p : null;
+    });
+    ctx.stroke(); ctx.restore();
+  }
+  function seg(tp, x0, y0, x1, y1, color, dash, lw) { poly([[x0, y0], [x1, y1]], tp, color, { x0: -1e9, x1: 1e9, y0: -1e9, y1: 1e9 }, { dash, lw: lw || 1.6 }); }
+  function dot(tp, x, y, color, label, dx, dy) {
+    const q = tp(x, y); ctx.save(); ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(q[0], q[1], 4.2, 0, Math.PI * 2); ctx.fill();
+    if (label) { ctx.font = '700 11px Inter, sans-serif'; ctx.textAlign = (dx || 8) < 0 ? 'right' : 'left'; ctx.textBaseline = 'middle'; ctx.fillText(label, q[0] + (dx == null ? 8 : dx), q[1] + (dy == null ? -9 : dy)); }
+    ctx.restore();
+  }
+  function fillPoly(pts, tp, color) {
+    ctx.save(); ctx.fillStyle = color; ctx.beginPath();
+    pts.forEach((p, i) => { const q = tp(p[0], p[1]); if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); });
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  // y-range for f(x) curves: same spike clamp as the main Function Graph
+  function autoY(arrs, xspan, extra) {
+    let lo = Infinity, hi = -Infinity;
+    arrs.forEach(a => a.forEach(p => { if (isFinite(p[1])) { lo = Math.min(lo, p[1]); hi = Math.max(hi, p[1]); } }));
+    (extra || []).forEach(y => { if (isFinite(y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); } });
+    if (!isFinite(lo)) bad(tx('graph_x_noval', 'The function has no real values on this range.'));
+    if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+    const cap = xspan * 4;
+    if (hi - lo > cap) { const m = extra && extra.length ? extra[0] : (hi + lo) / 2; lo = m - cap / 2; hi = m + cap / 2; }
+    return [lo, hi];
+  }
+  const fact = (k) => { let r = 1; for (let i = 2; i <= k; i++) r *= i; return r; };
+  const supNum = (k) => String(k).replace(/\d/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+  // line  a·x + b·y = c  drawn across the whole view
+  function lineABC(tp, a, b, c, bx, color, dash) {
+    if (Math.abs(b) > 1e-12) seg(tp, bx.x0, (c - a * bx.x0) / b, bx.x1, (c - a * bx.x1) / b, color, dash, 2.4);
+    else seg(tp, c / a, bx.y0, c / a, bx.y1, color, dash, 2.4);
+  }
+
+  const GROUPS = [
+    { id: 'alg', key: 'graph_xg_alg', label: 'Algebra & Geometry' },
+    { id: 'trig', key: 'graph_xg_trig', label: 'Trigonometry & Waves' },
+    { id: 'calc', key: 'graph_xg_calc', label: 'Calculus Tools' },
+    { id: 'phys', key: 'graph_xg_phys', label: 'Physics & Science' },
+    { id: 'stat', key: 'graph_xg_stat', label: 'More Statistics' },
+    { id: 'math', key: 'graph_group_math', label: 'Math Tools', after: 'graphModeVectorsBtn' }
+  ];
+  const FN_PRESETS = [['x²', 'x^2'], ['x³', 'x^3'], ['sin x', 'sin(x)'], ['eˣ', 'exp(x)']];
+  const GX = [];
+
+  /* ---------- Algebra & Geometry ---------- */
+  GX.push({
+    id: 'quadratic', grp: 'alg', label: 'Quadratic Explorer (ax²+bx+c)',
+    inputs: [{ k: 'a', l: 'a', v: 1 }, { k: 'b', l: 'b', v: -2 }, { k: 'c', l: 'c', v: -3 }],
+    presets: [['x²−2x−3', { a: 1, b: -2, c: -3 }], ['−x²+4', { a: -1, b: 0, c: 4 }], ['2x²−4x+2', { a: 2, b: -4, c: 2 }], ['x²+1', { a: 1, b: 0, c: 1 }]],
+    plot(v, W, H) {
+      const { a, b, c } = v; if (a === 0) bad(tx('graph_x_a0', 'a cannot be 0 — that would be a straight line.'));
+      const D = b * b - 4 * a * c, vx = -b / (2 * a), vy = a * vx * vx + b * vx + c, f = x => a * x * x + b * x + c;
+      const roots = D >= 0 ? [(-b - Math.sqrt(D)) / (2 * a), (-b + Math.sqrt(D)) / (2 * a)].sort((p, q) => p - q) : [];
+      const all = [0, vx].concat(roots), lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), pad = Math.max(hi - lo, 2) * 0.6;
+      const x0 = lo - pad, x1 = hi + pad, bx = box([x0, x1], [0, vy, c, f(x0), f(x1)], { pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, vx, bx.y0, vx, bx.y1, '#5a9ad8', true);
+      poly(samplePts(f, bx.x0, bx.x1, 300), tp, acc, bx, { brk: true });
+      dot(tp, vx, vy, '#ffffff', 'V'); dot(tp, 0, c, '#f2c14e', '', 8, 0);
+      roots.forEach(r => dot(tp, r, 0, '#3fbf6f', fmtN(r, 3), 8, 12));
+      return [{ color: acc, label: 'y = ' + fmtN(a) + 'x² ' + sg(b) + 'x ' + sg(c) },
+        { color: '#ffffff', label: 'Vertex (' + fmtN(vx, 3) + ', ' + fmtN(vy, 3) + ') · axis x = ' + fmtN(vx, 3) },
+        { color: '#3fbf6f', label: D > 0 ? 'Roots: x = ' + fmtN(roots[0], 4) + ' and ' + fmtN(roots[1], 4) : D === 0 ? 'Double root: x = ' + fmtN(roots[0], 4) : 'No real roots (D < 0)' },
+        { color: '#f2c14e', label: 'D = b² − 4ac = ' + fmtN(D, 4) + ' · y-intercept (0, ' + fmtN(c, 3) + ')' }];
+    }
+  });
+
+  GX.push({
+    id: 'line2pt', grp: 'alg', label: 'Straight Line (two points)',
+    inputs: [{ k: 'x1', l: 'x₁', v: 1, r: 0 }, { k: 'y1', l: 'y₁', v: 1, r: 0 }, { k: 'x2', l: 'x₂', v: 4, r: 1 }, { k: 'y2', l: 'y₂', v: 7, r: 1 }],
+    presets: [['(1,1) (4,7)', { x1: 1, y1: 1, x2: 4, y2: 7 }], ['(−2,3) (2,−1)', { x1: -2, y1: 3, x2: 2, y2: -1 }], ['Vertical', { x1: 2, y1: -3, x2: 2, y2: 4 }]],
+    plot(v, W, H) {
+      const { x1, y1, x2, y2 } = v; if (x1 === x2 && y1 === y2) bad(tx('graph_x_samept', 'The two points must be different.'));
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dist = Math.hypot(x2 - x1, y2 - y1);
+      const bx = box([x1, x2, mx], [y1, y2, my], { zero: true, eq: true, pad: 0.35, W, H }), tp = view(bx, W, H), acc = accentColor();
+      let eq, extra;
+      if (x1 === x2) { lineABC(tp, 1, 0, x1, bx, acc); eq = 'x = ' + fmtN(x1, 4); extra = 'Vertical line — slope undefined'; }
+      else {
+        const m = (y2 - y1) / (x2 - x1), c = y1 - m * x1; lineABC(tp, -m, 1, c, bx, acc);
+        eq = 'y = ' + fmtN(m, 4) + 'x ' + sg(c); extra = 'Slope m = ' + fmtN(m, 4) + ' · angle = ' + fmtN(Math.atan(m) * 180 / Math.PI, 2) + '°';
+        if (m !== 0) dot(tp, -c / m, 0, '#3fbf6f', '', 8, 0);
+        dot(tp, 0, c, '#3fbf6f', '', 8, 0);
+      }
+      dot(tp, x1, y1, '#ffffff', 'A'); dot(tp, x2, y2, '#ffffff', 'B'); dot(tp, mx, my, '#f2c14e', 'M', 8, 12);
+      return [{ color: acc, label: eq }, { color: '#5a9ad8', label: extra },
+        { color: '#ffffff', label: 'Distance AB = ' + fmtN(dist, 4) }, { color: '#f2c14e', label: 'Midpoint M = (' + fmtN(mx, 3) + ', ' + fmtN(my, 3) + ')' }];
+    }
+  });
+
+  GX.push({
+    id: 'system2', grp: 'alg', label: 'Linear System (2 lines)',
+    inputs: [{ k: 'a1', l: 'a₁', v: 1, r: 0 }, { k: 'b1', l: 'b₁', v: 1, r: 0 }, { k: 'c1', l: 'c₁', v: 5, r: 0 }, { k: 'a2', l: 'a₂', v: 1, r: 1 }, { k: 'b2', l: 'b₂', v: -1, r: 1 }, { k: 'c2', l: 'c₂', v: 1, r: 1 }],
+    presets: [['x+y=5, x−y=1', { a1: 1, b1: 1, c1: 5, a2: 1, b2: -1, c2: 1 }], ['Parallel', { a1: 1, b1: 1, c1: 2, a2: 2, b2: 2, c2: 8 }], ['Same line', { a1: 1, b1: -1, c1: 1, a2: 2, b2: -2, c2: 2 }]],
+    plot(v, W, H) {
+      const { a1, b1, c1, a2, b2, c2 } = v;
+      if ((a1 === 0 && b1 === 0) || (a2 === 0 && b2 === 0)) bad(tx('graph_x_ab0', 'In each equation a and b cannot both be 0.'));
+      const det = a1 * b2 - a2 * b1; let sol = null, note;
+      if (Math.abs(det) > 1e-12) { sol = [(c1 * b2 - c2 * b1) / det, (a1 * c2 - a2 * c1) / det]; note = 'Intersection: x = ' + fmtN(sol[0], 4) + ', y = ' + fmtN(sol[1], 4); }
+      else if (Math.abs(a1 * c2 - a2 * c1) < 1e-9 && Math.abs(b1 * c2 - b2 * c1) < 1e-9) note = 'Same line — infinitely many solutions';
+      else note = 'Parallel lines — no solution';
+      const xs = [-6, 6], ys = [-6, 6]; if (sol) { const R = Math.max(Math.abs(sol[0]), Math.abs(sol[1]), 3) * 1.6; xs[0] = sol[0] - R; xs[1] = sol[0] + R; ys[0] = sol[1] - R; ys[1] = sol[1] + R; }
+      const bx = box(xs, ys, { eq: true, pad: 0, W, H }), tp = view(bx, W, H), acc = accentColor();
+      lineABC(tp, a1, b1, c1, bx, acc); lineABC(tp, a2, b2, c2, bx, '#5a9ad8');
+      if (sol) dot(tp, sol[0], sol[1], '#ffffff', '(' + fmtN(sol[0], 3) + ', ' + fmtN(sol[1], 3) + ')');
+      return [{ color: acc, label: fmtN(a1) + 'x ' + sg(b1) + 'y = ' + fmtN(c1) }, { color: '#5a9ad8', label: fmtN(a2) + 'x ' + sg(b2) + 'y = ' + fmtN(c2) }, { color: '#ffffff', label: note }];
+    }
+  });
+
+  GX.push({
+    id: 'ellipse', grp: 'alg', label: 'Circle / Ellipse',
+    inputs: [{ k: 'h', l: 'h', v: 0, r: 0 }, { k: 'k', l: 'k', v: 0, r: 0 }, { k: 'a', l: 'a (x-radius)', v: 4, r: 1, min: 0.01 }, { k: 'b', l: 'b (y-radius)', v: 3, r: 1, min: 0.01 }],
+    presets: [['Circle r=3', { h: 0, k: 0, a: 3, b: 3 }], ['Ellipse 5×3', { h: 0, k: 0, a: 5, b: 3 }], ['Tall 2×4', { h: 1, k: 1, a: 2, b: 4 }]],
+    plot(v, W, H) {
+      const { h, k, a, b } = v, pts = []; for (let i = 0; i <= 240; i++) { const th = i / 240 * 2 * Math.PI; pts.push([h + a * Math.cos(th), k + b * Math.sin(th)]); }
+      const bx = box([h - a, h + a], [k - b, k + b], { zero: true, eq: true, pad: 0.2, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(pts, tp, acc, bx); dot(tp, h, k, '#ffffff', 'C', 8, 10);
+      const circle = Math.abs(a - b) < 1e-9, major = Math.max(a, b), c = Math.sqrt(Math.abs(a * a - b * b)), horiz = a >= b;
+      if (!circle) { dot(tp, horiz ? h - c : h, horiz ? k : k - c, '#3fbf6f', 'F₁', 8, -10); dot(tp, horiz ? h + c : h, horiz ? k : k + c, '#3fbf6f', 'F₂', 8, -10); }
+      const area = Math.PI * a * b, per = Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+      return [{ color: acc, label: circle ? '(x ' + sg(-h) + ')² + (y ' + sg(-k) + ')² = ' + fmtN(a * a, 4) : '(x−' + fmtN(h, 3) + ')²/' + fmtN(a * a, 3) + ' + (y−' + fmtN(k, 3) + ')²/' + fmtN(b * b, 3) + ' = 1' },
+        { color: '#ffffff', label: 'Centre (' + fmtN(h, 3) + ', ' + fmtN(k, 3) + ') · ' + (circle ? 'radius ' + fmtN(a, 4) : 'a = ' + fmtN(a, 3) + ', b = ' + fmtN(b, 3)) },
+        { color: '#3fbf6f', label: circle ? 'Circle: e = 0' : 'Foci distance c = ' + fmtN(c, 4) + ' · eccentricity e = ' + fmtN(c / major, 4) },
+        { color: '#f2c14e', label: 'Area = ' + fmtN(area, 4) + ' · ' + (circle ? 'circumference' : 'perimeter ≈') + ' ' + fmtN(per, 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'rootsunity', grp: 'alg', label: 'Roots of Unity (zⁿ = 1)',
+    inputs: [{ k: 'n', l: 'n', v: 6, min: 1, max: 60, int: true }],
+    presets: [['n = 3', { n: 3 }], ['n = 4', { n: 4 }], ['n = 5', { n: 5 }], ['n = 8', { n: 8 }], ['n = 12', { n: 12 }]],
+    plot(v, W, H) {
+      const n = v.n, bx = box([-1, 1], [-1, 1], { eq: true, pad: 0.3, W, H }), tp = view(bx, W, H), acc = accentColor(), ring = [], pts = [];
+      for (let i = 0; i <= 200; i++) ring.push([Math.cos(i / 200 * 2 * Math.PI), Math.sin(i / 200 * 2 * Math.PI)]);
+      poly(ring, tp, 'rgba(255,255,255,0.35)', bx, { lw: 1.4 });
+      for (let j = 0; j < n; j++) pts.push([Math.cos(2 * Math.PI * j / n), Math.sin(2 * Math.PI * j / n)]);
+      if (n > 1) poly(pts.concat([pts[0]]), tp, acc, bx, { lw: 2 });
+      pts.forEach((p, j) => dot(tp, p[0], p[1], PIE_COLORS[j % PIE_COLORS.length], n <= 12 ? 'z' + j : '', p[0] >= 0 ? 8 : -8, p[1] >= 0 ? -9 : 9));
+      const lg = [{ color: acc, label: n + ' roots of zⁿ = 1: z_k = cos(2πk/' + n + ') + i·sin(2πk/' + n + '), k = 0…' + (n - 1) },
+        { color: '#5a9ad8', label: 'Angle between neighbours = ' + fmtN(360 / n, 3) + '° · sum of all roots = 0' }];
+      if (n <= 6) lg.push({ color: '#3fbf6f', label: pts.map(p => fmtComplexStr(p[0], p[1])).join('  ·  ') });
+      return lg;
+    }
+  });
+
+  GX.push({
+    id: 'inverse', grp: 'alg', label: 'Function & Inverse',
+    inputs: [{ k: 'f', l: 'f(x)', t: 'f', v: 'x^3 + 1' }, { k: 'x0', l: 'x from', v: -2, r: 0 }, { k: 'x1', l: 'to', v: 2, r: 0 }],
+    presets: [['x³+1', { gx_inverse_f: 'x^3 + 1' }], ['2x+1', { gx_inverse_f: '2x+1' }], ['e^x', { gx_inverse_f: 'exp(x)' }], ['√x', { gx_inverse_f: 'sqrt(x)' }], ['x²', { gx_inverse_f: 'x^2' }]],
+    plot(v, W, H) {
+      if (v.x0 >= v.x1) bad(t('graph_error_range'));
+      const f = v.f, pts = samplePts(f, v.x0, v.x1, 400).filter(p => isFinite(p[1]) && Math.abs(p[1]) < 1e4);
+      if (pts.length < 2) bad(tx('graph_x_noval', 'The function has no real values on this range.'));
+      const inv = pts.map(p => [p[1], p[0]]), all = pts.concat(inv);
+      const bx = box(all.map(p => p[0]), all.map(p => p[1]), { eq: true, pad: 0.1, zero: true, W, H }), tp = view(bx, W, H), acc = accentColor();
+      const lo = Math.min(bx.x0, bx.y0), hi = Math.max(bx.x1, bx.y1);
+      seg(tp, lo, lo, hi, hi, 'rgba(255,255,255,0.55)', true);
+      poly(inv, tp, '#5a9ad8', bx, { brk: true }); poly(pts, tp, acc, bx, { brk: true });
+      const mono = pts.every((p, i) => !i || p[1] >= pts[i - 1][1]) || pts.every((p, i) => !i || p[1] <= pts[i - 1][1]);
+      return [{ color: acc, label: 'f(x) = ' + esc(v['f$']) }, { color: '#5a9ad8', label: 'f⁻¹(x) — mirror image of f in the line y = x' },
+        { color: '#ffffff', label: mono ? 'f is one-to-one on this range, so the inverse is a function' : 'f is not one-to-one here (fails the horizontal line test) — restrict the range' }];
+    }
+  });
+
+  /* ---------- Trigonometry & Waves ---------- */
+  GX.push({
+    id: 'sinewave', grp: 'trig', label: 'Sine / Cosine Wave Explorer',
+    inputs: [{ k: 'fn', l: 'Wave', t: 's', v: 'sin', opts: [['sin', 'A·sin(B(x−C)) + D'], ['cos', 'A·cos(B(x−C)) + D']] },
+      { k: 'A', l: 'A', v: 2, r: 0 }, { k: 'B', l: 'B', v: 1, r: 0 }, { k: 'C', l: 'C', v: 0, r: 1 }, { k: 'D', l: 'D', v: 0, r: 1 }],
+    presets: [['Basic', { gx_sinewave_A: 1, gx_sinewave_B: 1, gx_sinewave_C: 0, gx_sinewave_D: 0 }], ['2sin(2x)', { gx_sinewave_A: 2, gx_sinewave_B: 2, gx_sinewave_C: 0, gx_sinewave_D: 0 }], ['Shifted', { gx_sinewave_A: 1.5, gx_sinewave_B: 1, gx_sinewave_C: 1, gx_sinewave_D: 1 }]],
+    plot(v, W, H) {
+      const { A, B, C, D } = v, F = v.fn === 'cos' ? Math.cos : Math.sin; if (B === 0) bad(tx('graph_x_b0', 'B cannot be 0.'));
+      const P = 2 * Math.PI / Math.abs(B), x0 = C - 0.75 * P, x1 = C + 1.75 * P, f = x => A * F(B * (x - C)) + D;
+      const ext = Math.abs(A) + Math.abs(D), bx = box([x0, x1], [-Math.max(ext, 1), Math.max(ext, 1)], { pad: 0.12, zero: true, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(F, bx.x0, bx.x1, 500), tp, 'rgba(255,255,255,0.4)', bx, { dash: true, lw: 1.5 });
+      seg(tp, bx.x0, D, bx.x1, D, '#3fbf6f', true);
+      poly(samplePts(f, bx.x0, bx.x1, 700), tp, acc, bx, { brk: true });
+      return [{ color: acc, label: 'y = ' + fmtN(A) + '·' + v.fn + '(' + fmtN(B) + '(x ' + sg(-C).replace('+ ', '+ ') + ')) ' + sg(D) },
+        { color: '#5a9ad8', label: 'Amplitude |A| = ' + fmtN(Math.abs(A), 4) + ' · Period 2π/|B| = ' + fmtN(P, 4) + ' · Frequency = ' + fmtN(1 / P, 4) },
+        { color: '#3fbf6f', label: 'Phase shift C = ' + fmtN(C, 4) + ' · midline y = ' + fmtN(D, 4) },
+        { color: 'rgba(255,255,255,0.6)', label: 'Dashed white = basic ' + v.fn + '(x) for comparison', dashed: true }];
+    }
+  });
+
+  GX.push({
+    id: 'fourier', grp: 'trig', label: 'Fourier Series (square / saw / triangle)',
+    inputs: [{ k: 'wave', l: 'Wave', t: 's', v: 'square', opts: [['square', 'Square wave'], ['saw', 'Sawtooth wave'], ['tri', 'Triangle wave']] }, { k: 'n', l: 'Terms N', v: 5, min: 1, max: 60, int: true }],
+    presets: [['N = 1', { gx_fourier_n: 1 }], ['N = 3', { gx_fourier_n: 3 }], ['N = 10', { gx_fourier_n: 10 }], ['N = 40', { gx_fourier_n: 40 }]],
+    plot(v, W, H) {
+      const N = v.n, w = v.wave, pi = Math.PI;
+      const ideal = x => w === 'square' ? Math.sign(Math.sin(x)) : w === 'saw' ? ((x + pi) % (2 * pi) + 2 * pi) % (2 * pi) / pi - 1 : 2 / pi * Math.asin(Math.sin(x));
+      const approx = x => { let s = 0; for (let j = 1; j <= N; j++) {
+        if (w === 'square') s += Math.sin((2 * j - 1) * x) / (2 * j - 1);
+        else if (w === 'saw') s += (j % 2 ? 1 : -1) * Math.sin(j * x) / j;
+        else s += ((j - 1) % 2 ? -1 : 1) * Math.sin((2 * j - 1) * x) / Math.pow(2 * j - 1, 2); }
+        return s * (w === 'square' ? 4 / pi : w === 'saw' ? 2 / pi : 8 / (pi * pi)); };
+      const bx = box([-2 * pi, 2 * pi], [-1.3, 1.3], { pad: 0.03, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(ideal, bx.x0, bx.x1, 800), tp, 'rgba(255,255,255,0.45)', bx, { dash: true, lw: 1.6 });
+      poly(samplePts(approx, bx.x0, bx.x1, 900), tp, acc, bx, { brk: true });
+      const term = w === 'square' ? '(4/π)·Σ sin((2k−1)x)/(2k−1)' : w === 'saw' ? '(2/π)·Σ (−1)^(k+1)·sin(kx)/k' : '(8/π²)·Σ (−1)^(k−1)·sin((2k−1)x)/(2k−1)²';
+      return [{ color: acc, label: 'Sum of first ' + N + ' term' + (N > 1 ? 's' : '') + ': ' + term }, { color: 'rgba(255,255,255,0.6)', label: 'Ideal ' + (w === 'square' ? 'square' : w === 'saw' ? 'sawtooth' : 'triangle') + ' wave', dashed: true },
+        { color: '#5a9ad8', label: w === 'square' ? 'Notice the overshoot near the jumps (Gibbs phenomenon) — about 9%, however large N is' : 'More terms → the sum hugs the ideal wave more closely' }];
+    }
+  });
+
+  GX.push({
+    id: 'damped', grp: 'trig', label: 'Damped Oscillation (SHM)',
+    inputs: [{ k: 'A', l: 'Amplitude A', v: 5, r: 0, min: 0.01 }, { k: 'b', l: 'Damping b', v: 0.3, r: 0, min: 0 }, { k: 'w', l: 'ω (rad/s)', v: 3, r: 1, min: 0.01 }, { k: 'T', l: 'Time (s)', v: 15, r: 1, min: 0.5 }],
+    presets: [['Light damping', { gx_damped_b: 0.15 }], ['Heavy damping', { gx_damped_b: 0.8 }], ['No damping (SHM)', { gx_damped_b: 0 }]],
+    plot(v, W, H) {
+      const { A, b, w, T } = v, f = t0 => A * Math.exp(-b * t0) * Math.cos(w * t0), env = t0 => A * Math.exp(-b * t0);
+      const bx = box([0, T], [-A, A], { pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(env, 0, T, 200), tp, '#3fbf6f', bx, { dash: true }); poly(samplePts(t0 => -env(t0), 0, T, 200), tp, '#3fbf6f', bx, { dash: true });
+      poly(samplePts(f, 0, T, Math.min(3000, Math.max(600, Math.ceil(T * w * 14)))), tp, acc, bx);
+      return [{ color: acc, label: 'x(t) = ' + fmtN(A) + '·e^(−' + fmtN(b) + 't)·cos(' + fmtN(w) + 't)' },
+        { color: '#3fbf6f', label: 'Envelope ±A·e^(−bt)' + (b > 0 ? ' · amplitude falls to 37% after 1/b = ' + fmtN(1 / b, 3) + ' s' : ' · no damping, amplitude stays constant'), dashed: true },
+        { color: '#5a9ad8', label: 'Period T = 2π/ω = ' + fmtN(2 * Math.PI / w, 4) + ' s · frequency f = ' + fmtN(w / (2 * Math.PI), 4) + ' Hz' }];
+    }
+  });
+
+  /* ---------- Calculus Tools ---------- */
+  GX.push({
+    id: 'tangent', grp: 'calc', label: 'Tangent & Normal at a Point',
+    inputs: [{ k: 'f', l: 'f(x)', t: 'f', v: 'x^2' }, { k: 'p', l: 'x₀', v: 1, r: 0 }, { k: 'x0', l: 'View x from', v: -4, r: 1 }, { k: 'x1', l: 'to', v: 4, r: 1 }],
+    presets: [['x² at 1', { gx_tangent_f: 'x^2', gx_tangent_p: 1 }], ['sin x at 1', { gx_tangent_f: 'sin(x)', gx_tangent_p: 1 }], ['x³ at 0.5', { gx_tangent_f: 'x^3', gx_tangent_p: 0.5 }], ['eˣ at 0', { gx_tangent_f: 'exp(x)', gx_tangent_p: 0 }]],
+    plot(v, W, H) {
+      if (v.x0 >= v.x1) bad(t('graph_error_range'));
+      const f = v.f, p = v.p, y0 = f(p), m = numericDeriv(f, p, 1e-5 * Math.max(1, Math.abs(p)));
+      if (!isFinite(y0) || !isFinite(m)) bad(tx('graph_x_undef', 'f(x) is not defined or not differentiable at x₀.'));
+      const pts = samplePts(f, v.x0, v.x1, 500), yr = autoY([pts], v.x1 - v.x0, [y0]), bx = box([v.x0, v.x1], yr, { pad: 0.06, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(pts, tp, acc, bx, { brk: true });
+      seg(tp, bx.x0, y0 + m * (bx.x0 - p), bx.x1, y0 + m * (bx.x1 - p), '#5a9ad8', false, 2.2);
+      if (Math.abs(m) < 1e-9) seg(tp, p, bx.y0, p, bx.y1, '#3fbf6f', true); else seg(tp, bx.x0, y0 - (bx.x0 - p) / m, bx.x1, y0 - (bx.x1 - p) / m, '#3fbf6f', true);
+      dot(tp, p, y0, '#ffffff', '(' + fmtN(p, 3) + ', ' + fmtN(y0, 3) + ')');
+      return [{ color: acc, label: 'f(x) = ' + esc(v['f$']) }, { color: '#5a9ad8', label: "Tangent: y = " + fmtN(m, 4) + '(x ' + sg(-p) + ') ' + sg(y0) + " · slope f′(x₀) = " + fmtN(m, 4) },
+        { color: '#3fbf6f', label: Math.abs(m) < 1e-9 ? 'Normal: the vertical line x = ' + fmtN(p, 3) : 'Normal slope = −1/f′ = ' + fmtN(-1 / m, 4), dashed: true }];
+    }
+  });
+
+  GX.push({
+    id: 'riemann', grp: 'calc', label: 'Riemann Sum (area by rectangles)',
+    inputs: [{ k: 'f', l: 'f(x)', t: 'f', v: 'x^2' }, { k: 'a', l: 'a', v: 0, r: 0 }, { k: 'b', l: 'b', v: 3, r: 0 }, { k: 'n', l: 'n', v: 6, r: 0, min: 1, max: 200, int: true },
+      { k: 'm', l: 'Method', t: 's', v: 'left', opts: [['left', 'Left rectangles'], ['right', 'Right rectangles'], ['mid', 'Midpoint rectangles'], ['trap', 'Trapezoids']] }],
+    presets: [['x², n=6', { gx_riemann_f: 'x^2', gx_riemann_a: 0, gx_riemann_b: 3, gx_riemann_n: 6 }], ['sin x, n=10', { gx_riemann_f: 'sin(x)', gx_riemann_a: 0, gx_riemann_b: 3.1416, gx_riemann_n: 10 }], ['√x, n=20', { gx_riemann_f: 'sqrt(x)', gx_riemann_a: 0, gx_riemann_b: 4, gx_riemann_n: 20 }]],
+    plot(v, W, H) {
+      const { f, a, b, n, m } = v; if (a >= b) bad(t('graph_error_range'));
+      const dx = (b - a) / n, rects = []; let sum = 0;
+      for (let i = 0; i < n; i++) { const xl = a + i * dx, xr = xl + dx, yl = f(xl), yr = f(xr), ym = f((xl + xr) / 2);
+        if (![yl, yr, ym].every(isFinite)) bad(tx('graph_x_noval', 'The function has no real values on this range.'));
+        const hh = m === 'left' ? yl : m === 'right' ? yr : ym; sum += (m === 'trap' ? (yl + yr) / 2 : hh) * dx; rects.push([xl, xr, yl, yr, hh]); }
+      const pad = (b - a) * 0.12, pts = samplePts(f, a - pad, b + pad, 400), yr2 = autoY([pts], (b - a) * 1.3, rects.map(r => r[4]).concat([0]));
+      const bx = box([a - pad, b + pad], yr2.concat([0]), { pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      rects.forEach(r => { const q = m === 'trap' ? [[r[0], 0], [r[0], r[2]], [r[1], r[3]], [r[1], 0]] : [[r[0], 0], [r[0], r[4]], [r[1], r[4]], [r[1], 0]];
+        fillPoly(q, tp, 'rgba(255,138,31,0.22)'); poly(q.concat([q[0]]), tp, 'rgba(255,138,31,0.8)', bx, { lw: 1.2 }); });
+      poly(pts, tp, '#ffffff', bx, { brk: true, lw: 2.2 });
+      const exact = numericIntegral(f, a, b, 2000);
+      return [{ color: acc, label: (m === 'left' ? 'Left' : m === 'right' ? 'Right' : m === 'mid' ? 'Midpoint' : 'Trapezoid') + ' sum with n = ' + n + ': ' + fmtN(sum, 5) },
+        { color: '#ffffff', label: 'Exact area ∫ f(x) dx from ' + fmtN(a, 3) + ' to ' + fmtN(b, 3) + ' ≈ ' + fmtN(exact, 5) },
+        { color: '#5a9ad8', label: 'Error = ' + fmtN(Math.abs(sum - exact), 5) + ' — raise n to make it smaller' }];
+    }
+  });
+
+  GX.push({
+    id: 'areabetween', grp: 'calc', label: 'Area Between Two Curves',
+    inputs: [{ k: 'f', l: 'f(x)', t: 'f', v: 'x + 2' }, { k: 'g', l: 'g(x)', t: 'f', v: 'x^2' }, { k: 'a', l: 'a', v: -1, r: 0 }, { k: 'b', l: 'b', v: 2, r: 0 }],
+    presets: [['x+2 & x²', { gx_areabetween_f: 'x + 2', gx_areabetween_g: 'x^2', gx_areabetween_a: -1, gx_areabetween_b: 2 }], ['sin & cos', { gx_areabetween_f: 'sin(x)', gx_areabetween_g: 'cos(x)', gx_areabetween_a: 0.7854, gx_areabetween_b: 3.927 }], ['√x & x', { gx_areabetween_f: 'sqrt(x)', gx_areabetween_g: 'x', gx_areabetween_a: 0, gx_areabetween_b: 1 }]],
+    plot(v, W, H) {
+      const { f, g, a, b } = v; if (a >= b) bad(t('graph_error_range'));
+      const pad = (b - a) * 0.2, pf = samplePts(f, a - pad, b + pad, 400), pg = samplePts(g, a - pad, b + pad, 400), yr = autoY([pf, pg], (b - a) * 1.4);
+      const bx = box([a - pad, b + pad], yr, { pad: 0.06, W, H }), tp = view(bx, W, H), acc = accentColor();
+      const up = [], dn = []; for (let i = 0; i <= 200; i++) { const x = a + (b - a) * i / 200, yf = f(x), yg = g(x); if (isFinite(yf) && isFinite(yg)) { up.push([x, yf]); dn.unshift([x, yg]); } }
+      if (up.length > 2) fillPoly(up.concat(dn), tp, 'rgba(90,154,216,0.28)');
+      poly(pf, tp, acc, bx, { brk: true }); poly(pg, tp, '#5a9ad8', bx, { brk: true });
+      let area = 0; const N = 4000, dx = (b - a) / N, cross = [];
+      for (let i = 0; i < N; i++) { const x = a + (i + 0.5) * dx; area += Math.abs(f(x) - g(x)) * dx;
+        const d0 = f(a + i * dx) - g(a + i * dx), d1 = f(a + (i + 1) * dx) - g(a + (i + 1) * dx);
+        if (isFinite(d0) && isFinite(d1) && d0 * d1 < 0 && cross.length < 4) cross.push(a + i * dx + dx * d0 / (d0 - d1)); }
+      if (!isFinite(area)) bad(tx('graph_x_noval', 'The function has no real values on this range.'));
+      cross.forEach(x => dot(tp, x, f(x), '#ffffff', '', 8, 0));
+      return [{ color: acc, label: 'f(x) = ' + esc(v['f$']) }, { color: '#5a9ad8', label: 'g(x) = ' + esc(v['g$']) },
+        { color: 'rgba(90,154,216,0.6)', label: 'Area between them from ' + fmtN(a, 3) + ' to ' + fmtN(b, 3) + ' ≈ ' + fmtN(area, 5) },
+        { color: '#ffffff', label: cross.length ? 'Curves cross at x ≈ ' + cross.map(x => fmtN(x, 3)).join(', ') : 'The curves do not cross inside [a, b]' }];
+    }
+  });
+
+  GX.push({
+    id: 'newton', grp: 'calc', label: "Newton's Method (root finding)",
+    inputs: [{ k: 'f', l: 'f(x)', t: 'f', v: 'x^2 - 2' }, { k: 'x0', l: 'Start x₀', v: 3, r: 0 }, { k: 'n', l: 'Steps', v: 5, r: 0, min: 1, max: 12, int: true }],
+    presets: [['√2', { gx_newton_f: 'x^2 - 2', gx_newton_x0: 3, gx_newton_n: 5 }], ['x³−x−2', { gx_newton_f: 'x^3 - x - 2', gx_newton_x0: 2, gx_newton_n: 5 }], ['cos x − x', { gx_newton_f: 'cos(x) - x', gx_newton_x0: 2, gx_newton_n: 5 }]],
+    plot(v, W, H) {
+      const f = v.f; let x = v.x0; const its = [x], st = [];
+      for (let i = 0; i < v.n; i++) { const fx = f(x), d = numericDeriv(f, x, 1e-6 * Math.max(1, Math.abs(x)));
+        if (!isFinite(fx) || !isFinite(d) || Math.abs(d) < 1e-10) bad(tx('graph_x_flat', 'f′(x) is zero or undefined at x = ') + fmtN(x, 4) + ' — ' + tx('graph_x_trystart', 'try another start.'));
+        const xn = x - fx / d; st.push([x, fx, xn]); x = xn; its.push(x); if (Math.abs(x) > 1e6) bad(tx('graph_x_diverge', 'The iteration runs away — try another start.')); }
+      const lo = Math.min.apply(null, its), hi = Math.max.apply(null, its), pad = Math.max(hi - lo, 1) * 0.35, x0 = lo - pad, x1 = hi + pad;
+      const pts = samplePts(f, x0, x1, 500), yr = autoY([pts], x1 - x0, [0].concat(st.map(s => s[1]))), bx = box([x0, x1], yr, { pad: 0.06, zero: true, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(pts, tp, acc, bx, { brk: true });
+      st.forEach((s, i) => { const c = PIE_COLORS[(i + 1) % PIE_COLORS.length]; seg(tp, s[0], 0, s[0], s[1], c, true, 1.3); seg(tp, s[0], s[1], s[2], 0, c, false, 1.8); });
+      its.forEach((xi, i) => { if (i < 7) dot(tp, xi, 0, '#ffffff', 'x' + String(i).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]), 0, 14); });
+      const last = its[its.length - 1];
+      return [{ color: acc, label: 'f(x) = ' + esc(v['f$']) + ' · xₙ₊₁ = xₙ − f(xₙ)/f′(xₙ)' }, { color: '#ffffff', label: 'Estimate after ' + v.n + ' step' + (v.n > 1 ? 's' : '') + ': x ≈ ' + fmtN(last, 8) },
+        { color: '#5a9ad8', label: '|f(x)| at the estimate = ' + fmtN(Math.abs(f(last)), 8) + (Math.abs(f(last)) < 1e-6 ? ' — converged' : '') }];
+    }
+  });
+
+  const TAYLOR = {
+    sin: { name: 'sin x', f: Math.sin, c: k => k % 2 ? (((k - 1) / 2) % 2 ? -1 : 1) / fact(k) : 0, x: [-7, 7], y: [-3, 3] },
+    cos: { name: 'cos x', f: Math.cos, c: k => k % 2 ? 0 : ((k / 2) % 2 ? -1 : 1) / fact(k), x: [-7, 7], y: [-3, 3] },
+    exp: { name: 'eˣ', f: Math.exp, c: k => 1 / fact(k), x: [-3, 3], y: [-2, 15] },
+    ln: { name: 'ln(1+x)', f: x => Math.log(1 + x), c: k => k === 0 ? 0 : (k % 2 ? 1 : -1) / k, x: [-0.95, 4], y: [-4, 3] },
+    atan: { name: 'tan⁻¹x', f: Math.atan, c: k => k % 2 ? (((k - 1) / 2) % 2 ? -1 : 1) / k : 0, x: [-4, 4], y: [-3, 3] },
+    geo: { name: '1/(1−x)', f: x => 1 / (1 - x), c: () => 1, x: [-2, 0.95], y: [-3, 7] }
+  };
+  GX.push({
+    id: 'taylor', grp: 'calc', label: 'Taylor / Maclaurin Series',
+    inputs: [{ k: 'fn', l: 'Function', t: 's', v: 'sin', opts: [['sin', 'sin x'], ['cos', 'cos x'], ['exp', 'eˣ'], ['ln', 'ln(1+x)'], ['atan', 'tan⁻¹ x'], ['geo', '1/(1−x)']] }, { k: 'n', l: 'Degree n', v: 5, min: 0, max: 15, int: true }],
+    presets: [['n = 1', { gx_taylor_n: 1 }], ['n = 3', { gx_taylor_n: 3 }], ['n = 7', { gx_taylor_n: 7 }], ['n = 13', { gx_taylor_n: 13 }]],
+    plot(v, W, H) {
+      const T = TAYLOR[v.fn], n = v.n, P = x => { let s = 0, p = 1; for (let k = 0; k <= n; k++) { s += T.c(k) * p; p *= x; } return s; };
+      const bx = { x0: T.x[0], x1: T.x[1], y0: T.y[0], y1: T.y[1] }, tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(T.f, bx.x0, bx.x1, 500), tp, acc, bx, { brk: true, lw: 2.8 }); poly(samplePts(P, bx.x0, bx.x1, 500), tp, '#5a9ad8', bx, { brk: true });
+      const terms = []; for (let k = 0; k <= n && terms.length < 6; k++) { const c = T.c(k); if (!c) continue; const ca = Math.abs(c), cs = (ca === 1 && k > 0) ? '' : fmtN(ca, 5), xs = k === 0 ? '' : k === 1 ? 'x' : 'x' + supNum(k); terms.push((terms.length ? (c < 0 ? ' − ' : ' + ') : (c < 0 ? '−' : '')) + cs + xs); }
+      return [{ color: acc, label: 'f(x) = ' + T.name }, { color: '#5a9ad8', label: 'Pₙ(x), n = ' + n + ':  ' + terms.join('') + (n >= 1 && terms.length >= 6 ? ' …' : '') },
+        { color: '#ffffff', label: 'Higher degree → the polynomial matches f over a wider interval around x = 0' }];
+    }
+  });
+
+  /* ---------- Physics & Science ---------- */
+  GX.push({
+    id: 'projectile', grp: 'phys', label: 'Projectile Trajectory',
+    inputs: [{ k: 'v0', l: 'v₀ (m/s)', v: 20, r: 0, min: 0.1 }, { k: 'ang', l: 'Angle (°)', v: 45, r: 0, min: -89, max: 90 }, { k: 'h0', l: 'Height h₀ (m)', v: 0, r: 1, min: 0 }, { k: 'g', l: 'g (m/s²)', v: 9.8, r: 1, min: 0.1 }],
+    presets: [['45° ground', { gx_projectile_ang: 45, gx_projectile_h0: 0 }], ['30°', { gx_projectile_ang: 30, gx_projectile_h0: 0 }], ['60°', { gx_projectile_ang: 60, gx_projectile_h0: 0 }], ['From a 20 m cliff', { gx_projectile_ang: 20, gx_projectile_h0: 20 }]],
+    plot(v, W, H) {
+      const { v0, ang, h0, g } = v, th = ang * Math.PI / 180, vx = v0 * Math.cos(th), vy = v0 * Math.sin(th);
+      const T = (vy + Math.sqrt(vy * vy + 2 * g * h0)) / g, R = vx * T, Hm = h0 + (vy > 0 ? vy * vy / (2 * g) : 0), pts = [];
+      for (let i = 0; i <= 200; i++) { const t0 = T * i / 200; pts.push([vx * t0, h0 + vy * t0 - 0.5 * g * t0 * t0]); }
+      const bx = box([0, R], [0, Hm], { eq: true, pad: 0.15, minSpan: 1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(pts, tp, acc, bx, { lw: 2.8 });
+      const s = tp(0, h0); drawArrow(s[0], s[1], s[0] + 38 * Math.cos(th), s[1] - 38 * Math.sin(th), '#5a9ad8', 2.2);
+      if (vy > 0) { const tp2 = vy / g; dot(tp, vx * tp2, Hm, '#ffffff', 'peak'); }
+      dot(tp, R, 0, '#3fbf6f', 'lands', -8, -10);
+      const vyEnd = vy - g * T;
+      return [{ color: acc, label: 'x = v₀cosθ·t , y = h₀ + v₀sinθ·t − ½gt²' }, { color: '#5a9ad8', label: 'Time of flight = ' + fmtN(T, 3) + ' s · Range = ' + fmtN(R, 3) + ' m' },
+        { color: '#ffffff', label: 'Maximum height = ' + fmtN(Hm, 3) + ' m' + (vy > 0 ? ' at t = ' + fmtN(vy / g, 3) + ' s' : '') }, { color: '#3fbf6f', label: 'Impact speed = ' + fmtN(Math.hypot(vx, vyEnd), 3) + ' m/s' }];
+    }
+  });
+
+  GX.push({
+    id: 'vtgraph', grp: 'phys', label: 'Velocity–Time Graph',
+    inputs: [{ k: 'u', l: 'u (m/s)', v: 5, r: 0 }, { k: 'a', l: 'a (m/s²)', v: 2, r: 0 }, { k: 'T', l: 'Time (s)', v: 6, r: 0, min: 0.1 }],
+    presets: [['Speeding up', { gx_vtgraph_u: 5, gx_vtgraph_a: 2, gx_vtgraph_T: 6 }], ['Braking', { gx_vtgraph_u: 20, gx_vtgraph_a: -4, gx_vtgraph_T: 8 }], ['Constant speed', { gx_vtgraph_u: 10, gx_vtgraph_a: 0, gx_vtgraph_T: 5 }]],
+    plot(v, W, H) {
+      const { u, a, T } = v, vT = u + a * T, s = u * T + 0.5 * a * T * T, tz = a !== 0 ? -u / a : null, rev = tz !== null && tz > 0 && tz < T;
+      const bx = box([0, T], [u, vT], { zero: true, pad: 0.15, W, H }), tp = view(bx, W, H), acc = accentColor();
+      fillPoly(rev ? [[0, 0], [0, u], [tz, 0]] : [[0, 0], [0, u], [T, vT], [T, 0]], tp, 'rgba(255,138,31,0.25)');
+      if (rev) fillPoly([[tz, 0], [T, vT], [T, 0]], tp, 'rgba(90,154,216,0.25)');
+      seg(tp, 0, u, T, vT, acc, false, 3); dot(tp, 0, u, '#ffffff', 'u = ' + fmtN(u, 3), 8, -10); dot(tp, T, vT, '#ffffff', 'v = ' + fmtN(vT, 3), -8, -10);
+      const dist = rev ? Math.abs(0.5 * u * tz) + Math.abs(0.5 * vT * (T - tz)) : Math.abs(s);
+      return [{ color: acc, label: 'v = u + at = ' + fmtN(u) + ' ' + sg(a) + 't · slope = acceleration = ' + fmtN(a, 4) + ' m/s²' },
+        { color: 'rgba(255,138,31,0.8)', label: 'Area under the graph = displacement s = ut + ½at² = ' + fmtN(s, 4) + ' m' },
+        { color: '#5a9ad8', label: 'Final velocity = ' + fmtN(vT, 4) + ' m/s · average velocity = ' + fmtN(s / T, 4) + ' m/s' + (rev ? ' · direction reverses at t = ' + fmtN(tz, 3) + ' s, distance travelled = ' + fmtN(dist, 4) + ' m' : '') }];
+    }
+  });
+
+  GX.push({
+    id: 'ohm', grp: 'phys', label: "Ohm's Law (V–I graph)",
+    inputs: [{ k: 'r1', l: 'R₁ (Ω)', v: 10, r: 0, min: 0.01 }, { k: 'r2', l: 'R₂ (Ω)', v: 20, r: 0, min: 0.01 }, { k: 'V', l: 'Max V (volts)', v: 12, r: 1, min: 0.1 }],
+    presets: [['10 Ω & 20 Ω', { gx_ohm_r1: 10, gx_ohm_r2: 20 }], ['Equal 15 Ω', { gx_ohm_r1: 15, gx_ohm_r2: 15 }], ['5 Ω & 50 Ω', { gx_ohm_r1: 5, gx_ohm_r2: 50 }]],
+    plot(v, W, H) {
+      const { r1, r2, V } = v, rs = r1 + r2, rp = r1 * r2 / (r1 + r2), lines = [[r1, 'R₁', accentColor()], [r2, 'R₂', '#5a9ad8'], [rs, 'Series', '#e8548b'], [rp, 'Parallel', '#3fbf6f']];
+      const imax = V / Math.min(r1, r2, rp), bx = box([0, V], [0, imax], { zero: true, pad: 0.06, W, H }), tp = view(bx, W, H);
+      lines.forEach(l => { seg(tp, 0, 0, V, V / l[0], l[2], false, 2.6); dot(tp, V, V / l[0], l[2], l[1], -8, -9); });
+      return lines.map(l => ({ color: l[2], label: l[1] + ' = ' + fmtN(l[0], 4) + ' Ω → I at ' + fmtN(V, 3) + ' V = ' + fmtN(V / l[0], 4) + ' A (slope = 1/R)' }));
+    }
+  });
+
+  GX.push({
+    id: 'decay', grp: 'phys', label: 'Radioactive Decay (half-life)',
+    inputs: [{ k: 'N0', l: 'N₀', v: 1000, r: 0, min: 0.01 }, { k: 'th', l: 'Half-life T½', v: 5, r: 0, min: 0.01 }, { k: 'T', l: 'Time', v: 25, r: 1, min: 0.1 }],
+    presets: [['Carbon-14 (5730 y)', { gx_decay_N0: 100, gx_decay_th: 5730, gx_decay_T: 28650 }], ['Short (T½ = 2)', { gx_decay_N0: 1000, gx_decay_th: 2, gx_decay_T: 12 }], ['Default', { gx_decay_N0: 1000, gx_decay_th: 5, gx_decay_T: 25 }]],
+    plot(v, W, H) {
+      const { N0, th, T } = v, f = t0 => N0 * Math.pow(0.5, t0 / th), lam = Math.LN2 / th, bx = box([0, T], [0, N0], { zero: true, pad: 0.07, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(f, 0, T, 400), tp, acc, bx, { lw: 2.8 });
+      for (let k = 1; k <= 6 && k * th <= T; k++) { seg(tp, k * th, 0, k * th, f(k * th), 'rgba(255,255,255,0.35)', true, 1.2); seg(tp, 0, f(k * th), k * th, f(k * th), 'rgba(255,255,255,0.35)', true, 1.2); dot(tp, k * th, f(k * th), '#ffffff', k === 1 ? 'N₀/2' : k === 2 ? 'N₀/4' : k === 3 ? 'N₀/8' : '', 8, -10); }
+      return [{ color: acc, label: 'N(t) = N₀·(½)^(t/T½) = N₀·e^(−λt)' }, { color: '#5a9ad8', label: 'Decay constant λ = ln2 / T½ = ' + fmtN(lam, 6) + ' · mean life τ = 1/λ = ' + fmtN(1 / lam, 4) },
+        { color: '#ffffff', label: 'After ' + fmtN(T / th, 3) + ' half-lives: N = ' + fmtN(f(T), 4) + ' (' + fmtN(100 * f(T) / N0, 3) + '% left)' }];
+    }
+  });
+
+  /* ---------- More Statistics ---------- */
+  GX.push({
+    id: 'poisson', grp: 'stat', label: 'Poisson Distribution',
+    inputs: [{ k: 'lam', l: 'Mean λ', v: 4, min: 0.1, max: 100 }],
+    presets: [['λ = 1', { gx_poisson_lam: 1 }], ['λ = 4', { gx_poisson_lam: 4 }], ['λ = 10', { gx_poisson_lam: 10 }], ['λ = 30', { gx_poisson_lam: 30 }]],
+    plot(v, W, H) {
+      const lam = v.lam, K = Math.min(160, Math.ceil(lam + 6 * Math.sqrt(lam) + 6)), pr = [Math.exp(-lam)]; for (let k = 1; k <= K; k++) pr.push(pr[k - 1] * lam / k);
+      const pmax = Math.max.apply(null, pr), bx = { x0: -0.8, x1: K + 0.8, y0: -pmax * 0.06, y1: pmax * 1.2 }, tp = view(bx, W, H), acc = accentColor(), mode = Math.floor(lam);
+      ctx.save(); ctx.font = '600 10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      pr.forEach((p, k) => { const a = tp(k - 0.4, p), z = tp(k + 0.4, 0); ctx.fillStyle = k === mode ? '#ffffff' : 'rgba(255,138,31,0.8)'; ctx.fillRect(a[0], a[1], Math.max(1, z[0] - a[0]), z[1] - a[1]);
+        if (K <= 20 && p > 0.0005) { ctx.fillStyle = '#ddd'; ctx.fillText(p.toFixed(3), (a[0] + z[0]) / 2, a[1] - 2); } });
+      ctx.restore();
+      let cum = 0; for (let k = 0; k <= mode; k++) cum += pr[k];
+      return [{ color: acc, label: 'Poisson(λ = ' + fmtN(lam, 3) + '): P(X = k) = e^(−λ)·λᵏ / k!' }, { color: '#ffffff', label: 'Most likely value k = ' + mode + ' with P = ' + fmtN(pr[mode], 4) + ' · P(X ≤ ' + mode + ') = ' + fmtN(cum, 4) },
+        { color: '#5a9ad8', label: 'Mean = variance = λ = ' + fmtN(lam, 3) + ' · standard deviation = ' + fmtN(Math.sqrt(lam), 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'ogive', grp: 'stat', label: 'Cumulative Frequency (Ogive)',
+    inputs: [{ k: 'xs', l: 'Data', t: 'xs', v: '12, 15, 15, 18, 20, 22, 22, 23, 25, 27, 28, 30, 31, 35, 41, 44, 47, 52', min: 2 }, { k: 'bins', l: 'Classes', v: 5, r: 0, min: 1, max: 30, int: true }],
+    presets: [['3 classes', { gx_ogive_bins: 3 }], ['5 classes', { gx_ogive_bins: 5 }], ['8 classes', { gx_ogive_bins: 8 }]],
+    plot(v, W, H) {
+      const d = v.xs, n = d.length, lo = Math.min.apply(null, d), hi = Math.max.apply(null, d); if (hi === lo) bad(tx('graph_x_samedata', 'The data values must not all be equal.'));
+      const nb = v.bins, w = (hi - lo) / nb, cnt = new Array(nb).fill(0); d.forEach(x => { cnt[Math.min(nb - 1, Math.floor((x - lo) / w))]++; });
+      const cf = []; let c = 0; cnt.forEach(k => { c += k; cf.push(c); });
+      const pts = [[lo, 0]].concat(cf.map((q, i) => [lo + (i + 1) * w, q])), bx = box([lo - w * 0.4, hi + w * 0.4], [0, n], { pad: 0.06, W, H }), tp = view(bx, W, H), acc = accentColor();
+      const inv = tg => { for (let i = 0; i < nb; i++) if (cf[i] >= tg) { const pv = i ? cf[i - 1] : 0; return lo + i * w + (tg - pv) / (cf[i] - pv) * w; } return hi; };
+      const qs = [[0.5, '#ffffff', 'Median'], [0.25, '#3fbf6f', 'Q₁'], [0.75, '#5a9ad8', 'Q₃']].map(q => ({ x: inv(n * q[0]), y: n * q[0], c: q[1], n: q[2] }));
+      qs.forEach(q => { seg(tp, bx.x0, q.y, q.x, q.y, q.c, true); seg(tp, q.x, q.y, q.x, 0, q.c, true); });
+      poly(pts, tp, acc, bx, { lw: 2.6 }); pts.forEach(p => dot(tp, p[0], p[1], acc, '', 8, 0)); qs.forEach(q => dot(tp, q.x, q.y, q.c, q.n, 8, -10));
+      return [{ color: acc, label: 'Ogive ("less than" cumulative frequency) — ' + n + ' values in ' + nb + ' classes of width ' + fmtN(w, 4) },
+        { color: '#ffffff', label: 'Median ≈ ' + fmtN(qs[0].x, 4) + ' (read at ' + fmtN(n / 2, 3) + ' on the vertical axis)' }, { color: '#3fbf6f', label: 'Q₁ ≈ ' + fmtN(qs[1].x, 4) }, { color: '#5a9ad8', label: 'Q₃ ≈ ' + fmtN(qs[2].x, 4) + ' · IQR ≈ ' + fmtN(qs[2].x - qs[1].x, 4) }];
+    }
+  });
+
+  /* ====== 15 MORE MATH TOOLS GRAPHS (listed under the existing "Math Tools" group) ====== */
+  function txt(tp, x, y, s, color, dx, dy, size) {
+    const q = tp(x, y); ctx.save(); ctx.fillStyle = color || '#ddd'; ctx.font = '700 ' + (size || 11) + 'px Inter, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s, q[0] + (dx || 0), q[1] + (dy || 0)); ctx.restore();
+  }
+  const arrowTo = (tp, x, y, color, label, w) => { const o = tp(0, 0), e = tp(x, y); drawArrow(o[0], o[1], e[0], e[1], color, w || 2.6); if (label) txt(tp, x, y, label, color, e[0] >= o[0] ? 10 : -10, e[1] > o[1] ? 10 : -10); };
+
+  GX.push({
+    id: 'matrix', grp: 'math', label: 'Matrix Transformation (2×2)',
+    inputs: [{ k: 'a', l: 'a', v: 1, r: 0 }, { k: 'b', l: 'b', v: 1, r: 0 }, { k: 'c', l: 'c', v: 0, r: 1 }, { k: 'd', l: 'd', v: 1, r: 1 }],
+    presets: [['Shear', { a: 1, b: 1, c: 0, d: 1 }], ['Rotate 90°', { a: 0, b: -1, c: 1, d: 0 }], ['Scale ×2', { a: 2, b: 0, c: 0, d: 2 }], ['Reflect in x-axis', { a: 1, b: 0, c: 0, d: -1 }], ['Squash', { a: 2, b: 1, c: 1, d: 1 }]],
+    plot(v, W, H) {
+      const { a, b, c, d } = v, T = p => [a * p[0] + b * p[1], c * p[0] + d * p[1]], sq = [[0, 0], [1, 0], [1, 1], [0, 1]], ts = sq.map(T), all = sq.concat(ts);
+      const bx = box(all.map(p => p[0]), all.map(p => p[1]), { eq: true, zero: true, pad: 0.3, W, H }), tp = view(bx, W, H), acc = accentColor();
+      fillPoly(sq, tp, 'rgba(255,255,255,0.10)'); poly(sq.concat([sq[0]]), tp, 'rgba(255,255,255,0.5)', bx, { dash: true, lw: 1.5 });
+      fillPoly(ts, tp, 'rgba(255,138,31,0.28)'); poly(ts.concat([ts[0]]), tp, acc, bx, { lw: 2.4 });
+      arrowTo(tp, a, c, '#e8548b', 'î′'); arrowTo(tp, b, d, '#5a9ad8', 'ĵ′');
+      const tr = a + d, det = a * d - b * c, disc = tr * tr - 4 * det;
+      const eig = disc >= 0 ? 'Eigenvalues λ = ' + fmtN((tr + Math.sqrt(disc)) / 2, 4) + ', ' + fmtN((tr - Math.sqrt(disc)) / 2, 4) : 'Eigenvalues are complex: ' + fmtN(tr / 2, 3) + ' ± ' + fmtN(Math.sqrt(-disc) / 2, 3) + 'i (a rotation-like map)';
+      return [{ color: acc, label: 'Unit square → parallelogram under [[' + fmtN(a, 3) + ', ' + fmtN(b, 3) + '], [' + fmtN(c, 3) + ', ' + fmtN(d, 3) + ']]' },
+        { color: '#e8548b', label: 'î = (1,0) → (' + fmtN(a, 3) + ', ' + fmtN(c, 3) + ') · ĵ = (0,1) → (' + fmtN(b, 3) + ', ' + fmtN(d, 3) + ')' },
+        { color: '#ffffff', label: 'Determinant = ' + fmtN(det, 4) + ' (area scale' + (det < 0 ? ', orientation flipped' : det === 0 ? ', collapses to a line' : '') + ') · trace = ' + fmtN(tr, 4) }, { color: '#5a9ad8', label: eig }];
+    }
+  });
+
+  GX.push({
+    id: 'dotcross', grp: 'math', label: 'Dot & Cross Product (2D)',
+    inputs: [{ k: 'ax', l: 'a = (', v: 4, r: 0 }, { k: 'ay', l: ',', v: 1, r: 0 }, { k: 'bx', l: 'b = (', v: 2, r: 1 }, { k: 'by', l: ',', v: 3, r: 1 }],
+    presets: [['Acute angle', { ax: 4, ay: 1, bx: 2, by: 3 }], ['Perpendicular', { ax: 3, ay: 0, bx: 0, by: 2 }], ['Obtuse', { ax: 3, ay: 1, bx: -2, by: 2 }], ['Parallel', { ax: 2, ay: 1, bx: 4, by: 2 }]],
+    plot(v, W, H) {
+      const { ax, ay, bx: bxx, by } = v, la = Math.hypot(ax, ay), lb = Math.hypot(bxx, by); if (!la || !lb) bad(tx('graph_x_zerovec', 'Vectors must not be the zero vector.'));
+      const dt = ax * bxx + ay * by, cr = ax * by - ay * bxx, ang = Math.acos(Math.max(-1, Math.min(1, dt / (la * lb)))) * 180 / Math.PI, k = dt / (lb * lb), px = k * bxx, py = k * by;
+      const b = box([0, ax, bxx, ax + bxx], [0, ay, by, ay + by], { eq: true, zero: true, pad: 0.25, W, H }), tp = view(b, W, H);
+      fillPoly([[0, 0], [ax, ay], [ax + bxx, ay + by], [bxx, by]], tp, 'rgba(255,255,255,0.08)');
+      seg(tp, 0, 0, px, py, '#3fbf6f', true, 2.4); seg(tp, ax, ay, px, py, '#3fbf6f', true, 1.2);
+      arrowTo(tp, ax, ay, accentColor(), 'a'); arrowTo(tp, bxx, by, '#5a9ad8', 'b');
+      return [{ color: accentColor(), label: 'a · b = ' + fmtN(dt, 4) + ' · angle θ = ' + fmtN(ang, 3) + '°' + (Math.abs(dt) < 1e-9 ? ' (perpendicular)' : '') },
+        { color: '#5a9ad8', label: 'a × b = ax·by − ay·bx = ' + fmtN(cr, 4) + ' = area of the parallelogram' + (Math.abs(cr) < 1e-9 ? ' (parallel vectors)' : '') },
+        { color: '#3fbf6f', label: 'Projection of a on b = ' + fmtN(dt / lb, 4) + ' → vector (' + fmtN(px, 3) + ', ' + fmtN(py, 3) + ')' }, { color: '#ffffff', label: '|a| = ' + fmtN(la, 4) + ' · |b| = ' + fmtN(lb, 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'cmul', grp: 'math', label: 'Complex Multiply & Divide',
+    inputs: [{ k: 'r1', l: 'z₁ = ', v: 2, r: 0 }, { k: 'i1', l: '+ i·', v: 1, r: 0 }, { k: 'r2', l: 'z₂ = ', v: 1, r: 1 }, { k: 'i2', l: '+ i·', v: 2, r: 1 }],
+    presets: [['(2+i)(1+2i)', { r1: 2, i1: 1, r2: 1, i2: 2 }], ['Times i (rotate 90°)', { r1: 3, i1: 1, r2: 0, i2: 1 }], ['Conjugates', { r1: 2, i1: 3, r2: 2, i2: -3 }]],
+    plot(v, W, H) {
+      const { r1, i1, r2, i2 } = v, m2 = r2 * r2 + i2 * i2; if (!m2) bad(tx('graph_x_z0', 'z₂ must not be 0 (division).'));
+      const p = [r1 * r2 - i1 * i2, r1 * i2 + i1 * r2], q = [(r1 * r2 + i1 * i2) / m2, (i1 * r2 - r1 * i2) / m2], zs = [[r1, i1], [r2, i2], p, q];
+      const b = box(zs.map(z => z[0]), zs.map(z => z[1]), { eq: true, zero: true, pad: 0.3, W, H }), tp = view(b, W, H), acc = accentColor();
+      arrowTo(tp, r1, i1, acc, 'z₁'); arrowTo(tp, r2, i2, '#5a9ad8', 'z₂'); arrowTo(tp, p[0], p[1], '#ffffff', 'z₁z₂', 3.2); arrowTo(tp, q[0], q[1], '#3fbf6f', 'z₁/z₂');
+      const ar = z => Math.atan2(z[1], z[0]) * 180 / Math.PI, md = z => Math.hypot(z[0], z[1]);
+      return [{ color: acc, label: 'z₁ = ' + fmtComplexStr(r1, i1) + ' (|z| = ' + fmtN(md([r1, i1]), 3) + ', arg = ' + fmtN(ar([r1, i1]), 2) + '°)' }, { color: '#5a9ad8', label: 'z₂ = ' + fmtComplexStr(r2, i2) + ' (|z| = ' + fmtN(md([r2, i2]), 3) + ', arg = ' + fmtN(ar([r2, i2]), 2) + '°)' },
+        { color: '#ffffff', label: 'z₁·z₂ = ' + fmtComplexStr(p[0], p[1]) + ' — moduli multiply, arguments add' }, { color: '#3fbf6f', label: 'z₁ ÷ z₂ = ' + fmtComplexStr(q[0], q[1]) + ' — moduli divide, arguments subtract' }];
+    }
+  });
+
+  GX.push({
+    id: 'cpow', grp: 'math', label: 'Powers of a Complex Number',
+    inputs: [{ k: 're', l: 'z = ', v: 0.8, r: 0 }, { k: 'im', l: '+ i·', v: 0.5, r: 0 }, { k: 'n', l: 'Powers n', v: 8, r: 1, min: 1, max: 24, int: true }],
+    presets: [['Spiral in (|z|<1)', { re: 0.8, im: 0.5, n: 12 }], ['Spiral out (|z|>1)', { re: 1, im: 0.4, n: 10 }], ['On unit circle', { re: 0.6, im: 0.8, n: 10 }], ['(1+i)ⁿ', { re: 1, im: 1, n: 8 }]],
+    plot(v, W, H) {
+      const { re, im, n } = v, pts = [[1, 0]]; let cr = 1, ci = 0; for (let k = 1; k <= n; k++) { const nr = cr * re - ci * im; ci = cr * im + ci * re; cr = nr; pts.push([cr, ci]); }
+      const b = box(pts.map(p => p[0]).concat([-1, 1]), pts.map(p => p[1]).concat([-1, 1]), { eq: true, zero: true, pad: 0.2, W, H }), tp = view(b, W, H), acc = accentColor(), ring = [];
+      for (let i = 0; i <= 200; i++) ring.push([Math.cos(i / 200 * 2 * Math.PI), Math.sin(i / 200 * 2 * Math.PI)]);
+      poly(ring, tp, 'rgba(255,255,255,0.3)', b, { dash: true, lw: 1.3 }); poly(pts, tp, acc, b, { lw: 1.8 });
+      pts.forEach((p, k) => dot(tp, p[0], p[1], PIE_COLORS[k % PIE_COLORS.length], k && k <= 10 ? 'z' + supNum(k) : '', 7, -8));
+      const mod = Math.hypot(re, im), arg = Math.atan2(im, re) * 180 / Math.PI, last = pts[n];
+      return [{ color: acc, label: 'z = ' + fmtComplexStr(re, im) + ' · |z| = ' + fmtN(mod, 4) + ' · arg = ' + fmtN(arg, 3) + '°' },
+        { color: '#5a9ad8', label: 'De Moivre: zⁿ = |z|ⁿ (cos nθ + i sin nθ) → each power turns by ' + fmtN(arg, 3) + '° and scales by ' + fmtN(mod, 4) },
+        { color: '#ffffff', label: 'z' + supNum(n) + ' = ' + fmtComplexStr(last[0], last[1]) + (Math.abs(mod - 1) < 1e-9 ? ' — |z| = 1, so all powers stay on the unit circle' : mod < 1 ? ' — |z| < 1: spirals inward' : ' — |z| > 1: spirals outward') }];
+    }
+  });
+
+  GX.push({
+    id: 'tri3', grp: 'math', label: 'Triangle from 3 Sides (SSS)',
+    inputs: [{ k: 'a', l: 'a', v: 5, r: 0, min: 0.01 }, { k: 'b', l: 'b', v: 6, r: 0, min: 0.01 }, { k: 'c', l: 'c', v: 7, r: 0, min: 0.01 }],
+    presets: [['3-4-5 (right)', { a: 3, b: 4, c: 5 }], ['Equilateral', { a: 6, b: 6, c: 6 }], ['5-6-7', { a: 5, b: 6, c: 7 }], ['Obtuse 4-5-8', { a: 4, b: 5, c: 8 }]],
+    plot(v, W, H) {
+      const { a, b, c } = v; if (a + b <= c || a + c <= b || b + c <= a) bad(tx('graph_x_tri', 'These sides cannot form a triangle (the two shorter sides must add to more than the longest).'));
+      const cx = (b * b + c * c - a * a) / (2 * c), cy = Math.sqrt(Math.max(0, b * b - cx * cx)), A = [0, 0], B = [c, 0], C = [cx, cy];
+      const s = (a + b + c) / 2, area = Math.sqrt(s * (s - a) * (s - b) * (s - c)), rin = area / s, R = a * b * c / (4 * area), deg = r => r * 180 / Math.PI;
+      const angA = Math.acos((b * b + c * c - a * a) / (2 * b * c)), angB = Math.acos((a * a + c * c - b * b) / (2 * a * c)), angC = Math.PI - angA - angB;
+      const I = [(a * A[0] + b * B[0] + c * C[0]) / (2 * s), (a * A[1] + b * B[1] + c * C[1]) / (2 * s)], O = [c / 2, (cx * cx + cy * cy - c * cx) / (2 * cy)];
+      const bb = box([O[0] - R, O[0] + R, 0, c], [O[1] - R, O[1] + R, 0, cy], { eq: true, pad: 0.12, W, H }), tp = view(bb, W, H), acc = accentColor(), circ = (o, r) => { const q = []; for (let i = 0; i <= 120; i++) q.push([o[0] + r * Math.cos(i / 120 * 2 * Math.PI), o[1] + r * Math.sin(i / 120 * 2 * Math.PI)]); return q; };
+      poly(circ(O, R), tp, 'rgba(90,154,216,0.7)', bb, { dash: true, lw: 1.4 }); poly(circ(I, rin), tp, 'rgba(63,191,111,0.9)', bb, { lw: 1.6 });
+      fillPoly([A, B, C], tp, 'rgba(255,138,31,0.2)'); poly([A, B, C, A], tp, acc, bb, { lw: 2.6 });
+      dot(tp, A[0], A[1], '#fff', 'A', -8, 10); dot(tp, B[0], B[1], '#fff', 'B', 8, 10); dot(tp, C[0], C[1], '#fff', 'C', 8, -8);
+      txt(tp, (B[0] + C[0]) / 2, (B[1] + C[1]) / 2, 'a=' + fmtN(a, 3), '#ddd', 18, 0); txt(tp, (A[0] + C[0]) / 2, (A[1] + C[1]) / 2, 'b=' + fmtN(b, 3), '#ddd', -18, 0); txt(tp, c / 2, 0, 'c=' + fmtN(c, 3), '#ddd', 0, 14);
+      const mx = Math.max(angA, angB, angC), kind = Math.abs(mx - Math.PI / 2) < 1e-9 ? 'right' : mx > Math.PI / 2 ? 'obtuse' : 'acute', side = (a === b && b === c) ? 'equilateral' : (a === b || b === c || a === c) ? 'isosceles' : 'scalene';
+      return [{ color: acc, label: 'Angles: A = ' + fmtN(deg(angA), 3) + '°, B = ' + fmtN(deg(angB), 3) + '°, C = ' + fmtN(deg(angC), 3) + '° (' + side + ', ' + kind + ')' },
+        { color: '#ffffff', label: 'Area (Heron) = ' + fmtN(area, 4) + ' · perimeter = ' + fmtN(2 * s, 4) + ' · s = ' + fmtN(s, 4) }, { color: '#3fbf6f', label: 'Inradius r = ' + fmtN(rin, 4) + ' (green circle)' }, { color: '#5a9ad8', label: 'Circumradius R = ' + fmtN(R, 4) + ' (dashed circle)', dashed: true }];
+    }
+  });
+
+  GX.push({
+    id: 'polyarea', grp: 'math', label: 'Polygon Area (Shoelace)',
+    inputs: [{ k: 'xs', l: 'Vertices x,y — one per line', t: 'xs', v: '0,0\n6,0\n7,4\n3,6\n-1,3', min: 6 }],
+    presets: [['Rectangle', { xs: '0,0\n5,0\n5,3\n0,3' }], ['Triangle', { xs: '0,0\n6,0\n2,5' }], ['Pentagon', { xs: '0,0\n6,0\n7,4\n3,6\n-1,3' }], ['L-shape', { xs: '0,0\n4,0\n4,2\n2,2\n2,5\n0,5' }]],
+    plot(v, W, H) {
+      const d = v.xs; if (d.length % 2) bad(tx('graph_x_pairs', 'Give vertices as pairs: x,y on each line.')); const P = []; for (let i = 0; i < d.length; i += 2) P.push([d[i], d[i + 1]]); const n = P.length;
+      let A2 = 0, cx = 0, cy = 0, per = 0; for (let i = 0; i < n; i++) { const p = P[i], q = P[(i + 1) % n], cr = p[0] * q[1] - q[0] * p[1]; A2 += cr; cx += (p[0] + q[0]) * cr; cy += (p[1] + q[1]) * cr; per += Math.hypot(q[0] - p[0], q[1] - p[1]); }
+      if (Math.abs(A2) < 1e-12) bad(tx('graph_x_flat2', 'These points have zero area — they lie on one line.')); const A = A2 / 2; cx /= 6 * A; cy /= 6 * A;
+      const b = box(P.map(p => p[0]), P.map(p => p[1]), { eq: true, zero: true, pad: 0.2, W, H }), tp = view(b, W, H), acc = accentColor();
+      fillPoly(P, tp, 'rgba(255,138,31,0.25)'); poly(P.concat([P[0]]), tp, acc, b, { lw: 2.6 }); P.forEach((p, i) => dot(tp, p[0], p[1], '#fff', 'P' + (i + 1), 8, -9)); dot(tp, cx, cy, '#3fbf6f', 'centroid', 8, 10);
+      return [{ color: acc, label: n + ' vertices · Area = ½|Σ(xᵢyᵢ₊₁ − xᵢ₊₁yᵢ)| = ' + fmtN(Math.abs(A), 5) }, { color: '#5a9ad8', label: 'Perimeter = ' + fmtN(per, 4) + ' · vertices go ' + (A > 0 ? 'anticlockwise' : 'clockwise') }, { color: '#3fbf6f', label: 'Centroid = (' + fmtN(cx, 3) + ', ' + fmtN(cy, 3) + ')' }];
+    }
+  });
+
+  GX.push({
+    id: 'linprog', grp: 'math', label: 'Linear Programming (feasible region)',
+    inputs: [{ k: 'cons', l: 'Conditions — one per line (use <=, >=, <, >)', t: 'ta', v: 'x + y <= 6\nx - y >= -2\nx >= 0\ny >= 0' }, { k: 'obj', l: 'Objective  P(x, y)', t: 'g', v: '3x + 2y' }, { k: 'lo', l: 'View from', v: -1, r: 0 }, { k: 'hi', l: 'to', v: 9, r: 0 }],
+    presets: [['Triangle', { cons: 'x + y <= 6\nx >= 0\ny >= 0' }], ['Four lines', { cons: 'x + y <= 6\nx - y >= -2\nx >= 0\ny >= 0' }], ['Factory', { cons: '2x + y <= 10\nx + 2y <= 8\nx >= 0\ny >= 0', obj: '40x + 30y' }]],
+    plot(v, W, H) {
+      const lo = v.lo, hi = v.hi; if (lo >= hi) bad(t('graph_error_range'));
+      const lines = v.cons.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6); if (!lines.length) bad(tx('graph_x_cons', 'Write at least one condition, e.g. x + y <= 6'));
+      const C = lines.map(s => { const m = s.match(/^(.*?)(<=|>=|<|>)(.*)$/); if (!m || !m[1].trim() || !m[3].trim()) bad(tx('graph_x_consfmt', 'Write each condition like  x + y <= 6')); const fn = compileFn3D('(' + m[1] + ')-(' + m[3] + ')'); if (!fn) bad(tx('graph_x_consfmt', 'Write each condition like  x + y <= 6')); return { fn, le: m[2][0] === '<', s }; });
+      const yspan = (hi - lo) * H / W, b = { x0: lo, x1: hi, y0: lo, y1: lo + yspan }, tp = view(b, W, H), nx = Math.max(20, Math.floor(W / 4)), ny = Math.max(20, Math.floor(H / 4)), stride = nx + 1;
+      const ok = (x, y, eps) => C.every(c => { const f = c.fn(x, y); return isFinite(f) && (c.le ? f <= eps : f >= -eps); });
+      ctx.save(); ctx.fillStyle = 'rgba(63,191,111,0.30)';
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (ok(lo + (hi - lo) * (i + 0.5) / nx, b.y1 - yspan * (j + 0.5) / ny, 0)) ctx.fillRect(i * W / nx, j * H / ny, W / nx + 1, H / ny + 1);
+      ctx.restore();
+      ctx.save(); ctx.lineWidth = 2.2;
+      C.forEach((c, k) => { const vals = new Float64Array(stride * (ny + 1)); for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const f = c.fn(lo + (hi - lo) * i / nx, b.y1 - yspan * j / ny); vals[j * stride + i] = isFinite(f) ? f : NaN; } ctx.strokeStyle = PIE_COLORS[k % PIE_COLORS.length]; marchLevel(vals, stride, nx, ny, W, H, 0); });
+      ctx.restore();
+      const co = C.map(c => { const f0 = c.fn(0, 0), A = c.fn(1, 0) - f0, B = c.fn(0, 1) - f0; return { A, B, C: f0, lin: Math.abs(c.fn(1, 1) - (A + B + f0)) < 1e-9 && Math.abs(c.fn(-2, 3) - (-2 * A + 3 * B + f0)) < 1e-9 }; });
+      const corners = [], lg = C.map((c, k) => ({ color: PIE_COLORS[k % PIE_COLORS.length], label: esc(c.s) })); lg.push({ color: '#3fbf6f', label: 'Green area = feasible region (all conditions true)' });
+      if (co.every(q => q.lin)) {
+        for (let i = 0; i < co.length; i++) for (let j = i + 1; j < co.length; j++) { const p = co[i], q = co[j], det = p.A * q.B - q.A * p.B; if (Math.abs(det) < 1e-12) continue; const x = (-p.C * q.B + q.C * p.B) / det, y = (-p.A * q.C + q.A * p.C) / det; if (ok(x, y, 1e-7) && !corners.some(z => Math.abs(z[0] - x) < 1e-6 && Math.abs(z[1] - y) < 1e-6)) corners.push([x, y]); }
+        corners.forEach(z => dot(tp, z[0], z[1], '#ffffff', corners.length <= 10 ? '(' + fmtN(z[0], 2) + ', ' + fmtN(z[1], 2) + ')' : '', 8, -9));
+        if (corners.length) { const vals = corners.map(z => v.obj(z[0], z[1])), mx = Math.max.apply(null, vals), mn = Math.min.apply(null, vals), zm = corners[vals.indexOf(mx)], zn = corners[vals.indexOf(mn)];
+          lg.push({ color: '#ffffff', label: 'Corner points: ' + corners.length + ' · P = ' + esc(v['obj$']) }, { color: '#f2c14e', label: 'Maximum P = ' + fmtN(mx, 4) + ' at (' + fmtN(zm[0], 3) + ', ' + fmtN(zm[1], 3) + ') · minimum P = ' + fmtN(mn, 4) + ' at (' + fmtN(zn[0], 3) + ', ' + fmtN(zn[1], 3) + ')' }); }
+        else lg.push({ color: '#ff9494', label: 'No corner points inside the region — it may be empty or unbounded in this view' });
+      } else lg.push({ color: '#aaa', label: 'Corner points and optimum are shown for straight-line conditions only' });
+      return lg;
+    }
+  });
+
+  GX.push({
+    id: 'venn', grp: 'math', label: 'Venn Diagram (2 sets)',
+    inputs: [{ k: 'A', l: 'n(A)', v: 25, r: 0, min: 0, int: true }, { k: 'B', l: 'n(B)', v: 18, r: 0, min: 0, int: true }, { k: 'AB', l: 'n(A∩B)', v: 8, r: 1, min: 0, int: true }, { k: 'U', l: 'n(U) (0 = skip)', v: 40, r: 1, min: 0, int: true }],
+    presets: [['Class survey', { A: 25, B: 18, AB: 8, U: 40 }], ['Disjoint sets', { A: 10, B: 12, AB: 0, U: 30 }], ['Subset', { A: 20, B: 8, AB: 8, U: 30 }]],
+    plot(v, W, H) {
+      const { A, B, AB, U } = v; if (AB > Math.min(A, B)) bad(tx('graph_x_vennI', 'n(A∩B) cannot be bigger than n(A) or n(B).')); const uni = A + B - AB; if (U > 0 && uni > U) bad(tx('graph_x_vennU', 'n(A∪B) is bigger than n(U) — check the numbers.'));
+      ctx.clearRect(0, 0, W, H); const acc = accentColor(), r = Math.min(H * 0.3, W * 0.22), cy = H / 2 + (U > 0 ? 6 : 0), d = r * 1.05, ax = W / 2 - d / 2, bxx = W / 2 + d / 2;
+      ctx.save(); if (U > 0) { ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.6; ctx.strokeRect(10, 10, W - 20, H - 20); ctx.fillStyle = '#ddd'; ctx.font = '700 12px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText('U = ' + U, 18, 26); }
+      ctx.globalAlpha = 0.45; ctx.fillStyle = acc; ctx.beginPath(); ctx.arc(ax, cy, r, 0, 7); ctx.fill(); ctx.fillStyle = '#5a9ad8'; ctx.beginPath(); ctx.arc(bxx, cy, r, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = acc; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(ax, cy, r, 0, 7); ctx.stroke(); ctx.strokeStyle = '#5a9ad8'; ctx.beginPath(); ctx.arc(bxx, cy, r, 0, 7); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '800 ' + Math.max(13, r * 0.28) + 'px Inter, sans-serif';
+      ctx.fillText(A - AB, ax - r * 0.55, cy); ctx.fillText(AB, W / 2, cy); ctx.fillText(B - AB, bxx + r * 0.55, cy); ctx.font = '800 13px Inter, sans-serif'; ctx.fillText('A', ax - r * 0.7, cy - r - 12); ctx.fillText('B', bxx + r * 0.7, cy - r - 12);
+      if (U > 0) { ctx.font = '700 13px Inter, sans-serif'; ctx.fillText('neither: ' + (U - uni), W - 70, H - 26); } ctx.restore();
+      const lg = [{ color: acc, label: 'Only A = ' + (A - AB) + ' · Only B = ' + (B - AB) + ' · Both = ' + AB }, { color: '#ffffff', label: 'n(A ∪ B) = n(A) + n(B) − n(A ∩ B) = ' + A + ' + ' + B + ' − ' + AB + ' = ' + uni }];
+      if (U > 0) lg.push({ color: '#5a9ad8', label: 'P(A) = ' + fmtN(A / U, 4) + ' · P(B) = ' + fmtN(B / U, 4) + ' · P(A∩B) = ' + fmtN(AB / U, 4) + ' · P(A∪B) = ' + fmtN(uni / U, 4) }); return lg;
+    }
+  });
+
+  GX.push({
+    id: 'sequence', grp: 'math', label: 'Sequences (AP / GP / Fibonacci)',
+    inputs: [{ k: 'ty', l: 'Type', t: 's', v: 'ap', opts: [['ap', 'Arithmetic (AP)'], ['gp', 'Geometric (GP)'], ['fib', 'Fibonacci']] }, { k: 'a1', l: 'First term a₁', v: 2, r: 0 }, { k: 'd', l: 'd or r', v: 3, r: 0 }, { k: 'n', l: 'Terms n', v: 12, r: 0, min: 1, max: 40, int: true }],
+    presets: [['AP 2,5,8…', { ty: 'ap', a1: 2, d: 3, n: 12 }], ['GP ×2', { ty: 'gp', a1: 1, d: 2, n: 10 }], ['GP ×½', { ty: 'gp', a1: 16, d: 0.5, n: 14 }], ['Fibonacci', { ty: 'fib', a1: 1, d: 1, n: 15 }], ['Alternating GP', { ty: 'gp', a1: 1, d: -1.5, n: 10 }]],
+    plot(v, W, H) {
+      const { ty, a1, d, n } = v, a = []; for (let k = 1; k <= n; k++) a.push(ty === 'ap' ? a1 + (k - 1) * d : ty === 'gp' ? a1 * Math.pow(d, k - 1) : (k < 3 ? 1 : a[k - 2] + a[k - 3]));
+      const pts = a.map((y, i) => [i + 1, y]), b = box([0.3, n + 0.7], a, { zero: true, pad: 0.12, W, H }), tp = view(b, W, H), acc = accentColor();
+      pts.forEach(p => seg(tp, p[0], 0, p[0], p[1], 'rgba(255,138,31,0.35)', false, 1.4)); poly(pts, tp, 'rgba(255,255,255,0.35)', b, { dash: true, lw: 1.3 }); pts.forEach(p => dot(tp, p[0], p[1], acc, n <= 12 ? fmtN(p[1], 3) : '', 0, -11));
+      const S = a.reduce((x, y) => x + y, 0), lg = [{ color: acc, label: ty === 'ap' ? 'aₙ = a₁ + (n−1)d = ' + fmtN(a1) + ' + (n−1)(' + fmtN(d) + ') → a' + n + ' = ' + fmtN(a[n - 1], 5) : ty === 'gp' ? 'aₙ = a₁·rⁿ⁻¹ = ' + fmtN(a1) + '·(' + fmtN(d) + ')ⁿ⁻¹ → a' + n + ' = ' + fmtN(a[n - 1], 5) : 'Fibonacci: aₙ = aₙ₋₁ + aₙ₋₂ → a' + n + ' = ' + a[n - 1] }, { color: '#ffffff', label: 'Sum of first ' + n + ' terms Sₙ = ' + fmtN(S, 6) }];
+      if (ty === 'gp') lg.push({ color: '#5a9ad8', label: Math.abs(d) < 1 ? 'Converges: infinite sum a₁/(1−r) = ' + fmtN(a1 / (1 - d), 5) : 'Diverges since |r| ≥ 1' });
+      if (ty === 'fib' && n > 2) lg.push({ color: '#5a9ad8', label: 'Ratio aₙ/aₙ₋₁ = ' + fmtN(a[n - 1] / a[n - 2], 6) + ' → golden ratio 1.618034…' }); return lg;
+    }
+  });
+
+  GX.push({
+    id: 'pascal', grp: 'math', label: "Pascal's Triangle",
+    inputs: [{ k: 'n', l: 'Rows', v: 8, r: 0, min: 1, max: 24, int: true }, { k: 'md', l: 'Show', t: 's', v: 'num', opts: [['num', 'Numbers'], ['oe', 'Odd / even pattern']] }],
+    presets: [['6 rows', { n: 6, md: 'num' }], ['10 rows', { n: 10, md: 'num' }], ['Sierpinski (odd/even)', { n: 24, md: 'oe' }]],
+    plot(v, W, H) {
+      const n = v.n, rows = [[1]]; for (let r = 1; r < n; r++) { const p = rows[r - 1], q = [1]; for (let i = 1; i < r; i++) q.push(p[i - 1] + p[i]); q.push(1); rows.push(q); }
+      ctx.clearRect(0, 0, W, H); const rh = (H - 16) / n, cw = Math.min(W / (n + 1), 52), rad = Math.min(rh, cw) * 0.46, showNum = v.md === 'num' && n <= 12, acc = accentColor();
+      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      rows.forEach((row, r) => row.forEach((val, i) => { const x = W / 2 + (i - r / 2) * cw, y = 8 + rh * (r + 0.5);
+        ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fillStyle = v.md === 'oe' ? (val % 2 ? acc : 'rgba(255,255,255,0.08)') : 'rgba(255,138,31,0.22)'; ctx.fill(); ctx.strokeStyle = acc; ctx.lineWidth = 1.2; ctx.stroke();
+        if (showNum) { const s = String(val); ctx.fillStyle = '#fff'; ctx.font = '700 ' + Math.max(8, Math.min(rad * (s.length > 3 ? 0.7 : 1), 15)) + 'px Inter, sans-serif'; ctx.fillText(s, x, y); } }));
+      ctx.restore(); const last = rows[n - 1];
+      return [{ color: acc, label: 'Each number = the sum of the two above it · row ' + (n - 1) + ' gives the coefficients of (a + b)^' + (n - 1) }, { color: '#ffffff', label: 'Row ' + (n - 1) + ': ' + (n <= 14 ? last.join(', ') : 'sum = 2^' + (n - 1)) + ' · row sum = 2^' + (n - 1) + ' = ' + Math.pow(2, n - 1) },
+        { color: '#5a9ad8', label: v.md === 'oe' ? 'Orange = odd numbers → they form the Sierpiński triangle fractal' : n > 12 ? 'Numbers are hidden above 12 rows — switch to fewer rows to read them' : 'C(n, k) = n! / (k!(n−k)!)' }];
+    }
+  });
+
+  GX.push({
+    id: 'logs', grp: 'math', label: 'Logarithm Graphs (different bases)',
+    inputs: [{ k: 'b1', l: 'Base 1', v: 2, r: 0, min: 0.01 }, { k: 'b2', l: 'Base 2', v: 2.71828, r: 0, min: 0.01 }, { k: 'b3', l: 'Base 3', v: 10, r: 0, min: 0.01 }],
+    presets: [['2, e, 10', { b1: 2, b2: 2.71828, b3: 10 }], ['Fractions ½, ⅓, ¼', { b1: 0.5, b2: 0.3333, b3: 0.25 }], ['2, 3, 5', { b1: 2, b2: 3, b3: 5 }]],
+    plot(v, W, H) {
+      const bs = [v.b1, v.b2, v.b3]; if (bs.some(q => q === 1)) bad(tx('graph_x_base1', 'A logarithm base cannot be 1.')); const bx = { x0: -1, x1: 10, y0: -4, y1: 4 }, tp = view(bx, W, H), cols = [accentColor(), '#5a9ad8', '#3fbf6f'];
+      seg(tp, 1, bx.y0, 1, bx.y1, 'rgba(255,255,255,0.25)', true, 1); seg(tp, bx.x0, 1, bx.x1, 1, 'rgba(255,255,255,0.25)', true, 1);
+      bs.forEach((q, k) => { poly(samplePts(x => x > 0 ? Math.log(x) / Math.log(q) : NaN, 0.001, 10, 700), tp, cols[k], bx, { brk: true }); dot(tp, q, 1, cols[k], '(' + fmtN(q, 3) + ', 1)', 6, -9); });
+      dot(tp, 1, 0, '#ffffff', '(1, 0)', 6, 10);
+      return bs.map((q, k) => ({ color: cols[k], label: 'y = log₍' + fmtN(q, 4) + '₎(x) = ln x / ln ' + fmtN(q, 4) + (q > 1 ? ' — increasing' : ' — decreasing') })).concat([{ color: '#ffffff', label: 'Every log graph passes through (1, 0) and (base, 1); x must be positive' }]);
+    }
+  });
+
+  GX.push({
+    id: 'trig6', grp: 'math', label: 'Trigonometric Functions (all 6)',
+    inputs: [{ k: 'kind', l: 'Graph', t: 's', v: 'sc', opts: [['sc', 'sin & cos'], ['tan', 'tan'], ['cot', 'cot'], ['sec', 'sec (with cos)'], ['csc', 'csc (with sin)']] }, { k: 'u', l: 'Angle in', t: 's', v: 'deg', opts: [['deg', 'Degrees'], ['rad', 'Radians']] }],
+    presets: [['sin & cos', { kind: 'sc' }], ['tan', { kind: 'tan' }], ['sec', { kind: 'sec' }], ['csc', { kind: 'csc' }], ['cot', { kind: 'cot' }]],
+    plot(v, W, H) {
+      const deg = v.u === 'deg', k = deg ? Math.PI / 180 : 1, L = deg ? 360 : 2 * Math.PI, F = { sin: x => Math.sin(x * k), cos: x => Math.cos(x * k), tan: x => Math.tan(x * k), cot: x => 1 / Math.tan(x * k), sec: x => 1 / Math.cos(x * k), csc: x => 1 / Math.sin(x * k) };
+      const wide = v.kind !== 'sc', bx = { x0: -L, x1: L, y0: wide ? -4 : -1.5, y1: wide ? 4 : 1.5 }, tp = view(bx, W, H), acc = accentColor(), draw = (f, c, dash) => poly(samplePts(f, bx.x0, bx.x1, 900), tp, c, bx, { brk: true, dash, lw: dash ? 1.4 : 2.6 });
+      const pairs = { sc: [['sin', acc], ['cos', '#5a9ad8']], tan: [['tan', acc]], cot: [['cot', acc]], sec: [['cos', 'rgba(255,255,255,0.4)', 1], ['sec', acc]], csc: [['sin', 'rgba(255,255,255,0.4)', 1], ['csc', acc]] }[v.kind];
+      pairs.forEach(q => draw(F[q[0]], q[1], q[2])); const per = (v.kind === 'tan' || v.kind === 'cot') ? (deg ? '180°' : 'π') : (deg ? '360°' : '2π');
+      const info = { sc: 'Range −1 to 1 · sin is odd, cos is even · sin² + cos² = 1', tan: 'tan = sin/cos · undefined at 90°, 270° … (vertical asymptotes) · range all real numbers', cot: 'cot = cos/sin · undefined at 0°, 180° … · range all real numbers', sec: 'sec = 1/cos · never between −1 and 1 · asymptotes where cos = 0', csc: 'csc = 1/sin · never between −1 and 1 · asymptotes where sin = 0' }[v.kind];
+      return pairs.map(q => ({ color: q[1], label: q[0] + '(x)' + (q[2] ? ' (reference)' : ''), dashed: !!q[2] })).concat([{ color: '#ffffff', label: 'Period = ' + per }, { color: '#5a9ad8', label: info }]);
+    }
+  });
+
+  GX.push({
+    id: 'transform', grp: 'math', label: 'Function Transformations',
+    inputs: [{ k: 'fn', l: 'Base f(x)', t: 's', v: 'sq', opts: [['sq', 'x²'], ['cu', 'x³'], ['abs', '|x|'], ['sqrt', '√x'], ['sin', 'sin x'], ['exp', 'eˣ'], ['inv', '1/x'], ['ln', 'ln x']] },
+      { k: 'a', l: 'a', v: 2, r: 0 }, { k: 'b', l: 'b', v: 1, r: 0 }, { k: 'h', l: 'h', v: 1, r: 1 }, { k: 'k', l: 'k', v: -2, r: 1 }],
+    presets: [['Shift only', { a: 1, b: 1, h: 2, k: 1 }], ['Stretch ×2', { a: 2, b: 1, h: 0, k: 0 }], ['Reflect in x-axis', { a: -1, b: 1, h: 0, k: 0 }], ['Compress horizontally', { a: 1, b: 2, h: 0, k: 0 }], ['Reflect in y-axis', { a: 1, b: -1, h: 0, k: 0 }]],
+    plot(v, W, H) {
+      const f = { sq: x => x * x, cu: x => x * x * x, abs: Math.abs, sqrt: x => x >= 0 ? Math.sqrt(x) : NaN, sin: Math.sin, exp: Math.exp, inv: x => 1 / x, ln: x => x > 0 ? Math.log(x) : NaN }[v.fn], { a, b, h, k } = v, g = x => a * f(b * (x - h)) + k;
+      const bx = { x0: -6, x1: 6, y0: -4.5, y1: 4.5 }, tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(f, -6, 6, 800), tp, 'rgba(255,255,255,0.45)', bx, { brk: true, dash: true, lw: 1.8 }); poly(samplePts(g, -6, 6, 800), tp, acc, bx, { brk: true });
+      const parts = []; if (a < 0) parts.push('reflected in the x-axis'); if (Math.abs(a) !== 1) parts.push((Math.abs(a) > 1 ? 'stretched' : 'compressed') + ' vertically ×' + fmtN(Math.abs(a), 3)); if (b < 0) parts.push('reflected in the y-axis'); if (Math.abs(b) !== 1) parts.push((Math.abs(b) > 1 ? 'compressed' : 'stretched') + ' horizontally ×' + fmtN(1 / Math.abs(b), 3)); if (h) parts.push('shifted ' + fmtN(Math.abs(h), 3) + (h > 0 ? ' right' : ' left')); if (k) parts.push('shifted ' + fmtN(Math.abs(k), 3) + (k > 0 ? ' up' : ' down'));
+      return [{ color: acc, label: 'g(x) = ' + fmtN(a) + '·f(' + fmtN(b) + '(x ' + sg(-h) + ')) ' + sg(k) }, { color: 'rgba(255,255,255,0.6)', label: 'Dashed white = original f(x)', dashed: true }, { color: '#5a9ad8', label: parts.filter(Boolean).join(', ') || 'No change — g(x) = f(x)' }];
+    }
+  });
+
+  GX.push({
+    id: 'fractal', grp: 'math', label: 'Mandelbrot & Julia Sets',
+    inputs: [{ k: 'ty', l: 'Set', t: 's', v: 'man', opts: [['man', 'Mandelbrot set'], ['jul', 'Julia set']] }, { k: 'cr', l: 'c = ', v: -0.8, r: 0 }, { k: 'ci', l: '+ i·', v: 0.156, r: 0 }, { k: 'it', l: 'Detail', v: 60, r: 1, min: 10, max: 150, int: true }],
+    presets: [['Mandelbrot', { ty: 'man' }], ['Julia (−0.8+0.156i)', { ty: 'jul', cr: -0.8, ci: 0.156 }], ['Dendrite (i)', { ty: 'jul', cr: 0, ci: 1 }], ['Rabbit', { ty: 'jul', cr: -0.123, ci: 0.745 }]],
+    plot(v, W, H) {
+      const jul = v.ty === 'jul', xs = jul ? 3.4 : 3.5, x0 = jul ? -1.7 : -2.4, ys = xs * H / W, y1 = ys / 2, cs = 3, nx = Math.floor(W / cs), ny = Math.floor(H / cs), M = v.it;
+      ctx.clearRect(0, 0, W, H);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const px = x0 + xs * (i + 0.5) / nx, py = y1 - ys * (j + 0.5) / ny; let zr = jul ? px : 0, zi = jul ? py : 0, n = 0; const cr = jul ? v.cr : px, ci = jul ? v.ci : py;
+        while (n < M && zr * zr + zi * zi <= 4) { const t0 = zr * zr - zi * zi + cr; zi = 2 * zr * zi + ci; zr = t0; n++; }
+        ctx.fillStyle = n === M ? '#000' : 'hsl(' + ((n * 11 + 20) % 360) + ',85%,' + (28 + Math.min(30, n * 1.2)) + '%)'; ctx.fillRect(i * W / nx, j * H / ny, W / nx + 1, H / ny + 1); }
+      return [{ color: accentColor(), label: jul ? 'Julia set for c = ' + fmtComplexStr(v.cr, v.ci) + ': iterate z → z² + c starting from each point z' : 'Mandelbrot set: iterate z → z² + c from z = 0 for each point c' }, { color: '#000000', label: 'Black = stays bounded (|z| ≤ 2) for ' + M + ' steps; colours = how fast it escapes' }];
+    }
+  });
+
+  GX.push({
+    id: 'numline', grp: 'math', label: 'Number Line (interval)',
+    inputs: [{ k: 'ty', l: 'Show', t: 's', v: 'in', opts: [['in', 'Between  (a  x  b)'], ['out', 'Outside (x < a or x > b)']] }, { k: 'a', l: 'a', v: -2, r: 0 }, { k: 'b', l: 'b', v: 5, r: 0 }, { k: 'lc', l: 'a is', t: 's', v: 'o', r: 1, opts: [['o', 'open ○'], ['c', 'included ●']] }, { k: 'rc', l: 'b is', t: 's', v: 'c', r: 1, opts: [['o', 'open ○'], ['c', 'included ●']] }],
+    presets: [['−2 < x ≤ 5', { ty: 'in', a: -2, b: 5, lc: 'o', rc: 'c' }], ['|x| < 3', { ty: 'in', a: -3, b: 3, lc: 'o', rc: 'o' }], ['|x| ≥ 3', { ty: 'out', a: -3, b: 3, lc: 'c', rc: 'c' }], ['0 ≤ x ≤ 10', { ty: 'in', a: 0, b: 10, lc: 'c', rc: 'c' }]],
+    plot(v, W, H) {
+      const { a, b } = v, inn = v.ty === 'in'; if (a >= b) bad(tx('graph_x_ab', 'a must be smaller than b.')); const sp = Math.max(b - a, 2), lo = a - sp * 0.7, hi = b + sp * 0.7, X = x => 16 + (x - lo) / (hi - lo) * (W - 32), y = H / 2, acc = accentColor(), st = niceStep(hi - lo);
+      ctx.clearRect(0, 0, W, H); ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(W - 8, y); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '600 11px Inter, sans-serif'; ctx.textAlign = 'center';
+      for (let i = Math.ceil(lo / st); i <= Math.floor(hi / st); i++) { const px = X(i * st); ctx.beginPath(); ctx.moveTo(px, y - 6); ctx.lineTo(px, y + 6); ctx.stroke(); ctx.fillText(fmtN(i * st, 3), px, y + 22); }
+      ctx.strokeStyle = acc; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.beginPath();
+      if (inn) { ctx.moveTo(X(a), y); ctx.lineTo(X(b), y); } else { ctx.moveTo(8, y); ctx.lineTo(X(a), y); ctx.moveTo(X(b), y); ctx.lineTo(W - 8, y); } ctx.stroke();
+      [[a, v.lc], [b, v.rc]].forEach(q => { ctx.beginPath(); ctx.arc(X(q[0]), y, 8, 0, 7); ctx.fillStyle = q[1] === 'c' ? acc : '#17171a'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = acc; ctx.stroke(); ctx.fillStyle = '#fff'; ctx.font = '800 13px Inter, sans-serif'; ctx.fillText(fmtN(q[0], 4), X(q[0]), y - 20); });
+      ctx.restore(); const lc = v.lc === 'c', rc = v.rc === 'c', A = fmtN(a, 4), B = fmtN(b, 4);
+      return inn ? [{ color: acc, label: A + (lc ? ' ≤ ' : ' < ') + 'x' + (rc ? ' ≤ ' : ' < ') + B }, { color: '#ffffff', label: 'Interval notation: ' + (lc ? '[' : '(') + A + ', ' + B + (rc ? ']' : ')') + ' · length = ' + fmtN(b - a, 4) }, { color: '#5a9ad8', label: 'Filled dot = value included · empty dot = value not included' }]
+        : [{ color: acc, label: 'x ' + (lc ? '≤ ' : '< ') + A + '  or  x ' + (rc ? '≥ ' : '> ') + B }, { color: '#ffffff', label: 'Interval notation: (−∞, ' + A + (lc ? ']' : ')') + ' ∪ ' + (rc ? '[' : '(') + B + ', ∞)' }, { color: '#5a9ad8', label: 'Filled dot = value included · empty dot = value not included' }];
+    }
+  });
+
+  /* ====== 11 MORE ALGEBRA & GEOMETRY GRAPHS ====== */
+  const circPts = (h, k, r) => { const q = []; for (let i = 0; i <= 200; i++) q.push([h + r * Math.cos(i / 200 * 2 * Math.PI), k + r * Math.sin(i / 200 * 2 * Math.PI)]); return q; };
+  const eqStr = (a, b, c) => fmtN(a) + 'x ' + sg(b) + 'y ' + sg(c) + ' = 0';
+
+  GX.push({
+    id: 'cubic', grp: 'alg', label: 'Cubic Polynomial (ax³+bx²+cx+d)',
+    inputs: [{ k: 'a', l: 'a', v: 1, r: 0 }, { k: 'b', l: 'b', v: -2, r: 0 }, { k: 'c', l: 'c', v: -5, r: 1 }, { k: 'd', l: 'd', v: 6, r: 1 }],
+    presets: [['3 real roots', { a: 1, b: -2, c: -5, d: 6 }], ['One real root', { a: 1, b: 0, c: 1, d: -2 }], ['Double root', { a: 1, b: 0, c: -3, d: 2 }], ['−x³+3x', { a: -1, b: 0, c: 3, d: 0 }]],
+    plot(v, W, H) {
+      const { a, b, c, d } = v; if (a === 0) bad(tx('graph_x_a0', 'a cannot be 0 — that would be a straight line.'));
+      const f = x => ((a * x + b) * x + c) * x + d, R = 1 + Math.max(Math.abs(b / a), Math.abs(c / a), Math.abs(d / a)), D2 = 4 * b * b - 12 * a * c;
+      const crit = D2 > 1e-12 ? [(-2 * b - Math.sqrt(D2)) / (6 * a), (-2 * b + Math.sqrt(D2)) / (6 * a)].sort((p, q) => p - q) : D2 > -1e-12 ? [-b / (3 * a)] : [];
+      const edges = [-R].concat(crit, [R]), roots = [];
+      for (let i = 0; i < edges.length - 1; i++) { let lo = edges[i], hi = edges[i + 1], fl = f(lo), fh = f(hi); if (fl === 0) { roots.push(lo); continue; } if (fl * fh < 0) { for (let it = 0; it < 80; it++) { const m = (lo + hi) / 2; if (f(m) * fl > 0) lo = m; else hi = m; } roots.push((lo + hi) / 2); } }
+      crit.forEach(x => { if (Math.abs(f(x)) < 1e-9) roots.push(x); }); roots.sort((p, q) => p - q); const rr = roots.filter((x, i) => !i || Math.abs(x - roots[i - 1]) > 1e-6);
+      const xs = [0].concat(crit, rr), lo = Math.min.apply(null, xs), hi = Math.max.apply(null, xs), pad = Math.max(hi - lo, 2) * 0.55, x0 = lo - pad, x1 = hi + pad;
+      const bx = box([x0, x1], (crit.length ? [d, 0] : [f(x0), f(x1), d, 0]).concat(crit.map(f)), { pad: 0.3, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(f, bx.x0, bx.x1, 500), tp, acc, bx, { brk: true }); rr.forEach(x => dot(tp, x, 0, '#3fbf6f', fmtN(x, 3), 8, 12));
+      if (D2 > 1e-12) crit.forEach((x, i) => dot(tp, x, f(x), '#ffffff', (a > 0) === (i === 1) ? 'min' : 'max', 8, -9)); dot(tp, 0, d, '#f2c14e', '', 8, 0);
+      const inf = -b / (3 * a);
+      return [{ color: acc, label: 'y = ' + fmtN(a) + 'x³ ' + sg(b) + 'x² ' + sg(c) + 'x ' + sg(d) }, { color: '#3fbf6f', label: rr.length ? 'Real roots: x = ' + rr.map(x => fmtN(x, 4)).join(', ') : 'No real roots found in range' },
+        { color: '#ffffff', label: D2 > 1e-12 ? 'Turning points: ' + crit.map(x => '(' + fmtN(x, 3) + ', ' + fmtN(f(x), 3) + ')').join(' and ') : 'No turning points (always ' + (a > 0 ? 'increasing' : 'decreasing') + ')' },
+        { color: '#5a9ad8', label: 'Inflection point at x = ' + fmtN(inf, 4) + ' · y-intercept (0, ' + fmtN(d, 3) + ') · ' + (a > 0 ? 'rises to the right' : 'falls to the right') }];
+    }
+  });
+
+  GX.push({
+    id: 'parabolafd', grp: 'alg', label: 'Parabola (focus & directrix)',
+    inputs: [{ k: 'a', l: 'a', v: 0.25, r: 0 }, { k: 'h', l: 'h', v: 0, r: 0 }, { k: 'k', l: 'k', v: 0, r: 0 }],
+    presets: [['y = x²/4', { a: 0.25, h: 0, k: 0 }], ['y = x²', { a: 1, h: 0, k: 0 }], ['Opens down', { a: -0.5, h: 1, k: 3 }], ['Shifted', { a: 0.5, h: -2, k: 1 }]],
+    plot(v, W, H) {
+      const { a, h, k } = v; if (a === 0) bad(tx('graph_x_a0', 'a cannot be 0 — that would be a straight line.'));
+      const p = 1 / (4 * a), F = [h, k + p], dirY = k - p, xp = h + 2 * Math.abs(p) + 1, P = [xp, a * (xp - h) * (xp - h) + k], w2 = Math.max(Math.abs(P[0] - h), 2) * 1.25;
+      const bx = box([h - w2, h + w2], [k, F[1], dirY, P[1]], { eq: true, pad: 0.2, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, bx.x0, dirY, bx.x1, dirY, '#e8548b', true, 2); seg(tp, h, bx.y0, h, bx.y1, 'rgba(255,255,255,0.3)', true, 1.2);
+      poly(samplePts(x => a * (x - h) * (x - h) + k, bx.x0, bx.x1, 500), tp, acc, bx, { brk: true });
+      seg(tp, P[0], P[1], F[0], F[1], '#3fbf6f', false, 1.6); seg(tp, P[0], P[1], P[0], dirY, '#3fbf6f', false, 1.6);
+      dot(tp, h, k, '#fff', 'V', 8, 10); dot(tp, F[0], F[1], '#f2c14e', 'F', 8, -9); dot(tp, P[0], P[1], '#3fbf6f', 'P');
+      return [{ color: acc, label: 'y = ' + fmtN(a) + '(x ' + sg(-h) + ')² ' + sg(k) + ' ⇔ (x − h)² = 4p(y − k), p = 1/(4a) = ' + fmtN(p, 4) },
+        { color: '#f2c14e', label: 'Focus F = (' + fmtN(F[0], 3) + ', ' + fmtN(F[1], 3) + ') · vertex V = (' + fmtN(h, 3) + ', ' + fmtN(k, 3) + ')' }, { color: '#e8548b', label: 'Directrix: y = ' + fmtN(dirY, 4) + ' · axis: x = ' + fmtN(h, 3), dashed: true },
+        { color: '#3fbf6f', label: 'Every point P is equally far from F and the directrix (green lines are equal) · latus rectum = ' + fmtN(Math.abs(4 * p), 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'hyperbola', grp: 'alg', label: 'Hyperbola (asymptotes & foci)',
+    inputs: [{ k: 'o', l: 'Opens', t: 's', v: 'h', opts: [['h', 'Left & right'], ['v', 'Up & down']] }, { k: 'a', l: 'a', v: 3, r: 0, min: 0.01 }, { k: 'b', l: 'b', v: 2, r: 0, min: 0.01 }, { k: 'h', l: 'h', v: 0, r: 1 }, { k: 'k', l: 'k', v: 0, r: 1 }],
+    presets: [['x²/9 − y²/4 = 1', { o: 'h', a: 3, b: 2, h: 0, k: 0 }], ['Up & down', { o: 'v', a: 3, b: 2, h: 0, k: 0 }], ['Rectangular (a=b)', { o: 'h', a: 2, b: 2, h: 0, k: 0 }], ['Shifted', { o: 'h', a: 2, b: 1, h: 1, k: -1 }]],
+    plot(v, W, H) {
+      const { a, b, h, k } = v, hz = v.o === 'h', c = Math.sqrt(a * a + b * b), br = [[], []]; for (let i = 0; i <= 160; i++) { const t0 = -1.7 + 3.4 * i / 160, ch = Math.cosh(t0), sh = Math.sinh(t0);
+        if (hz) { br[0].push([h + a * ch, k + b * sh]); br[1].push([h - a * ch, k + b * sh]); } else { br[0].push([h + b * sh, k + a * ch]); br[1].push([h + b * sh, k - a * ch]); } }
+      const all = br[0].concat(br[1]), bx = box(all.map(p => p[0]), all.map(p => p[1]), { eq: true, pad: 0.12, W, H }), tp = view(bx, W, H), acc = accentColor(), sl = hz ? b / a : a / b;
+      seg(tp, bx.x0, k + sl * (bx.x0 - h), bx.x1, k + sl * (bx.x1 - h), '#5a9ad8', true, 1.5); seg(tp, bx.x0, k - sl * (bx.x0 - h), bx.x1, k - sl * (bx.x1 - h), '#5a9ad8', true, 1.5);
+      br.forEach(q => poly(q, tp, acc, bx, { lw: 2.6 })); dot(tp, h, k, '#fff', 'C', 8, 10);
+      [-1, 1].forEach(s => { dot(tp, hz ? h + s * c : h, hz ? k : k + s * c, '#f2c14e', 'F', 8, -9); dot(tp, hz ? h + s * a : h, hz ? k : k + s * a, '#3fbf6f', '', 8, 0); });
+      return [{ color: acc, label: hz ? '(x−' + fmtN(h, 3) + ')²/' + fmtN(a * a, 3) + ' − (y−' + fmtN(k, 3) + ')²/' + fmtN(b * b, 3) + ' = 1' : '(y−' + fmtN(k, 3) + ')²/' + fmtN(a * a, 3) + ' − (x−' + fmtN(h, 3) + ')²/' + fmtN(b * b, 3) + ' = 1' },
+        { color: '#5a9ad8', label: 'Asymptotes: y − ' + fmtN(k, 3) + ' = ±' + fmtN(sl, 4) + '(x − ' + fmtN(h, 3) + ')', dashed: true }, { color: '#f2c14e', label: 'Foci at distance c = √(a²+b²) = ' + fmtN(c, 4) + ' from the centre · eccentricity e = c/a = ' + fmtN(c / a, 4) },
+        { color: '#3fbf6f', label: 'Vertices at distance a = ' + fmtN(a, 3) + (Math.abs(a - b) < 1e-9 ? ' · rectangular hyperbola (asymptotes ⟂)' : '') }];
+    }
+  });
+
+  GX.push({
+    id: 'circle3', grp: 'alg', label: 'Circle through 3 Points',
+    inputs: [{ k: 'x1', l: 'A (', v: 0, r: 0 }, { k: 'y1', l: ',', v: 0, r: 0 }, { k: 'x2', l: 'B (', v: 4, r: 1 }, { k: 'y2', l: ',', v: 0, r: 1 }, { k: 'x3', l: 'C (', v: 0, r: 2 }, { k: 'y3', l: ',', v: 3, r: 2 }],
+    presets: [['Right triangle', { x1: 0, y1: 0, x2: 4, y2: 0, x3: 0, y3: 3 }], ['Any 3 points', { x1: -2, y1: 1, x2: 3, y2: 4, x3: 5, y3: -1 }], ['Unit circle', { x1: 1, y1: 0, x2: 0, y2: 1, x3: -1, y3: 0 }]],
+    plot(v, W, H) {
+      const { x1, y1, x2, y2, x3, y3 } = v, D = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)); if (Math.abs(D) < 1e-12) bad(tx('graph_x_collinear', 'The three points lie on one line — no circle passes through them.'));
+      const s1 = x1 * x1 + y1 * y1, s2 = x2 * x2 + y2 * y2, s3 = x3 * x3 + y3 * y3, ux = (s1 * (y2 - y3) + s2 * (y3 - y1) + s3 * (y1 - y2)) / D, uy = (s1 * (x3 - x2) + s2 * (x1 - x3) + s3 * (x2 - x1)) / D, r = Math.hypot(x1 - ux, y1 - uy);
+      const bx = box([ux - r, ux + r, x1, x2, x3], [uy - r, uy + r, y1, y2, y3], { eq: true, zero: true, pad: 0.15, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(circPts(ux, uy, r), tp, acc, bx, { lw: 2.6 }); poly([[x1, y1], [x2, y2], [x3, y3], [x1, y1]], tp, 'rgba(255,255,255,0.4)', bx, { dash: true, lw: 1.3 });
+      [[x1, y1, 'A'], [x2, y2, 'B'], [x3, y3, 'C']].forEach(q => dot(tp, q[0], q[1], '#fff', q[2])); dot(tp, ux, uy, '#3fbf6f', 'O', 8, 10);
+      return [{ color: acc, label: '(x ' + sg(-ux) + ')² + (y ' + sg(-uy) + ')² = ' + fmtN(r * r, 4) }, { color: '#3fbf6f', label: 'Centre O = (' + fmtN(ux, 4) + ', ' + fmtN(uy, 4) + ') · radius = ' + fmtN(r, 4) },
+        { color: '#ffffff', label: 'General form: x² + y² ' + sg(-2 * ux) + 'x ' + sg(-2 * uy) + 'y ' + sg(ux * ux + uy * uy - r * r) + ' = 0' }, { color: '#5a9ad8', label: 'Area = ' + fmtN(Math.PI * r * r, 4) + ' · circumference = ' + fmtN(2 * Math.PI * r, 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'distline', grp: 'alg', label: 'Distance from Point to Line',
+    inputs: [{ k: 'a', l: 'ax + by + c = 0 :  a', v: 3, r: 0 }, { k: 'b', l: 'b', v: 4, r: 0 }, { k: 'c', l: 'c', v: -12, r: 0 }, { k: 'px', l: 'P (', v: 4, r: 1 }, { k: 'py', l: ',', v: 5, r: 1 }],
+    presets: [['3x+4y−12=0, P(4,5)', { a: 3, b: 4, c: -12, px: 4, py: 5 }], ['x−y+1=0, P(3,0)', { a: 1, b: -1, c: 1, px: 3, py: 0 }], ['y = 2 (b only), P(1,5)', { a: 0, b: 1, c: -2, px: 1, py: 5 }]],
+    plot(v, W, H) {
+      const { a, b, c, px, py } = v, n2 = a * a + b * b; if (n2 === 0) bad(tx('graph_x_ab0', 'In each equation a and b cannot both be 0.'));
+      const val = a * px + b * py + c, dist = Math.abs(val) / Math.sqrt(n2), tt = val / n2, F = [px - a * tt, py - b * tt], ln = Math.sqrt(n2), ex = [F[0] - b / ln * dist, F[1] + a / ln * dist, F[0] + b / ln * dist, F[1] - a / ln * dist];
+      const bx = box([px, F[0], ex[0], ex[2]], [py, F[1], ex[1], ex[3]], { eq: true, zero: false, pad: 0.45, W, H }), tp = view(bx, W, H), acc = accentColor();
+      lineABC(tp, a, b, -c, bx, acc); seg(tp, px, py, F[0], F[1], '#3fbf6f', true, 2.2); dot(tp, px, py, '#fff', 'P(' + fmtN(px, 3) + ', ' + fmtN(py, 3) + ')'); dot(tp, F[0], F[1], '#f2c14e', 'foot (' + fmtN(F[0], 3) + ', ' + fmtN(F[1], 3) + ')', 8, 12);
+      return [{ color: acc, label: eqStr(a, b, c) }, { color: '#3fbf6f', label: 'Distance d = |a·x₀ + b·y₀ + c| / √(a² + b²) = ' + fmtN(Math.abs(val), 4) + ' / ' + fmtN(Math.sqrt(n2), 4) + ' = ' + fmtN(dist, 5) },
+        { color: '#f2c14e', label: 'Foot of the perpendicular = (' + fmtN(F[0], 4) + ', ' + fmtN(F[1], 4) + ')' + (dist < 1e-9 ? ' — P lies on the line' : '') }];
+    }
+  });
+
+  GX.push({
+    id: 'parperp', grp: 'alg', label: 'Parallel & Perpendicular Lines',
+    inputs: [{ k: 'm', l: 'Line  y = mx + c :  m', v: 2, r: 0 }, { k: 'c', l: 'c', v: 1, r: 0 }, { k: 'px', l: 'Point (', v: 3, r: 1 }, { k: 'py', l: ',', v: -1, r: 1 }],
+    presets: [['y = 2x + 1 via (3, −1)', { m: 2, c: 1, px: 3, py: -1 }], ['y = −x/2 via (0, 4)', { m: -0.5, c: 0, px: 0, py: 4 }], ['Horizontal y = 3', { m: 0, c: 3, px: 2, py: -2 }]],
+    plot(v, W, H) {
+      const { m, c, px, py } = v, perpV = m === 0, F = perpV ? [px, c] : (() => { const x = (px / m + py - c) / (m + 1 / m); return [x, m * x + c]; })();
+      const bx = box([px, F[0], 0], [py, F[1], c], { eq: true, pad: 0.6, minSpan: 6, W, H }), tp = view(bx, W, H), acc = accentColor();
+      lineABC(tp, -m, 1, c, bx, acc); lineABC(tp, -m, 1, py - m * px, bx, '#5a9ad8', true);
+      if (perpV) seg(tp, px, bx.y0, px, bx.y1, '#3fbf6f', true, 2.2); else lineABC(tp, 1 / m, 1, py + px / m, bx, '#3fbf6f', true);
+      dot(tp, px, py, '#fff', 'P'); dot(tp, F[0], F[1], '#f2c14e', '', 8, 0);
+      return [{ color: acc, label: 'Given line: y = ' + fmtN(m, 4) + 'x ' + sg(c) }, { color: '#5a9ad8', label: 'Parallel through P: y = ' + fmtN(m, 4) + 'x ' + sg(py - m * px) + ' (same slope ' + fmtN(m, 4) + ')', dashed: true },
+        { color: '#3fbf6f', label: perpV ? 'Perpendicular through P: x = ' + fmtN(px, 4) + ' (vertical)' : 'Perpendicular through P: slope −1/m = ' + fmtN(-1 / m, 4) + ' → y = ' + fmtN(-1 / m, 4) + 'x ' + sg(py + px / m), dashed: true },
+        { color: '#f2c14e', label: 'Perpendicular meets the line at (' + fmtN(F[0], 4) + ', ' + fmtN(F[1], 4) + ') · distance from P = ' + fmtN(Math.hypot(px - F[0], py - F[1]), 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'absval', grp: 'alg', label: 'Absolute Value  a|x−h|+k = c',
+    inputs: [{ k: 'a', l: 'a', v: 2, r: 0 }, { k: 'h', l: 'h', v: 1, r: 0 }, { k: 'k', l: 'k', v: -1, r: 0 }, { k: 'c', l: 'c', v: 3, r: 0 }],
+    presets: [['2|x−1|−1 = 3', { a: 2, h: 1, k: -1, c: 3 }], ['|x| = 4', { a: 1, h: 0, k: 0, c: 4 }], ['No solution', { a: 1, h: 0, k: 2, c: 1 }], ['Opens down', { a: -1, h: 2, k: 4, c: 1 }]],
+    plot(v, W, H) {
+      const { a, h, k, c } = v; if (a === 0) bad(tx('graph_x_a0', 'a cannot be 0.')); const q = (c - k) / a, sol = q > 0 ? [h - q, h + q] : q === 0 ? [h] : [], f = x => a * Math.abs(x - h) + k, span = Math.max(4, Math.abs(q) * 1.6, 3);
+      const bx = box([h - span, h + span], [k, c, f(h - span), f(h + span)], { pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, bx.x0, c, bx.x1, c, '#5a9ad8', true, 1.8); poly(samplePts(f, bx.x0, bx.x1, 400), tp, acc, bx, { lw: 2.8 }); dot(tp, h, k, '#fff', 'V', 8, 10); sol.forEach(x => { dot(tp, x, c, '#3fbf6f', 'x = ' + fmtN(x, 3), 8, -10); seg(tp, x, c, x, 0, '#3fbf6f', true, 1.2); });
+      return [{ color: acc, label: 'y = ' + fmtN(a) + '|x ' + sg(-h) + '| ' + sg(k) + ' · vertex (' + fmtN(h, 3) + ', ' + fmtN(k, 3) + ')' }, { color: '#5a9ad8', label: 'Line y = ' + fmtN(c, 4), dashed: true },
+        { color: '#3fbf6f', label: sol.length === 2 ? 'Two solutions: x = ' + fmtN(sol[0], 4) + ' and x = ' + fmtN(sol[1], 4) : sol.length === 1 ? 'One solution: x = ' + fmtN(sol[0], 4) + ' (the vertex)' : 'No solution — |x − h| cannot be negative' }, { color: '#ffffff', label: 'Range: y ' + (a > 0 ? '≥ ' : '≤ ') + fmtN(k, 4) + ' · slopes ±' + fmtN(Math.abs(a), 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'expgrowth', grp: 'alg', label: 'Exponential Growth & Decay (a·bˣ)',
+    inputs: [{ k: 'a', l: 'a', v: 2, r: 0 }, { k: 'b', l: 'b (base)', v: 1.5, r: 0, min: 0.01 }, { k: 'x0', l: 'x from', v: -4, r: 1 }, { k: 'x1', l: 'to', v: 4, r: 1 }],
+    presets: [['Growth ×2', { a: 1, b: 2, x0: -4, x1: 5 }], ['Decay ×½', { a: 8, b: 0.5, x0: -3, x1: 6 }], ['Slow growth 1.1', { a: 100, b: 1.1, x0: 0, x1: 30 }], ['Slow decay 0.8', { a: 50, b: 0.8, x0: 0, x1: 15 }]],
+    plot(v, W, H) {
+      const { a, b, x0, x1 } = v; if (b === 1) bad(tx('graph_x_base1', 'Base 1 is a constant — choose a base different from 1.')); if (x0 >= x1) bad(t('graph_error_range')); if (a === 0) bad(tx('graph_x_a0b', 'a cannot be 0.'));
+      const f = x => a * Math.pow(b, x), pts = samplePts(f, x0, x1, 400), yr = autoY([pts], x1 - x0, [0, a]), bx = box([x0, x1], yr, { pad: 0.06, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, bx.x0, 0, bx.x1, 0, '#e8548b', true, 1.8); poly(pts, tp, acc, bx, { brk: true }); if (0 >= x0 && 0 <= x1) dot(tp, 0, a, '#f2c14e', '(0, ' + fmtN(a, 3) + ')'); if (1 >= x0 && 1 <= x1) dot(tp, 1, f(1), '#fff', '(1, ' + fmtN(f(1), 3) + ')');
+      return [{ color: acc, label: 'y = ' + fmtN(a) + '·(' + fmtN(b) + ')ˣ — ' + (b > 1 ? 'exponential growth' : 'exponential decay') + ' (factor ' + fmtN(b, 4) + ' per unit, ' + (b > 1 ? '+' : '−') + fmtN(Math.abs(b - 1) * 100, 3) + '% each step)' },
+        { color: '#e8548b', label: 'Horizontal asymptote y = 0 (the curve never touches the x-axis)', dashed: true }, { color: '#f2c14e', label: 'y-intercept = a = ' + fmtN(a, 4) },
+        { color: '#5a9ad8', label: b > 1 ? 'Doubling time = ln 2 / ln b = ' + fmtN(Math.LN2 / Math.log(b), 4) : 'Half-life = ln 0.5 / ln b = ' + fmtN(Math.log(0.5) / Math.log(b), 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'rational', grp: 'alg', label: 'Rational Function (ax+b)/(cx+d)',
+    inputs: [{ k: 'a', l: 'a', v: 2, r: 0 }, { k: 'b', l: 'b', v: 1, r: 0 }, { k: 'c', l: 'c', v: 1, r: 1 }, { k: 'd', l: 'd', v: -2, r: 1 }],
+    presets: [['(2x+1)/(x−2)', { a: 2, b: 1, c: 1, d: -2 }], ['1/x', { a: 0, b: 1, c: 1, d: 0 }], ['(x+3)/(x+1)', { a: 1, b: 3, c: 1, d: 1 }], ['(−x+4)/(2x−2)', { a: -1, b: 4, c: 2, d: -2 }]],
+    plot(v, W, H) {
+      const { a, b, c, d } = v; if (c === 0) bad(tx('graph_x_c0', 'c cannot be 0 (then it is a straight line).')); const det = a * d - b * c; if (det === 0) bad(tx('graph_x_deg', 'ad − bc = 0: the fraction simplifies to a constant.'));
+      const VA = -d / c, HA = a / c, f = x => (a * x + b) / (c * x + d), bx = { x0: VA - 7, x1: VA + 7, y0: HA - 5, y1: HA + 5 }, tp = view(bx, W, H), acc = accentColor();
+      seg(tp, VA, bx.y0, VA, bx.y1, '#e8548b', true, 1.8); seg(tp, bx.x0, HA, bx.x1, HA, '#5a9ad8', true, 1.8); poly(samplePts(f, bx.x0, bx.x1, 900), tp, acc, bx, { brk: true, lw: 2.8 });
+      if (a !== 0) dot(tp, -b / a, 0, '#3fbf6f', '', 8, 0); if (d !== 0) dot(tp, 0, b / d, '#f2c14e', '', 8, 0);
+      return [{ color: acc, label: 'y = (' + fmtN(a) + 'x ' + sg(b) + ') / (' + fmtN(c) + 'x ' + sg(d) + ')' }, { color: '#e8548b', label: 'Vertical asymptote x = ' + fmtN(VA, 4) + ' · domain: all x ≠ ' + fmtN(VA, 4), dashed: true },
+        { color: '#5a9ad8', label: 'Horizontal asymptote y = a/c = ' + fmtN(HA, 4) + ' · range: all y ≠ ' + fmtN(HA, 4), dashed: true }, { color: '#3fbf6f', label: (a !== 0 ? 'x-intercept (' + fmtN(-b / a, 4) + ', 0)' : 'No x-intercept') + ' · ' + (d !== 0 ? 'y-intercept (0, ' + fmtN(b / d, 4) + ')' : 'No y-intercept') },
+        { color: '#ffffff', label: det > 0 ? 'Increasing on each branch (ad − bc > 0)' : 'Decreasing on each branch (ad − bc < 0)' }];
+    }
+  });
+
+  GX.push({
+    id: 'quadineq', grp: 'alg', label: 'Quadratic Inequality',
+    inputs: [{ k: 'a', l: 'a', v: 1, r: 0 }, { k: 'b', l: 'b', v: -1, r: 0 }, { k: 'c', l: 'c', v: -6, r: 0 }, { k: 'op', l: 'Solve', t: 's', v: '>', opts: [['>', 'ax²+bx+c > 0'], ['>=', 'ax²+bx+c ≥ 0'], ['<', 'ax²+bx+c < 0'], ['<=', 'ax²+bx+c ≤ 0']] }],
+    presets: [['x²−x−6 > 0', { a: 1, b: -1, c: -6, op: '>' }], ['x²−x−6 ≤ 0', { a: 1, b: -1, c: -6, op: '<=' }], ['x²+1 > 0', { a: 1, b: 0, c: 1, op: '>' }], ['−x²+4 ≥ 0', { a: -1, b: 0, c: 4, op: '>=' }]],
+    plot(v, W, H) {
+      const { a, b, c, op } = v; if (a === 0) bad(tx('graph_x_a0', 'a cannot be 0 — that would be a straight line.')); const f = x => a * x * x + b * x + c, D = b * b - 4 * a * c, incl = op.length === 2, gt = op[0] === '>', test = x => gt ? f(x) > 0 : f(x) < 0;
+      const roots = D > 0 ? [(-b - Math.sqrt(D)) / (2 * a), (-b + Math.sqrt(D)) / (2 * a)].sort((p, q) => p - q) : D === 0 ? [-b / (2 * a)] : [];
+      const items = []; if (!roots.length) items.push({ iv: 1, t: test(0) }); else { items.push({ iv: 1, t: test(roots[0] - 1) }); roots.forEach((r, i) => { items.push({ iv: 0, r, t: incl }); items.push({ iv: 1, t: test(i + 1 < roots.length ? (r + roots[i + 1]) / 2 : r + 1) }); }); }
+      const runs = []; let st = -1;
+      const close = e => { const s0 = items[st], en = items[e]; runs.push({ lo: st === 0 ? -Infinity : (s0.iv ? items[st - 1].r : s0.r), loC: st > 0 && !s0.iv, hi: e === items.length - 1 ? Infinity : (en.iv ? items[e + 1].r : en.r), hiC: !en.iv }); };
+      items.forEach((it, idx) => { if (it.t) { if (st < 0) st = idx; } else if (st >= 0) { close(idx - 1); st = -1; } }); if (st >= 0) close(items.length - 1);
+      const all = [0].concat(roots, [-b / (2 * a)]), lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), pad = Math.max(hi - lo, 2) * 0.7, x0 = lo - pad, x1 = hi + pad, vy = f(-b / (2 * a));
+      const bx = box([x0, x1], [0, vy, f(x0), f(x1)], { pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      runs.forEach(r => { const A = Math.max(r.lo, bx.x0), B = Math.min(r.hi, bx.x1); if (B > A) { fillPoly([[A, 0], [A, bx.y1], [B, bx.y1], [B, 0]], tp, 'rgba(63,191,111,0.12)'); seg(tp, A, 0, B, 0, '#3fbf6f', false, 6); } });
+      poly(samplePts(f, bx.x0, bx.x1, 500), tp, acc, bx, { brk: true }); roots.forEach(r => { ctx.save(); const q = tp(r, 0); ctx.beginPath(); ctx.arc(q[0], q[1], 6, 0, 7); ctx.fillStyle = incl ? '#fff' : '#17171a'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke(); ctx.restore(); txt(tp, r, 0, fmtN(r, 3), '#fff', 0, 20); });
+      const S = x => x === Infinity ? '∞' : x === -Infinity ? '−∞' : fmtN(x, 4), txtSol = runs.length ? runs.map(r => (r.lo === -Infinity || !r.loC ? '(' : '[') + S(r.lo) + ', ' + S(r.hi) + (r.hi === Infinity || !r.hiC ? ')' : ']')).join(' ∪ ') : 'No solution (empty set)';
+      return [{ color: acc, label: 'y = ' + fmtN(a) + 'x² ' + sg(b) + 'x ' + sg(c) + ' ' + op.replace('>=', '≥').replace('<=', '≤') + ' 0' }, { color: '#3fbf6f', label: 'Solution (green on the x-axis): ' + txtSol }, { color: '#ffffff', label: roots.length ? 'Boundary points: x = ' + roots.map(r => fmtN(r, 4)).join(', ') + (incl ? ' (included — filled dots)' : ' (not included — empty dots)') : 'D < 0: the parabola never meets the x-axis' }];
+    }
+  });
+
+  GX.push({
+    id: 'circleline', grp: 'alg', label: 'Circle & Line (secant / tangent)',
+    inputs: [{ k: 'h', l: 'Circle centre (', v: 0, r: 0 }, { k: 'k', l: ',', v: 0, r: 0 }, { k: 'r', l: 'r', v: 5, r: 0, min: 0.01 }, { k: 'm', l: 'Line y = mx + c :  m', v: 1, r: 1 }, { k: 'c', l: 'c', v: 1, r: 1 }],
+    presets: [['Secant', { h: 0, k: 0, r: 5, m: 1, c: 1 }], ['Tangent', { h: 0, k: 0, r: 5, m: 0, c: 5 }], ['Misses the circle', { h: 0, k: 0, r: 3, m: 1, c: 6 }], ['Tangent slanted', { h: 0, k: 0, r: 2, m: 1, c: 2.828427 }]],
+    plot(v, W, H) {
+      const { h, k, r, m, c } = v, A = 1 + m * m, B = 2 * (m * (c - k) - h), C = h * h + (c - k) * (c - k) - r * r, D = B * B - 4 * A * C, dist = Math.abs(m * h - k + c) / Math.sqrt(A), eps = 1e-4 * Math.max(1, r * r);
+      const xs = D > eps ? [(-B - Math.sqrt(D)) / (2 * A), (-B + Math.sqrt(D)) / (2 * A)] : Math.abs(D) <= eps ? [-B / (2 * A)] : [], bx = box([h - r, h + r], [k - r, k + r], { eq: true, pad: 0.25, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(circPts(h, k, r), tp, acc, bx, { lw: 2.6 }); lineABC(tp, -m, 1, c, bx, '#5a9ad8'); dot(tp, h, k, '#fff', 'O', 8, 10);
+      xs.forEach(x => dot(tp, x, m * x + c, '#3fbf6f', '(' + fmtN(x, 3) + ', ' + fmtN(m * x + c, 3) + ')', 8, -10));
+      return [{ color: acc, label: '(x ' + sg(-h) + ')² + (y ' + sg(-k) + ')² = ' + fmtN(r * r, 4) }, { color: '#5a9ad8', label: 'Line: y = ' + fmtN(m, 4) + 'x ' + sg(c) },
+        { color: '#3fbf6f', label: xs.length === 2 ? 'Secant: meets the circle at two points' : xs.length === 1 ? 'Tangent: touches the circle at one point' : 'The line does not meet the circle' }, { color: '#ffffff', label: 'Distance from centre to line = ' + fmtN(dist, 4) + (dist < r - 1e-9 ? ' < r' : Math.abs(dist - r) <= 1e-6 ? ' = r' : ' > r') + ' = ' + fmtN(r, 4) + ' · discriminant D = ' + fmtN(D, 4) }];
+    }
+  });
+
+  // ---- build the step-2 panels + step-1 buttons, and register every graph in EXTRA ----
+  const NEW_EXTRA = {};
+  (function buildNewGraphs() {
+    const showBtn = gEl('graphShowBtn'), list = gEl('graphTypeList'); if (!showBtn || !list) return;
+    const readInputs = (g) => {
+      const out = {};
+      g.inputs.forEach(inp => {
+        const el = gEl('gx_' + g.id + '_' + inp.k), raw = el ? el.value : String(inp.v), lab = inp.l;
+        if (inp.t === 'f') { const fn = compileFn(raw); if (!fn) bad(tx('graph_error_expr', 'Write f(x) using x, e.g. x^2 + 1.')); out[inp.k] = fn; out[inp.k + '$'] = raw.trim(); }
+        else if (inp.t === 'xs') { const arr = parseNumList(raw); if (arr.length < (inp.min || 1)) bad(tx('graph_x_needdata', 'Enter at least ') + (inp.min || 1) + tx('graph_x_numbers', ' numbers (commas or new lines).')); out[inp.k] = arr; }
+        else if (inp.t === 's' || inp.t === 'ta') out[inp.k] = raw;
+        else if (inp.t === 'g') { const fn = compileFn3D(raw); if (!fn) bad(tx('graph_x_gexpr', 'Write it using x and y, e.g. 3x + 2y.')); out[inp.k] = fn; out[inp.k + '$'] = raw.trim(); }
+        else {
+          let n = parseFloat(raw); if (!isFinite(n)) bad(tx('graph_x_num', 'Enter a number in every box.')); if (inp.int) n = Math.round(n);
+          if ((inp.min != null && n < inp.min) || (inp.max != null && n > inp.max)) bad(lab + ' ' + tx('graph_x_between', 'must be between') + ' ' + (inp.min != null ? inp.min : '−∞') + ' ' + tx('graph_x_and', 'and') + ' ' + (inp.max != null ? inp.max : '∞') + '.');
+          out[inp.k] = n;
+        }
+      });
+      return out;
+    };
+    GROUPS.forEach(gr => {
+      let anchor = gr.after ? gEl(gr.after) : null;
+      if (!anchor) { const lab = document.createElement('div'); lab.className = 'graph-group-label'; lab.dataset.i18n = gr.key; lab.textContent = tx(gr.key, gr.label); list.appendChild(lab); }
+      GX.filter(g => g.grp === gr.id).forEach(g => {
+        const pid = 'gx_' + g.id, key = 'graph_x_' + g.id;
+        const btn = document.createElement('button'); btn.className = 'subject-pill graph-type-btn'; btn.dataset.graphmode = 'x_' + g.id; btn.dataset.i18n = key; btn.textContent = tx(key, g.label); if (anchor) { anchor.parentNode.insertBefore(btn, anchor.nextSibling); anchor = btn; } else list.appendChild(btn);
+        let html = '', row = [], rowId = null;
+        const flush = () => { if (row.length) html += '<div class="graph-range-row">' + row.join('') + '</div>'; row = []; rowId = null; };
+        g.inputs.forEach(inp => {
+          const id = pid + '_' + inp.k;
+          if (inp.t === 'f' || inp.t === 'g') { flush(); html += '<div class="graph-range-sep" style="margin:2px 0 4px">' + esc(inp.l) + '</div><input type="text" class="formula-search convert-input" id="' + id + '" value="' + esc(inp.v) + '" placeholder="e.g. x^2 + 1">'; }
+          else if (inp.t === 'xs' || inp.t === 'ta') { flush(); html += '<div class="graph-range-sep" style="margin:2px 0 4px">' + esc(inp.l) + '</div><textarea class="formula-search convert-input graph-data-textarea" id="' + id + '" rows="4">' + esc(inp.v) + '</textarea>'; }
+          else {
+            if (inp.r !== rowId) { flush(); rowId = inp.r; }
+            const ctl = inp.t === 's' ? '<select class="formula-search convert-input" id="' + id + '">' + inp.opts.map(o => '<option value="' + esc(o[0]) + '"' + (o[0] === inp.v ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') + '</select>'
+              : '<input type="number" step="any" class="formula-search convert-input" id="' + id + '" value="' + esc(inp.v) + '">';
+            row.push('<span class="graph-range-sep">' + esc(inp.l) + '</span>' + ctl);
+          }
+        });
+        flush();
+        if (g.presets) html += '<div class="graph-quick-row" style="margin-top:8px">' + g.presets.map(p => '<button type="button" class="pill-btn small" data-set="' + esc(JSON.stringify(Object.keys(p[1]).reduce((o, k) => { o[k.indexOf('gx_') === 0 ? k : pid + '_' + k] = p[1][k]; return o; }, {}))) + '">' + esc(p[0]) + '</button>').join('') + '</div>';
+        html += '<div class="graph-error" id="' + pid + '_err"></div>';
+        const panel = document.createElement('div'); panel.id = pid + '_panel'; panel.style.display = 'none'; panel.innerHTML = html;
+        showBtn.parentNode.insertBefore(panel, showBtn);
+        NEW_EXTRA['x_' + g.id] = { panel: pid + '_panel', err: pid + '_err', plot() {
+          const W = canvas.__w || canvas.width, H = canvas.__h || canvas.height, errEl = gEl(pid + '_err'); errEl.textContent = '';
+          try { renderLegend(g.plot(readInputs(g), W, H) || []); }
+          catch (e) { errEl.textContent = (e && e.gx) || tx('graph_x_error', 'Could not draw this graph — check your values.'); ctx.clearRect(0, 0, W, H); renderLegend([]); }
+        } };
+      });
+    });
+  })();
+
   // mode -> its step-2 panel, error element and plot function
   const EXTRA = {
     slopefield: { panel: 'graphSlopePanel', err: 'graphSlopeError', plot: plotSlopeField },
@@ -15217,6 +16188,7 @@ setTimeout(() => {
     argand: { panel: 'graphArgandPanel', err: 'graphArgError', plot: plotArgand },
     vectors: { panel: 'graphVectorsPanel', err: 'graphVecError', plot: plotVectors }
   };
+  Object.assign(EXTRA, NEW_EXTRA);
   Object.keys(EXTRA).forEach(k => { EXTRA[k].panelEl = gEl(EXTRA[k].panel); EXTRA[k].errEl = gEl(EXTRA[k].err); });
 
   function drawUnitCircle(angleDegVal) {
