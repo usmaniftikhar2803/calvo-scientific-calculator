@@ -2979,7 +2979,7 @@ body {
 }
 
 /* Function Grapher: 3-step flow (1 graph names -> 2 functions -> 3 graph) */
-#graphCard { scroll-margin-top: 76px; }
+#graphCard { scroll-margin-top: 0; }
 #graphTypeList {
   flex-direction: column;
   align-items: stretch;
