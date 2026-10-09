@@ -3017,6 +3017,7 @@ body {
 #graphStep3[data-gmode="boxplot"] { --gx: 375px; }
 #graphStep3[data-gmode="regression"],
 #graphStep3[data-gmode="slopefield"] { --gx: 335px; }
+#graphStep3[data-gmode^="x_"] { --gx: 390px; }
 .graph-group-label {
   font-family: 'Inter', sans-serif;
   font-size: 0.68rem;
