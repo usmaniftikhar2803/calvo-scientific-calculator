@@ -752,6 +752,19 @@ document.querySelectorAll('.tab-panel').forEach(panel => {
   wrap.insertBefore(crumb, wrap.firstChild);
 });
 
+/* Safety net: html/body are locked to the viewport, so the page itself must never scroll.
+   If anything (focus, scrollIntoView, keyboard) nudges it, snap back so the fixed navbar
+   never covers the "All tools" button. */
+(function lockPageScroll() {
+  const reset = () => {
+    const de = document.documentElement, b = document.body;
+    if (de && de.scrollTop) de.scrollTop = 0;
+    if (b && b.scrollTop) b.scrollTop = 0;
+  };
+  window.addEventListener('scroll', reset, { passive: true });
+  document.addEventListener('scroll', reset, { passive: true });
+})();
+
 const brandBtn = document.getElementById('topbarBrand');
 if (brandBtn) {
   const goHome = () => { setMoreOpen(false); navigateToTab('home', true); window.scrollTo(0, 0); };
@@ -15645,6 +15658,383 @@ setTimeout(() => {
     }
   });
 
+  /* ---------- Physics & Science: 21 more graphs ---------- */
+  const axT = (W, H, xl, yl) => {
+    ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '600 10px Inter, sans-serif'; ctx.textBaseline = 'alphabetic';
+    if (xl) { ctx.textAlign = 'right'; ctx.fillText(xl, W - 6, H - 5); }
+    if (yl) { ctx.textAlign = 'left'; ctx.fillText(yl, 6, 12); }
+    ctx.restore();
+  };
+
+  GX.push({
+    id: 'shm', grp: 'phys', label: 'Simple Harmonic Motion (x, v, a)',
+    inputs: [{ k: 'A', l: 'Amplitude A (m)', v: 2, r: 0, min: 0.001 }, { k: 'T', l: 'Period T (s)', v: 2, r: 0, min: 0.01 }, { k: 'phi', l: 'Phase φ (°)', v: 0, r: 1 }, { k: 'n', l: 'Cycles', v: 2, r: 1, min: 0.25, max: 10 }],
+    presets: [['Start at maximum', { gx_shm_phi: 0 }], ['Start at centre', { gx_shm_phi: -90 }], ['Fast (T = 1 s)', { gx_shm_T: 1 }], ['Slow (T = 4 s)', { gx_shm_T: 4 }]],
+    plot(v, W, H) {
+      const { A, T, phi, n } = v, w = 2 * Math.PI / T, p = phi * Math.PI / 180, tm = n * T;
+      const fx = t => A * Math.cos(w * t + p), fv = t => -A * w * Math.sin(w * t + p), fa = t => -A * w * w * Math.cos(w * t + p);
+      const bx = box([0, tm], [A * w * w, -A * w * w], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(fa, 0, tm, 500), tp, '#e8548b', bx, { lw: 2 }); poly(samplePts(fv, 0, tm, 500), tp, '#5a9ad8', bx, { lw: 2 }); poly(samplePts(fx, 0, tm, 500), tp, acc, bx, { lw: 2.8 });
+      axT(W, H, 't (s)', '');
+      return [{ color: acc, label: 'Displacement x = A cos(ωt + φ) · amplitude ' + fmtN(A, 4) + ' m · ω = 2π/T = ' + fmtN(w, 4) + ' rad/s' },
+        { color: '#5a9ad8', label: 'Velocity v = −Aω sin(ωt + φ) · maximum ' + fmtN(A * w, 4) + ' m/s (at the centre)' },
+        { color: '#e8548b', label: 'Acceleration a = −ω²x · maximum ' + fmtN(A * w * w, 4) + ' m/s² (at the ends)' },
+        { color: '#ffffff', label: 'Frequency f = 1/T = ' + fmtN(1 / T, 4) + ' Hz · v is 90° ahead of x, a is opposite to x' }];
+    }
+  });
+
+  GX.push({
+    id: 'freefall', grp: 'phys', label: 'Free Fall (height & speed)',
+    inputs: [{ k: 'h0', l: 'Height h₀ (m)', v: 80, r: 0, min: 0.1 }, { k: 'v0', l: 'Downward speed v₀ (m/s)', v: 0, r: 0, min: 0 }, { k: 'g', l: 'g (m/s²)', v: 9.8, r: 1, min: 0.1 }],
+    presets: [['Dropped from 80 m', { gx_freefall_h0: 80, gx_freefall_v0: 0 }], ['Thrown down 10 m/s', { gx_freefall_h0: 80, gx_freefall_v0: 10 }], ['On the Moon (1.62)', { gx_freefall_h0: 80, gx_freefall_v0: 0, gx_freefall_g: 1.62 }]],
+    plot(v, W, H) {
+      const { h0, v0, g } = v, T = (-v0 + Math.sqrt(v0 * v0 + 2 * g * h0)) / g, h = t => h0 - v0 * t - 0.5 * g * t * t, sp = t => v0 + g * t, vEnd = sp(T);
+      const bx = box([0, T], [0, h0, vEnd], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(sp, 0, T, 300), tp, '#5a9ad8', bx, { lw: 2.4 }); poly(samplePts(h, 0, T, 300), tp, acc, bx, { lw: 2.8 });
+      dot(tp, 0, h0, '#ffffff', 'h₀', 8, -10); dot(tp, T, 0, '#3fbf6f', 'lands', -8, -10); dot(tp, T, vEnd, '#ffffff', 'v', -8, -10);
+      axT(W, H, 't (s)', 'm  ·  m/s');
+      const out = [{ color: acc, label: 'Height h = h₀ − v₀t − ½gt²' }, { color: '#5a9ad8', label: 'Speed v = v₀ + gt (slope = g = ' + fmtN(g, 3) + ' m/s²)' },
+        { color: '#3fbf6f', label: 'Time to reach the ground = ' + fmtN(T, 4) + ' s · impact speed = ' + fmtN(vEnd, 4) + ' m/s' }];
+      if (v0 === 0) out.push({ color: '#ffffff', label: 'Dropped from rest: distances in equal seconds are in the ratio 1 : 3 : 5 … (total ∝ t²)' });
+      return out;
+    }
+  });
+
+  GX.push({
+    id: 'pendulum', grp: 'phys', label: 'Simple Pendulum (angle vs time)',
+    inputs: [{ k: 'L', l: 'Length L (m)', v: 1, r: 0, min: 0.01 }, { k: 'th0', l: 'Start angle (°)', v: 30, r: 0, min: 0.1, max: 170 }, { k: 'g', l: 'g (m/s²)', v: 9.8, r: 1, min: 0.1 }, { k: 'n', l: 'Cycles', v: 3, r: 1, min: 1, max: 8 }],
+    presets: [['Small swing (10°)', { gx_pendulum_th0: 10 }], ['30°', { gx_pendulum_th0: 30 }], ['Big swing (90°)', { gx_pendulum_th0: 90 }], ['Very big (150°)', { gx_pendulum_th0: 150 }]],
+    plot(v, W, H) {
+      const { L, th0, g, n } = v, w0 = Math.sqrt(g / L), T0 = 2 * Math.PI / w0, a0 = th0 * Math.PI / 180;
+      let a = 1, b = Math.cos(a0 / 2); for (let i = 0; i < 30; i++) { const an = (a + b) / 2, bn = Math.sqrt(a * b); a = an; b = bn; }
+      const Tex = T0 / a, tm = n * Tex, N = Math.max(600, Math.ceil(n * 160)), dt = tm / N, acc = accentColor(), ex = [];
+      let th = a0, om = 0; const acc2 = (x) => -w0 * w0 * Math.sin(x);
+      for (let i = 0; i <= N; i++) {
+        ex.push([i * dt, th * 180 / Math.PI]);
+        const k1t = om, k1o = acc2(th), k2t = om + 0.5 * dt * k1o, k2o = acc2(th + 0.5 * dt * k1t), k3t = om + 0.5 * dt * k2o, k3o = acc2(th + 0.5 * dt * k2t), k4t = om + dt * k3o, k4o = acc2(th + dt * k3t);
+        th += dt / 6 * (k1t + 2 * k2t + 2 * k3t + k4t); om += dt / 6 * (k1o + 2 * k2o + 2 * k3o + k4o);
+      }
+      const bx = box([0, tm], [th0, -th0], { zero: true, pad: 0.12, W, H }), tp = view(bx, W, H);
+      poly(samplePts(t0 => th0 * Math.cos(w0 * t0), 0, tm, 500), tp, '#5a9ad8', bx, { lw: 2, dash: true }); poly(ex, tp, acc, bx, { lw: 2.8 });
+      axT(W, H, 't (s)', 'angle (°)');
+      return [{ color: acc, label: 'Exact motion (numerical) · period T = ' + fmtN(Tex, 4) + ' s' },
+        { color: '#5a9ad8', label: 'Small-angle formula θ = θ₀cos(ωt) · T₀ = 2π√(L/g) = ' + fmtN(T0, 4) + ' s', dashed: true },
+        { color: '#ffffff', label: 'Big swings take longer: T is ' + fmtN((Tex / T0 - 1) * 100, 3) + '% more than T₀ at ' + fmtN(th0, 3) + '° (the formula T₀ is only accurate below ~15°)' },
+        { color: '#3fbf6f', label: 'T does not depend on the mass · frequency f = ' + fmtN(1 / Tex, 4) + ' Hz' }];
+    }
+  });
+
+  GX.push({
+    id: 'spring', grp: 'phys', label: "Hooke's Law (spring F–x)",
+    inputs: [{ k: 'k', l: 'k (N/m)', v: 50, r: 0, min: 0.01 }, { k: 'xm', l: 'Max stretch (m)', v: 0.4, r: 0, min: 0.001 }, { k: 'xp', l: 'Stretch x (m)', v: 0.25, r: 1, min: 0 }],
+    presets: [['Soft spring (20)', { gx_spring_k: 20 }], ['Stiff spring (200)', { gx_spring_k: 200 }], ['Default', { gx_spring_k: 50, gx_spring_xm: 0.4, gx_spring_xp: 0.25 }]],
+    plot(v, W, H) {
+      const { k, xm, xp } = v; if (xp > xm) bad(tx('graph_x_spring_x', 'Stretch x must not be more than the maximum stretch.'));
+      const bx = box([0, xm], [0, k * xm], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      fillPoly([[0, 0], [xp, 0], [xp, k * xp]], tp, 'rgba(255,138,31,0.28)'); seg(tp, 0, 0, xm, k * xm, acc, false, 3);
+      seg(tp, xp, 0, xp, k * xp, 'rgba(255,255,255,0.4)', true, 1.2); seg(tp, 0, k * xp, xp, k * xp, 'rgba(255,255,255,0.4)', true, 1.2); dot(tp, xp, k * xp, '#ffffff', 'F = ' + fmtN(k * xp, 3) + ' N', -8, -10);
+      axT(W, H, 'x (m)', 'F (N)');
+      return [{ color: acc, label: 'F = kx · slope = spring constant k = ' + fmtN(k, 4) + ' N/m (a straight line through the origin)' },
+        { color: 'rgba(255,138,31,0.8)', label: 'Shaded triangle = work done = stored energy = ½kx² = ' + fmtN(0.5 * k * xp * xp, 4) + ' J' },
+        { color: '#ffffff', label: 'At x = ' + fmtN(xp, 4) + ' m the force is ' + fmtN(k * xp, 4) + ' N · doubling x doubles F but quadruples the energy' }];
+    }
+  });
+
+  GX.push({
+    id: 'incline', grp: 'phys', label: 'Inclined Plane (forces vs angle)',
+    inputs: [{ k: 'm', l: 'Mass (kg)', v: 10, r: 0, min: 0.01 }, { k: 'mu', l: 'Friction μ', v: 0.3, r: 0, min: 0 }, { k: 'g', l: 'g (m/s²)', v: 9.8, r: 1, min: 0.1 }, { k: 'th', l: 'Angle (°)', v: 30, r: 1, min: 0, max: 89 }],
+    presets: [['Smooth (μ = 0)', { gx_incline_mu: 0 }], ['Wood (μ = 0.3)', { gx_incline_mu: 0.3 }], ['Rough (μ = 0.7)', { gx_incline_mu: 0.7 }]],
+    plot(v, W, H) {
+      const { m, mu, g, th } = v, r = Math.PI / 180, W0 = m * g, thS = Math.atan(mu) / r;
+      const bx = box([0, 90], [0, W0], { zero: true, pad: 0.06, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(x => W0 * Math.cos(x * r), 0, 90, 180), tp, '#5a9ad8', bx, { lw: 2.4 }); poly(samplePts(x => mu * W0 * Math.cos(x * r), 0, 90, 180), tp, '#e8548b', bx, { lw: 2.4, dash: true }); poly(samplePts(x => W0 * Math.sin(x * r), 0, 90, 180), tp, acc, bx, { lw: 2.8 });
+      if (mu > 0) dot(tp, thS, W0 * Math.sin(thS * r), '#3fbf6f', 'slips ' + fmtN(thS, 3) + '°', 8, 12);
+      dot(tp, th, W0 * Math.sin(th * r), '#ffffff', '', 8, 0); seg(tp, th, 0, th, W0 * Math.sin(th * r), 'rgba(255,255,255,0.35)', true, 1.2);
+      axT(W, H, 'angle θ (°)', 'force (N)');
+      const net = g * (Math.sin(th * r) - mu * Math.cos(th * r));
+      return [{ color: acc, label: 'Pull down the slope mg sinθ = ' + fmtN(W0 * Math.sin(th * r), 4) + ' N at ' + fmtN(th, 3) + '°' }, { color: '#5a9ad8', label: 'Normal force N = mg cosθ = ' + fmtN(W0 * Math.cos(th * r), 4) + ' N' },
+        { color: '#e8548b', label: 'Maximum friction μN = ' + fmtN(mu * W0 * Math.cos(th * r), 4) + ' N', dashed: true },
+        { color: '#3fbf6f', label: mu > 0 ? 'The block starts to slide when tanθ > μ → θ > ' + fmtN(thS, 4) + '°' : 'No friction: it always slides, a = g sinθ' },
+        { color: '#ffffff', label: net > 0 ? 'At ' + fmtN(th, 3) + '° it slides with a = g(sinθ − μcosθ) = ' + fmtN(net, 4) + ' m/s²' : 'At ' + fmtN(th, 3) + '° friction holds the block at rest (a = 0)' }];
+    }
+  });
+
+  GX.push({
+    id: 'wave', grp: 'phys', label: 'Travelling Wave (y vs x)',
+    inputs: [{ k: 'A', l: 'Amplitude A', v: 2, r: 0, min: 0.001 }, { k: 'lam', l: 'Wavelength λ', v: 4, r: 0, min: 0.01 }, { k: 'f', l: 'Frequency f (Hz)', v: 1, r: 1, min: 0.01 }, { k: 't', l: 'Time t (s)', v: 0.25, r: 1, min: 0 }],
+    presets: [['t = 0', { gx_wave_t: 0 }], ['Quarter period', { gx_wave_f: 1, gx_wave_t: 0.25 }], ['Half period', { gx_wave_f: 1, gx_wave_t: 0.5 }], ['Short wavelength', { gx_wave_lam: 1.5, gx_wave_t: 0.25 }]],
+    plot(v, W, H) {
+      const { A, lam, f, t } = v, k = 2 * Math.PI / lam, w = 2 * Math.PI * f, xm = 2 * lam;
+      const bx = box([0, xm], [A, -A], { zero: true, pad: 0.15, W, H }), tp = view(bx, W, H), acc = accentColor();
+      if (t > 0) poly(samplePts(x => A * Math.sin(k * x), 0, xm, 400), tp, 'rgba(255,255,255,0.45)', bx, { lw: 1.8, dash: true });
+      poly(samplePts(x => A * Math.sin(k * x - w * t), 0, xm, 400), tp, acc, bx, { lw: 2.8 });
+      seg(tp, 0, 0, lam, 0, '#5a9ad8', false, 2); dot(tp, 0, 0, '#5a9ad8', '', 0, 0); dot(tp, lam, 0, '#5a9ad8', 'λ', -6, 12);
+      axT(W, H, 'x', 'y');
+      return [{ color: acc, label: 'y = A sin(kx − ωt) at t = ' + fmtN(t, 4) + ' s' + (t > 0 ? ' · the dashed grey curve is the same wave at t = 0 — the pattern has moved right' : '') },
+        { color: '#5a9ad8', label: 'Wavelength λ = ' + fmtN(lam, 4) + ' · wave number k = 2π/λ = ' + fmtN(k, 4) }, { color: '#ffffff', label: 'Period T = 1/f = ' + fmtN(1 / f, 4) + ' s · ω = 2πf = ' + fmtN(w, 4) + ' rad/s' },
+        { color: '#3fbf6f', label: 'Wave speed v = fλ = ' + fmtN(f * lam, 4) + ' (the pattern moves ' + fmtN(f * lam * t, 4) + ' in ' + fmtN(t, 3) + ' s)' }];
+    }
+  });
+
+  GX.push({
+    id: 'standing', grp: 'phys', label: 'Standing Waves (harmonics)',
+    inputs: [{ k: 'L', l: 'String length L (m)', v: 1, r: 0, min: 0.01 }, { k: 'n', l: 'Harmonic n', v: 3, r: 0, min: 1, max: 10, int: true }, { k: 'vw', l: 'Wave speed (m/s)', v: 340, r: 1, min: 0.1 }],
+    presets: [['Fundamental n = 1', { gx_standing_n: 1 }], ['2nd harmonic', { gx_standing_n: 2 }], ['3rd harmonic', { gx_standing_n: 3 }], ['5th harmonic', { gx_standing_n: 5 }]],
+    plot(v, W, H) {
+      const { L, n, vw } = v, acc = accentColor(), bx = box([0, L], [1, -1], { zero: true, pad: 0.1, W, H }), tp = view(bx, W, H), env = c => x => c * Math.sin(n * Math.PI * x / L);
+      [0.5, -0.5].forEach(c => poly(samplePts(env(c), 0, L, 400), tp, 'rgba(90,154,216,0.8)', bx, { lw: 1.8, dash: true }));
+      [1, -1].forEach(c => poly(samplePts(env(c), 0, L, 400), tp, acc, bx, { lw: 2.8 }));
+      for (let i = 0; i <= n; i++) dot(tp, i * L / n, 0, '#ffffff', i === 0 || i === n ? '' : 'N', 0, 12);
+      for (let i = 0; i < n; i++) dot(tp, (i + 0.5) * L / n, 0, '#3fbf6f', i === 0 ? 'A' : '', 0, -12);
+      axT(W, H, 'x along the string (m)', '');
+      return [{ color: acc, label: 'Envelope y = 2A sin(nπx/L): the string swings between the two solid curves' }, { color: '#5a9ad8', label: 'Dashed curves = the string at other moments of the cycle', dashed: true },
+        { color: '#ffffff', label: n + ' loop' + (n > 1 ? 's' : '') + ' · ' + (n + 1) + ' nodes N (white, including both fixed ends) · ' + n + ' antinodes A (green)' },
+        { color: '#3fbf6f', label: 'Wavelength λ = 2L/n = ' + fmtN(2 * L / n, 4) + ' m · frequency fₙ = nv/2L = ' + fmtN(n * vw / (2 * L), 4) + ' Hz' }, { color: '#e8548b', label: 'Fundamental f₁ = v/2L = ' + fmtN(vw / (2 * L), 4) + ' Hz · fₙ = n·f₁' }];
+    }
+  });
+
+  GX.push({
+    id: 'doppler', grp: 'phys', label: 'Doppler Effect (frequency vs speed)',
+    inputs: [{ k: 'f0', l: 'Source f₀ (Hz)', v: 500, r: 0, min: 0.1 }, { k: 'vs', l: 'Sound speed (m/s)', v: 343, r: 0, min: 1 }, { k: 'vm', l: 'Max source speed (m/s)', v: 150, r: 1, min: 0.1 }, { k: 'vp', l: 'Mark speed (m/s)', v: 40, r: 1, min: 0 }],
+    presets: [['Ambulance 40 m/s', { gx_doppler_vp: 40 }], ['Car 20 m/s', { gx_doppler_vp: 20 }], ['Jet 250 m/s', { gx_doppler_vm: 300, gx_doppler_vp: 250 }]],
+    plot(v, W, H) {
+      const { f0, vs, vm, vp } = v; if (vm >= vs) bad(tx('graph_x_doppler_max', 'Max source speed must be less than the speed of sound.')); if (vp > vm) bad(tx('graph_x_doppler_mark', 'Mark speed must not be more than the max speed.'));
+      const f = s => f0 * vs / (vs - s), bx = box([-vm, vm], [f(-vm), f(vm), f0], { pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, bx.x0, f0, bx.x1, f0, 'rgba(255,255,255,0.35)', true, 1.2); poly(samplePts(f, -vm, vm, 400), tp, acc, bx, { lw: 2.8 });
+      dot(tp, 0, f0, '#ffffff', 'f₀', 8, -10); dot(tp, vp, f(vp), '#3fbf6f', fmtN(f(vp), 4) + ' Hz', -8, -10); dot(tp, -vp, f(-vp), '#5a9ad8', fmtN(f(-vp), 4) + ' Hz', 8, 12);
+      axT(W, H, 'source speed (m/s): + towards you, − away', 'f′ (Hz)');
+      return [{ color: acc, label: "Heard frequency f′ = f₀·v/(v − vₛ) for a source moving at vₛ (observer at rest)" }, { color: '#3fbf6f', label: 'Approaching at ' + fmtN(vp, 4) + ' m/s: f′ = ' + fmtN(f(vp), 4) + ' Hz (higher pitch)' },
+        { color: '#5a9ad8', label: 'Moving away at ' + fmtN(vp, 4) + ' m/s: f′ = ' + fmtN(f(-vp), 4) + ' Hz (lower pitch)' }, { color: '#ffffff', label: 'Pitch jump while it passes you = ' + fmtN(f(vp) - f(-vp), 4) + ' Hz · as vₛ → v the frequency → ∞ (sound barrier)' }];
+    }
+  });
+
+  GX.push({
+    id: 'lens', grp: 'phys', label: 'Thin Lens (ray diagram)',
+    inputs: [{ k: 'f', l: 'Focal length f (cm, − = concave)', v: 10, r: 0 }, { k: 'u', l: 'Object distance u (cm)', v: 25, r: 1, min: 0.01 }, { k: 'h', l: 'Object height (cm)', v: 3, r: 1, min: 0.01 }],
+    presets: [['u beyond 2f', { gx_lens_f: 10, gx_lens_u: 30 }], ['u = 2f', { gx_lens_f: 10, gx_lens_u: 20 }], ['Between f and 2f', { gx_lens_f: 10, gx_lens_u: 15 }], ['Inside f (magnifier)', { gx_lens_f: 10, gx_lens_u: 6 }], ['Concave lens', { gx_lens_f: -10, gx_lens_u: 20 }]],
+    plot(v, W, H) {
+      const { f, u, h } = v; if (f === 0) bad(tx('graph_x_lens_f0', 'Focal length cannot be 0.'));
+      if (f > 0 && Math.abs(u - f) < 1e-9 * Math.max(1, u)) bad(tx('graph_x_lens_focus', 'Object at the focus: the image forms at infinity (rays leave parallel).'));
+      const vv = 1 / (1 / f - 1 / u), m = -vv / u, hi = m * h, cap = Math.max(u, Math.abs(f)) * 4, vc = Math.max(-cap, Math.min(cap, vv)), hc = Math.max(-cap, Math.min(cap, hi));
+      const bx = box([-u, vc, Math.abs(f) * 1.4, -Math.abs(f) * 1.4], [h, -h, hc, -hc], { eq: true, pad: 0.12, W, H }), tp = view(bx, W, H), acc = accentColor(), x1 = bx.x1;
+      seg(tp, 0, bx.y0, 0, bx.y1, '#9ad0ff', false, 3);
+      dot(tp, f, 0, '#f2c14e', 'F', 0, 12); dot(tp, -f, 0, '#f2c14e', 'F′', 0, 12);
+      seg(tp, -u, h, 0, h, acc, false, 2.2); seg(tp, 0, h, x1, h - (h / f) * x1, acc, false, 2.2); if (vv < 0) seg(tp, 0, h, vv, h - (h / f) * vv, acc, true, 1.6);
+      seg(tp, -u, h, x1, -h * x1 / u, '#e8548b', false, 2.2);
+      const o0 = tp(-u, 0), o1 = tp(-u, h), i0 = tp(vc, 0), i1 = tp(vc, hc); drawArrow(o0[0], o0[1], o1[0], o1[1], '#ffffff', 3); drawArrow(i0[0], i0[1], i1[0], i1[1], '#5a9ad8', 3);
+      axT(W, H, 'cm', 'cm');
+      const real = vv > 0, size = Math.abs(Math.abs(m) - 1) < 1e-6 ? 'same size' : (Math.abs(m) > 1 ? 'enlarged' : 'diminished');
+      return [{ color: '#ffffff', label: 'Object: ' + fmtN(h, 3) + ' cm tall at u = ' + fmtN(u, 4) + ' cm · ' + (f > 0 ? 'convex (converging)' : 'concave (diverging)') + ' lens, f = ' + fmtN(f, 4) + ' cm' },
+        { color: acc, label: 'Ray 1: parallel to the axis, then through (or away from) the focus' }, { color: '#e8548b', label: 'Ray 2: straight through the centre of the lens' },
+        { color: '#5a9ad8', label: 'Image: v = ' + fmtN(vv, 4) + ' cm (1/v = 1/f − 1/u) · magnification m = ' + fmtN(m, 4) + ' · height ' + fmtN(Math.abs(hi), 4) + ' cm' },
+        { color: '#3fbf6f', label: 'The image is ' + (real ? 'real' : 'virtual (dashed rays, same side as the object)') + ', ' + (m < 0 ? 'inverted' : 'erect') + ', ' + size }];
+    }
+  });
+
+  GX.push({
+    id: 'snell', grp: 'phys', label: "Refraction (Snell's law)",
+    inputs: [{ k: 'n1', l: 'n₁ (top)', v: 1, r: 0, min: 1 }, { k: 'n2', l: 'n₂ (bottom)', v: 1.5, r: 0, min: 1 }, { k: 'a1', l: 'Incident angle θ₁ (°)', v: 40, r: 1, min: 0, max: 89.9 }],
+    presets: [['Air → glass', { gx_snell_n1: 1, gx_snell_n2: 1.5, gx_snell_a1: 40 }], ['Air → water', { gx_snell_n1: 1, gx_snell_n2: 1.33, gx_snell_a1: 50 }], ['Glass → air', { gx_snell_n1: 1.5, gx_snell_n2: 1, gx_snell_a1: 30 }], ['Total internal reflection', { gx_snell_n1: 1.5, gx_snell_n2: 1, gx_snell_a1: 60 }], ['Water → air (critical)', { gx_snell_n1: 1.33, gx_snell_n2: 1, gx_snell_a1: 48.75 }]],
+    plot(v, W, H) {
+      const { n1, n2, a1 } = v, r = Math.PI / 180, s1 = Math.sin(a1 * r), c1 = Math.cos(a1 * r), s2 = n1 * s1 / n2, tir = s2 > 1;
+      const bx = box([-1.3, 1.3], [-1, 1], { eq: true, pad: 0, W, H }), tp = view(bx, W, H), acc = accentColor();
+      fillPoly([[bx.x0, 0], [bx.x1, 0], [bx.x1, bx.y1], [bx.x0, bx.y1]], tp, 'rgba(90,154,216,' + (0.04 + 0.05 * (n1 - 1)) + ')'); fillPoly([[bx.x0, 0], [bx.x1, 0], [bx.x1, bx.y0], [bx.x0, bx.y0]], tp, 'rgba(90,154,216,' + (0.04 + 0.05 * (n2 - 1)) + ')');
+      seg(tp, bx.x0, 0, bx.x1, 0, '#ffffff', false, 2); seg(tp, 0, -1, 0, 1, 'rgba(255,255,255,0.5)', true, 1.4);
+      seg(tp, -s1, c1, 0, 0, acc, false, 2.8); seg(tp, 0, 0, s1, c1, '#e8548b', !!(!tir), tir ? 2.8 : 1.6);
+      dot(tp, -s1, c1, acc, 'θ₁ = ' + fmtN(a1, 4) + '°', 8, -2);
+      const out = [{ color: acc, label: 'Incident ray in n₁ = ' + fmtN(n1, 4) + ' at θ₁ = ' + fmtN(a1, 4) + '° to the normal (dashed vertical line)' }];
+      if (tir) out.push({ color: '#e8548b', label: 'Total internal reflection: n₁ sinθ₁ / n₂ = ' + fmtN(s2, 4) + ' > 1, so no refracted ray exists · reflected angle = ' + fmtN(a1, 4) + '°' });
+      else {
+        const a2 = Math.asin(s2) / r; seg(tp, 0, 0, s2, -Math.sqrt(1 - s2 * s2), '#3fbf6f', false, 2.8); dot(tp, s2, -Math.sqrt(1 - s2 * s2), '#3fbf6f', 'θ₂ = ' + fmtN(a2, 4) + '°', -8, 10);
+        out.push({ color: '#3fbf6f', label: 'Refracted ray in n₂ = ' + fmtN(n2, 4) + ': n₁ sinθ₁ = n₂ sinθ₂ → θ₂ = ' + fmtN(a2, 4) + '° (' + (n2 > n1 ? 'bends towards the normal' : n2 < n1 ? 'bends away from the normal' : 'no bending') + ')' },
+          { color: '#e8548b', label: 'Reflected ray (dashed, weak): angle of reflection = ' + fmtN(a1, 4) + '°', dashed: true });
+      }
+      out.push({ color: '#ffffff', label: n1 > n2 ? 'Critical angle θc = sin⁻¹(n₂/n₁) = ' + fmtN(Math.asin(n2 / n1) / r, 4) + '° — above this the light cannot leave' : 'Light goes into a denser medium: total internal reflection is not possible' }, { color: '#5a9ad8', label: 'Speed of light in n₁ = c/' + fmtN(n1, 4) + ' · in n₂ = c/' + fmtN(n2, 4) });
+      return out;
+    }
+  });
+
+  GX.push({
+    id: 'rc', grp: 'phys', label: 'RC Circuit (charging & discharging)',
+    inputs: [{ k: 'V0', l: 'Supply V₀ (V)', v: 10, r: 0, min: 0.01 }, { k: 'R', l: 'R (kΩ)', v: 10, r: 0, min: 0.001 }, { k: 'C', l: 'C (µF)', v: 100, r: 1, min: 0.001 }],
+    presets: [['10 kΩ, 100 µF', { gx_rc_R: 10, gx_rc_C: 100 }], ['Faster (1 kΩ, 100 µF)', { gx_rc_R: 1, gx_rc_C: 100 }], ['Slower (100 kΩ, 100 µF)', { gx_rc_R: 100, gx_rc_C: 100 }]],
+    plot(v, W, H) {
+      const { V0, R, C } = v, tau = R * C, tm = 5 * tau, ch = t => V0 * (1 - Math.exp(-t / tau)), dc = t => V0 * Math.exp(-t / tau);
+      const bx = box([0, tm], [0, V0], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, 0, V0, tm, V0, 'rgba(255,255,255,0.3)', true, 1.2); poly(samplePts(dc, 0, tm, 300), tp, '#5a9ad8', bx, { lw: 2.8 }); poly(samplePts(ch, 0, tm, 300), tp, acc, bx, { lw: 2.8 });
+      dot(tp, tau, ch(tau), '#ffffff', '63.2%', 8, 12); dot(tp, tau, dc(tau), '#ffffff', '36.8%', 8, -10); seg(tp, tau, 0, tau, V0, 'rgba(255,255,255,0.3)', true, 1.2);
+      axT(W, H, 't (ms)', 'Vc (V)');
+      return [{ color: acc, label: 'Charging: Vc = V₀(1 − e^(−t/RC))' }, { color: '#5a9ad8', label: 'Discharging: Vc = V₀e^(−t/RC)' }, { color: '#ffffff', label: 'Time constant τ = RC = ' + fmtN(tau, 4) + ' ms · after one τ the capacitor has reached 63.2% (charging) or fallen to 36.8% (discharging)' },
+        { color: '#3fbf6f', label: 'Starting current I₀ = V₀/R = ' + fmtN(V0 / R, 4) + ' mA · fully charged (99.3%) after about 5τ = ' + fmtN(tm, 4) + ' ms' }, { color: '#f2c14e', label: 'Energy stored at the end = ½CV₀² = ' + fmtN(0.5 * C * V0 * V0 / 1000, 4) + ' mJ' }];
+    }
+  });
+
+  GX.push({
+    id: 'acsig', grp: 'phys', label: 'AC Voltage, Current & Power (phase)',
+    inputs: [{ k: 'V0', l: 'V peak (V)', v: 10, r: 0, min: 0.01 }, { k: 'I0', l: 'I peak (A)', v: 2, r: 0, min: 0.001 }, { k: 'f', l: 'f (Hz)', v: 50, r: 1, min: 0.1 }, { k: 'phi', l: 'Current lags by φ (°)', v: 30, r: 1, min: -90, max: 90 }],
+    presets: [['Resistor (φ = 0)', { gx_acsig_phi: 0 }], ['Inductor (φ = 90)', { gx_acsig_phi: 90 }], ['Capacitor (φ = −90)', { gx_acsig_phi: -90 }], ['Mixed (φ = 45)', { gx_acsig_phi: 45 }]],
+    plot(v, W, H) {
+      const { V0, I0, f, phi } = v, p = phi * Math.PI / 180, tm = 2000 / f, w = 2 * Math.PI * f / 1000;
+      const fv = t => V0 * Math.sin(w * t), fi = t => I0 * Math.sin(w * t - p), fp = t => fv(t) * fi(t), ext = Math.max(V0, I0, V0 * I0);
+      const bx = box([0, tm], [ext, -V0 * I0 * 0.2, -V0, -I0], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(fp, 0, tm, 600), tp, '#3fbf6f', bx, { lw: 2 }); poly(samplePts(fi, 0, tm, 600), tp, '#5a9ad8', bx, { lw: 2.6 }); poly(samplePts(fv, 0, tm, 600), tp, acc, bx, { lw: 2.8 });
+      const Pav = 0.5 * V0 * I0 * Math.cos(p); seg(tp, 0, Pav, tm, Pav, '#ffffff', true, 1.6);
+      axT(W, H, 't (ms)', 'V · I · p');
+      return [{ color: acc, label: 'Voltage V = V₀ sin ωt · rms = V₀/√2 = ' + fmtN(V0 / Math.SQRT2, 4) + ' V' }, { color: '#5a9ad8', label: 'Current I = I₀ sin(ωt − φ) · rms = ' + fmtN(I0 / Math.SQRT2, 4) + ' A · ' + (phi > 0 ? 'lags the voltage (inductive)' : phi < 0 ? 'leads the voltage (capacitive)' : 'in phase with the voltage (resistive)') },
+        { color: '#3fbf6f', label: 'Instantaneous power p = VI (dips below zero when V and I have opposite signs)' }, { color: '#ffffff', label: 'Average power P = ½V₀I₀cosφ = ' + fmtN(Pav, 4) + ' W (dashed) · power factor cosφ = ' + fmtN(Math.cos(p), 4), dashed: true }];
+    }
+  });
+
+  GX.push({
+    id: 'boyle', grp: 'phys', label: "Gas Law: P–V isotherms (Boyle)",
+    inputs: [{ k: 'n', l: 'Moles n', v: 1, r: 0, min: 0.001 }, { k: 'T1', l: 'T₁ (K)', v: 250, r: 1, min: 1 }, { k: 'T2', l: 'T₂ (K)', v: 300, r: 1, min: 1 }, { k: 'T3', l: 'T₃ (K)', v: 400, r: 1, min: 1 }, { k: 'V1', l: 'V from (L)', v: 5, r: 2, min: 0.1 }, { k: 'V2', l: 'to (L)', v: 50, r: 2, min: 0.2 }],
+    presets: [['1 mol, 250/300/400 K', { gx_boyle_n: 1, gx_boyle_T1: 250, gx_boyle_T2: 300, gx_boyle_T3: 400 }], ['2 mol', { gx_boyle_n: 2 }], ['Cold gases', { gx_boyle_T1: 100, gx_boyle_T2: 200, gx_boyle_T3: 300 }]],
+    plot(v, W, H) {
+      const { n, T1, T2, T3, V1, V2 } = v; if (V1 >= V2) bad(t('graph_error_range')); const R = 8.314, Ts = [T1, T2, T3], cols = ['#5a9ad8', accentColor(), '#e8548b'], P = (T, V) => n * R * T / V;
+      const bx = box([V1, V2], [0, P(Math.max.apply(null, Ts), V1)], { pad: 0.06, W, H }), tp = view(bx, W, H);
+      Ts.forEach((T, i) => poly(samplePts(V => P(T, V), V1, V2, 300), tp, cols[i], bx, { lw: 2.8 }));
+      const Vm = (V1 + V2) / 2; Ts.forEach((T, i) => dot(tp, Vm, P(T, Vm), cols[i], '', 0, 0));
+      axT(W, H, 'V (litres)', 'P (kPa)');
+      return Ts.map((T, i) => ({ color: cols[i], label: 'T = ' + fmtN(T, 4) + ' K: PV = nRT = ' + fmtN(n * R * T, 5) + ' kPa·L (constant) · at V = ' + fmtN(Vm, 3) + ' L, P = ' + fmtN(P(T, Vm), 4) + ' kPa' })).concat([{ color: '#ffffff', label: 'Boyle: at constant temperature P ∝ 1/V (halve the volume, double the pressure) · hotter gas = curve further from the axes' }]);
+    }
+  });
+
+  GX.push({
+    id: 'charles', grp: 'phys', label: "Gas Law: V–T lines (Charles)",
+    inputs: [{ k: 'n', l: 'Moles n', v: 1, r: 0, min: 0.001 }, { k: 'P1', l: 'P₁ (kPa)', v: 50, r: 1, min: 1 }, { k: 'P2', l: 'P₂ (kPa)', v: 100, r: 1, min: 1 }, { k: 'P3', l: 'P₃ (kPa)', v: 200, r: 1, min: 1 }, { k: 'Tm', l: 'Max T (°C)', v: 200, r: 2, min: 10, max: 1000 }],
+    presets: [['1 mol, 50/100/200 kPa', { gx_charles_n: 1, gx_charles_P1: 50, gx_charles_P2: 100, gx_charles_P3: 200 }], ['0.5 mol', { gx_charles_n: 0.5 }], ['High range (500 °C)', { gx_charles_Tm: 500 }]],
+    plot(v, W, H) {
+      const { n, P1, P2, P3, Tm } = v, R = 8.314, Ps = [P1, P2, P3], cols = ['#5a9ad8', accentColor(), '#e8548b'], Vf = (P, tc) => n * R * (tc + 273.15) / P;
+      const bx = box([-300, Tm], [0, Vf(Math.min.apply(null, Ps), Tm)], { pad: 0.06, W, H }), tp = view(bx, W, H);
+      Ps.forEach((P, i) => { poly([[-273.15, 0], [0, Vf(P, 0)]], tp, cols[i], bx, { lw: 2, dash: true }); poly([[0, Vf(P, 0)], [Tm, Vf(P, Tm)]], tp, cols[i], bx, { lw: 2.8 }); });
+      dot(tp, -273.15, 0, '#ffffff', '−273.15 °C', 8, -10); seg(tp, -273.15, 0, -273.15, bx.y1, 'rgba(255,255,255,0.35)', true, 1.2);
+      axT(W, H, 'T (°C)', 'V (litres)');
+      return Ps.map((P, i) => ({ color: cols[i], label: 'P = ' + fmtN(P, 4) + ' kPa: V = ' + fmtN(Vf(P, 0), 4) + ' L at 0 °C and ' + fmtN(Vf(P, 100), 4) + ' L at 100 °C' })).concat([{ color: '#ffffff', label: 'Every line, extended back (dashed), reaches V = 0 at −273.15 °C = 0 K: absolute zero · V/T is constant at constant P' }, { color: '#3fbf6f', label: 'Real gases turn liquid before reaching it, so the dashed part is only an extrapolation' }]);
+    }
+  });
+
+  GX.push({
+    id: 'heating', grp: 'phys', label: 'Heating Curve of Water (ice → steam)',
+    inputs: [{ k: 'm', l: 'Mass (g)', v: 100, r: 0, min: 0.01 }, { k: 'T0', l: 'Start T (°C)', v: -20, r: 0, min: -100, max: 100 }, { k: 'Tf', l: 'End T (°C)', v: 130, r: 1, min: -90, max: 300 }],
+    presets: [['−20 °C → 130 °C', { gx_heating_T0: -20, gx_heating_Tf: 130 }], ['Ice → water (−10 → 60)', { gx_heating_T0: -10, gx_heating_Tf: 60 }], ['Water → steam (20 → 120)', { gx_heating_T0: 20, gx_heating_Tf: 120 }]],
+    plot(v, W, H) {
+      const { m, T0, Tf } = v; if (Tf <= T0) bad(tx('graph_x_heating_range', 'End temperature must be higher than the start temperature.'));
+      const ci = 2.09, cw = 4.18, cs = 2.01, Lf = 334, Lv = 2260; let T = T0, Q = 0; const pts = [[0, T0]], parts = [], plat = [];
+      if (T < 0) { const tg = Math.min(0, Tf), q = m * ci * (tg - T) / 1000; Q += q; T = tg; pts.push([Q, T]); parts.push(['Heating ice ' + fmtN(T0, 3) + ' → ' + fmtN(tg, 3) + ' °C', q]); }
+      if (T === 0 && Tf > 0 && T0 <= 0) { const q = m * Lf / 1000; plat.push([Q + q / 2, 0, 'melting']); Q += q; pts.push([Q, 0]); parts.push(['Melting ice at 0 °C', q]); }
+      if (T < 100 && Tf > T) { const tg = Math.min(100, Tf), q = m * cw * (tg - T) / 1000; Q += q; pts.push([Q, tg]); parts.push(['Heating water ' + fmtN(T, 3) + ' → ' + fmtN(tg, 3) + ' °C', q]); T = tg; }
+      if (T === 100 && Tf > 100) { const q = m * Lv / 1000; plat.push([Q + q / 2, 100, 'boiling']); Q += q; pts.push([Q, 100]); parts.push(['Boiling water at 100 °C', q]); const q2 = m * cs * (Tf - 100) / 1000; Q += q2; pts.push([Q, Tf]); parts.push(['Heating steam 100 → ' + fmtN(Tf, 3) + ' °C', q2]); }
+      const bx = box([0, Q], [T0, Tf], { pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor(), cols = ['#5a9ad8', '#e8548b', acc, '#3fbf6f', '#f2c14e'];
+      for (let i = 1; i < pts.length; i++) seg(tp, pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], cols[(i - 1) % cols.length], false, 3.2);
+      pts.forEach(p => dot(tp, p[0], p[1], '#ffffff', '', 0, 0)); plat.forEach(p => dot(tp, p[0], p[1], '#ffffff', p[2], 0, -12));
+      axT(W, H, 'heat added Q (kJ)', 'T (°C)');
+      return parts.map((p, i) => ({ color: cols[i % cols.length], label: p[0] + ': ' + fmtN(p[1], 4) + ' kJ' })).concat([{ color: '#ffffff', label: 'Total heat = ' + fmtN(Q, 4) + ' kJ for ' + fmtN(m, 4) + ' g · flat parts: temperature stays fixed while the heat breaks bonds (latent heat 334 and 2260 J/g)' }]);
+    }
+  });
+
+  GX.push({
+    id: 'energy', grp: 'phys', label: 'Energy Conversion (KE & PE)',
+    inputs: [{ k: 'm', l: 'Mass (kg)', v: 2, r: 0, min: 0.001 }, { k: 'h0', l: 'Start height (m)', v: 20, r: 0, min: 0.01 }, { k: 'g', l: 'g (m/s²)', v: 9.8, r: 1, min: 0.1 }, { k: 'h', l: 'Mark height (m)', v: 5, r: 1, min: 0 }],
+    presets: [['2 kg from 20 m', { gx_energy_m: 2, gx_energy_h0: 20, gx_energy_h: 5 }], ['Halfway', { gx_energy_h: 10 }], ['Just before landing', { gx_energy_h: 1 }]],
+    plot(v, W, H) {
+      const { m, h0, g, h } = v; if (h > h0) bad(tx('graph_x_energy_h', 'Mark height must not be above the start height.'));
+      const E = m * g * h0, bx = box([0, h0], [0, E], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, 0, E, h0, E, '#ffffff', true, 1.8); seg(tp, 0, E, h0, 0, '#5a9ad8', false, 3); seg(tp, 0, 0, h0, E, acc, false, 3);
+      dot(tp, h, m * g * h, '#5a9ad8', '', 0, 0); dot(tp, h, E - m * g * h, acc, '', 0, 0); seg(tp, h, 0, h, E, 'rgba(255,255,255,0.35)', true, 1.2); dot(tp, h0 / 2, E / 2, '#3fbf6f', 'equal', 8, -10);
+      axT(W, H, 'height h (m) — falling from right to left', 'energy (J)');
+      return [{ color: '#5a9ad8', label: 'Potential energy PE = mgh · ' + fmtN(m * g * h, 4) + ' J at h = ' + fmtN(h, 4) + ' m' }, { color: acc, label: 'Kinetic energy KE = mg(h₀ − h) · ' + fmtN(E - m * g * h, 4) + ' J at h = ' + fmtN(h, 4) + ' m' },
+        { color: '#ffffff', label: 'Total mechanical energy E = mgh₀ = ' + fmtN(E, 4) + ' J (constant, no air resistance)', dashed: true }, { color: '#3fbf6f', label: 'Speed at h = ' + fmtN(h, 4) + ' m: v = √(2g(h₀ − h)) = ' + fmtN(Math.sqrt(2 * g * (h0 - h)), 4) + ' m/s · KE = PE at h = h₀/2 = ' + fmtN(h0 / 2, 4) + ' m' },
+        { color: '#f2c14e', label: 'Speed on reaching the ground = √(2gh₀) = ' + fmtN(Math.sqrt(2 * g * h0), 4) + ' m/s' }];
+    }
+  });
+
+  GX.push({
+    id: 'gravity', grp: 'phys', label: 'Gravity g vs Distance (inside & outside)',
+    inputs: [{ k: 'M', l: 'Mass (Earths)', v: 1, r: 0, min: 0.0001 }, { k: 'R', l: 'Radius (Earths)', v: 1, r: 0, min: 0.001 }, { k: 'rm', l: 'Plot to (× radius)', v: 4, r: 1, min: 1.5, max: 20 }],
+    presets: [['Earth', { gx_gravity_M: 1, gx_gravity_R: 1 }], ['Moon', { gx_gravity_M: 0.0123, gx_gravity_R: 0.2727 }], ['Mars', { gx_gravity_M: 0.107, gx_gravity_R: 0.532 }], ['Jupiter', { gx_gravity_M: 317.8, gx_gravity_R: 10.97 }]],
+    plot(v, W, H) {
+      const { M, R, rm } = v, GM = 6.674e-11 * M * 5.972e24, Rm = R * 6.371e6, g0 = GM / (Rm * Rm), gf = x => x < 1 ? g0 * x : g0 / (x * x);
+      const bx = box([0, rm], [0, g0], { zero: true, pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      fillPoly([[0, 0], [1, 0], [1, bx.y1], [0, bx.y1]], tp, 'rgba(90,154,216,0.12)'); poly(samplePts(gf, 0, rm, 500), tp, acc, bx, { lw: 2.8 });
+      dot(tp, 1, g0, '#ffffff', 'surface g = ' + fmtN(g0, 4), 8, -10); dot(tp, 2, gf(2), '#3fbf6f', 'g/4 at 2R', 8, -10);
+      axT(W, H, 'distance from the centre (in radii R)', 'g (m/s²)');
+      return [{ color: acc, label: 'Inside the planet (shaded): g grows in a straight line from 0 at the centre · outside: g = GM/r² falls off as 1/r²' }, { color: '#ffffff', label: 'Surface gravity g = GM/R² = ' + fmtN(g0, 4) + ' m/s² (' + fmtN(g0 / 9.80665, 4) + ' × Earth)' },
+        { color: '#3fbf6f', label: 'Double the distance from the centre → gravity falls to one quarter (' + fmtN(g0 / 4, 4) + ' m/s²)' }, { color: '#5a9ad8', label: 'Escape speed = √(2GM/R) = ' + fmtN(Math.sqrt(2 * GM / Rm) / 1000, 4) + ' km/s · low-orbit speed = ' + fmtN(Math.sqrt(GM / Rm) / 1000, 4) + ' km/s' }];
+    }
+  });
+
+  GX.push({
+    id: 'coulomb', grp: 'phys', label: "Coulomb's Law (force vs distance)",
+    inputs: [{ k: 'q1', l: 'q₁ (µC)', v: 5, r: 0 }, { k: 'q2', l: 'q₂ (µC)', v: -3, r: 0 }, { k: 'r1', l: 'r from (m)', v: 0.1, r: 1, min: 0.001 }, { k: 'r2', l: 'to (m)', v: 2, r: 1, min: 0.002 }],
+    presets: [['Unlike charges (attract)', { gx_coulomb_q1: 5, gx_coulomb_q2: -3 }], ['Like charges (repel)', { gx_coulomb_q1: 5, gx_coulomb_q2: 3 }], ['Strong (20 µC, 20 µC)', { gx_coulomb_q1: 20, gx_coulomb_q2: 20 }]],
+    plot(v, W, H) {
+      const { q1, q2, r1, r2 } = v; if (q1 === 0 || q2 === 0) bad(tx('graph_x_coulomb_q', 'Both charges must be non-zero.')); if (r1 >= r2) bad(t('graph_error_range'));
+      const k = 8.988e9, F = r => k * q1 * q2 * 1e-12 / (r * r), bx = box([r1, r2], [0, F(r1)], { pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(samplePts(F, r1, r2, 500), tp, acc, bx, { lw: 2.8 }); dot(tp, r1, F(r1), '#ffffff', fmtN(F(r1), 3) + ' N', 8, 10);
+      if (2 * r1 <= r2) { dot(tp, 2 * r1, F(2 * r1), '#3fbf6f', fmtN(F(2 * r1), 3) + ' N (¼)', 8, -10); dot(tp, 3 * r1 <= r2 ? 3 * r1 : 2 * r1, F(3 * r1 <= r2 ? 3 * r1 : 2 * r1), '#5a9ad8', '', 0, 0); }
+      axT(W, H, 'distance r (m)', 'force F (N)');
+      const att = q1 * q2 < 0;
+      return [{ color: acc, label: 'F = k q₁q₂ / r² with k = 8.988 × 10⁹ N·m²/C² · ' + (att ? 'unlike charges attract (negative force)' : 'like charges repel (positive force)') },
+        { color: '#ffffff', label: 'At r = ' + fmtN(r1, 4) + ' m the force is ' + fmtN(Math.abs(F(r1)), 5) + ' N' }, { color: '#3fbf6f', label: 'Inverse-square law: double the distance → ¼ of the force, triple → 1/9' },
+        { color: '#5a9ad8', label: 'Electric field of q₁ at r = ' + fmtN(r1, 4) + ' m: E = kq₁/r² = ' + fmtN(k * q1 * 1e-6 / (r1 * r1), 4) + ' N/C' }];
+    }
+  });
+
+  GX.push({
+    id: 'magcirc', grp: 'phys', label: 'Charge in a Magnetic Field (circle)',
+    inputs: [{ k: 'm', l: 'Mass (10⁻²⁷ kg)', v: 1.67, r: 0, min: 0.0001 }, { k: 'q', l: 'Charge (10⁻¹⁹ C)', v: 1.6, r: 0 }, { k: 'sp', l: 'Speed (10⁵ m/s)', v: 1, r: 1, min: 0.001 }, { k: 'B', l: 'B (mT)', v: 100, r: 1, min: 0.001 }],
+    presets: [['Proton', { gx_magcirc_m: 1.67, gx_magcirc_q: 1.6, gx_magcirc_sp: 1, gx_magcirc_B: 100 }], ['Electron', { gx_magcirc_m: 0.000911, gx_magcirc_q: -1.6, gx_magcirc_sp: 10, gx_magcirc_B: 10 }], ['Alpha particle', { gx_magcirc_m: 6.64, gx_magcirc_q: 3.2, gx_magcirc_sp: 1, gx_magcirc_B: 100 }]],
+    plot(v, W, H) {
+      const { m, q, sp, B } = v; if (q === 0) bad(tx('graph_x_magcirc_q', 'Charge cannot be 0 (a neutral particle is not bent).'));
+      const mm = m * 1e-27, qq = Math.abs(q) * 1e-19, vel = sp * 1e5, BB = B * 1e-3, r = mm * vel / (qq * BB), Tp = 2 * Math.PI * mm / (qq * BB), s = q > 0 ? 1 : -1, rc = r * 100;
+      const bx = box([-rc, rc], [s * rc - rc, s * rc + rc], { eq: true, pad: 0.3, W, H }), tp = view(bx, W, H), acc = accentColor();
+      ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.font = '700 16px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (let px = 26; px < W; px += 46) for (let py = 26; py < H; py += 46) ctx.fillText('×', px, py); ctx.restore();
+      poly(circPts(0, s * rc, rc), tp, acc, bx, { lw: 2.8 });
+      const o = tp(0, 0), c = tp(0, s * rc); drawArrow(o[0], o[1], o[0] + 44, o[1], '#ffffff', 2.6);
+      const dx = c[0] - o[0], dy = c[1] - o[1], dl = Math.hypot(dx, dy) || 1; drawArrow(o[0], o[1], o[0] + dx / dl * 38, o[1] + dy / dl * 38, '#e8548b', 2.6);
+      dot(tp, 0, s * rc, '#ffffff', 'centre', 8, 0);
+      axT(W, H, 'cm  (× = magnetic field into the page)', '');
+      return [{ color: acc, label: 'Path: a circle of radius r = mv/(|q|B) = ' + fmtN(rc, 4) + ' cm' }, { color: '#ffffff', label: 'White arrow: velocity (sideways at the start) · pink arrow: magnetic force, always towards the centre' },
+        { color: '#5a9ad8', label: 'Period T = 2πm/(|q|B) = ' + fmtN(Tp * 1e6, 4) + ' µs · frequency f = ' + fmtN(1 / Tp / 1e6, 4) + ' MHz — independent of the speed' }, { color: '#3fbf6f', label: (q > 0 ? 'Positive' : 'Negative') + ' charge turns ' + (q > 0 ? 'anticlockwise' : 'clockwise') + ' here · speed stays constant (the magnetic force does no work)' },
+        { color: '#f2c14e', label: 'Kinetic energy = ½mv² = ' + fmtN(0.5 * mm * vel * vel / 1.602e-19, 4) + ' eV' }];
+    }
+  });
+
+  GX.push({
+    id: 'planck', grp: 'phys', label: 'Black-body Radiation (Planck curves)',
+    inputs: [{ k: 'T1', l: 'T₁ (K)', v: 3000, r: 0, min: 300 }, { k: 'T2', l: 'T₂ (K)', v: 4500, r: 0, min: 300 }, { k: 'T3', l: 'T₃ (K)', v: 6000, r: 1, min: 300 }, { k: 'lm', l: 'Up to λ (nm)', v: 3000, r: 1, min: 500, max: 20000 }],
+    presets: [['3000 / 4500 / 6000 K', { gx_planck_T1: 3000, gx_planck_T2: 4500, gx_planck_T3: 6000 }], ['Sun (5778 K) & cooler stars', { gx_planck_T1: 3500, gx_planck_T2: 5778, gx_planck_T3: 8000 }], ['Hot objects (800–1500 K)', { gx_planck_T1: 800, gx_planck_T2: 1100, gx_planck_T3: 1500, gx_planck_lm: 6000 }]],
+    plot(v, W, H) {
+      const { T1, T2, T3, lm } = v, Ts = [T1, T2, T3], cols = ['#e8548b', accentColor(), '#5a9ad8'], c2 = 1.438777e7;
+      const B = (l, T) => { const x = c2 / (l * T), d = Math.expm1(x); return isFinite(d) ? Math.pow(l, -5) / d : 0; };
+      let pk = 0; Ts.forEach(T => { const lp = 2.897772e6 / T; pk = Math.max(pk, B(lp, T)); });
+      const y = (l, T) => B(l, T) / pk, bx = box([0, lm], [0, 1], { pad: 0.05, W, H }), tp = view(bx, W, H);
+      if (lm > 380) fillPoly([[380, 0], [Math.min(750, lm), 0], [Math.min(750, lm), 1], [380, 1]], tp, 'rgba(255,255,255,0.08)');
+      Ts.forEach((T, i) => { poly(samplePts(l => y(l, T), 20, lm, 600), tp, cols[i], bx, { lw: 2.8 }); const lp = 2.897772e6 / T; if (lp <= lm) dot(tp, lp, y(lp, T), cols[i], fmtN(lp, 4) + ' nm', 8, -10); });
+      axT(W, H, 'wavelength λ (nm)', 'relative intensity');
+      return Ts.map((T, i) => ({ color: cols[i], label: 'T = ' + fmtN(T, 5) + ' K: peak at λmax = b/T = ' + fmtN(2.897772e6 / T, 5) + ' nm (Wien) · total power ∝ T⁴ = ' + fmtN(Math.pow(T / Ts[0], 4), 4) + ' × the first curve' })).concat([{ color: 'rgba(255,255,255,0.6)', label: 'Light grey band = visible light (380–750 nm) · hotter body → higher peak, shifted to shorter (bluer) wavelengths' }]);
+    }
+  });
+
+  GX.push({
+    id: 'photoelectric', grp: 'phys', label: 'Photoelectric Effect (KE vs frequency)',
+    inputs: [{ k: 'phi', l: 'Work function φ (eV)', v: 2.3, r: 0, min: 0.1, max: 10 }, { k: 'f', l: 'Light f (10¹⁴ Hz)', v: 8, r: 0, min: 0.1 }, { k: 'fm', l: 'Plot to (10¹⁴ Hz)', v: 15, r: 1, min: 2, max: 40 }],
+    presets: [['Sodium (2.3 eV)', { gx_photoelectric_phi: 2.3 }], ['Zinc (4.3 eV)', { gx_photoelectric_phi: 4.3 }], ['Caesium (2.1 eV)', { gx_photoelectric_phi: 2.1 }], ['Platinum (5.6 eV)', { gx_photoelectric_phi: 5.6 }]],
+    plot(v, W, H) {
+      const { phi, f, fm } = v, he = 0.413567, f0 = phi / he, ke = x => he * x - phi, top = Math.max(0.5, ke(Math.max(fm, f)));
+      const bx = box([0, Math.max(fm, f)], [-phi, top], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly([[0, -phi], [f0, 0]], tp, 'rgba(255,255,255,0.45)', bx, { lw: 1.8, dash: true }); seg(tp, 0, 0, Math.min(f0, bx.x1), 0, '#e8548b', false, 3);
+      if (f0 < bx.x1) seg(tp, f0, 0, bx.x1, ke(bx.x1), acc, false, 3);
+      dot(tp, f0, 0, '#ffffff', 'f₀ = ' + fmtN(f0, 4), 8, -12); dot(tp, 0, -phi, '#ffffff', '−φ', 8, -10);
+      dot(tp, f, Math.max(0, ke(f)), f > f0 ? '#3fbf6f' : '#e8548b', f > f0 ? 'KEmax = ' + fmtN(ke(f), 4) + ' eV' : 'no emission', -8, -12);
+      axT(W, H, 'frequency f (10¹⁴ Hz)', 'KEmax (eV)');
+      return [{ color: acc, label: "Einstein: KEmax = hf − φ — a straight line of slope h/e = 0.4136 eV per 10¹⁴ Hz (the same for every metal)" }, { color: '#ffffff', label: 'Threshold frequency f₀ = φ/h = ' + fmtN(f0, 4) + ' × 10¹⁴ Hz · cut-off wavelength λ₀ = hc/φ = ' + fmtN(1239.84 / phi, 4) + ' nm' },
+        { color: '#e8548b', label: 'Below f₀ no electrons come out, however bright the light is (flat red line)' }, { color: '#3fbf6f', label: 'Light at ' + fmtN(f, 4) + ' × 10¹⁴ Hz: photon energy hf = ' + fmtN(he * f, 4) + ' eV → ' + (f > f0 ? 'KEmax = ' + fmtN(ke(f), 4) + ' eV, stopping potential = ' + fmtN(ke(f), 4) + ' V' : 'not enough energy to free an electron') },
+        { color: 'rgba(255,255,255,0.6)', label: 'Dashed extension meets the vertical axis at −φ = −' + fmtN(phi, 4) + ' eV', dashed: true }];
+    }
+  });
+
   /* ---------- More Statistics ---------- */
   GX.push({
     id: 'poisson', grp: 'stat', label: 'Poisson Distribution',
@@ -15678,6 +16068,331 @@ setTimeout(() => {
       poly(pts, tp, acc, bx, { lw: 2.6 }); pts.forEach(p => dot(tp, p[0], p[1], acc, '', 8, 0)); qs.forEach(q => dot(tp, q.x, q.y, q.c, q.n, 8, -10));
       return [{ color: acc, label: 'Ogive ("less than" cumulative frequency) — ' + n + ' values in ' + nb + ' classes of width ' + fmtN(w, 4) },
         { color: '#ffffff', label: 'Median ≈ ' + fmtN(qs[0].x, 4) + ' (read at ' + fmtN(n / 2, 3) + ' on the vertical axis)' }, { color: '#3fbf6f', label: 'Q₁ ≈ ' + fmtN(qs[1].x, 4) }, { color: '#5a9ad8', label: 'Q₃ ≈ ' + fmtN(qs[2].x, 4) + ' · IQR ≈ ' + fmtN(qs[2].x - qs[1].x, 4) }];
+    }
+  });
+
+  /* ====== 18 MORE STATISTICS GRAPHS ====== */
+  const stErf = x => { const s = x < 0 ? -1 : 1; x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x); return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x)); };
+  const stNCdf = x => 0.5 * (1 + stErf(x / Math.SQRT2)), stNPdf = x => Math.exp(-x * x / 2) / Math.sqrt(2 * Math.PI);
+  const stInvN = p => {
+    if (p <= 0) return -Infinity; if (p >= 1) return Infinity;
+    const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00], b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01],
+      c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00], d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
+    let q, r;
+    if (p < 0.02425) { q = Math.sqrt(-2 * Math.log(p)); return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+    if (p > 1 - 0.02425) { q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+    q = p - 0.5; r = q * q; return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+  };
+  const stLg = x => {
+    const g = [676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (x < 0.5) return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * x))) - stLg(1 - x);
+    x -= 1; let a = 0.99999999999980993; const t = x + 7.5; for (let i = 0; i < 8; i++) a += g[i] / (x + i + 1);
+    return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+  };
+  const stGP = (a, x) => {
+    if (x <= 0) return 0;
+    if (x < a + 1) { let s = 1 / a, term = s; for (let n = 1; n < 500; n++) { term *= x / (a + n); s += term; if (Math.abs(term) < Math.abs(s) * 1e-14) break; } return s * Math.exp(-x + a * Math.log(x) - stLg(a)); }
+    let b = x + 1 - a, c = 1e300, d = 1 / b, h = d;
+    for (let i = 1; i < 500; i++) { const an = -i * (i - a); b += 2; d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300; c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-14) break; }
+    return 1 - Math.exp(-x + a * Math.log(x) - stLg(a)) * h;
+  };
+  const stBI = (x, a, b) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    const bt = Math.exp(stLg(a + b) - stLg(a) - stLg(b) + a * Math.log(x) + b * Math.log(1 - x));
+    const cf = (x, a, b) => {
+      const qab = a + b, qap = a + 1, qam = a - 1; let c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < 1e-300) d = 1e-300; d = 1 / d; let h = d;
+      for (let m = 1; m < 300; m++) {
+        const m2 = 2 * m; let aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-300) d = 1e-300; c = 1 + aa / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; h *= d * c;
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-300) d = 1e-300; c = 1 + aa / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-14) break;
+      }
+      return h;
+    };
+    return x < (a + 1) / (a + b + 2) ? bt * cf(x, a, b) / a : 1 - bt * cf(1 - x, b, a) / b;
+  };
+  const stTCdf = (t0, df) => { const p = 0.5 * stBI(df / (df + t0 * t0), df / 2, 0.5); return t0 > 0 ? 1 - p : p; };
+  const stTPdf = (x, df) => Math.exp(stLg((df + 1) / 2) - stLg(df / 2)) / Math.sqrt(df * Math.PI) * Math.pow(1 + x * x / df, -(df + 1) / 2);
+  const stBis = (F, target, lo, hi) => { for (let i = 0; i < 100; i++) { const mid = (lo + hi) / 2; if (F(mid) < target) lo = mid; else hi = mid; } return (lo + hi) / 2; };
+  const stTInv = (p, df) => stBis(x => stTCdf(x, df), p, -1e5, 1e5);
+  const stRng = seed => { let a = (Math.floor(seed) >>> 0) || 1; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+  const stStat = d => {
+    const n = d.length, s = d.slice().sort((p, q) => p - q), mean = d.reduce((a, b) => a + b, 0) / n, sd = n > 1 ? Math.sqrt(d.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (n - 1)) : 0;
+    const q = p => { const h = (n - 1) * p, i = Math.floor(h); return i + 1 < n ? s[i] + (h - i) * (s[i + 1] - s[i]) : s[n - 1]; };
+    return { n, s, mean, sd, q };
+  };
+  // bars at x0, x0+1, ... (lab = print the value above each bar)
+  const stBars = (tp, ps, x0, color, hl, lab) => {
+    ctx.save(); ctx.font = '600 10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ps.forEach((p, i) => { const a = tp(x0 + i - 0.4, p), z = tp(x0 + i + 0.4, 0); ctx.fillStyle = i === hl ? '#ffffff' : color; ctx.fillRect(a[0], a[1], Math.max(1, z[0] - a[0]), z[1] - a[1]); if (lab && p > 0.0005) { ctx.fillStyle = '#ddd'; ctx.fillText(p < 1 ? p.toFixed(3) : fmtN(p, 3), (a[0] + z[0]) / 2, a[1] - 2); } });
+    ctx.restore();
+  };
+  const stShade = (tp, f, a, b, color, n) => { n = n || 80; const pts = [[a, 0]]; for (let i = 0; i <= n; i++) { const x = a + (b - a) * i / n; pts.push([x, f(x)]); } pts.push([b, 0]); fillPoly(pts, tp, color); };
+  const stLC = (a, b) => stLg(a + 1) - stLg(b + 1) - stLg(a - b + 1);
+
+  GX.push({
+    id: 'geometric', grp: 'stat', label: 'Geometric Distribution',
+    inputs: [{ k: 'p', l: 'Success probability p', v: 0.3, min: 0.01, max: 0.99 }],
+    presets: [['p = 0.1', { gx_geometric_p: 0.1 }], ['p = 0.3', { gx_geometric_p: 0.3 }], ['p = 0.5 (coin)', { gx_geometric_p: 0.5 }], ['p = 0.8', { gx_geometric_p: 0.8 }]],
+    plot(v, W, H) {
+      const p = v.p, q = 1 - p, K = Math.min(80, Math.max(6, Math.ceil(Math.log(0.001) / Math.log(q)) + 1)), pr = []; for (let k = 1; k <= K; k++) pr.push(Math.pow(q, k - 1) * p);
+      const bx = { x0: 0.2, x1: K + 0.8, y0: -p * 0.06, y1: p * 1.2 }, tp = view(bx, W, H), acc = accentColor();
+      stBars(tp, pr, 1, 'rgba(255,138,31,0.8)', 0, K <= 14); seg(tp, 1 / p, 0, 1 / p, p, '#5a9ad8', true, 1.8); axT(W, H, 'k (trial of the first success)', 'P(X = k)');
+      return [{ color: acc, label: 'Geometric(p = ' + fmtN(p, 3) + '): P(X = k) = (1 − p)^(k−1) · p — the first success happens on trial k' }, { color: '#5a9ad8', label: 'Mean = 1/p = ' + fmtN(1 / p, 4) + ' trials (dashed line) · variance = (1 − p)/p² = ' + fmtN(q / (p * p), 4) },
+        { color: '#ffffff', label: 'Most likely: success on the very first trial, P = p = ' + fmtN(p, 4) + ' · P(X ≤ 3) = ' + fmtN(1 - Math.pow(q, 3), 4) }, { color: '#3fbf6f', label: 'Memoryless: the chance of waiting longer does not depend on how long you have already waited' }];
+    }
+  });
+
+  GX.push({
+    id: 'exponential', grp: 'stat', label: 'Exponential Distribution',
+    inputs: [{ k: 'lam', l: 'Rate λ', v: 1, r: 0, min: 0.01 }, { k: 'x', l: 'Mark x', v: 1, r: 0, min: 0 }],
+    presets: [['λ = 0.5', { gx_exponential_lam: 0.5, gx_exponential_x: 2 }], ['λ = 1', { gx_exponential_lam: 1, gx_exponential_x: 1 }], ['λ = 2', { gx_exponential_lam: 2, gx_exponential_x: 0.5 }], ['λ = 0.1', { gx_exponential_lam: 0.1, gx_exponential_x: 10 }]],
+    plot(v, W, H) {
+      const { lam, x } = v, xm = Math.max(5 / lam, x * 1.3), f = t => lam * Math.exp(-lam * t), F = t => 1 - Math.exp(-lam * t);
+      const bx = box([0, xm], [0, Math.max(lam, 1)], { zero: true, pad: 0.08, W, H }), tp = view(bx, W, H), acc = accentColor();
+      stShade(tp, f, 0, Math.min(x, xm), 'rgba(255,138,31,0.28)'); poly(samplePts(F, 0, xm, 300), tp, '#5a9ad8', bx, { lw: 2.4 }); poly(samplePts(f, 0, xm, 300), tp, acc, bx, { lw: 2.8 });
+      seg(tp, x, 0, x, F(x), 'rgba(255,255,255,0.4)', true, 1.2); dot(tp, x, F(x), '#ffffff', 'P = ' + fmtN(F(x), 3), 8, -10); axT(W, H, 'x', 'f(x)  ·  F(x)');
+      return [{ color: acc, label: 'Density f(x) = λe^(−λx) · shaded area = P(X ≤ x)' }, { color: '#5a9ad8', label: 'Cumulative F(x) = 1 − e^(−λx) (rises towards 1)' },
+        { color: '#ffffff', label: 'P(X ≤ ' + fmtN(x, 4) + ') = ' + fmtN(F(x), 5) + ' · P(X > ' + fmtN(x, 4) + ') = ' + fmtN(1 - F(x), 5) }, { color: '#3fbf6f', label: 'Mean = SD = 1/λ = ' + fmtN(1 / lam, 4) + ' · median = ln2/λ = ' + fmtN(Math.LN2 / lam, 4) + ' · memoryless (waiting times, lifetimes)' }];
+    }
+  });
+
+  GX.push({
+    id: 'uniform', grp: 'stat', label: 'Continuous Uniform Distribution',
+    inputs: [{ k: 'a', l: 'a (min)', v: 0, r: 0 }, { k: 'b', l: 'b (max)', v: 10, r: 0 }, { k: 'c', l: 'P( c <', v: 2, r: 1 }, { k: 'd', l: 'X < d )', v: 7, r: 1 }],
+    presets: [['U(0, 10)', { gx_uniform_a: 0, gx_uniform_b: 10, gx_uniform_c: 2, gx_uniform_d: 7 }], ['U(0, 1)', { gx_uniform_a: 0, gx_uniform_b: 1, gx_uniform_c: 0.25, gx_uniform_d: 0.6 }], ['U(−5, 5)', { gx_uniform_a: -5, gx_uniform_b: 5, gx_uniform_c: -1, gx_uniform_d: 3 }]],
+    plot(v, W, H) {
+      const { a, b, c, d } = v; if (a >= b) bad(tx('graph_x_uni_ab', 'b must be larger than a.')); if (c >= d) bad(tx('graph_x_uni_cd', 'd must be larger than c.'));
+      const h = 1 / (b - a), w = b - a, bx = { x0: a - 0.25 * w, x1: b + 0.25 * w, y0: -h * 0.08, y1: h * 1.35 }, tp = view(bx, W, H), acc = accentColor(), lo = Math.max(a, c), hi = Math.min(b, d), P = Math.max(0, hi - lo) / w;
+      if (hi > lo) fillPoly([[lo, 0], [lo, h], [hi, h], [hi, 0]], tp, 'rgba(255,138,31,0.3)');
+      seg(tp, bx.x0, 0, a, 0, acc, false, 3); seg(tp, a, 0, a, h, acc, false, 3); seg(tp, a, h, b, h, acc, false, 3); seg(tp, b, h, b, 0, acc, false, 3); seg(tp, b, 0, bx.x1, 0, acc, false, 3);
+      axT(W, H, 'x', 'f(x)');
+      return [{ color: acc, label: 'Uniform(' + fmtN(a, 4) + ', ' + fmtN(b, 4) + '): every value equally likely · height f = 1/(b − a) = ' + fmtN(h, 5) }, { color: 'rgba(255,138,31,0.85)', label: 'P(' + fmtN(c, 4) + ' < X < ' + fmtN(d, 4) + ') = shaded area = ' + fmtN(P, 5) + ' (' + fmtN(P * 100, 4) + '%)' },
+        { color: '#5a9ad8', label: 'Mean = (a + b)/2 = ' + fmtN((a + b) / 2, 4) + ' · SD = (b − a)/√12 = ' + fmtN(w / Math.sqrt(12), 4) }, { color: '#ffffff', label: 'Area of the whole rectangle = (b − a) × 1/(b − a) = 1' }];
+    }
+  });
+
+  GX.push({
+    id: 'hypergeo', grp: 'stat', label: 'Hypergeometric Distribution',
+    inputs: [{ k: 'N', l: 'Population N', v: 50, r: 0, min: 2, max: 2000, int: true }, { k: 'K', l: 'Successes K', v: 20, r: 0, min: 0, max: 2000, int: true }, { k: 'n', l: 'Draws n', v: 10, r: 1, min: 1, max: 2000, int: true }],
+    presets: [['Cards: 5 from 52, 13 hearts', { gx_hypergeo_N: 52, gx_hypergeo_K: 13, gx_hypergeo_n: 5 }], ['Default', { gx_hypergeo_N: 50, gx_hypergeo_K: 20, gx_hypergeo_n: 10 }], ['Small pond (N = 20)', { gx_hypergeo_N: 20, gx_hypergeo_K: 8, gx_hypergeo_n: 10 }]],
+    plot(v, W, H) {
+      const { N, K, n } = v; if (K > N) bad(tx('graph_x_hg_K', 'K cannot be larger than N.')); if (n > N) bad(tx('graph_x_hg_n', 'n cannot be larger than N.'));
+      const k0 = Math.max(0, n - (N - K)), k1 = Math.min(n, K), pr = [], pb = [], pp = K / N; for (let k = k0; k <= k1; k++) { pr.push(Math.exp(stLC(K, k) + stLC(N - K, n - k) - stLC(N, n))); pb.push(pp > 0 && pp < 1 ? Math.exp(stLC(n, k) + k * Math.log(pp) + (n - k) * Math.log(1 - pp)) : (pp === 0 ? (k === 0 ? 1 : 0) : (k === n ? 1 : 0))); }
+      const pm = Math.max.apply(null, pr.concat(pb)), bx = { x0: k0 - 0.8, x1: k1 + 0.8, y0: -pm * 0.06, y1: pm * 1.2 }, tp = view(bx, W, H), acc = accentColor(), mi = pr.indexOf(Math.max.apply(null, pr));
+      stBars(tp, pr, k0, 'rgba(255,138,31,0.8)', mi, pr.length <= 16); pb.forEach((p, i) => dot(tp, k0 + i, p, '#5a9ad8', '', 0, 0)); axT(W, H, 'k (successes in the sample)', 'P(X = k)');
+      const mean = n * K / N, varr = n * pp * (1 - pp) * (N - n) / (N - 1);
+      return [{ color: acc, label: 'Hypergeometric(N = ' + N + ', K = ' + K + ', n = ' + n + '): draws WITHOUT replacement · P(X = k) = C(K,k)·C(N−K,n−k) / C(N,n)' }, { color: '#5a9ad8', label: 'Blue dots: the binomial (draws WITH replacement) for comparison — close when N is large compared with n' },
+        { color: '#ffffff', label: 'Mean = nK/N = ' + fmtN(mean, 4) + ' · variance = ' + fmtN(varr, 4) + ' (smaller than binomial by the factor (N − n)/(N − 1))' }, { color: '#3fbf6f', label: 'Most likely value k = ' + (k0 + mi) + ' with P = ' + fmtN(pr[mi], 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'tdist', grp: 'stat', label: "Student's t Distribution",
+    inputs: [{ k: 'df', l: 'Degrees of freedom', v: 5, r: 0, min: 1, max: 500, int: true }, { k: 'conf', l: 'Confidence (%)', v: 95, r: 0, min: 50, max: 99.9 }],
+    presets: [['df = 1 (Cauchy)', { gx_tdist_df: 1 }], ['df = 5', { gx_tdist_df: 5 }], ['df = 10', { gx_tdist_df: 10 }], ['df = 30', { gx_tdist_df: 30 }], ['df = 200', { gx_tdist_df: 200 }]],
+    plot(v, W, H) {
+      const { df, conf } = v, a = 1 - conf / 100, tc = stTInv(1 - a / 2, df), zc = stInvN(1 - a / 2), xm = 5;
+      const bx = { x0: -xm, x1: xm, y0: -0.02, y1: 0.43 }, tp = view(bx, W, H), acc = accentColor(), f = x => stTPdf(x, df);
+      if (tc < xm) { stShade(tp, f, tc, xm, 'rgba(232,84,139,0.35)'); stShade(tp, f, -xm, -tc, 'rgba(232,84,139,0.35)'); seg(tp, tc, 0, tc, f(tc), '#e8548b', true, 1.4); seg(tp, -tc, 0, -tc, f(tc), '#e8548b', true, 1.4); }
+      poly(samplePts(stNPdf, -xm, xm, 300), tp, 'rgba(255,255,255,0.6)', bx, { lw: 2, dash: true }); poly(samplePts(f, -xm, xm, 300), tp, acc, bx, { lw: 2.8 }); axT(W, H, 't', 'density');
+      return [{ color: acc, label: 't distribution with ' + df + ' degrees of freedom — bell-shaped but with heavier tails' }, { color: 'rgba(255,255,255,0.7)', label: 'Dashed white: the standard normal curve for comparison', dashed: true },
+        { color: '#e8548b', label: fmtN(conf, 4) + '% two-sided critical value: t* = ±' + fmtN(tc, 4) + (tc < xm ? ' (pink tails = ' + fmtN(a * 100, 3) + '% in total)' : ' (beyond the plotted range)') + ' vs z* = ±' + fmtN(zc, 4) },
+        { color: '#3fbf6f', label: df > 2 ? 'Variance = df/(df − 2) = ' + fmtN(df / (df - 2), 4) + ' (larger than the normal\'s 1) · as df grows, t → normal' : 'Variance is infinite or undefined for df ≤ 2' }];
+    }
+  });
+
+  GX.push({
+    id: 'chisq', grp: 'stat', label: 'Chi-square Distribution',
+    inputs: [{ k: 'df', l: 'Degrees of freedom', v: 4, r: 0, min: 1, max: 100, int: true }, { k: 'al', l: 'Significance α (%)', v: 5, r: 0, min: 0.1, max: 50 }],
+    presets: [['df = 1', { gx_chisq_df: 1 }], ['df = 2', { gx_chisq_df: 2 }], ['df = 4', { gx_chisq_df: 4 }], ['df = 10', { gx_chisq_df: 10 }], ['df = 30', { gx_chisq_df: 30 }]],
+    plot(v, W, H) {
+      const { df, al } = v, k = df / 2, xm = df + 5 * Math.sqrt(2 * df) + 5, f = x => x <= 0 ? 0 : Math.exp((k - 1) * Math.log(x) - x / 2 - k * Math.LN2 - stLg(k)), crit = stBis(x => stGP(k, x / 2), 1 - al / 100, 0, xm * 6);
+      let top = 0; for (let i = 1; i <= 400; i++) top = Math.max(top, f(xm * i / 400)); top = df <= 2 ? Math.min(0.6, Math.max(top, 0.5)) : top;
+      const bx = box([0, xm], [0, top], { pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      if (crit < xm) { stShade(tp, f, Math.max(crit, 0.0001), xm, 'rgba(232,84,139,0.35)'); seg(tp, crit, 0, crit, f(crit), '#e8548b', true, 1.6); dot(tp, crit, 0, '#e8548b', 'χ² = ' + fmtN(crit, 4), 8, -12); }
+      poly(samplePts(f, xm / 800, xm, 400), tp, acc, bx, { lw: 2.8 }); axT(W, H, 'χ²', 'density');
+      return [{ color: acc, label: 'χ² distribution with ' + df + ' degrees of freedom (sum of ' + df + ' squared standard normals) · always ≥ 0, skewed right' }, { color: '#e8548b', label: 'Upper ' + fmtN(al, 3) + '% tail starts at χ² = ' + fmtN(crit, 5) + ' — reject H₀ in a test if the statistic is larger' },
+        { color: '#5a9ad8', label: 'Mean = df = ' + df + ' · variance = 2·df = ' + (2 * df) + ' · mode = ' + Math.max(df - 2, 0) }, { color: '#3fbf6f', label: 'For large df the shape becomes close to a normal curve' }];
+    }
+  });
+
+  GX.push({
+    id: 'beta', grp: 'stat', label: 'Beta Distribution',
+    inputs: [{ k: 'a', l: 'α', v: 2, r: 0, min: 0.1, max: 50 }, { k: 'b', l: 'β', v: 5, r: 0, min: 0.1, max: 50 }],
+    presets: [['Uniform (1, 1)', { gx_beta_a: 1, gx_beta_b: 1 }], ['U-shape (0.5, 0.5)', { gx_beta_a: 0.5, gx_beta_b: 0.5 }], ['Symmetric (5, 5)', { gx_beta_a: 5, gx_beta_b: 5 }], ['Right-skew (2, 5)', { gx_beta_a: 2, gx_beta_b: 5 }], ['Left-skew (5, 2)', { gx_beta_a: 5, gx_beta_b: 2 }]],
+    plot(v, W, H) {
+      const { a, b } = v, lB = stLg(a) + stLg(b) - stLg(a + b), f = x => (x <= 0 || x >= 1) ? NaN : Math.exp((a - 1) * Math.log(x) + (b - 1) * Math.log(1 - x) - lB);
+      let top = 0; for (let i = 1; i < 400; i++) top = Math.max(top, f(i / 400)); top = Math.min(top, 6);
+      const bx = box([0, 1], [0, top], { pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor(), mean = a / (a + b);
+      stShade(tp, x => Math.min(f(x), top * 1.5), 0.001, 0.999, 'rgba(255,138,31,0.18)', 200); poly(samplePts(f, 0.0005, 0.9995, 500), tp, acc, bx, { lw: 2.8 }); seg(tp, mean, 0, mean, top, '#5a9ad8', true, 1.6); axT(W, H, 'x (between 0 and 1)', 'density');
+      return [{ color: acc, label: 'Beta(α = ' + fmtN(a, 3) + ', β = ' + fmtN(b, 3) + ') — a distribution for proportions and probabilities between 0 and 1' }, { color: '#5a9ad8', label: 'Mean = α/(α + β) = ' + fmtN(mean, 4) + ' (dashed) · SD = ' + fmtN(Math.sqrt(a * b / ((a + b) * (a + b) * (a + b + 1))), 4) },
+        { color: '#ffffff', label: a > 1 && b > 1 ? 'Mode = (α − 1)/(α + β − 2) = ' + fmtN((a - 1) / (a + b - 2), 4) : (a < 1 && b < 1 ? 'U-shaped: most weight near 0 and 1' : 'The density piles up at an end — no interior peak') }, { color: '#3fbf6f', label: a === b ? 'α = β: symmetric about 0.5' : (a < b ? 'α < β: skewed towards 0 (small proportions)' : 'α > β: skewed towards 1 (large proportions)') }];
+    }
+  });
+
+  GX.push({
+    id: 'dice', grp: 'stat', label: 'Sum of Dice (distribution)',
+    inputs: [{ k: 'n', l: 'Number of dice', v: 2, r: 0, min: 1, max: 8, int: true }, { k: 's', l: 'Sides per die', v: 6, r: 0, min: 2, max: 20, int: true }],
+    presets: [['1 die', { gx_dice_n: 1, gx_dice_s: 6 }], ['2 dice', { gx_dice_n: 2, gx_dice_s: 6 }], ['3 dice', { gx_dice_n: 3, gx_dice_s: 6 }], ['6 dice', { gx_dice_n: 6, gx_dice_s: 6 }], ['2 × d20', { gx_dice_n: 2, gx_dice_s: 20 }]],
+    plot(v, W, H) {
+      const { n, s } = v; let cnt = [1]; for (let i = 0; i < n; i++) { const nx = new Array(cnt.length + s - 1).fill(0); cnt.forEach((c, j) => { for (let q = 0; q < s; q++) nx[j + q] += c; }); cnt = nx; }
+      const tot = Math.pow(s, n), pr = cnt.map(c => c / tot), mean = n * (s + 1) / 2, sd = Math.sqrt(n * (s * s - 1) / 12), pm = Math.max.apply(null, pr), mi = pr.indexOf(pm);
+      const bx = { x0: n - 0.8, x1: n * s + 0.8, y0: -pm * 0.06, y1: pm * 1.2 }, tp = view(bx, W, H), acc = accentColor();
+      stBars(tp, pr, n, 'rgba(255,138,31,0.8)', mi, pr.length <= 17); if (n > 1) poly(samplePts(x => stNPdf((x - mean) / sd) / sd, n, n * s, 300), tp, '#5a9ad8', bx, { lw: 2.2, dash: true }); axT(W, H, 'sum of the dice', 'probability');
+      return [{ color: acc, label: n + ' × d' + s + ': ' + fmtN(tot, 12) + ' equally likely outcomes — bars show P(sum)' }, { color: '#ffffff', label: 'Most likely sum = ' + (n + mi) + ' with P = ' + fmtN(pm, 4) + (n > 1 ? ' (' + fmtN(pm * tot, 12) + ' ways)' : '') },
+        { color: '#5a9ad8', label: 'Mean = n(s + 1)/2 = ' + fmtN(mean, 4) + ' · SD = ' + fmtN(sd, 4) + (n > 1 ? ' · dashed curve = normal approximation (more dice → closer fit)' : ''), dashed: n > 1 }, { color: '#3fbf6f', label: 'Sum can range from ' + n + ' to ' + (n * s) + ' · P(sum ≥ mean) = ' + fmtN(pr.reduce((q, p, i) => q + (n + i >= mean ? p : 0), 0), 4) }];
+    }
+  });
+
+  GX.push({
+    id: 'birthday', grp: 'stat', label: 'Birthday Paradox',
+    inputs: [{ k: 'days', l: 'Days in a year', v: 365, r: 0, min: 2, max: 1000, int: true }, { k: 'km', l: 'Plot up to people', v: 60, r: 0, min: 5, max: 300, int: true }, { k: 'k', l: 'Group size', v: 23, r: 1, min: 1, max: 300, int: true }],
+    presets: [['Classic: 23 people', { gx_birthday_days: 365, gx_birthday_k: 23, gx_birthday_km: 60 }], ['Class of 40', { gx_birthday_days: 365, gx_birthday_k: 40, gx_birthday_km: 80 }], ['100 people', { gx_birthday_days: 365, gx_birthday_k: 70, gx_birthday_km: 100 }]],
+    plot(v, W, H) {
+      const { days, km, k } = v, P = []; let q = 1; P.push(0); for (let i = 1; i <= Math.max(km, k); i++) { q *= Math.max(0, (days - (i - 1)) / days); P.push(1 - q); }
+      const first = tg => { for (let i = 1; i < P.length; i++) if (P[i] >= tg) return i; return null; }, bx = box([1, km], [0, 1], { pad: 0.05, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, 1, 0.5, km, 0.5, 'rgba(255,255,255,0.35)', true, 1.2); poly(P.slice(1, km + 1).map((p, i) => [i + 1, p]), tp, acc, bx, { lw: 2.8 });
+      const f50 = first(0.5); if (f50 && f50 <= km) { dot(tp, f50, P[f50], '#ffffff', f50 + ' people → ' + fmtN(P[f50] * 100, 3) + '%', 8, 12); }
+      if (k <= km) dot(tp, k, P[k], '#3fbf6f', 'k = ' + k, 8, -10); axT(W, H, 'people in the room', 'P(two share a birthday)');
+      return [{ color: acc, label: 'P(at least two share a birthday) = 1 − (d/d)·((d−1)/d)·…·((d−k+1)/d) with d = ' + days + ' days' }, { color: '#3fbf6f', label: 'With ' + k + ' people: ' + fmtN(P[k] * 100, 4) + '% (' + fmtN(P[k], 5) + ')' },
+        { color: '#ffffff', label: 'Passes 50% at just ' + f50 + ' people' + (first(0.99) ? ' · passes 99% at ' + first(0.99) + ' people' : '') }, { color: '#5a9ad8', label: 'Surprising because the number of PAIRS grows fast: ' + k + ' people make ' + fmtN(k * (k - 1) / 2, 6) + ' pairs' }];
+    }
+  });
+
+  GX.push({
+    id: 'clt', grp: 'stat', label: 'Central Limit Theorem (simulation)',
+    inputs: [{ k: 'pop', l: 'Population', t: 's', v: 'exp', opts: [['unif', 'Uniform (0 – 1)'], ['exp', 'Exponential (skewed)'], ['die', 'Fair die'], ['bern', 'Coin flip (0 / 1)']] }, { k: 'n', l: 'Sample size n', v: 5, r: 0, min: 1, max: 200, int: true }, { k: 'm', l: 'Samples', v: 3000, r: 0, min: 100, max: 20000, int: true }, { k: 'seed', l: 'Seed', v: 1, r: 1, int: true }],
+    presets: [['Skewed, n = 1', { gx_clt_pop: 'exp', gx_clt_n: 1 }], ['Skewed, n = 5', { gx_clt_pop: 'exp', gx_clt_n: 5 }], ['Skewed, n = 30', { gx_clt_pop: 'exp', gx_clt_n: 30 }], ['Dice, n = 10', { gx_clt_pop: 'die', gx_clt_n: 10 }], ['Coin, n = 30', { gx_clt_pop: 'bern', gx_clt_n: 30 }]],
+    plot(v, W, H) {
+      const { pop, n, m, seed } = v, rnd = stRng(seed), D = { unif: [0.5, Math.sqrt(1 / 12), () => rnd(), 'Uniform(0, 1)'], exp: [1, 1, () => -Math.log(1 - rnd()), 'Exponential(1)'], die: [3.5, Math.sqrt(35 / 12), () => 1 + Math.floor(rnd() * 6), 'a fair die'], bern: [0.5, 0.5, () => rnd() < 0.5 ? 1 : 0, 'coin flips'] }[pop] || [0.5, 0.29, () => rnd(), 'Uniform'];
+      const mu = D[0], sg0 = D[1], draw = D[2], means = []; for (let i = 0; i < m; i++) { let s = 0; for (let j = 0; j < n; j++) s += draw(); means.push(s / n); }
+      const se = sg0 / Math.sqrt(n), lo = Math.min.apply(null, means), hi = Math.max.apply(null, means), nb = 30, w = (hi - lo) / nb || 1, dens = new Array(nb).fill(0); means.forEach(x => { dens[Math.min(nb - 1, Math.floor((x - lo) / w))] += 1 / (m * w); });
+      const top = Math.max(Math.max.apply(null, dens), stNPdf(0) / se), bx = { x0: lo - w, x1: hi + w, y0: 0, y1: top * 1.15 }, tp = view(bx, W, H), acc = accentColor();
+      ctx.save(); ctx.fillStyle = 'rgba(255,138,31,0.55)'; dens.forEach((d, i) => { const a = tp(lo + i * w, d), z = tp(lo + (i + 1) * w, 0); ctx.fillRect(a[0] + 0.5, a[1], Math.max(1, z[0] - a[0] - 1), z[1] - a[1]); }); ctx.restore();
+      poly(samplePts(x => stNPdf((x - mu) / se) / se, lo - w, hi + w, 300), tp, '#5a9ad8', bx, { lw: 2.8 }); axT(W, H, 'sample mean', 'density');
+      const om = means.reduce((a, b) => a + b, 0) / m, os = Math.sqrt(means.reduce((a, b) => a + (b - om) * (b - om), 0) / (m - 1));
+      return [{ color: acc, label: 'Histogram of ' + m + ' sample means, each from ' + n + ' draws of ' + D[3] + ' (seed ' + seed + ')' }, { color: '#5a9ad8', label: 'Blue curve: normal with mean μ = ' + fmtN(mu, 4) + ' and SD σ/√n = ' + fmtN(se, 4) + ' predicted by the theorem' },
+        { color: '#ffffff', label: 'Observed: mean of means = ' + fmtN(om, 4) + ' · SD of means = ' + fmtN(os, 4) }, { color: '#3fbf6f', label: n < 5 ? 'Small n: the shape still looks like the population — raise n and watch it turn into a bell' : 'The bigger n is, the closer to a bell curve — and the narrower it gets (SD shrinks by √n)' }];
+    }
+  });
+
+  GX.push({
+    id: 'lln', grp: 'stat', label: 'Law of Large Numbers (coin flips)',
+    inputs: [{ k: 'p', l: 'P(heads) p', v: 0.5, r: 0, min: 0.01, max: 0.99 }, { k: 'N', l: 'Flips', v: 1000, r: 0, min: 10, max: 20000, int: true }, { k: 'seed', l: 'Seed', v: 3, r: 1, int: true }],
+    presets: [['Fair coin, 1000', { gx_lln_p: 0.5, gx_lln_N: 1000 }], ['Fair coin, 100', { gx_lln_p: 0.5, gx_lln_N: 100 }], ['Biased (0.3)', { gx_lln_p: 0.3, gx_lln_N: 1000 }], ['Another run', { gx_lln_seed: 11 }]],
+    plot(v, W, H) {
+      const { p, N, seed } = v, rnd = stRng(seed), pts = []; let h = 0; for (let i = 1; i <= N; i++) { if (rnd() < p) h++; pts.push([i, h / i]); }
+      const bx = box([1, N], [0, 1], { pad: 0.04, W, H }), tp = view(bx, W, H), acc = accentColor(), sd = n => 3 * Math.sqrt(p * (1 - p) / n);
+      [1, -1].forEach(sgn => poly(samplePts(n => p + sgn * sd(n), 1, N, 300), tp, 'rgba(90,154,216,0.8)', bx, { lw: 1.6, dash: true })); seg(tp, 1, p, N, p, '#ffffff', true, 1.6); poly(pts, tp, acc, bx, { lw: 2.2 }); axT(W, H, 'number of flips', 'proportion of heads');
+      const fin = pts[N - 1][1];
+      return [{ color: acc, label: 'Running proportion of heads after each flip (seed ' + seed + ')' }, { color: '#ffffff', label: 'True probability p = ' + fmtN(p, 3) + ' (white line) · after ' + N + ' flips the proportion is ' + fmtN(fin, 5) + ' (off by ' + fmtN(Math.abs(fin - p), 4) + ')' },
+        { color: '#5a9ad8', label: 'Dashed funnel = p ± 3√(p(1 − p)/n): it narrows as n grows', dashed: true }, { color: '#3fbf6f', label: 'Heads: ' + Math.round(fin * N) + ' (expected ' + fmtN(p * N, 5) + ') — the PROPORTION settles down, but the raw gap |heads − Np| can keep growing' }];
+    }
+  });
+
+  GX.push({
+    id: 'ci', grp: 'stat', label: 'Confidence Interval for a Mean',
+    inputs: [{ k: 'xb', l: 'Sample mean x̄', v: 50, r: 0 }, { k: 's', l: 'Sample SD s', v: 10, r: 0, min: 0.0001 }, { k: 'n', l: 'n', v: 25, r: 1, min: 2, max: 100000, int: true }, { k: 'lv', l: 'Confidence (%)', v: 95, r: 1, min: 50, max: 99.9 }],
+    presets: [['95%, n = 25', { gx_ci_n: 25, gx_ci_lv: 95 }], ['99%', { gx_ci_n: 25, gx_ci_lv: 99 }], ['90%', { gx_ci_n: 25, gx_ci_lv: 90 }], ['Small sample n = 5', { gx_ci_n: 5, gx_ci_lv: 95 }], ['Big sample n = 400', { gx_ci_n: 400, gx_ci_lv: 95 }]],
+    plot(v, W, H) {
+      const { xb, s, n, lv } = v, se = s / Math.sqrt(n), df = n - 1, a = 1 - lv / 100, tc = stTInv(1 - a / 2, df), zc = stInvN(1 - a / 2), me = tc * se, lo = xb - me, hi = xb + me;
+      const f = x => stTPdf((x - xb) / se, df) / se, ext = Math.max(4.5 * se, me * 1.25), bx = { x0: xb - ext, x1: xb + ext, y0: -f(xb) * 0.05, y1: f(xb) * 1.2 }, tp = view(bx, W, H), acc = accentColor();
+      stShade(tp, f, lo, hi, 'rgba(63,191,111,0.28)'); poly(samplePts(f, bx.x0, bx.x1, 400), tp, acc, bx, { lw: 2.8 }); seg(tp, xb, 0, xb, f(xb), '#ffffff', true, 1.6);
+      dot(tp, lo, 0, '#3fbf6f', fmtN(lo, 4), 0, -12); dot(tp, hi, 0, '#3fbf6f', fmtN(hi, 4), 0, -12); axT(W, H, 'possible values of the true mean μ', '');
+      return [{ color: acc, label: 'Sampling distribution of the mean (t-curve, df = ' + df + ') centred at x̄ = ' + fmtN(xb, 4) + ' with standard error s/√n = ' + fmtN(se, 4) }, { color: '#3fbf6f', label: fmtN(lv, 4) + '% confidence interval: ( ' + fmtN(lo, 5) + ' , ' + fmtN(hi, 5) + ' ) — the green area is ' + fmtN(lv, 4) + '% of the curve' },
+        { color: '#ffffff', label: 'Margin of error = t* × s/√n = ' + fmtN(tc, 4) + ' × ' + fmtN(se, 4) + ' = ±' + fmtN(me, 4) }, { color: '#5a9ad8', label: 'Using z* = ' + fmtN(zc, 4) + ' instead would give ±' + fmtN(zc * se, 4) + ' — too narrow for small samples · more data or lower confidence → narrower interval' }];
+    }
+  });
+
+  GX.push({
+    id: 'ztest', grp: 'stat', label: 'Hypothesis Test (z-test, rejection region)',
+    inputs: [{ k: 'mu0', l: 'H₀: μ =', v: 100, r: 0 }, { k: 'xb', l: 'Sample mean x̄', v: 103, r: 0 }, { k: 'sg', l: 'σ', v: 10, r: 1, min: 0.0001 }, { k: 'n', l: 'n', v: 25, r: 1, min: 1, max: 100000, int: true }, { k: 'al', l: 'α (%)', v: 5, r: 2, min: 0.1, max: 50 }, { k: 'tail', l: 'H₁', t: 's', v: 'two', opts: [['two', 'μ ≠ μ₀ (two-tailed)'], ['right', 'μ > μ₀ (right-tailed)'], ['left', 'μ < μ₀ (left-tailed)']] }],
+    presets: [['Reject (two-tailed)', { gx_ztest_xb: 104, gx_ztest_tail: 'two' }], ['Fail to reject', { gx_ztest_xb: 101, gx_ztest_tail: 'two' }], ['Right-tailed', { gx_ztest_xb: 103.5, gx_ztest_tail: 'right' }], ['Left-tailed', { gx_ztest_xb: 96, gx_ztest_tail: 'left' }]],
+    plot(v, W, H) {
+      const { mu0, xb, sg, n, al, tail } = v, a = al / 100, se = sg / Math.sqrt(n), z = (xb - mu0) / se, xm = Math.max(4, Math.abs(z) + 0.8);
+      const bx = { x0: -xm, x1: xm, y0: -0.02, y1: 0.45 }, tp = view(bx, W, H), acc = accentColor(), rej = 'rgba(232,84,139,0.38)'; let crit, p;
+      if (tail === 'two') { crit = stInvN(1 - a / 2); p = 2 * (1 - stNCdf(Math.abs(z))); stShade(tp, stNPdf, crit, xm, rej); stShade(tp, stNPdf, -xm, -crit, rej); }
+      else if (tail === 'right') { crit = stInvN(1 - a); p = 1 - stNCdf(z); stShade(tp, stNPdf, crit, xm, rej); }
+      else { crit = -stInvN(1 - a); p = stNCdf(z); stShade(tp, stNPdf, -xm, crit, rej); }
+      poly(samplePts(stNPdf, -xm, xm, 300), tp, acc, bx, { lw: 2.8 }); const zc = z > xm ? xm : (z < -xm ? -xm : z); seg(tp, zc, 0, zc, 0.42, '#ffffff', false, 2.6); dot(tp, zc, 0.42, '#ffffff', 'z = ' + fmtN(z, 4), zc > 0 ? -8 : 8, 0); axT(W, H, 'z (standard units under H₀)', '');
+      const reject = p < a;
+      return [{ color: acc, label: 'Standard normal curve (distribution of z if H₀ is true) · z = (x̄ − μ₀)/(σ/√n) = ' + fmtN(z, 4) + ' with SE = ' + fmtN(se, 4) }, { color: '#e8548b', label: 'Rejection region (pink, total area α = ' + fmtN(al, 3) + '%): ' + (tail === 'two' ? '|z| > ' + fmtN(crit, 4) : tail === 'right' ? 'z > ' + fmtN(crit, 4) : 'z < ' + fmtN(crit, 4)) },
+        { color: '#ffffff', label: 'p-value = ' + fmtN(p, 5) + (reject ? ' < α → z falls in the rejection region' : ' ≥ α → z is outside the rejection region') }, { color: reject ? '#e8548b' : '#3fbf6f', label: reject ? 'Decision: REJECT H₀ — evidence that the mean differs as H₁ states' : 'Decision: FAIL TO REJECT H₀ — not enough evidence (this does not prove H₀ true)' }];
+    }
+  });
+
+  GX.push({
+    id: 'bayes', grp: 'stat', label: "Bayes' Theorem (medical test)",
+    inputs: [{ k: 'pv', l: 'Prevalence (%)', v: 1, r: 0, min: 0.001, max: 99.999 }, { k: 'se', l: 'Sensitivity (%)', v: 95, r: 0, min: 0, max: 100 }, { k: 'sp', l: 'Specificity (%)', v: 95, r: 1, min: 0, max: 100 }],
+    presets: [['Rare disease (1%)', { gx_bayes_pv: 1, gx_bayes_se: 95, gx_bayes_sp: 95 }], ['Common (20%)', { gx_bayes_pv: 20, gx_bayes_se: 95, gx_bayes_sp: 95 }], ['Excellent test (99.9%)', { gx_bayes_pv: 1, gx_bayes_se: 99.9, gx_bayes_sp: 99.9 }], ['Very rare (0.1%)', { gx_bayes_pv: 0.1, gx_bayes_se: 99, gx_bayes_sp: 99 }]],
+    plot(v, W, H) {
+      const { pv, se, sp } = v, N = 10000, sick = N * pv / 100, well = N - sick, TP = sick * se / 100, FN = sick - TP, FP = well * (1 - sp / 100), TN = well - FP, ymax = Math.max(TP, FP, FN, TN, 1);
+      const bx = { x0: 0.3, x1: 4.7, y0: -ymax * 0.16, y1: ymax * 1.18 }, tp = drawAxes(W, H, bx.x0, bx.x1, bx.y0, bx.y1), cols = ['#3fbf6f', '#e8548b', '#f2c14e', '#5a9ad8'], names = ['True +', 'False +', 'False −', 'True −'], vals = [TP, FP, FN, TN];
+      ctx.save(); vals.forEach((val, i) => { const a = tp(i + 0.6, val), z = tp(i + 1.4, 0); ctx.fillStyle = cols[i]; ctx.fillRect(a[0], a[1], z[0] - a[0], Math.max(1, z[1] - a[1])); }); ctx.restore();
+      vals.forEach((val, i) => { txt(tp, i + 1, val, fmtN(val, 5), '#ffffff', 0, -10, 11); txt(tp, i + 1, -ymax * 0.08, names[i], cols[i], 0, 0, 11); });
+      const post = TP / (TP + FP), npv = TN / (TN + FN);
+      return [{ color: '#ffffff', label: 'Imagine ' + N + ' people: ' + fmtN(sick, 5) + ' have the disease (' + fmtN(pv, 4) + '%), ' + fmtN(well, 6) + ' do not' }, { color: '#3fbf6f', label: 'True positives ' + fmtN(TP, 5) + ' (sick, test +) · false negatives ' + fmtN(FN, 5) + ' (sick, test −)' },
+        { color: '#e8548b', label: 'False positives ' + fmtN(FP, 5) + ' (healthy, test +) · true negatives ' + fmtN(TN, 6) + ' (healthy, test −)' }, { color: '#f2c14e', label: 'P(disease | positive test) = TP/(TP + FP) = ' + fmtN(post * 100, 4) + '%' + (post < 0.5 && se > 90 ? ' — much lower than the test’s accuracy, because most people are healthy' : '') },
+        { color: '#5a9ad8', label: 'P(healthy | negative test) = ' + fmtN(npv * 100, 5) + '% · Bayes: P(D|+) = P(+|D)P(D) / [P(+|D)P(D) + P(+|not D)P(not D)]' }];
+    }
+  });
+
+  GX.push({
+    id: 'ecdf', grp: 'stat', label: 'Empirical CDF (step graph)',
+    inputs: [{ k: 'xs', l: 'Data', t: 'xs', v: '12, 15, 15, 18, 20, 22, 22, 23, 25, 27, 28, 30, 31, 35, 41', min: 2 }],
+    presets: [['Test scores', { gx_ecdf_xs: '45, 52, 58, 60, 61, 64, 67, 70, 72, 75, 78, 81, 85, 90, 96' }], ['Ages', { gx_ecdf_xs: '12, 15, 15, 18, 20, 22, 22, 23, 25, 27, 28, 30, 31, 35, 41' }], ['Small set', { gx_ecdf_xs: '2, 4, 4, 7, 9' }]],
+    plot(v, W, H) {
+      const S = stStat(v.xs), s = S.s, n = S.n, lo = s[0], hi = s[n - 1], pad = Math.max((hi - lo) * 0.12, 0.5), bx = { x0: lo - pad, x1: hi + pad, y0: -0.05, y1: 1.08 }, tp = view(bx, W, H), acc = accentColor();
+      [0.25, 0.5, 0.75].forEach(q => seg(tp, bx.x0, q, bx.x1, q, 'rgba(255,255,255,0.25)', true, 1));
+      const pts = [[bx.x0, 0]]; let i = 0; while (i < n) { let j = i; while (j + 1 < n && s[j + 1] === s[i]) j++; pts.push([s[i], i / n]); pts.push([s[i], (j + 1) / n]); i = j + 1; } pts.push([bx.x1, 1]);
+      poly(pts, tp, acc, bx, { lw: 2.8 }); axT(W, H, 'value', 'proportion ≤ x');
+      const med = S.q(0.5); dot(tp, med, 0.5, '#ffffff', 'median ' + fmtN(med, 4), 8, -10);
+      return [{ color: acc, label: 'Empirical cumulative distribution: F(x) = fraction of the ' + n + ' values that are ≤ x (jumps by 1/n at each value, more for repeats)' }, { color: '#ffffff', label: 'Median = ' + fmtN(med, 4) + ' · Q₁ = ' + fmtN(S.q(0.25), 4) + ' · Q₃ = ' + fmtN(S.q(0.75), 4) + ' (where the curve crosses 0.25, 0.5, 0.75)' },
+        { color: '#5a9ad8', label: 'Min = ' + fmtN(lo, 4) + ' · max = ' + fmtN(hi, 4) + ' · mean = ' + fmtN(S.mean, 4) + ' · sample SD = ' + fmtN(S.sd, 4) }, { color: '#3fbf6f', label: 'Steep parts = values bunched together · flat parts = gaps in the data' }];
+    }
+  });
+
+  GX.push({
+    id: 'qq', grp: 'stat', label: 'Normal Q–Q Plot (is it normal?)',
+    inputs: [{ k: 'xs', l: 'Data (at least 4 values)', t: 'xs', v: '48, 52, 50, 47, 55, 51, 49, 53, 50, 46, 54, 52, 51, 49, 50, 56, 45, 51, 52, 48', min: 4 }],
+    presets: [['Roughly normal', { gx_qq_xs: '48, 52, 50, 47, 55, 51, 49, 53, 50, 46, 54, 52, 51, 49, 50, 56, 45, 51, 52, 48' }], ['Right-skewed', { gx_qq_xs: '1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 8, 11, 15, 22, 35' }], ['Uniform-like', { gx_qq_xs: '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20' }]],
+    plot(v, W, H) {
+      const S = stStat(v.xs), n = S.n, s = S.s; if (S.sd === 0) bad(tx('graph_x_samedata', 'The data values must not all be equal.'));
+      const z = s.map((_, i) => stInvN((i + 1 - 0.375) / (n + 0.25))), zm = z.reduce((a, b) => a + b, 0) / n; let sxy = 0, sxx = 0, syy = 0; z.forEach((q, i) => { sxy += (q - zm) * (s[i] - S.mean); sxx += (q - zm) * (q - zm); syy += (s[i] - S.mean) * (s[i] - S.mean); }); const r = sxy / Math.sqrt(sxx * syy);
+      const bx = box([z[0], z[n - 1]], [s[0], s[n - 1]], { pad: 0.12, W, H }), tp = view(bx, W, H), acc = accentColor();
+      seg(tp, bx.x0, S.mean + S.sd * bx.x0, bx.x1, S.mean + S.sd * bx.x1, '#5a9ad8', true, 2); z.forEach((q, i) => dot(tp, q, s[i], acc, '', 0, 0)); axT(W, H, 'theoretical normal quantile (z)', 'sample value');
+      return [{ color: acc, label: 'Each dot pairs a sorted data value with the z-score it would have if the data were normal (n = ' + n + ')' }, { color: '#5a9ad8', label: 'Dashed line: perfect normal with the same mean ' + fmtN(S.mean, 4) + ' and SD ' + fmtN(S.sd, 4), dashed: true },
+        { color: '#ffffff', label: 'Correlation of the dots r = ' + fmtN(r, 5) + (r > 0.98 ? ' → very close to a straight line: consistent with normal data' : r > 0.95 ? ' → fairly straight: roughly normal' : ' → clearly curved: probably NOT normal') }, { color: '#3fbf6f', label: 'Curved up at the right end = right skew · S-shape = heavy or light tails' }];
+    }
+  });
+
+  GX.push({
+    id: 'control', grp: 'stat', label: 'Control Chart (process monitoring)',
+    inputs: [{ k: 'xs', l: 'Measurements in order (at least 5)', t: 'xs', v: '50.1, 49.8, 50.4, 50.0, 49.7, 50.3, 50.2, 49.9, 50.5, 49.6, 50.1, 50.0, 53.4, 49.8, 50.2, 50.3, 49.9, 50.1, 49.5, 50.4', min: 5 }],
+    presets: [['One bad point', { gx_control_xs: '50.1, 49.8, 50.4, 50.0, 49.7, 50.3, 50.2, 49.9, 50.5, 49.6, 50.1, 50.0, 53.4, 49.8, 50.2, 50.3, 49.9, 50.1, 49.5, 50.4' }], ['Stable process', { gx_control_xs: '50.1, 49.8, 50.4, 50.0, 49.7, 50.3, 50.2, 49.9, 50.5, 49.6, 50.1, 50.0, 49.8, 50.2, 50.3, 49.9, 50.1, 49.5, 50.4, 50.0' }], ['Drifting upward', { gx_control_xs: '49.5, 49.6, 49.6, 49.8, 49.9, 50.0, 50.1, 50.3, 50.4, 50.5, 50.7, 50.8, 51.0, 51.1, 51.3, 51.4, 51.6, 51.7, 51.9, 52.1' }]],
+    plot(v, W, H) {
+      const d = v.xs, n = d.length, mean = d.reduce((a, b) => a + b, 0) / n; let mr = 0; for (let i = 1; i < n; i++) mr += Math.abs(d[i] - d[i - 1]); mr /= (n - 1); if (mr === 0) bad(tx('graph_x_samedata', 'The data values must not all be equal.'));
+      const sg = mr / 1.128, ucl = mean + 3 * sg, lcl = mean - 3 * sg, out = []; d.forEach((x, i) => { if (x > ucl || x < lcl) out.push(i + 1); });
+      const bx = box([1, n], d.concat([ucl, lcl]), { pad: 0.1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      [1, 2].forEach(k => [1, -1].forEach(sgn => seg(tp, 1, mean + sgn * k * sg, n, mean + sgn * k * sg, 'rgba(255,255,255,0.22)', true, 1)));
+      seg(tp, 1, mean, n, mean, '#3fbf6f', false, 2); seg(tp, 1, ucl, n, ucl, '#e8548b', true, 2.2); seg(tp, 1, lcl, n, lcl, '#e8548b', true, 2.2);
+      poly(d.map((x, i) => [i + 1, x]), tp, acc, bx, { lw: 2 }); d.forEach((x, i) => dot(tp, i + 1, x, (x > ucl || x < lcl) ? '#e8548b' : acc, (x > ucl || x < lcl) ? '#' + (i + 1) : '', 8, -10)); axT(W, H, 'sample number', 'measurement');
+      return [{ color: acc, label: n + ' measurements in time order · centre line (green) = mean = ' + fmtN(mean, 5) }, { color: '#e8548b', label: 'Control limits (dashed red): UCL = ' + fmtN(ucl, 5) + ' · LCL = ' + fmtN(lcl, 5) + ' = mean ± 3σ, with σ estimated as average moving range / 1.128 = ' + fmtN(sg, 4), dashed: true },
+        { color: out.length ? '#e8548b' : '#3fbf6f', label: out.length ? 'OUT OF CONTROL: point' + (out.length > 1 ? 's ' : ' ') + out.join(', ') + ' outside the limits — look for a special cause' : 'No point outside the 3σ limits: the process looks in control' }, { color: '#ffffff', label: 'Faint lines mark ±1σ and ±2σ · a long run on one side of the centre line also signals a shift' }];
+    }
+  });
+
+  GX.push({
+    id: 'movavg', grp: 'stat', label: 'Moving Average (trend smoothing)',
+    inputs: [{ k: 'xs', l: 'Data in order (at least 4)', t: 'xs', v: '12, 15, 14, 18, 20, 19, 24, 26, 25, 30, 29, 33, 35, 34, 38', min: 4 }, { k: 'w', l: 'Window size', v: 3, r: 0, min: 2, max: 60, int: true }],
+    presets: [['Window 3', { gx_movavg_w: 3 }], ['Window 5', { gx_movavg_w: 5 }], ['Window 7', { gx_movavg_w: 7 }], ['Noisy sales', { gx_movavg_xs: '20, 35, 18, 40, 25, 45, 30, 52, 28, 55, 36, 60, 33, 64, 41, 68', gx_movavg_w: 4 }]],
+    plot(v, W, H) {
+      const d = v.xs, n = d.length, w = v.w; if (w > n) bad(tx('graph_x_ma_w', 'The window cannot be larger than the number of values.'));
+      const ma = []; for (let i = w - 1; i < n; i++) { let s = 0; for (let j = i - w + 1; j <= i; j++) s += d[j]; ma.push([i + 1, s / w]); }
+      const bx = box([1, n], d, { pad: 0.1, minSpan: 1, W, H }), tp = view(bx, W, H), acc = accentColor();
+      poly(d.map((x, i) => [i + 1, x]), tp, '#5a9ad8', bx, { lw: 1.8, dash: true }); d.forEach((x, i) => dot(tp, i + 1, x, '#5a9ad8', '', 0, 0)); poly(ma, tp, acc, bx, { lw: 3 }); dot(tp, ma[ma.length - 1][0], ma[ma.length - 1][1], '#ffffff', fmtN(ma[ma.length - 1][1], 4), 8, -10); axT(W, H, 'time / position', 'value');
+      const slope = (ma[ma.length - 1][1] - ma[0][1]) / (ma.length > 1 ? ma[ma.length - 1][0] - ma[0][0] : 1);
+      return [{ color: '#5a9ad8', label: 'Raw data (' + n + ' points, dashed blue)', dashed: true }, { color: acc, label: w + '-point moving average: each point is the mean of the latest ' + w + ' values — it starts at point ' + w + ' (the first ' + (w - 1) + ' have no average)' },
+        { color: '#ffffff', label: 'Latest average = ' + fmtN(ma[ma.length - 1][1], 5) + ' · average change per step = ' + fmtN(slope, 4) + (slope > 0 ? ' (rising trend)' : slope < 0 ? ' (falling trend)' : ' (flat)') }, { color: '#3fbf6f', label: 'A bigger window gives a smoother line but reacts later to changes — a simple naive forecast for the next value is the latest average' }];
     }
   });
 
@@ -16470,8 +17185,20 @@ setTimeout(() => {
       Object.keys(EXTRA).forEach(k => { if (EXTRA[k].errEl) EXTRA[k].errEl.textContent = ''; });
     }
     if (n === 3) redraw();   // step 3 is now visible, so the canvas has its real size
+    // Reset every scroller back to the top (do NOT use scrollIntoView here: html/body/panel are
+    // overflow:hidden, and scrollIntoView still scrolls them, which pushes the "All tools"
+    // button up underneath the fixed navbar).
     const card = document.getElementById('graphCard');
-    if (card && card.scrollIntoView) { try { card.scrollIntoView({ block: 'start' }); } catch (e) {} }
+    if (card) {
+      card.scrollTop = 0;
+      const gPanel = card.closest('.tab-panel');
+      const gWrap = card.closest('.formulas-wrap');
+      if (gWrap) gWrap.scrollTop = 0;
+      if (gPanel) gPanel.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
   }
 
   function setGraphMode(mode) {
