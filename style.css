@@ -3956,7 +3956,7 @@ button, a, .key, input, select, textarea, label { touch-action: manipulation; }
 .home-skip { padding: 8px 16px; border-radius: 20px; cursor: pointer; background: transparent; border: 1px solid var(--case-border); color: #b3ad9f; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.78rem; white-space: nowrap; }
 .home-skip:hover { color: #fff; border-color: var(--brand-orange); }
 
-.home-primary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
+.home-primary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 22px; }
 .home-big { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 18px 16px 16px; border-radius: 18px; text-align: left; text-decoration: none; cursor: pointer; color: #fff; font-family: 'Inter', sans-serif; background: linear-gradient(165deg, rgba(255,138,31,0.14), rgba(255,255,255,0.03) 60%); border: 1px solid var(--case-border); transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
 .home-big:hover, .home-big:focus-visible { border-color: var(--brand-orange); transform: translateY(-3px); box-shadow: 0 10px 28px rgba(255,138,31,0.12); outline: none; }
 .home-big:active { transform: scale(0.98); }
@@ -3986,6 +3986,7 @@ button, a, .key, input, select, textarea, label { touch-action: manipulation; }
 
 @media (max-width: 760px) {
   .home-primary { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .home-primary .home-big:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .home-groups { grid-template-columns: 1fr; gap: 14px; }
   .home-all-title { margin-top: 26px; }
 }
