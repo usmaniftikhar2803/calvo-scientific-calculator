@@ -701,6 +701,9 @@ const HOME_TOOL_GROUPS = [
     { go: 'quiz',    gl: '?',   t: 'Quiz',    s: 'Test yourself' },
     { go: 'timer',   gl: '\u25F7', t: 'Timer',   s: 'Study timer' },
     { go: 'history', gl: '\u21BA', t: 'History', s: 'Your saved results' },
+    { href: 'image-to-pdf.html',  gl: 'PDF',    t: 'Image to PDF',  s: 'Photos to one PDF' },
+    { href: 'compress-pdf.html',  gl: 'PDF\u2193', t: 'Compress PDF',  s: 'Reduce PDF size' },
+    { href: 'photo-resizer.html', gl: 'KB',     t: 'Photo Resizer', s: 'Passport size, 20-100 KB' },
   ]},
 ];
 
