@@ -705,6 +705,8 @@ const HOME_TOOL_GROUPS = [
     { href: 'compress-pdf.html',  gl: 'PDF\u2193', t: 'Compress PDF',  s: 'Reduce PDF size' },
     { href: 'photo-resizer.html', gl: 'KB',     t: 'Photo Resizer', s: 'Passport size, 20-100 KB' },
     { href: 'merge-split-pdf.html', gl: 'PDF+',  t: 'Merge & Split PDF', s: 'Join, extract, delete pages' },
+    { href: 'title-page-generator.html', gl: 'Aa', t: 'Title Page Generator', s: 'Assignment cover page' },
+    { href: 'cv-builder.html', gl: 'CV', t: 'CV / Resume Builder', s: 'Make a PDF resume' },
   ]},
 ];
 
