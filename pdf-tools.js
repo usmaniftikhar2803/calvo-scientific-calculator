@@ -21,12 +21,21 @@
       document.head.appendChild(s);
     });
   }
+  /* Looks in vendor/ first, then in the site root, so it works wherever the files were uploaded. */
+  var BASES = ['vendor/', ''];
   function lib(name) {
     if (!libs[name]) {
-      var src = name === 'pdflib' ? '/vendor/pdf-lib.min.js' : '/vendor/pdf.min.js';
-      libs[name] = loadScript(src).then(function () {
-        if (name === 'pdfjs') window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.min.js';
-      }).catch(function (e) { delete libs[name]; throw e; });
+      var file = name === 'pdflib' ? 'pdf-lib.min.js' : 'pdf.min.js';
+      var p = Promise.reject();
+      BASES.forEach(function (b) {
+        p = p.catch(function () { return loadScript(b + file).then(function () { return b; }); });
+      });
+      libs[name] = p.then(function (b) {
+        if (name === 'pdfjs') window.pdfjsLib.GlobalWorkerOptions.workerSrc = b + 'pdf.worker.min.js';
+      }).catch(function () {
+        delete libs[name];
+        throw new Error('PDF engine file not found on the server (' + file + '). Upload the vendor folder (pdf-lib.min.js, pdf.min.js, pdf.worker.min.js) next to image-to-pdf.html.');
+      });
     }
     return libs[name];
   }
