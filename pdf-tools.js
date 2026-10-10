@@ -87,6 +87,46 @@
     d.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) handler(e.dataTransfer.files); });
   }
 
+  /*SCAN_START*/
+  /* Scan mode: flattens uneven lighting and shadows, then cleans the page like a document scanner. */
+  function scanify(canvas, mode) {
+    var w = canvas.width, h = canvas.height, g = canvas.getContext('2d');
+    var img = g.getImageData(0, 0, w, h), d = img.data, n = w * h;
+    var gray = new Uint8ClampedArray(n), i, p, x, y;
+    for (i = 0, p = 0; i < n; i++, p += 4) gray[i] = (d[p] * 77 + d[p + 1] * 150 + d[p + 2] * 29) >> 8;
+    var W1 = w + 1, ii = new Uint32Array(W1 * (h + 1));
+    for (y = 0; y < h; y++) {
+      var row = 0;
+      for (x = 0; x < w; x++) {
+        row += gray[y * w + x];
+        ii[(y + 1) * W1 + x + 1] = ii[y * W1 + x + 1] + row;
+      }
+    }
+    var half = Math.max(8, Math.round(Math.max(w, h) / 16));
+    for (y = 0; y < h; y++) {
+      var y1 = Math.max(0, y - half), y2 = Math.min(h, y + half + 1);
+      for (x = 0; x < w; x++) {
+        var x1 = Math.max(0, x - half), x2 = Math.min(w, x + half + 1);
+        var mean = (ii[y2 * W1 + x2] - ii[y1 * W1 + x2] - ii[y2 * W1 + x1] + ii[y1 * W1 + x1]) / ((x2 - x1) * (y2 - y1)) + 1;
+        var idx = y * w + x, q = idx * 4, gv = gray[idx];
+        if (mode === 'bw') {
+          var b = gv < mean * 0.80 ? 0 : 255;
+          d[q] = d[q + 1] = d[q + 2] = b;
+        } else if (mode === 'gray') {
+          var v = ((gv / mean) - 0.55) / 0.37; v = v < 0 ? 0 : v > 1 ? 1 : v;
+          d[q] = d[q + 1] = d[q + 2] = v * 255;
+        } else {
+          for (var c = 0; c < 3; c++) {
+            var u = ((d[q + c] / mean) - 0.55) / 0.37; u = u < 0 ? 0 : u > 1 ? 1 : u;
+            d[q + c] = u * 255;
+          }
+        }
+      }
+    }
+    g.putImageData(img, 0, 0);
+  }
+  /*SCAN_END*/
+
   /* ================= IMAGE TO PDF ================= */
   function initImage() {
     var items = [], busy = false, MAX = 50;
@@ -176,6 +216,8 @@
         setStatus('imgStatus', (label ? label + ' ' : '') + 'Processing image ' + (i + 1) + ' of ' + items.length + '...');
         await tick();
         var c = drawItem(items[i], maxSide);
+        var sm = $('imgScan') ? $('imgScan').value : 'off';
+        if (sm !== 'off') { setStatus('imgStatus', (label ? label + ' ' : '') + 'Cleaning image ' + (i + 1) + ' of ' + items.length + '...'); await tick(); scanify(c, sm); }
         var blob = await toBlob(c, quality);
         var bytes = new Uint8Array(await blob.arrayBuffer());
         c.width = c.height = 0;
