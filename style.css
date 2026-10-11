@@ -328,6 +328,8 @@ body {
 .topbar-tab:hover {
   color: #ccc;
 }
+a.topbar-tab, a.topbar-tab:visited { display: inline-flex; align-items: center; text-decoration: none; color: #888; }
+a.topbar-tab:hover { color: #ccc; }
 
 .topbar-tab.active {
   background: var(--accent);
