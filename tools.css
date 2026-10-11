@@ -176,3 +176,9 @@ table.consts tr.row-click:hover td{background:rgba(255,138,31,.06);}
 .tagx{display:inline-block;font-size:10.5px;border:1px solid #5fd38a;color:#5fd38a;border-radius:20px;padding:0 7px;margin-left:6px;}
 .tagc{display:inline-block;font-size:10.5px;border:1px solid var(--panel-border);color:var(--text-dim);border-radius:20px;padding:0 7px;margin-left:6px;}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#14110d;border:1px solid var(--brand-orange);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:50;}
+/* statistics tools: let wide result tables scroll sideways instead of wrapping cell text */
+.tbl-wrap.nw table.f th,.tbl-wrap.nw table.f td{white-space:nowrap}
+.tbl-wrap.nw{-webkit-overflow-scrolling:touch}
+.tool input.gname{width:160px;max-width:100%}
+.stats.cmp{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.stats.cmp .stat b{font-size:18px;word-break:break-word}
