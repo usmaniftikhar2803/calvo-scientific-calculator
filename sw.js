@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v82';
+const CACHE_VERSION = 'calvo-cache-v83';
 
 const CORE_ASSETS = [
   './',
@@ -112,6 +112,27 @@ const CORE_ASSETS = [
   './vendor/pdf.min.js',
   './vendor/pdf.worker.min.js',
   './vendor/pdf-lib.min.js',
+  './data/formulas/accounting-finance.json',
+  './data/formulas/biology.json',
+  './data/formulas/chemical-engineering.json',
+  './data/formulas/chemistry.json',
+  './data/formulas/civil-engineering.json',
+  './data/formulas/commerce.json',
+  './data/formulas/computer-science.json',
+  './data/formulas/cost-accounting.json',
+  './data/formulas/data-science.json',
+  './data/formulas/economics.json',
+  './data/formulas/electrical-engineering.json',
+  './data/formulas/environmental-science.json',
+  './data/formulas/financial-management.json',
+  './data/formulas/mathematics.json',
+  './data/formulas/mechanical-engineering.json',
+  './data/formulas/pharmacy-pharmacology.json',
+  './data/formulas/physics.json',
+  './data/formulas/psychology.json',
+  './data/formulas/software-engineering.json',
+  './data/formulas/statistics.json',
+  './data/formulas/textile-engineering.json',
 ];
 
 self.addEventListener('install', (event) => {
