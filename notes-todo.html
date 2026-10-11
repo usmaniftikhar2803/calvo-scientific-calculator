@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Notepad — Free Offline Notes | Calvo</title>
+<meta name="description" content="Free simple notepad that works offline. Write quick notes, they save automatically on your device.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/notes-todo.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/notes-todo.html">
+<meta property="og:title" content="Notepad | Calvo">
+<meta property="og:description" content="Free simple notepad that works offline. Write quick notes, they save automatically on your device.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Simple Notepad", "url": "https://calvoscientificcalculator.online/notes-todo.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free simple notepad that works offline. Write quick notes, they save automatically on your device."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Notepad", "item": "https://calvoscientificcalculator.online/notes-todo.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="tools.css">
+<style>
+[hidden]{display:none!important}
+body{padding-top:18px}
+.np{position:relative;background:#101013;border:1px solid var(--panel-border);border-radius:16px;overflow:hidden;min-height:480px}
+.np-list{padding:14px 14px 90px}
+.np-search{width:100%;border-radius:22px;padding:11px 16px;font-size:14px;margin-bottom:12px}
+.np-item{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--panel-border);padding:13px 4px;color:var(--text);font-family:inherit;cursor:pointer}
+.np-item:active{background:rgba(255,138,31,.08)}
+.np-item b{display:block;font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-item span{display:block;margin-top:3px;font-size:12.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-item small{font-size:11px;color:#8d877b;margin-right:8px}
+.np-empty{padding:70px 10px;text-align:center;color:var(--text-dim);font-size:14px;line-height:1.8}
+.np-fab{position:absolute;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;border:0;background:var(--brand-orange);color:#17171a;font-size:30px;line-height:1;cursor:pointer;box-shadow:0 6px 18px rgba(255,138,31,.35)}
+.np-fab:active{transform:scale(.94)}
+.np-ed{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;background:#0d0d0f;height:100vh;height:100dvh}
+.np-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 10px;border-bottom:1px solid var(--panel-border)}
+.np-bar button{background:none;border:0;color:var(--brand-orange);font-family:inherit;font-size:14px;padding:8px 10px;cursor:pointer;border-radius:8px}
+.np-bar button.del{color:#ff8f8f}
+.np-bar .saved{font-size:11px;color:#8d877b}
+.np-b{flex:1;display:block;width:100%;height:auto;min-height:0;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important;resize:none;background:transparent!important;color:var(--text);font-family:inherit;font-size:16px;line-height:1.8;padding:16px 18px 40px;overflow-y:auto;-webkit-appearance:none;appearance:none}
+.np-b:focus{border:0!important;outline:0!important;box-shadow:none!important}
+.np-foot{font-size:12px;color:var(--text-dim);margin-top:10px}
+#ntMsg{color:#ffb86b;font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1><span>Notepad</span></h1>
+<p class="lead">A simple notepad. Tap + to write, it saves as you type, and works offline.</p>
+<div class="np" id="ntApp">
+<div class="np-list" id="npList">
+<input type="search" class="np-search" id="npSearch" placeholder="Search notes" autocomplete="off">
+<div id="npItems"></div>
+<button class="np-fab" id="npNew" type="button" aria-label="New note">+</button>
+</div>
+<div class="np-ed" id="npEd" hidden>
+<div class="np-bar"><button type="button" id="npBack">&larr; Notes</button><span class="saved" id="npSaved"></span><button type="button" class="del" id="npDel">Delete</button></div>
+<textarea class="np-b" id="npBody" placeholder="Start typing..." spellcheck="true"></textarea>
+</div>
+</div>
+<div id="ntMsg"></div>
+<div class="np-foot">Saves automatically on this device and works offline. Clearing browser data erases notes.</div>
+<h2>How it works</h2>
+<p>Tap the + button to start a note. Type a title and your text, and it saves automatically. Tap Notes to go back to the list, and use the search box to find an old note.</p>
+<h2>FAQ</h2>
+<details><summary>Does the notepad work offline?</summary><p>Yes. After you open it once, it works without internet. Your notes are saved on your device, not on a server.</p></details><details><summary>Where are my notes saved?</summary><p>In your browser on this device. They stay after you close the page or restart the phone, but are removed if you clear the site data of the browser or the app.</p></details><details><summary>Do notes save automatically?</summary><p>Yes. Notes save as you type.</p></details><details><summary>How do I delete a note?</summary><p>Open the note and tap Delete at the top right.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/title-page-generator.html">Assignment Title Page</a><a href="/cv-builder.html">CV / Resume Builder</a><a href="/image-to-pdf.html">Document Scanner</a><a href="/merge-split-pdf.html">Merge & Split PDF</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/attendance-calculator.html">Attendance Calculator</a><a href="/word-counter.html">Word Counter</a><a href="/percentage-calculator.html">Percentage Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="notes-todo.js"></script>
+</body>
+</html>
