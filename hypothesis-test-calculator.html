@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hypothesis Test Calculator — t-test, z-test, Chi-Square with p-value | Calvo</title>
+<meta name="description" content="Free hypothesis testing calculator with p-value. One-sample z-test, one-sample, two-sample and paired t-test, chi-square goodness of fit and independence, with critical values and step-by-step working.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/hypothesis-test-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/hypothesis-test-calculator.html">
+<meta property="og:title" content="Hypothesis Test Calculator — t-test, z-test, Chi-Square with p-value | Calvo">
+<meta property="og:description" content="Free hypothesis testing calculator with p-value. One-sample z-test, one-sample, two-sample and paired t-test, chi-square goodness of fit and independence, with critical values and step-by-step working.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Hypothesis Test Calculator", "url": "https://calvoscientificcalculator.online/hypothesis-test-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free hypothesis testing calculator with p-value. One-sample z-test, one-sample, two-sample and paired t-test, chi-square goodness of fit and independence, with critical values and step-by-step working."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the difference between a z-test and a t-test?", "acceptedAnswer": {"@type": "Answer", "text": "Use a z-test when the population standard deviation is known. Use a t-test when you only have the sample standard deviation, which is the usual case. For large samples the two give almost the same answer."}}, {"@type": "Question", "name": "How does Calvo calculate the p-value?", "acceptedAnswer": {"@type": "Answer", "text": "It evaluates the exact cumulative distribution of the normal, Student t or chi-square distribution in your browser, so you get the exact p-value rather than a range from a table."}}, {"@type": "Question", "name": "Should I use a one-tailed or two-tailed test?", "acceptedAnswer": {"@type": "Answer", "text": "Use a two-tailed test unless your hypothesis states a direction before you collect data. A right-tailed test checks for an increase, a left-tailed test for a decrease."}}, {"@type": "Question", "name": "When should I use Welch's t-test instead of the pooled version?", "acceptedAnswer": {"@type": "Answer", "text": "Welch's test is the safer default because it does not assume equal variances. Use the pooled test only when you have good reason to believe the two groups have equal variance."}}, {"@type": "Question", "name": "What if an expected count in a chi-square test is below 5?", "acceptedAnswer": {"@type": "Answer", "text": "The chi-square approximation becomes unreliable. Calvo warns you when any expected count is under 5; combine categories or collect more data."}}, {"@type": "Question", "name": "Does 'fail to reject' mean H0 is true?", "acceptedAnswer": {"@type": "Answer", "text": "No. It only means the data do not provide enough evidence against H0. Absence of evidence is not evidence of absence."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Hypothesis Test Calculator", "item": "https://calvoscientificcalculator.online/hypothesis-test-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Hypothesis Test <span>Calculator</span></h1>
+<p class="lead">Choose a test, enter your sample data or summary values, and Calvo gives the test statistic, exact p-value, critical value, decision at your significance level and the working, step by step.</p>
+
+<div class="tool"><h3>Hypothesis test calculator</h3>
+<div class="row"><label for="test">Test</label>
+<select id="test">
+<option value="z1">One-sample z-test (σ known)</option>
+<option value="t1" selected>One-sample t-test (σ unknown)</option>
+<option value="t2">Two-sample t-test (independent)</option>
+<option value="tp">Paired t-test (before / after)</option>
+<option value="cg">Chi-square goodness of fit</option>
+<option value="ci">Chi-square test of independence</option>
+</select></div>
+
+<div class="row" id="rowAlt"><label for="alt">Tails</label>
+<select id="alt"><option value="two">Two-tailed (H&#8321;: &ne;)</option><option value="greater">Right-tailed (H&#8321;: &gt;)</option><option value="less">Left-tailed (H&#8321;: &lt;)</option></select>
+<label for="alpha" style="min-width:auto">&alpha;</label>
+<select id="alpha"><option value="0.10">0.10</option><option value="0.05" selected>0.05</option><option value="0.025">0.025</option><option value="0.01">0.01</option><option value="0.001">0.001</option></select></div>
+
+<!-- z1 -->
+<div class="pn" id="p_z1">
+<div class="row"><label>Input</label><select id="mode_z1"><option value="sm">Summary values</option><option value="rw">Raw data</option></select></div>
+<div class="sm"><div class="row"><label>Sample mean x&#772;</label><input type="number" step="any" id="z1_xbar" inputmode="decimal"><label>n</label><input type="number" step="1" id="z1_n" inputmode="numeric"></div></div>
+<div class="rw"><textarea class="wide" id="z1_data" placeholder="Sample values: 12 15 14 10 ... (spaces, commas or new lines)"></textarea></div>
+<div class="row"><label>Hypothesised mean &mu;&#8320;</label><input type="number" step="any" id="z1_mu" inputmode="decimal"><label>Population SD &sigma;</label><input type="number" step="any" id="z1_sigma" inputmode="decimal"></div>
+</div>
+
+<!-- t1 -->
+<div class="pn" id="p_t1">
+<div class="row"><label>Input</label><select id="mode_t1"><option value="sm">Summary values</option><option value="rw">Raw data</option></select></div>
+<div class="sm"><div class="row"><label>Sample mean x&#772;</label><input type="number" step="any" id="t1_xbar" inputmode="decimal"><label>Sample SD s</label><input type="number" step="any" id="t1_s" inputmode="decimal"><label>n</label><input type="number" step="1" id="t1_n" inputmode="numeric"></div></div>
+<div class="rw"><textarea class="wide" id="t1_data" placeholder="Sample values: 12 15 14 10 ... (spaces, commas or new lines)"></textarea></div>
+<div class="row"><label>Hypothesised mean &mu;&#8320;</label><input type="number" step="any" id="t1_mu" inputmode="decimal"></div>
+</div>
+
+<!-- t2 -->
+<div class="pn" id="p_t2">
+<div class="row"><label>Input</label><select id="mode_t2"><option value="sm">Summary values</option><option value="rw">Raw data</option></select>
+<select id="t2_var"><option value="welch">Unequal variances (Welch)</option><option value="pooled">Equal variances (pooled)</option></select></div>
+<div class="sm">
+<div class="row"><label>Group 1</label><input type="number" step="any" id="t2_m1" placeholder="mean" inputmode="decimal"><input type="number" step="any" id="t2_s1" placeholder="SD" inputmode="decimal"><input type="number" step="1" id="t2_n1" placeholder="n" inputmode="numeric"></div>
+<div class="row"><label>Group 2</label><input type="number" step="any" id="t2_m2" placeholder="mean" inputmode="decimal"><input type="number" step="any" id="t2_s2" placeholder="SD" inputmode="decimal"><input type="number" step="1" id="t2_n2" placeholder="n" inputmode="numeric"></div>
+</div>
+<div class="rw"><textarea class="wide" id="t2_d1" style="min-height:90px" placeholder="Group 1 values"></textarea><textarea class="wide" id="t2_d2" style="min-height:90px;margin-top:8px" placeholder="Group 2 values"></textarea></div>
+</div>
+
+<!-- tp -->
+<div class="pn" id="p_tp">
+<textarea class="wide" id="tp_a" style="min-height:90px" placeholder="Before (or first measurement), one value per subject"></textarea>
+<textarea class="wide" id="tp_b" style="min-height:90px;margin-top:8px" placeholder="After (or second measurement), same order and same count"></textarea>
+</div>
+
+<!-- cg -->
+<div class="pn" id="p_cg">
+<div class="row"><label>Observed</label></div>
+<textarea class="wide" id="cg_o" style="min-height:70px" placeholder="Observed counts, e.g. 16 18 16 14 12 12"></textarea>
+<div class="row" style="margin-top:8px"><label>Expected</label><span class="note">(leave blank for equal expected counts)</span></div>
+<textarea class="wide" id="cg_e" style="min-height:70px" placeholder="Expected counts, or proportions that add up to 1 or 100"></textarea>
+</div>
+
+<!-- ci -->
+<div class="pn" id="p_ci">
+<div class="row"><label>Table</label><span class="note">One row per line, columns separated by spaces or commas (counts only).</span></div>
+<textarea class="wide" id="ci_t" style="min-height:110px" placeholder="30 20&#10;20 30"></textarea>
+</div>
+
+<div class="row" style="margin-top:12px"><button class="btn" id="go">Calculate p-value</button><button class="btn ghost" id="ex">Load example</button><button class="btn ghost" id="clr">Clear</button></div>
+<div class="result empty" id="out">The test statistic, p-value, critical value and decision will appear here.</div></div>
+
+
+<h2>Which test should I use?</h2>
+<table class="f"><tr><th>Situation</th><th>Test</th></tr>
+<tr><td>One sample mean vs a known value, population SD &sigma; is known (or n is large and &sigma; is given)</td><td>z-test</td></tr>
+<tr><td>One sample mean vs a known value, only the sample SD s is available</td><td>One-sample t-test</td></tr>
+<tr><td>Compare the means of two separate groups</td><td>Two-sample t-test (Welch if variances differ)</td></tr>
+<tr><td>Same subjects measured twice (before / after)</td><td>Paired t-test</td></tr>
+<tr><td>Do observed counts fit a claimed distribution?</td><td>Chi-square goodness of fit</td></tr>
+<tr><td>Are two categorical variables related?</td><td>Chi-square test of independence</td></tr>
+<tr><td>Compare means of three or more groups</td><td><a href="/anova-calculator.html">One-way ANOVA</a></td></tr></table>
+
+<h2>Formulas</h2>
+<table class="f"><tr><th>Test</th><th>Statistic</th><th>Degrees of freedom</th></tr>
+<tr><td>z-test</td><td>z = (x&#772; &minus; &mu;&#8320;) / (&sigma;/&radic;n)</td><td>&mdash;</td></tr>
+<tr><td>One-sample t</td><td>t = (x&#772; &minus; &mu;&#8320;) / (s/&radic;n)</td><td>n &minus; 1</td></tr>
+<tr><td>Two-sample t (pooled)</td><td>t = (x&#772;&#8321; &minus; x&#772;&#8322;) / &radic;[s<sub>p</sub>&sup2;(1/n&#8321; + 1/n&#8322;)]</td><td>n&#8321; + n&#8322; &minus; 2</td></tr>
+<tr><td>Two-sample t (Welch)</td><td>t = (x&#772;&#8321; &minus; x&#772;&#8322;) / &radic;(s&#8321;&sup2;/n&#8321; + s&#8322;&sup2;/n&#8322;)</td><td>Welch&ndash;Satterthwaite</td></tr>
+<tr><td>Paired t</td><td>t = d&#772; / (s<sub>d</sub>/&radic;n)</td><td>n &minus; 1</td></tr>
+<tr><td>Chi-square</td><td>&chi;&sup2; = &Sigma; (O &minus; E)&sup2; / E</td><td>k &minus; 1 (fit) or (r &minus; 1)(c &minus; 1)</td></tr></table>
+<p>The pooled variance is s<sub>p</sub>&sup2; = [(n&#8321;&minus;1)s&#8321;&sup2; + (n&#8322;&minus;1)s&#8322;&sup2;] / (n&#8321; + n&#8322; &minus; 2). For a chi-square independence test the expected count of a cell is (row total &times; column total) / grand total.</p>
+
+<h2>How to read the p-value</h2>
+<p>The p-value is the probability of getting a result at least as extreme as yours <b>if the null hypothesis H&#8320; were true</b>. Compare it with your significance level &alpha;: if <b>p &le; &alpha;</b> reject H&#8320;; if <b>p &gt; &alpha;</b> fail to reject H&#8320;. A small p-value is evidence against H&#8320;. It is not the probability that H&#8320; is true.</p>
+<div class="ur">اگر p-value، &alpha; کے برابر یا اس سے کم ہو تو null hypothesis رد کریں؛ اگر p-value بڑی ہو تو null hypothesis کو رد نہیں کر سکتے۔</div>
+
+<h2>Worked example (one-sample t-test)</h2>
+<p>A teacher claims the class average is 50. A sample of n = 16 students has x&#772; = 53.5 and s = 8. Test H&#8320;: &mu; = 50 against H&#8321;: &mu; &ne; 50 at &alpha; = 0.05.</p>
+<p>SE = 8/&radic;16 = 2, so t = (53.5 &minus; 50)/2 = <b>1.75</b> with df = 15. The two-tailed p-value is <b>0.1005</b> and the critical value is &plusmn;2.131. Since p &gt; 0.05 (and |t| &lt; 2.131), we fail to reject H&#8320;: the sample does not give enough evidence that the mean differs from 50.</p>
+
+<h2>Worked example (chi-square independence)</h2>
+<p>Observed table [[30, 20], [20, 30]]. Every expected count is 50&times;50/100 = 25, so &chi;&sup2; = 4 &times; (5&sup2;/25) = <b>4.0</b>, df = 1, p = <b>0.0455</b>. At &alpha; = 0.05 we reject H&#8320;: the two variables are associated.</p>
+
+<h2>FAQ</h2>
+<details><summary>What is the difference between a z-test and a t-test?</summary><p>Use a z-test when the population standard deviation is known. Use a t-test when you only have the sample standard deviation, which is the usual case. For large samples the two give almost the same answer.</p></details><details><summary>How does Calvo calculate the p-value?</summary><p>It evaluates the exact cumulative distribution of the normal, Student t or chi-square distribution in your browser, so you get the exact p-value rather than a range from a table.</p></details><details><summary>Should I use a one-tailed or two-tailed test?</summary><p>Use a two-tailed test unless your hypothesis states a direction before you collect data. A right-tailed test checks for an increase, a left-tailed test for a decrease.</p></details><details><summary>When should I use Welch&#x27;s t-test instead of the pooled version?</summary><p>Welch&#x27;s test is the safer default because it does not assume equal variances. Use the pooled test only when you have good reason to believe the two groups have equal variance.</p></details><details><summary>What if an expected count in a chi-square test is below 5?</summary><p>The chi-square approximation becomes unreliable. Calvo warns you when any expected count is under 5; combine categories or collect more data.</p></details><details><summary>Does &#x27;fail to reject&#x27; mean H0 is true?</summary><p>No. It only means the data do not provide enough evidence against H0. Absence of evidence is not evidence of absence.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/anova-calculator.html">ANOVA Calculator</a><a href="/correlation-regression-calculator.html">Correlation &amp; Regression</a><a href="/average-calculator.html">Average Calculator</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/vector-calculator.html">Vector Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/stats-engine.js"></script>
+<script>
+
+var S=CalvoStats;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var $=function(i){return document.getElementById(i)};
+var R=S.R,P=S.fmtP;
+function num(id,name){var v=$(id).value.trim();if(v==='')throw new Error('Enter a value for '+name+'.');var x=Number(v);if(!isFinite(x))throw new Error(name+' must be a number.');return x}
+function list(id,name,min){var r=S.parseList($(id).value);if(r.bad.length)throw new Error(name+': "'+r.bad[0]+'" is not a number.');if(r.data.length<min)throw new Error(name+': enter at least '+min+' values (separate with spaces, commas or new lines).');return r.data}
+function showErr(m){var o=$('out');o.className='result';o.innerHTML='<span class="err">'+esc(m)+'</span>'}
+function card(v,l){return '<div class="stat"><b>'+v+'</b><span>'+l+'</span></div>'}
+
+function sync(){
+ var t=$('test').value,i,pn=document.querySelectorAll('.pn');
+ for(i=0;i<pn.length;i++)pn[i].style.display='none';
+ $('p_'+t).style.display='block';
+ var m=$('mode_'+t);
+ if(m){var mode=m.value,sm=$('p_'+t).querySelector('.sm'),rw=$('p_'+t).querySelector('.rw');sm.style.display=mode==='sm'?'block':'none';rw.style.display=mode==='rw'?'block':'none'}
+ var chi=(t==='cg'||t==='ci');
+ $('alt').style.display=chi?'none':'';
+ var lbl=document.querySelector('label[for="alt"]');lbl.style.display=chi?'none':'';
+}
+var SYM={two:'\u2260',greater:'>',less:'<'};
+function critText(kind,alt,a,df){
+ var c;
+ if(kind==='z'){c=alt==='two'?S.normInv(1-a/2):S.normInv(1-a);return {v:c,txt:(alt==='two'?'\u00b1'+R(c,3):(alt==='greater'?R(c,3):'\u2212'+R(c,3)))}}
+ if(kind==='t'){c=alt==='two'?S.tInv(1-a/2,df):S.tInv(1-a,df);return {v:c,txt:(alt==='two'?'\u00b1'+R(c,3):(alt==='greater'?R(c,3):'\u2212'+R(c,3)))}}
+ c=S.chiInv(1-a,df);return {v:c,txt:R(c,3)}
+}
+function rejects(stat,c,alt){return alt==='two'?Math.abs(stat)>c.v:(alt==='greater'?stat>c.v:stat<-c.v)}
+
+function meanTest(kind,o){ /* o: {xbar,mu,sd,n,alt,a,label} one-sample z or t */
+ var alt=o.alt,a=o.a,se=o.sd/Math.sqrt(o.n),res,df=null,steps=[];
+ if(kind==='z'){res=S.zTestFromStats(o.xbar,o.mu,o.sd,o.n,alt)}else{res=S.tOneSample(o.xbar,o.mu,o.sd,o.n,alt);df=o.n-1}
+ var c=critText(kind,alt,a,df),stat=res.stat;
+ var ci=null,mc=kind==='z'?S.normInv(1-a/2):S.tInv(1-a/2,df);
+ ci=[o.xbar-mc*se,o.xbar+mc*se];
+ steps.push('x\u0304 = '+R(o.xbar)+', \u03bc\u2080 = '+R(o.mu)+', '+(kind==='z'?'\u03c3':'s')+' = '+R(o.sd)+', n = '+o.n);
+ steps.push('SE = '+(kind==='z'?'\u03c3':'s')+'/\u221an = '+R(o.sd)+'/\u221a'+o.n+' = '+R(se));
+ steps.push((kind==='z'?'z':'t')+' = (x\u0304 \u2212 \u03bc\u2080)/SE = ('+R(o.xbar)+' \u2212 '+R(o.mu)+')/'+R(se)+' = '+R(stat));
+ if(df!==null)steps.push('df = n \u2212 1 = '+df);
+ return {kind:kind,stat:stat,df:df,p:res.p,crit:c,reject:rejects(stat,c,alt),
+  h0:'\u03bc = '+R(o.mu),h1:'\u03bc '+SYM[alt]+' '+R(o.mu),ci:ci,ciLabel:'mean',steps:steps,name:kind==='z'?'z':'t',claim:'the population mean '+(alt==='two'?'differs from':(alt==='greater'?'is greater than':'is less than'))+' '+R(o.mu)};
+}
+
+function compute(t,alt,a){
+ var m,o,res,steps;
+ if(t==='z1'||t==='t1'){
+  var k=t==='z1'?'z':'t',xbar,n,sd,mu=num(k==='z'?'z1_mu':'t1_mu','\u03bc\u2080');
+  m=$('mode_'+t).value;
+  if(m==='sm'){xbar=num(t+'_xbar','sample mean');n=num(t+'_n','n');if(n<(k==='z'?1:2)||Math.floor(n)!==n)throw new Error('n must be a whole number'+(k==='t'?' of at least 2.':'.'));if(k==='t'){sd=num('t1_s','sample SD');if(sd<=0)throw new Error('Sample SD must be greater than 0.')}}
+  else{var d=list(t+'_data','Sample',k==='z'?1:2);xbar=S.mean(d);n=d.length;if(k==='t'){sd=S.sd(d);if(sd===0)throw new Error('All values are identical, so the SD is 0 and t is undefined.')}}
+  if(k==='z'){sd=num('z1_sigma','\u03c3');if(sd<=0)throw new Error('\u03c3 must be greater than 0.')}
+  return meanTest(k,{xbar:xbar,mu:mu,sd:sd,n:n,alt:alt,a:a});
+ }
+ if(t==='t2'){
+  var m1,s1,n1,m2,s2,n2;m=$('mode_t2').value;
+  if(m==='sm'){m1=num('t2_m1','mean 1');s1=num('t2_s1','SD 1');n1=num('t2_n1','n 1');m2=num('t2_m2','mean 2');s2=num('t2_s2','SD 2');n2=num('t2_n2','n 2')}
+  else{var d1=list('t2_d1','Group 1',2),d2=list('t2_d2','Group 2',2);m1=S.mean(d1);s1=S.sd(d1);n1=d1.length;m2=S.mean(d2);s2=S.sd(d2);n2=d2.length}
+  if(n1<2||n2<2||Math.floor(n1)!==n1||Math.floor(n2)!==n2)throw new Error('Each group needs a whole-number n of at least 2.');
+  if(s1<0||s2<0||(s1===0&&s2===0))throw new Error('At least one group must have an SD greater than 0.');
+  var pooled=$('t2_var').value==='pooled';
+  res=S.tTwoSample(m1,s1,n1,m2,s2,n2,alt,pooled);
+  var c=critText('t',alt,a,res.df),mc=S.tInv(1-a/2,res.df);
+  steps=['Group 1: x\u0304\u2081 = '+R(m1)+', s\u2081 = '+R(s1)+', n\u2081 = '+n1,'Group 2: x\u0304\u2082 = '+R(m2)+', s\u2082 = '+R(s2)+', n\u2082 = '+n2,'Difference x\u0304\u2081 \u2212 x\u0304\u2082 = '+R(res.diff)];
+  if(pooled){var sp2=((n1-1)*s1*s1+(n2-1)*s2*s2)/(n1+n2-2);steps.push('Pooled variance s\u209a\u00b2 = '+R(sp2)+', SE = \u221a[s\u209a\u00b2(1/n\u2081 + 1/n\u2082)] = '+R(res.se))}
+  else steps.push('SE = \u221a(s\u2081\u00b2/n\u2081 + s\u2082\u00b2/n\u2082) = '+R(res.se)+', Welch df = '+R(res.df,3));
+  steps.push('t = '+R(res.diff)+'/'+R(res.se)+' = '+R(res.stat)+' (df = '+(pooled?res.df:R(res.df,3))+')');
+  return {kind:'t',stat:res.stat,df:res.df,p:res.p,crit:c,reject:rejects(res.stat,c,alt),h0:'\u03bc\u2081 \u2212 \u03bc\u2082 = 0',h1:'\u03bc\u2081 \u2212 \u03bc\u2082 '+SYM[alt]+' 0',ci:[res.diff-mc*res.se,res.diff+mc*res.se],ciLabel:'difference in means',steps:steps,name:'t',claim:'the two population means '+(alt==='two'?'are different':(alt==='greater'?'have \u03bc\u2081 greater than \u03bc\u2082':'have \u03bc\u2081 less than \u03bc\u2082'))};
+ }
+ if(t==='tp'){
+  var A=list('tp_a','Before',2),B=list('tp_b','After',2);
+  if(A.length!==B.length)throw new Error('Both lists must have the same number of values ('+A.length+' vs '+B.length+').');
+  var D=A.map(function(v,i){return v-B[i]}),dm=S.mean(D),ds=S.sd(D),n=D.length;
+  if(ds===0)throw new Error('All differences are identical, so the SD of differences is 0 and t is undefined.');
+  res=S.tOneSample(dm,0,ds,n,alt);var c=critText('t',alt,a,n-1),mc=S.tInv(1-a/2,n-1);
+  steps=['Differences d = before \u2212 after: '+D.map(function(x){return R(x,4)}).join(', '),'d\u0304 = '+R(dm)+', s_d = '+R(ds)+', n = '+n,'SE = s_d/\u221an = '+R(res.se),'t = d\u0304/SE = '+R(res.stat)+' (df = '+(n-1)+')'];
+  return {kind:'t',stat:res.stat,df:n-1,p:res.p,crit:c,reject:rejects(res.stat,c,alt),h0:'\u03bc_d = 0',h1:'\u03bc_d '+SYM[alt]+' 0',ci:[dm-mc*res.se,dm+mc*res.se],ciLabel:'mean difference',steps:steps,name:'t',claim:'the mean difference '+(alt==='two'?'is not zero':(alt==='greater'?'is greater than zero':'is less than zero'))};
+ }
+ if(t==='cg'){
+  var O=list('cg_o','Observed',2),E,note='',tot=S.sum(O),i;
+  O.forEach(function(v){if(v<0)throw new Error('Observed counts cannot be negative.')});
+  if($('cg_e').value.trim()===''){E=O.map(function(){return tot/O.length})}
+  else{E=list('cg_e','Expected',2);if(E.length!==O.length)throw new Error('Observed has '+O.length+' values but expected has '+E.length+'.');
+   var se=S.sum(E);E.forEach(function(v){if(v<=0)throw new Error('Expected values must be greater than 0.')});
+   if(Math.abs(se-tot)>1e-6*Math.max(1,tot)){if(Math.abs(se-1)<1e-6||Math.abs(se-100)<1e-6){E=E.map(function(v){return v/se*tot});note='Expected proportions were converted to counts using the observed total ('+tot+').'}else throw new Error('Observed total ('+R(tot)+') and expected total ('+R(se)+') must be equal. You can also enter proportions that add up to 1 or 100.')}}
+  res=S.chiGoodnessOfFit(O,E);var c=critText('chi',null,a,res.df),terms=[];
+  for(i=0;i<O.length;i++)terms.push('('+R(O[i])+'\u2212'+R(E[i])+')\u00b2/'+R(E[i]));
+  steps=['Observed: '+O.join(', '),'Expected: '+E.map(function(v){return R(v)}).join(', '),'\u03c7\u00b2 = \u03a3(O\u2212E)\u00b2/E = '+terms.join(' + ')+' = '+R(res.stat),'df = k \u2212 1 = '+res.df];
+  if(note)steps.push(note);
+  var low=E.filter(function(v){return v<5}).length;
+  return {kind:'chi',stat:res.stat,df:res.df,p:res.p,crit:c,reject:res.stat>c.v,h0:'the data follow the expected distribution',h1:'the data do not follow the expected distribution',steps:steps,name:'\u03c7\u00b2',claim:'the observed counts do not fit the expected distribution',warn:low?low+' expected count'+(low>1?'s are':' is')+' below 5, so the chi-square approximation may be unreliable.':''};
+ }
+ if(t==='ci'){
+  var lines=$('ci_t').value.split(/\n/).map(function(l){return l.trim()}).filter(function(l){return l!==''});
+  if(lines.length<2)throw new Error('Enter at least 2 rows (one row per line).');
+  var T=lines.map(function(l,ri){var r=S.parseList(l);if(r.bad.length)throw new Error('Row '+(ri+1)+': "'+r.bad[0]+'" is not a number.');return r.data});
+  var cols=T[0].length;if(cols<2)throw new Error('Enter at least 2 columns.');
+  T.forEach(function(r,ri){if(r.length!==cols)throw new Error('Row '+(ri+1)+' has '+r.length+' values but row 1 has '+cols+'.');r.forEach(function(v){if(v<0)throw new Error('Counts cannot be negative.')})});
+  var tot=0;T.forEach(function(r){tot+=S.sum(r)});if(tot<=0)throw new Error('The table total must be greater than 0.');
+  var rs=T.map(S.sum),cs=[],j;for(j=0;j<cols;j++){var s=0;T.forEach(function(r){s+=r[j]});cs.push(s)}
+  if(rs.some(function(v){return v===0})||cs.some(function(v){return v===0}))throw new Error('A row or column total is 0; remove empty rows or columns.');
+  res=S.chiIndependence(T);var c=critText('chi',null,a,res.df);
+  var tb='<div class="tbl-wrap nw"><table class="f"><tr><th>Expected</th>'+cs.map(function(_,j){return '<th>Col '+(j+1)+'</th>'}).join('')+'</tr>'+res.expected.map(function(r,i){return '<tr><td>Row '+(i+1)+'</td>'+r.map(function(v){return '<td>'+R(v,3)+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>';
+  steps=['Row totals: '+rs.join(', ')+'; column totals: '+cs.join(', ')+'; grand total: '+tot,'Expected = (row total \u00d7 column total)/grand total (table below)','\u03c7\u00b2 = \u03a3(O\u2212E)\u00b2/E = '+R(res.stat)+', df = (r\u22121)(c\u22121) = '+res.df,'Cram\u00e9r\u2019s V (effect size) = '+R(res.cramersV,3)];
+  return {kind:'chi',stat:res.stat,df:res.df,p:res.p,crit:c,reject:res.stat>c.v,h0:'the two variables are independent',h1:'the two variables are associated',steps:steps,extra:tb,name:'\u03c7\u00b2',claim:'the two variables are associated',warn:res.minExpected<5?'The smallest expected count is '+R(res.minExpected,2)+' (below 5), so the chi-square approximation may be unreliable.':''};
+ }
+}
+
+function run(){
+ var t=$('test').value,alt=(t==='cg'||t==='ci')?'greater':$('alt').value,a=Number($('alpha').value),r;
+ try{r=compute(t,alt,a)}catch(e){showErr(e.message);return}
+ var out=$('out'),h='';
+ h+='<div class="note">H\u2080: '+esc(r.h0)+' &nbsp;|&nbsp; H\u2081: '+esc(r.h1)+' &nbsp;|&nbsp; \u03b1 = '+a+'</div>';
+ h+='<div class="stats cmp">'+card(R(r.stat,4),'test statistic ('+r.name+')')+(r.df!==null?card(R(r.df,3),'degrees of freedom'):'')+card('<span style="color:var(--brand-orange)">'+P(r.p)+'</span>','p-value')+card(r.crit.txt,'critical value')+'</div>';
+ var dec=r.reject?'<span class="okmark">Reject H\u2080</span>':'<b>Fail to reject H\u2080</b>';
+ h+='<div style="margin-top:12px">'+dec+' &mdash; since p = '+P(r.p)+(r.reject?' \u2264 ':' > ')+a+'. ';
+ h+=r.reject?'At the '+(a*100)+'% significance level there is statistically significant evidence that '+esc(r.claim)+'.':'At the '+(a*100)+'% significance level there is not enough evidence to conclude that '+esc(r.claim)+'.';
+ h+='</div>';
+ if(r.warn)h+='<div class="warnbox">\u26a0 '+esc(r.warn)+'</div>';
+ if(r.ci)h+='<div class="note" style="margin-top:8px">'+Math.round((1-a)*1000)/10+'% confidence interval for the '+r.ciLabel+': ['+R(r.ci[0],4)+', '+R(r.ci[1],4)+']</div>';
+ h+='<div class="blk"><h4>Step by step</h4><div class="steps">'+r.steps.map(function(s,i){return '<div class="stp'+(i===r.steps.length-1?' top':'')+'">'+esc(s)+'</div>'}).join('')+'</div>'+(r.extra||'')+'</div>';
+ out.className='result';out.style.whiteSpace='normal';out.innerHTML=h;
+}
+
+var EX={
+ z1:{mode_z1:'sm',z1_xbar:52.4,z1_n:36,z1_mu:50,z1_sigma:5},
+ t1:{mode_t1:'sm',t1_xbar:53.5,t1_s:8,t1_n:16,t1_mu:50},
+ t2:{mode_t2:'sm',t2_m1:20,t2_s1:4,t2_n1:15,t2_m2:18,t2_s2:5,t2_n2:12,t2_var:'welch'},
+ tp:{tp_a:'72 75 68 80 77 74 79 71',tp_b:'70 71 67 76 75 70 74 69'},
+ cg:{cg_o:'16 18 16 14 12 12',cg_e:''},
+ ci:{ci_t:'30 20 10\n20 25 15'}
+};
+function clearAll(){
+ var els=document.querySelectorAll('.tool input[type=number],.tool textarea'),i;
+ for(i=0;i<els.length;i++)els[i].value='';
+ var o=$('out');o.className='result empty';o.style.whiteSpace='';o.textContent='The test statistic, p-value, critical value and decision will appear here.';
+}
+$('test').onchange=sync;
+['mode_z1','mode_t1','mode_t2'].forEach(function(i){$(i).onchange=sync});
+$('go').onclick=run;
+$('clr').onclick=clearAll;
+$('ex').onclick=function(){clearAll();var t=$('test').value,e=EX[t],k;for(k in e)$(k).value=e[k];sync();run()};
+['alt','alpha'].forEach(function(i){$(i).onchange=function(){if($('out').className==='result')run()}});
+sync();
+
+</script>
+</body>
+</html>

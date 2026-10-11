@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANOVA Calculator — One-Way ANOVA with F-value, p-value &amp; Table | Calvo</title>
+<meta name="description" content="Free one-way ANOVA calculator. Enter 2 to 10 groups and get the ANOVA table, F statistic, exact p-value, critical F, eta squared and Bonferroni pairwise comparisons, with step-by-step working.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/anova-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/anova-calculator.html">
+<meta property="og:title" content="ANOVA Calculator — One-Way ANOVA with F-value, p-value &amp; Table | Calvo">
+<meta property="og:description" content="Free one-way ANOVA calculator. Enter 2 to 10 groups and get the ANOVA table, F statistic, exact p-value, critical F, eta squared and Bonferroni pairwise comparisons, with step-by-step working.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "ANOVA Calculator", "url": "https://calvoscientificcalculator.online/anova-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free one-way ANOVA calculator. Enter 2 to 10 groups and get the ANOVA table, F statistic, exact p-value, critical F, eta squared and Bonferroni pairwise comparisons, with step-by-step working."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What does the F-value in ANOVA mean?", "acceptedAnswer": {"@type": "Answer", "text": "F is the ratio of between-group variance (MSB) to within-group variance (MSW). A large F means the group means are more spread out than random variation within groups would explain."}}, {"@type": "Question", "name": "When do I use ANOVA instead of a t-test?", "acceptedAnswer": {"@type": "Answer", "text": "Use a t-test for two groups. For three or more groups, ANOVA tests all means at once; running many t-tests instead would inflate the chance of a false positive."}}, {"@type": "Question", "name": "What if the ANOVA is significant?", "acceptedAnswer": {"@type": "Answer", "text": "Follow up with pairwise comparisons to find which groups differ. Calvo shows Bonferroni-adjusted pairwise t-tests using the pooled within-group variance."}}, {"@type": "Question", "name": "What is eta squared?", "acceptedAnswer": {"@type": "Answer", "text": "Eta squared is SSB divided by SST. It is the proportion of the total variation explained by the group differences. Around 0.01 is small, 0.06 medium and 0.14 large."}}, {"@type": "Question", "name": "Can groups have different sizes?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. One-way ANOVA works with unequal group sizes. Each group needs at least one value, and at least one group needs two or more so the within-group variance can be estimated."}}, {"@type": "Question", "name": "Does Calvo do two-way ANOVA?", "acceptedAnswer": {"@type": "Answer", "text": "Not yet. This calculator handles one-way ANOVA, which covers most statistics course problems with a single factor."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "ANOVA Calculator", "item": "https://calvoscientificcalculator.online/anova-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>ANOVA <span>Calculator</span></h1>
+<p class="lead">Compare the means of three or more groups. Paste each group's values and Calvo builds the full one-way ANOVA table, F-value, p-value, effect size and pairwise comparisons.</p>
+
+<div class="tool"><h3>One-way ANOVA calculator</h3>
+<div class="row"><label for="alpha">&alpha;</label>
+<select id="alpha"><option value="0.10">0.10</option><option value="0.05" selected>0.05</option><option value="0.025">0.025</option><option value="0.01">0.01</option><option value="0.001">0.001</option></select>
+<span class="note">Enter each group's values separated by spaces, commas or new lines.</span></div>
+<div id="groups"></div>
+<div class="row" style="margin-top:6px"><button class="btn ghost" id="addg">+ Add group</button><button class="btn ghost" id="remg">&minus; Remove last</button></div>
+<div class="row"><button class="btn" id="go">Calculate ANOVA</button><button class="btn ghost" id="ex">Load example</button><button class="btn ghost" id="clr">Clear</button></div>
+<div class="result empty" id="out">The ANOVA table, F-value and p-value will appear here.</div></div>
+
+
+<h2>What one-way ANOVA tests</h2>
+<p>One-way ANOVA (analysis of variance) checks whether <b>three or more group means</b> are all equal. H&#8320;: &mu;&#8321; = &mu;&#8322; = &hellip; = &mu;<sub>k</sub>. H&#8321;: at least one mean is different. It compares the variation <i>between</i> the group means with the variation <i>within</i> the groups; if the between-group variation is much larger than expected from chance, F is large and p is small.</p>
+
+<h2>Formulas</h2>
+<table class="f"><tr><th>Quantity</th><th>Formula</th></tr>
+<tr><td>Grand mean</td><td>x&#772;&#771; = &Sigma;x / N</td></tr>
+<tr><td>Between-group SS</td><td>SSB = &Sigma; n<sub>i</sub>(x&#772;<sub>i</sub> &minus; x&#772;&#771;)&sup2;</td></tr>
+<tr><td>Within-group SS</td><td>SSW = &Sigma;&Sigma; (x<sub>ij</sub> &minus; x&#772;<sub>i</sub>)&sup2;</td></tr>
+<tr><td>Degrees of freedom</td><td>df<sub>B</sub> = k &minus; 1, &nbsp; df<sub>W</sub> = N &minus; k</td></tr>
+<tr><td>Mean squares</td><td>MSB = SSB / df<sub>B</sub>, &nbsp; MSW = SSW / df<sub>W</sub></td></tr>
+<tr><td>F statistic</td><td>F = MSB / MSW</td></tr>
+<tr><td>Effect size</td><td>&eta;&sup2; = SSB / SST</td></tr></table>
+
+<h2>Worked example</h2>
+<p>Three teaching methods A, B, C give these test scores: A = 6, 8, 4, 5, 3, 4; B = 8, 12, 9, 11, 6, 8; C = 13, 9, 11, 8, 7, 12. The group means are 5, 9 and 10, the grand mean is 8 and N = 18.</p>
+<p>SSB = 6(5&minus;8)&sup2; + 6(9&minus;8)&sup2; + 6(10&minus;8)&sup2; = <b>84</b>, SSW = <b>68</b>, df = (2, 15). MSB = 42, MSW = 4.533, so F = <b>9.265</b>. The 5% critical value is F(2, 15) = 3.682 and p = <b>0.0024</b>. Since p &lt; 0.05 we reject H&#8320;: at least one teaching method has a different mean.</p>
+
+<h2>After a significant ANOVA</h2>
+<p>A significant F only says <i>some</i> mean differs. Calvo also lists pairwise comparisons using the pooled MSW with a Bonferroni adjustment, so you can see which pairs differ without inflating the false-positive rate.</p>
+
+<h2>Assumptions</h2>
+<ul><li><b>Independence:</b> observations are independent of each other.</li>
+<li><b>Normality:</b> each group is roughly normal (less important with larger groups).</li>
+<li><b>Equal variances:</b> group SDs are similar. Calvo shows each SD; a largest-to-smallest SD ratio above about 2 is a warning sign.</li></ul>
+
+<h2>FAQ</h2>
+<details><summary>What does the F-value in ANOVA mean?</summary><p>F is the ratio of between-group variance (MSB) to within-group variance (MSW). A large F means the group means are more spread out than random variation within groups would explain.</p></details><details><summary>When do I use ANOVA instead of a t-test?</summary><p>Use a t-test for two groups. For three or more groups, ANOVA tests all means at once; running many t-tests instead would inflate the chance of a false positive.</p></details><details><summary>What if the ANOVA is significant?</summary><p>Follow up with pairwise comparisons to find which groups differ. Calvo shows Bonferroni-adjusted pairwise t-tests using the pooled within-group variance.</p></details><details><summary>What is eta squared?</summary><p>Eta squared is SSB divided by SST. It is the proportion of the total variation explained by the group differences. Around 0.01 is small, 0.06 medium and 0.14 large.</p></details><details><summary>Can groups have different sizes?</summary><p>Yes. One-way ANOVA works with unequal group sizes. Each group needs at least one value, and at least one group needs two or more so the within-group variance can be estimated.</p></details><details><summary>Does Calvo do two-way ANOVA?</summary><p>Not yet. This calculator handles one-way ANOVA, which covers most statistics course problems with a single factor.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/hypothesis-test-calculator.html">Hypothesis Test (t, z, &chi;&sup2;)</a><a href="/correlation-regression-calculator.html">Correlation &amp; Regression</a><a href="/average-calculator.html">Average Calculator</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/vector-calculator.html">Vector Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/stats-engine.js"></script>
+<script>
+
+var S=CalvoStats;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var $=function(i){return document.getElementById(i)};
+var R=S.R,P=S.fmtP;
+function num(id,name){var v=$(id).value.trim();if(v==='')throw new Error('Enter a value for '+name+'.');var x=Number(v);if(!isFinite(x))throw new Error(name+' must be a number.');return x}
+function list(id,name,min){var r=S.parseList($(id).value);if(r.bad.length)throw new Error(name+': "'+r.bad[0]+'" is not a number.');if(r.data.length<min)throw new Error(name+': enter at least '+min+' values (separate with spaces, commas or new lines).');return r.data}
+function showErr(m){var o=$('out');o.className='result';o.innerHTML='<span class="err">'+esc(m)+'</span>'}
+function card(v,l){return '<div class="stat"><b>'+v+'</b><span>'+l+'</span></div>'}
+
+var MAXG=10,MING=2;
+function gHTML(i){return '<div class="blk" style="margin-top:8px;padding-top:8px" data-g="'+i+'"><div class="row" style="margin-bottom:6px"><label>Name</label><input type="text" class="gname" value="Group '+(i+1)+'" style="width:160px;font-family:inherit"></div><textarea class="wide gdata" style="min-height:64px" placeholder="Values for group '+(i+1)+', e.g. 6 8 4 5 3 4"></textarea></div>'}
+function setGroups(n){var c=$('groups'),cur=c.querySelectorAll('[data-g]').length,i;
+ for(i=cur;i<n;i++)c.insertAdjacentHTML('beforeend',gHTML(i));
+ for(i=cur-1;i>=n;i--)c.removeChild(c.querySelectorAll('[data-g]')[i]);}
+function names(){return Array.prototype.map.call(document.querySelectorAll('.gname'),function(e,i){return e.value.trim()||('Group '+(i+1))})}
+function datas(){return Array.prototype.map.call(document.querySelectorAll('.gdata'),function(e){return e.value})}
+
+function run(){
+ var a=Number($('alpha').value),nm=names(),ds=datas(),groups=[],i,r;
+ try{
+  for(i=0;i<ds.length;i++){r=S.parseList(ds[i]);if(r.bad.length)throw new Error(nm[i]+': "'+r.bad[0]+'" is not a number.');if(r.data.length<1)throw new Error(nm[i]+' has no values.');groups.push(r.data)}
+  var N=groups.reduce(function(s,g){return s+g.length},0);
+  if(N-groups.length<1)throw new Error('You need more observations than groups (at least one group with 2 or more values).');
+ }catch(e){showErr(e.message);return}
+ var A=S.anovaOneWay(groups),fc=S.fInv(1-a,A.dfb,A.dfw);
+ if(!isFinite(A.F)){showErr('The within-group variance is 0 (all values inside each group are identical), so F is undefined or infinite.');return}
+ var reject=A.p<=a,h='';
+ h+='<div class="note">H\u2080: all group means are equal &nbsp;|&nbsp; H\u2081: at least one mean differs &nbsp;|&nbsp; \u03b1 = '+a+'</div>';
+ h+='<div class="stats cmp">'+card(R(A.F,4),'F statistic')+card('<span style="color:var(--brand-orange)">'+P(A.p)+'</span>','p-value')+card(R(fc,3),'critical F ('+A.dfb+', '+A.dfw+')')+card(R(A.etaSq,3),'\u03b7\u00b2 effect size')+'</div>';
+ h+='<div style="margin-top:12px">'+(reject?'<span class="okmark">Reject H\u2080</span>':'<b>Fail to reject H\u2080</b>')+' &mdash; since p = '+P(A.p)+(reject?' \u2264 ':' > ')+a+', '+(reject?'there is statistically significant evidence that at least one group mean is different.':'there is not enough evidence that the group means differ.')+'</div>';
+ var sds=A.groups.filter(function(g){return g.n>1}).map(function(g){return g.sd}),mx=Math.max.apply(null,sds),mn=Math.min.apply(null,sds);
+ if(sds.length>1&&mn>0&&mx/mn>2)h+='<div class="warnbox">\u26a0 The largest group SD is more than twice the smallest ('+R(mx,3)+' vs '+R(mn,3)+'). The equal-variance assumption may not hold; interpret F with care.</div>';
+ h+='<div class="blk"><h4>ANOVA table</h4><div class="tbl-wrap nw"><table class="f"><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th></tr>'
+  +'<tr><td>Between groups</td><td>'+R(A.ssb,4)+'</td><td>'+A.dfb+'</td><td>'+R(A.msb,4)+'</td><td>'+R(A.F,4)+'</td><td>'+P(A.p)+'</td></tr>'
+  +'<tr><td>Within groups</td><td>'+R(A.ssw,4)+'</td><td>'+A.dfw+'</td><td>'+R(A.msw,4)+'</td><td></td><td></td></tr>'
+  +'<tr><td>Total</td><td>'+R(A.sst,4)+'</td><td>'+A.dft+'</td><td></td><td></td><td></td></tr></table></div>'
+  +'<div class="note" style="margin-top:6px">\u03b7\u00b2 = '+R(A.etaSq,4)+' &nbsp; \u03c9\u00b2 = '+R(A.omegaSq,4)+'</div></div>';
+ h+='<div class="blk"><h4>Group summary</h4><div class="tbl-wrap nw"><table class="f"><tr><th>Group</th><th>n</th><th>Mean</th><th>SD</th><th>Sum</th></tr>'
+  +A.groups.map(function(g,i){return '<tr><td>'+esc(nm[i])+'</td><td>'+g.n+'</td><td>'+R(g.mean,4)+'</td><td>'+(g.n>1?R(g.sd,4):'\u2014')+'</td><td>'+R(g.sum,4)+'</td></tr>'}).join('')
+  +'<tr><td><b>Overall</b></td><td>'+A.N+'</td><td>'+R(A.grand,4)+'</td><td></td><td></td></tr></table></div></div>';
+ if(A.k>2){var pw=S.pairwiseBonferroni(groups,A);
+  h+='<div class="blk"><h4>Pairwise comparisons (Bonferroni)</h4><div class="tbl-wrap nw"><table class="f"><tr><th>Pair</th><th>Mean diff</th><th>t</th><th>Adjusted p</th><th>Result</th></tr>'
+  +pw.map(function(q){var sig=q.padj<=a;return '<tr><td>'+esc(nm[q.i])+' vs '+esc(nm[q.j])+'</td><td>'+R(q.diff,4)+'</td><td>'+R(q.t,3)+'</td><td>'+P(q.padj)+'</td><td>'+(sig?'<span class="okmark">differ</span>':'not significant')+'</td></tr>'}).join('')
+  +'</table></div><div class="note" style="margin-top:6px">Each p-value is multiplied by the number of comparisons ('+pw.length+'). Pairwise tests use the pooled MSW with df = '+A.dfw+'.</div></div>';}
+ h+='<div class="blk"><h4>Step by step</h4><div class="steps">'
+  +'<div class="stp">k = '+A.k+' groups, N = '+A.N+', grand mean = '+R(A.grand,4)+'</div>'
+  +'<div class="stp">SSB = \u03a3 n\u1d62(x\u0304\u1d62 \u2212 grand mean)\u00b2 = '+R(A.ssb,4)+'; SSW = \u03a3(x \u2212 x\u0304\u1d62)\u00b2 = '+R(A.ssw,4)+'</div>'
+  +'<div class="stp">df between = k \u2212 1 = '+A.dfb+'; df within = N \u2212 k = '+A.dfw+'</div>'
+  +'<div class="stp">MSB = '+R(A.ssb,4)+'/'+A.dfb+' = '+R(A.msb,4)+'; MSW = '+R(A.ssw,4)+'/'+A.dfw+' = '+R(A.msw,4)+'</div>'
+  +'<div class="stp top">F = MSB/MSW = '+R(A.F,4)+', p = '+P(A.p)+'</div></div></div>';
+ var o=$('out');o.className='result';o.style.whiteSpace='normal';o.innerHTML=h;
+}
+function reset(n){setGroups(n);Array.prototype.forEach.call(document.querySelectorAll('.gdata'),function(e){e.value=''});
+ Array.prototype.forEach.call(document.querySelectorAll('.gname'),function(e,i){e.value='Group '+(i+1)});
+ var o=$('out');o.className='result empty';o.style.whiteSpace='';o.textContent='The ANOVA table, F-value and p-value will appear here.'}
+$('addg').onclick=function(){var n=document.querySelectorAll('[data-g]').length;if(n<MAXG)setGroups(n+1)};
+$('remg').onclick=function(){var n=document.querySelectorAll('[data-g]').length;if(n>MING)setGroups(n-1)};
+$('go').onclick=run;
+$('clr').onclick=function(){reset(3)};
+$('ex').onclick=function(){reset(3);var d=['6 8 4 5 3 4','8 12 9 11 6 8','13 9 11 8 7 12'],n=['Method A','Method B','Method C'];
+ Array.prototype.forEach.call(document.querySelectorAll('.gdata'),function(e,i){e.value=d[i]});
+ Array.prototype.forEach.call(document.querySelectorAll('.gname'),function(e,i){e.value=n[i]});run()};
+$('alpha').onchange=function(){if($('out').className==='result')run()};
+setGroups(3);
+
+</script>
+</body>
+</html>

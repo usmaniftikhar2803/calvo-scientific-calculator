@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correlation &amp; Regression Calculator — Pearson r, Line of Best Fit | Calvo</title>
+<meta name="description" content="Free correlation and linear regression calculator. Get Pearson r, Spearman rho, R squared, the line of best fit, slope and intercept with p-values, prediction intervals and a scatter plot.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/correlation-regression-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/correlation-regression-calculator.html">
+<meta property="og:title" content="Correlation &amp; Regression Calculator — Pearson r, Line of Best Fit | Calvo">
+<meta property="og:description" content="Free correlation and linear regression calculator. Get Pearson r, Spearman rho, R squared, the line of best fit, slope and intercept with p-values, prediction intervals and a scatter plot.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Correlation & Regression Calculator", "url": "https://calvoscientificcalculator.online/correlation-regression-calculator.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free correlation and linear regression calculator. Get Pearson r, Spearman rho, R squared, the line of best fit, slope and intercept with p-values, prediction intervals and a scatter plot."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the difference between correlation and regression?", "acceptedAnswer": {"@type": "Answer", "text": "Correlation (r) describes the strength and direction of a linear relationship between two variables. Regression gives an equation to predict one variable from the other."}}, {"@type": "Question", "name": "What does R-squared mean?", "acceptedAnswer": {"@type": "Answer", "text": "R squared is the proportion of the variation in Y that is explained by the regression on X. An R squared of 0.60 means 60 percent of the variation in Y is explained by the line."}}, {"@type": "Question", "name": "What is the difference between Pearson and Spearman correlation?", "acceptedAnswer": {"@type": "Answer", "text": "Pearson measures linear association between the raw values. Spearman works on ranks, so it captures any consistently increasing or decreasing relationship and is less affected by outliers."}}, {"@type": "Question", "name": "Does a high correlation mean X causes Y?", "acceptedAnswer": {"@type": "Answer", "text": "No. Correlation shows association only. A third variable or coincidence can produce a strong correlation without any causal link."}}, {"@type": "Question", "name": "How do I interpret the p-value of the slope?", "acceptedAnswer": {"@type": "Answer", "text": "It tests H0: slope = 0, meaning X has no linear effect on Y. A p-value at or below your significance level (usually 0.05) suggests a real linear relationship."}}, {"@type": "Question", "name": "Is it safe to predict outside my X range?", "acceptedAnswer": {"@type": "Answer", "text": "Predicting far outside the X values you observed (extrapolation) is risky because the relationship may not stay linear. Calvo warns you when you do this."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Correlation & Regression Calculator", "item": "https://calvoscientificcalculator.online/correlation-regression-calculator.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Correlation &amp; Regression <span>Calculator</span></h1>
+<p class="lead">Enter paired X and Y values. Calvo calculates Pearson and Spearman correlation, the least-squares regression line with p-values, an ANOVA table, predictions and a scatter plot with the line of best fit.</p>
+
+<div class="tool"><h3>Correlation &amp; regression calculator</h3>
+<div class="row"><label>X values</label><span class="note">independent variable (predictor)</span></div>
+<textarea class="wide" id="xs" style="min-height:70px" placeholder="1 2 3 4 5"></textarea>
+<div class="row" style="margin-top:8px"><label>Y values</label><span class="note">dependent variable (response), same count and order as X</span></div>
+<textarea class="wide" id="ys" style="min-height:70px" placeholder="2 4 5 4 5"></textarea>
+<div class="row" style="margin-top:8px"><label for="x0">Predict Y at X =</label><input type="number" step="any" id="x0" inputmode="decimal" placeholder="optional"></div>
+<div class="row"><button class="btn" id="go">Calculate</button><button class="btn ghost" id="ex">Load example</button><button class="btn ghost" id="clr">Clear</button></div>
+<div class="result empty" id="out">Correlation (r), the regression line, p-values and a scatter plot will appear here.</div></div>
+
+
+<h2>Correlation vs regression</h2>
+<p><b>Correlation</b> measures how strongly two variables move together (r from &minus;1 to +1). <b>Regression</b> goes further: it fits the line &ycirc; = a + bx that predicts Y from X. Correlation does not prove that X causes Y.</p>
+
+<h2>Formulas</h2>
+<table class="f"><tr><th>Quantity</th><th>Formula</th></tr>
+<tr><td>Pearson r</td><td>r = S<sub>xy</sub> / &radic;(S<sub>xx</sub> S<sub>yy</sub>), where S<sub>xy</sub> = &Sigma;(x &minus; x&#772;)(y &minus; &ycirc;&#772;)</td></tr>
+<tr><td>Slope</td><td>b = S<sub>xy</sub> / S<sub>xx</sub></td></tr>
+<tr><td>Intercept</td><td>a = y&#772; &minus; b x&#772;</td></tr>
+<tr><td>Coefficient of determination</td><td>R&sup2; = r&sup2; = SSR / SST</td></tr>
+<tr><td>Test for r</td><td>t = r&radic;(n &minus; 2) / &radic;(1 &minus; r&sup2;), df = n &minus; 2</td></tr>
+<tr><td>Residual standard error</td><td>s = &radic;(SSE / (n &minus; 2))</td></tr>
+<tr><td>Spearman &rho;</td><td>Pearson r computed on the ranks of X and Y</td></tr></table>
+
+<h2>Worked example</h2>
+<p>X = 1, 2, 3, 4, 5 and Y = 2, 4, 5, 4, 5. Here x&#772; = 3, y&#772; = 4, S<sub>xy</sub> = 6, S<sub>xx</sub> = 10, S<sub>yy</sub> = 6.</p>
+<p>Slope b = 6/10 = <b>0.6</b>, intercept a = 4 &minus; 0.6&times;3 = <b>2.2</b>, so &ycirc; = 2.2 + 0.6x. The correlation is r = <b>0.7746</b>, R&sup2; = 0.60, and the p-value for the slope is <b>0.1240</b>. With only 5 points, r = 0.77 is not statistically significant at &alpha; = 0.05.</p>
+
+<h2>How strong is r?</h2>
+<table class="f"><tr><th>|r|</th><th>Strength</th></tr>
+<tr><td>0.00 &ndash; 0.19</td><td>Very weak</td></tr><tr><td>0.20 &ndash; 0.39</td><td>Weak</td></tr><tr><td>0.40 &ndash; 0.59</td><td>Moderate</td></tr><tr><td>0.60 &ndash; 0.79</td><td>Strong</td></tr><tr><td>0.80 &ndash; 1.00</td><td>Very strong</td></tr></table>
+<p>These are rules of thumb; what counts as strong depends on your field. Always look at the scatter plot as well: outliers and curved patterns can distort r.</p>
+
+<h2>FAQ</h2>
+<details><summary>What is the difference between correlation and regression?</summary><p>Correlation (r) describes the strength and direction of a linear relationship between two variables. Regression gives an equation to predict one variable from the other.</p></details><details><summary>What does R-squared mean?</summary><p>R squared is the proportion of the variation in Y that is explained by the regression on X. An R squared of 0.60 means 60 percent of the variation in Y is explained by the line.</p></details><details><summary>What is the difference between Pearson and Spearman correlation?</summary><p>Pearson measures linear association between the raw values. Spearman works on ranks, so it captures any consistently increasing or decreasing relationship and is less affected by outliers.</p></details><details><summary>Does a high correlation mean X causes Y?</summary><p>No. Correlation shows association only. A third variable or coincidence can produce a strong correlation without any causal link.</p></details><details><summary>How do I interpret the p-value of the slope?</summary><p>It tests H0: slope = 0, meaning X has no linear effect on Y. A p-value at or below your significance level (usually 0.05) suggests a real linear relationship.</p></details><details><summary>Is it safe to predict outside my X range?</summary><p>Predicting far outside the X values you observed (extrapolation) is risky because the relationship may not stay linear. Calvo warns you when you do this.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/hypothesis-test-calculator.html">Hypothesis Test (t, z, &chi;&sup2;)</a><a href="/anova-calculator.html">ANOVA Calculator</a><a href="/average-calculator.html">Average Calculator</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/fraction-calculator.html">Fraction Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/vector-calculator.html">Vector Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/stats-engine.js"></script>
+<script>
+
+var S=CalvoStats;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var $=function(i){return document.getElementById(i)};
+var R=S.R,P=S.fmtP;
+function num(id,name){var v=$(id).value.trim();if(v==='')throw new Error('Enter a value for '+name+'.');var x=Number(v);if(!isFinite(x))throw new Error(name+' must be a number.');return x}
+function list(id,name,min){var r=S.parseList($(id).value);if(r.bad.length)throw new Error(name+': "'+r.bad[0]+'" is not a number.');if(r.data.length<min)throw new Error(name+': enter at least '+min+' values (separate with spaces, commas or new lines).');return r.data}
+function showErr(m){var o=$('out');o.className='result';o.innerHTML='<span class="err">'+esc(m)+'</span>'}
+function card(v,l){return '<div class="stat"><b>'+v+'</b><span>'+l+'</span></div>'}
+
+function niceStep(raw){var e=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)),f=raw/e;return (f<1.5?1:f<3?2:f<7?5:10)*e}
+function ticks(lo,hi,cnt){var st=niceStep((hi-lo)/cnt),t=[],v=Math.ceil(lo/st-1e-9)*st;for(;v<=hi+st*1e-9;v+=st)t.push(Math.round(v/st)*st);return t}
+function tk(v){return String(Math.round(v*1e6)/1e6)}
+function plot(x,y,reg){
+ var W=560,H=330,L=54,Rr=16,T=14,B=40,xmin=Math.min.apply(null,x),xmax=Math.max.apply(null,x),ymin=Math.min.apply(null,y),ymax=Math.max.apply(null,y);
+ var px=(xmax-xmin||1)*0.06,py=(ymax-ymin||1)*0.08;xmin-=px;xmax+=px;ymin-=py;ymax+=py;
+ function X(v){return L+(v-xmin)/(xmax-xmin)*(W-L-Rr)}
+ function Y(v){return H-B-(v-ymin)/(ymax-ymin)*(H-B-T)}
+ var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Scatter plot with regression line" style="width:100%;height:auto;max-width:560px">';
+ ticks(xmin,xmax,6).forEach(function(v){s+='<line x1="'+X(v)+'" y1="'+T+'" x2="'+X(v)+'" y2="'+(H-B)+'" stroke="#2a2a30"/><text x="'+X(v)+'" y="'+(H-B+16)+'" font-size="10" text-anchor="middle" fill="#9c968a">'+tk(v)+'</text>'});
+ ticks(ymin,ymax,5).forEach(function(v){s+='<line x1="'+L+'" y1="'+Y(v)+'" x2="'+(W-Rr)+'" y2="'+Y(v)+'" stroke="#2a2a30"/><text x="'+(L-6)+'" y="'+(Y(v)+3)+'" font-size="10" text-anchor="end" fill="#9c968a">'+tk(v)+'</text>'});
+ s+='<rect x="'+L+'" y="'+T+'" width="'+(W-L-Rr)+'" height="'+(H-B-T)+'" fill="none" stroke="#9c968a"/>';
+ var x1=xmin,x2=xmax,y1=reg.intercept+reg.slope*x1,y2=reg.intercept+reg.slope*x2;
+ s+='<svg x="'+L+'" y="'+T+'" width="'+(W-L-Rr)+'" height="'+(H-B-T)+'" viewBox="'+L+' '+T+' '+(W-L-Rr)+' '+(H-B-T)+'"><line x1="'+X(x1)+'" y1="'+Y(y1)+'" x2="'+X(x2)+'" y2="'+Y(y2)+'" stroke="#ff8a1f" stroke-width="2"/></svg>';
+ x.forEach(function(v,i){s+='<circle cx="'+X(v)+'" cy="'+Y(y[i])+'" r="4.5" fill="#e8e5db" stroke="#0d0d0f" stroke-width="1"/>'});
+ s+='<text x="'+((L+W-Rr)/2)+'" y="'+(H-6)+'" font-size="11" text-anchor="middle" fill="#e8e5db">X</text><text x="14" y="'+((T+H-B)/2)+'" font-size="11" text-anchor="middle" fill="#e8e5db" transform="rotate(-90 14 '+((T+H-B)/2)+')">Y</text></svg>';
+ return s;
+}
+function strength(r){var a=Math.abs(r);return (a<0.2?'very weak':a<0.4?'weak':a<0.6?'moderate':a<0.8?'strong':'very strong')+' '+(r>0?'positive':r<0?'negative':'')}
+function sgn(v){return v<0?'\u2212 '+R(Math.abs(v),4):'+ '+R(v,4)}
+
+function run(){
+ var x,y,x0=null;
+ try{
+  x=list('xs','X',3);y=list('ys','Y',3);
+  if(x.length!==y.length)throw new Error('X has '+x.length+' values but Y has '+y.length+'. They must be the same length.');
+  if(S.variance(x)===0)throw new Error('All X values are identical, so no line can be fitted.');
+  if(S.variance(y)===0)throw new Error('All Y values are identical, so the correlation is undefined.');
+  if($('x0').value.trim()!==''){x0=num('x0','the prediction X')}
+ }catch(e){showErr(e.message);return}
+ var n=x.length,P1=S.pearson(x,y),g=S.linearRegression(x,y),sp=S.spearman(x,y),ci=S.fisherCI(P1.r,n,0.95),h='';
+ h+='<div class="stats cmp">'+card(R(P1.r,4),'Pearson r')+card(R(P1.r2,4),'R\u00b2')+card('<span style="color:var(--brand-orange)">'+P(P1.p)+'</span>','p-value (r \u2260 0)')+card(n,'n pairs')+'</div>';
+ h+='<div style="margin-top:12px">The relationship is <b>'+strength(P1.r)+'</b> (r = '+R(P1.r,4)+'). '+(P1.p<=0.05?'It is statistically significant at the 5% level.':'It is <b>not</b> statistically significant at the 5% level.')+'</div>';
+ if(n<=5)h+='<div class="warnbox">\u26a0 With only '+n+' points the result is unstable; a few more observations make r much more reliable.</div>';
+ if(ci)h+='<div class="note" style="margin-top:6px">95% confidence interval for r (Fisher z): ['+R(ci[0],4)+', '+R(ci[1],4)+']</div>';
+ h+='<div class="blk"><h4>Regression line</h4><div class="ans">\u0177 = '+R(g.intercept,4)+' '+sgn(g.slope)+'x</div>';
+ h+='<div class="tbl-wrap nw"><table class="f"><tr><th></th><th>Estimate</th><th>Std. error</th><th>t</th><th>p</th></tr>'
+  +'<tr><td>Intercept (a)</td><td>'+R(g.intercept,4)+'</td><td>'+R(g.seInt,4)+'</td><td>'+R(g.tInt,3)+'</td><td>'+P(g.pInt)+'</td></tr>'
+  +'<tr><td>Slope (b)</td><td>'+R(g.slope,4)+'</td><td>'+R(g.seSlope,4)+'</td><td>'+R(g.tSlope,3)+'</td><td>'+P(g.pSlope)+'</td></tr></table></div>';
+ h+='<div class="note">Residual standard error s = '+R(g.se,4)+' on '+g.df+' df &nbsp;|&nbsp; Adjusted R\u00b2 = '+R(g.adjR2,4)+'</div>';
+ h+='<div class="note" style="margin-top:6px">Interpretation: each 1-unit increase in X changes the predicted Y by '+R(g.slope,4)+'.</div></div>';
+ h+='<div class="blk"><h4>ANOVA for regression</h4><div class="tbl-wrap nw"><table class="f"><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th></tr>'
+  +'<tr><td>Regression</td><td>'+R(g.ssr,4)+'</td><td>1</td><td>'+R(g.ssr,4)+'</td><td>'+R(g.F,4)+'</td><td>'+P(g.pF)+'</td></tr>'
+  +'<tr><td>Residual</td><td>'+R(g.sse,4)+'</td><td>'+g.df+'</td><td>'+R(g.mse,4)+'</td><td></td><td></td></tr>'
+  +'<tr><td>Total</td><td>'+R(g.sst,4)+'</td><td>'+(n-1)+'</td><td></td><td></td><td></td></tr></table></div></div>';
+ h+='<div class="blk"><h4>Spearman rank correlation</h4><div class="note">\u03c1 = <b>'+R(sp.r,4)+'</b>, approximate p-value = '+P(sp.p)+' (t-approximation on the ranks; tied values get average ranks).</div></div>';
+ if(x0!==null){var pr=S.predict(g,x0),xmin=Math.min.apply(null,x),xmax=Math.max.apply(null,x);
+  h+='<div class="blk"><h4>Prediction at X = '+R(x0,6)+'</h4><div class="ans">\u0177 = '+R(pr.yhat,4)+'</div><div class="note">95% confidence interval for the mean of Y: ['+R(pr.ci[0],4)+', '+R(pr.ci[1],4)+']<br>95% prediction interval for a new Y: ['+R(pr.pi[0],4)+', '+R(pr.pi[1],4)+']</div>'+((x0<xmin||x0>xmax)?'<div class="warnbox">\u26a0 X = '+R(x0,6)+' is outside your data range ('+R(xmin,4)+' to '+R(xmax,4)+'). Extrapolation can be unreliable.</div>':'')+'</div>';}
+ h+='<div class="blk"><h4>Scatter plot</h4><div class="uc-box" style="text-align:center">'+plot(x,y,g)+'</div></div>';
+ h+='<div class="blk"><h4>Step by step</h4><div class="steps">'
+  +'<div class="stp">n = '+n+', x\u0304 = '+R(g.mx,4)+', \u0233 = '+R(g.my,4)+'</div>'
+  +'<div class="stp">S\u2093\u2093 = \u03a3(x\u2212x\u0304)\u00b2 = '+R(P1.sxx,4)+', S\u1d67\u1d67 = \u03a3(y\u2212\u0233)\u00b2 = '+R(P1.syy,4)+', S\u2093\u1d67 = \u03a3(x\u2212x\u0304)(y\u2212\u0233) = '+R(P1.sxy,4)+'</div>'
+  +'<div class="stp">r = S\u2093\u1d67/\u221a(S\u2093\u2093S\u1d67\u1d67) = '+R(P1.r,4)+'</div>'
+  +'<div class="stp">b = S\u2093\u1d67/S\u2093\u2093 = '+R(g.slope,4)+', a = \u0233 \u2212 b\u00b7x\u0304 = '+R(g.intercept,4)+'</div>'
+  +'<div class="stp top">t = r\u221a(n\u22122)/\u221a(1\u2212r\u00b2) = '+R(P1.t,3)+' with df = '+P1.df+', p = '+P(P1.p)+'</div></div></div>';
+ h+='<details><summary>Fitted values and residuals</summary><div class="tbl-wrap nw"><table class="f"><tr><th>#</th><th>x</th><th>y</th><th>\u0177</th><th>residual</th></tr>'+x.map(function(v,i){return '<tr><td>'+(i+1)+'</td><td>'+R(v,4)+'</td><td>'+R(y[i],4)+'</td><td>'+R(g.fitted[i],4)+'</td><td>'+R(g.residuals[i],4)+'</td></tr>'}).join('')+'</table></div></details>';
+ var o=$('out');o.className='result';o.style.whiteSpace='normal';o.innerHTML=h;
+}
+$('go').onclick=run;
+$('clr').onclick=function(){$('xs').value='';$('ys').value='';$('x0').value='';var o=$('out');o.className='result empty';o.style.whiteSpace='';o.textContent='Correlation (r), the regression line, p-values and a scatter plot will appear here.'};
+$('ex').onclick=function(){$('xs').value='1 2 3 4 5 6 7 8';$('ys').value='2 4 5 4 5 7 8 9';$('x0').value='9';run()};
+
+</script>
+</body>
+</html>
