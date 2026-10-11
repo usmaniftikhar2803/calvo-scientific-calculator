@@ -707,6 +707,7 @@ const HOME_TOOL_GROUPS = [
     { href: 'merge-split-pdf.html', gl: 'PDF+',  t: 'Merge & Split PDF', s: 'Join, extract, delete pages' },
     { href: 'title-page-generator.html', gl: 'Aa', t: 'Title Page Generator', s: 'Assignment cover page' },
     { href: 'cv-builder.html', gl: 'CV', t: 'CV / Resume Builder', s: 'Make a PDF resume' },
+    { href: 'notes-todo.html', gl: '\u2713', t: 'Notepad', s: 'Simple notes, works offline' },
   ]},
 ];
 
