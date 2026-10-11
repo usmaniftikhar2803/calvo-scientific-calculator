@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v81';
+const CACHE_VERSION = 'calvo-cache-v82';
 
 const CORE_ASSETS = [
   './',
@@ -92,6 +92,26 @@ const CORE_ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
+  './10th-class-chemistry-formulas.html',
+  './1st-year-math-formulas.html',
+  './9th-10th-class-biology-formulas.html',
+  './9th-class-physics-formulas.html',
+  './10th-class-physics-formulas.html',
+  './9th-class-math-formulas.html',
+  './fsc-computer-science-formulas.html',
+  './9th-class-chemistry-formulas.html',
+  './fsc-biology-formulas.html',
+  './2nd-year-math-formulas.html',
+  './2nd-year-physics-formulas.html',
+  './1st-year-physics-formulas.html',
+  './9th-10th-class-computer-science-formulas.html',
+  './fsc-chemistry-formulas.html',
+  './10th-class-math-formulas.html',
+  './contact.html',
+  './terms.html',
+  './vendor/pdf.min.js',
+  './vendor/pdf.worker.min.js',
+  './vendor/pdf-lib.min.js',
 ];
 
 self.addEventListener('install', (event) => {
