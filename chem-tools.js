@@ -21,10 +21,39 @@
       .replace(/\s+/g, '');
   }
 
-  /* Parse one formula into {element: count}. Supports (), [], and hydrate parts joined by "." */
-  function parseFormula(raw) {
-    var f = clean(raw);
+  /* ---------- Ions and charges: Fe^3+, SO4^2-, Cl^-, e^- ---------- */
+  var SUPD = { '\u2070': '0', '\u00b9': '1', '\u00b2': '2', '\u00b3': '3', '\u2074': '4', '\u2075': '5', '\u2076': '6', '\u2077': '7', '\u2078': '8', '\u2079': '9' };
+  function normalizeIons(s) {
+    return String(s).replace(/\u2212/g, '-')
+      .replace(/([\u2070\u00b9\u00b2\u00b3\u2074-\u2079]*)([\u207a\u207b])/g, function (_, d, sg) {
+        return '^' + d.replace(/./g, function (c) { return SUPD[c]; }) + (sg === '\u207a' ? '+' : '-');
+      })
+      .replace(/\^([+-])(\d+)/g, '^$2$1')
+      .replace(/(^|[\s+])(\d*)e-(?=\s|$|[+=]|->)/g, '$1$2e^-');
+  }
+  function maskCharges(s) { return s.replace(/\^(\d*)([+-])/g, function (_, d, sg) { return '\u0001' + d + (sg === '+' ? '\u0002' : '\u0003'); }); }
+  function unmask(s) { return s.replace(/\u0001(\d*)([\u0002\u0003])/g, function (_, d, sg) { return '^' + d + (sg === '\u0002' ? '+' : '-'); }); }
+
+  /* Parse one species (neutral formula, ion or electron) into {counts, charge}. */
+  function parseSpecies(raw) {
+    var f = clean(normalizeIons(raw));
     if (!f) throw new Error('Enter a chemical formula.');
+    var em = f.match(/^e\^(\d*)-$/);
+    if (em) return { counts: {}, charge: -(em[1] ? parseInt(em[1], 10) : 1), electron: true };
+    var charge = 0, m = f.match(/^(.*?)\^(\d*)([+-])$/);
+    if (m) { f = m[1]; var k = m[2] ? parseInt(m[2], 10) : 1; charge = m[3] === '+' ? k : -k; }
+    if (f.indexOf('^') >= 0) throw new Error('Write the charge at the end of the ion, like Fe^3+ or SO4^2-.');
+    if (!f) throw new Error('Write the ion together with its element, like Fe^3+.');
+    return { counts: parseNeutral(f, raw), charge: charge };
+  }
+
+  /* Parse one formula into {element: count}. Supports (), [], and hydrate parts joined by "." (a charge is ignored) */
+  function parseFormula(raw) {
+    var c = parseSpecies(raw).counts;
+    if (!Object.keys(c).length) throw new Error('No elements found in "' + raw + '".');
+    return c;
+  }
+  function parseNeutral(f, raw) {
     var parts = f.split('.'), total = {};
     parts.forEach(function (part) {
       var mult = 1, m = part.match(/^(\d+)(.*)$/);
@@ -61,6 +90,7 @@
         } else if (/[a-z]/.test(ch)) {
           throw new Error('Unexpected lowercase "' + ch + '" in "' + s + '". Write element symbols with a capital first letter, e.g. NaCl not nacl.');
         } else {
+          if (ch === '+' || ch === '-' || ch === '^') throw new Error('Write an ion charge after ^ at the end, like Fe^3+, SO4^2- or Cl^-.');
           throw new Error('Unexpected character "' + ch + '" in "' + s + '".');
         }
       }
@@ -86,19 +116,32 @@
     return { total: total, rows: rows, counts: counts };
   }
 
-  /* ---------- Equation balancer ---------- */
+  /* ---------- Equation balancer (atoms + charge) ---------- */
   function splitCompounds(side) {
     return side.split('+').map(function (c) {
-      return clean(c).replace(/^\d+/, '').replace(/\((s|l|g|aq)\)/gi, '').replace(/\u2193|\u2191/g, '');
+      return unmask(clean(c).replace(/^\d+/, '').replace(/\((s|l|g|aq)\)/gi, '').replace(/\u2193|\u2191/g, ''));
     }).filter(function (c) { return c.length; });
+  }
+  var VARS = 'abcdfghkmnpqrstuvwxyz';
+  function fracStr(f) { return f.d === 1 ? String(f.n) : f.n + '/' + f.d; }
+  function termsStr(list) {
+    if (!list.length) return '0';
+    return list.map(function (x, i) {
+      var a = Math.abs(x.k), body = (a === 1 ? '' : a) + x.v;
+      return i === 0 ? (x.k < 0 ? '\u2212' : '') + body : (x.k < 0 ? ' \u2212 ' : ' + ') + body;
+    }).join('');
   }
 
   function balance(eq) {
-    var sides = String(eq).split(/->|\u2192|\u27f6|=>|<=>|\u21cc|=/);
+    eq = maskCharges(normalizeIons(eq));
+    var sides = eq.split(/->|\u2192|\u27f6|=>|<=>|\u21cc|=/);
     if (sides.length !== 2 || !sides[0].trim() || !sides[1].trim()) throw new Error('Write the equation with an arrow or equals sign, e.g. H2 + O2 = H2O.');
     var left = splitCompounds(sides[0]), right = splitCompounds(sides[1]);
     if (!left.length || !right.length) throw new Error('Add at least one compound on each side.');
-    var all = left.concat(right), parsed = all.map(parseFormula);
+    var all = left.concat(right), sp = all.map(parseSpecies);
+    if (all.length > VARS.length) throw new Error('Too many compounds. The balancer accepts up to ' + VARS.length + ' in one equation.');
+    var parsed = sp.map(function (x) { return x.counts; }), charges = sp.map(function (x) { return x.charge; });
+    var ionic = charges.some(function (c) { return c !== 0; });
     var elements = [];
     parsed.forEach(function (p) { Object.keys(p).forEach(function (e) { if (elements.indexOf(e) < 0) elements.push(e); }); });
     var lset = {}, rset = {};
@@ -106,8 +149,9 @@
     elements.forEach(function (e) {
       if (!lset[e] || !rset[e]) throw new Error('Cannot balance: ' + e + ' (' + NAME[e] + ') appears only on one side of the equation.');
     });
-    var n = all.length;
-    var M = elements.map(function (e) { return parsed.map(function (p, c) { return new Frac((p[e] || 0) * (c < left.length ? 1 : -1)); }); });
+    var n = all.length, nl = left.length;
+    var M = elements.map(function (e) { return parsed.map(function (p, c) { return new Frac((p[e] || 0) * (c < nl ? 1 : -1)); }); });
+    if (ionic) M.push(charges.map(function (q, c) { return new Frac(q * (c < nl ? 1 : -1)); }));
     // Reduced row echelon form
     var piv = [], r = 0;
     for (var c = 0; c < n && r < M.length; c++) {
@@ -125,7 +169,7 @@
     }
     var free = [];
     for (var cc = 0; cc < n; cc++) if (piv.indexOf(cc) < 0) free.push(cc);
-    if (free.length === 0) throw new Error('This equation cannot be balanced with positive whole numbers. Check the formulas for typing mistakes.');
+    if (free.length === 0) throw new Error('This equation cannot be balanced with positive whole numbers. Check the formulas' + (ionic ? ' and the charges' : '') + ' for typing mistakes.');
     if (free.length > 1) throw new Error('This equation has more than one valid way to balance (the reaction may be a combination of separate reactions). Split it into single reactions and balance each one.');
     var sol = new Array(n), fcol = free[0];
     sol[fcol] = new Frac(1);
@@ -135,25 +179,53 @@
     var g = coeffs.reduce(function (a, b) { return gcd(a, b); }, 0);
     coeffs = coeffs.map(function (x) { return x / g; });
     if (coeffs.some(function (x) { return x < 0; })) coeffs = coeffs.map(function (x) { return -x; });
-    if (coeffs.some(function (x) { return x <= 0; })) throw new Error('This equation cannot be balanced with positive whole numbers. Check the formulas for typing mistakes.');
-    // Verify
+    if (coeffs.some(function (x) { return x <= 0; })) throw new Error('This equation cannot be balanced with positive whole numbers. Check the formulas' + (ionic ? ' and the charges' : '') + ' for typing mistakes.');
+    // Verify (atoms, then charge)
     var table = elements.map(function (e) {
       var L = 0, R = 0;
-      parsed.forEach(function (pp, i) { var a = (pp[e] || 0) * coeffs[i]; if (i < left.length) L += a; else R += a; });
+      parsed.forEach(function (pp, i) { var a = (pp[e] || 0) * coeffs[i]; if (i < nl) L += a; else R += a; });
       return { el: e, left: L, right: R };
     });
+    if (ionic) {
+      var QL = 0, QR = 0;
+      charges.forEach(function (q, i) { if (i < nl) QL += q * coeffs[i]; else QR += q * coeffs[i]; });
+      table.push({ el: 'Charge', left: QL, right: QR, charge: true });
+    }
     table.forEach(function (t) { if (t.left !== t.right) throw new Error('Internal check failed for ' + t.el + '. Please report this equation.'); });
-    return { left: left, right: right, coeffs: coeffs, table: table };
+
+    // Data for the step-by-step explanation
+    var vars = all.map(function (_, i) { return VARS.charAt(i); });
+    function sideTerms(vals, from, to) { var t = []; for (var k = from; k < to; k++) if (vals[k]) t.push({ k: vals[k], v: vars[k] }); return t; }
+    var eqs = elements.map(function (e) {
+      var vals = parsed.map(function (pp) { return pp[e] || 0; });
+      return { label: e, text: termsStr(sideTerms(vals, 0, nl)) + ' = ' + termsStr(sideTerms(vals, nl, n)) };
+    });
+    if (ionic) eqs.push({ label: 'Charge', text: termsStr(sideTerms(charges, 0, nl)) + ' = ' + termsStr(sideTerms(charges, nl, n)) });
+    var initial = elements.map(function (e) {
+      var L = 0, R = 0;
+      parsed.forEach(function (pp, i) { if (i < nl) L += pp[e] || 0; else R += pp[e] || 0; });
+      return { el: e, left: L, right: R };
+    });
+    if (ionic) {
+      var IL = 0, IR = 0;
+      charges.forEach(function (q, i) { if (i < nl) IL += q; else IR += q; });
+      initial.push({ el: 'Charge', left: IL, right: IR, charge: true });
+    }
+    var explain = { vars: vars, eqs: eqs, initial: initial, free: vars[fcol], values: sol.map(fracStr), den: den, scale: g };
+    return { left: left, right: right, coeffs: coeffs, table: table, ionic: ionic, explain: explain };
   }
 
   function sub(f) { return String(f).replace(/(\d+)/g, '<sub>$1</sub>').replace(/\./g, '&middot;').replace(/<sub>(\d+)<\/sub>(?=[A-Z(\[])/g, '<sub>$1</sub>'); }
   function fmtFormula(f) {
-    // subscripts for digits that follow a letter or bracket; leading digits (hydrate multipliers) stay normal
-    return String(f).replace(/\./g, '&middot;').replace(/([A-Za-z\)\]])(\d+)/g, '$1<sub>$2</sub>');
+    // subscripts for digits that follow a letter or bracket; charges become superscripts; leading digits (hydrate multipliers) stay normal
+    f = String(f);
+    var ch = '', m = f.match(/^(.*)\^(\d*[+-])$/);
+    if (m) { f = m[1]; ch = '<sup>' + m[2].replace('-', '\u2212') + '</sup>'; }
+    return f.replace(/\./g, '&middot;').replace(/([A-Za-z\)\]])(\d+)/g, '$1<sub>$2</sub>') + ch;
   }
 
   window.CalvoChem = {
     mass: MASS, names: NAME, AVOGADRO: AVOGADRO,
-    parseFormula: parseFormula, molarMass: molarMass, balance: balance, fmtFormula: fmtFormula
+    parseFormula: parseFormula, parseSpecies: parseSpecies, molarMass: molarMass, balance: balance, fmtFormula: fmtFormula
   };
 })();
