@@ -9706,3 +9706,26 @@ setTimeout(() => {
     document.addEventListener('touchcancel', () => { pulling = false; hideIndicator(); }, { passive: true });
   } catch (err) { /* pull-to-refresh is optional */ }
 })();
+
+/* ---------- 3D tilt: cards lean toward the mouse on desktop (touch/reduced-motion untouched) ---------- */
+(function () {
+  if (!window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const SEL = '.home-big, .subject-tile';
+  document.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const el = e.target.closest && e.target.closest(SEL);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    el.style.setProperty('--ry', (x * 9).toFixed(2) + 'deg');
+    el.style.setProperty('--rx', (-y * 9).toFixed(2) + 'deg');
+  }, { passive: true });
+  document.addEventListener('pointerout', (e) => {
+    const el = e.target.closest && e.target.closest(SEL);
+    if (!el || el.contains(e.relatedTarget)) return;
+    el.style.removeProperty('--rx');
+    el.style.removeProperty('--ry');
+  }, { passive: true });
+})();
