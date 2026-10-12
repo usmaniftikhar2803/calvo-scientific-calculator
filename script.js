@@ -1271,7 +1271,13 @@ document.querySelectorAll('.key').forEach(key => {
   let savedView = 'scientific';
   try { savedView = localStorage.getItem('calvo_calc_view') || 'scientific'; } catch (e) {}
   applyCalcView(savedView);
+  window.setCalcView = applyCalcView;
 })();
+
+/* Home cards "Basic Calculator" / "Scientific Calculator" open the calculator in that view */
+document.querySelectorAll('[data-calcview-go]').forEach(el => {
+  el.addEventListener('click', () => { if (window.setCalcView) window.setCalcView(el.dataset.calcviewGo); });
+});
 
 document.getElementById('replayBtn').addEventListener('click', () => {
   if (historyStack.length === 0) return;
