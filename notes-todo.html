@@ -30,6 +30,11 @@ body{padding-top:18px}
 .np-search{width:100%;border-radius:22px;padding:11px 16px;font-size:14px;margin-bottom:12px}
 .np-item{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--panel-border);padding:13px 4px;color:var(--text);font-family:inherit;cursor:pointer}
 .np-item:active{background:rgba(255,138,31,.08)}
+.np-row{display:flex;align-items:center;border-bottom:1px solid var(--panel-border)}
+.np-row .np-item{flex:1;min-width:0;border-bottom:0;width:auto}
+.np-sh{flex:0 0 auto;background:none;border:1px solid var(--panel-border);color:var(--brand-orange);font-family:inherit;font-size:12px;padding:6px 12px;border-radius:18px;cursor:pointer;margin-left:6px}
+.np-sh:active{background:rgba(255,138,31,.12)}
+.np-toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#1c1c20;border:1px solid var(--brand-orange);color:#fff;font-size:13px;padding:9px 16px;border-radius:20px;z-index:10000}
 .np-item b{display:block;font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-item span{display:block;margin-top:3px;font-size:12.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-item small{font-size:11px;color:#8d877b;margin-right:8px}
@@ -59,7 +64,7 @@ body{padding-top:18px}
 <button class="np-fab" id="npNew" type="button" aria-label="New note">+</button>
 </div>
 <div class="np-ed" id="npEd" hidden>
-<div class="np-bar"><button type="button" id="npBack">&larr; Notes</button><span class="saved" id="npSaved"></span><button type="button" class="del" id="npDel">Delete</button></div>
+<div class="np-bar"><button type="button" id="npBack">&larr; Notes</button><span class="saved" id="npSaved"></span><span><button type="button" id="npShare">Share</button><button type="button" class="del" id="npDel">Delete</button></span></div>
 <textarea class="np-b" id="npBody" placeholder="Start typing..." spellcheck="true"></textarea>
 </div>
 </div>
