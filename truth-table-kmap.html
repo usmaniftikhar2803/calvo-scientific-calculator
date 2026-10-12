@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Truth Table Generator &amp; K-Map Solver — SOP, POS, Minterms | Calvo</title>
+<meta name="description" content="Free truth table generator and Karnaugh map (K-map) solver. Type a Boolean expression to get the truth table, minterms, maxterms and simplified SOP and POS with colour-coded K-map groups. 2 to 6 variables, don't-cares supported.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/truth-table-kmap.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/truth-table-kmap.html">
+<meta property="og:title" content="Truth Table Generator &amp; K-Map Solver — SOP, POS, Minterms | Calvo">
+<meta property="og:description" content="Free truth table generator and Karnaugh map (K-map) solver. Truth table, minterms, maxterms and simplified SOP and POS with colour-coded K-map groups.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Truth Table Generator & K-Map Solver", "url": "https://calvoscientificcalculator.online/truth-table-kmap.html", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free truth table generator and Karnaugh map (K-map) solver. Enter a Boolean expression, get the truth table, minterms, maxterms, canonical forms and the simplified SOP and POS with colour-coded K-map groups. Supports 2 to 6 variables and don't-cares."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a truth table?", "acceptedAnswer": {"@type": "Answer", "text": "A truth table lists every possible combination of input values (0 and 1) for a Boolean expression and shows the output for each combination. With n variables the table has 2^n rows."}}, {"@type": "Question", "name": "How many variables does the truth table generator support?", "acceptedAnswer": {"@type": "Answer", "text": "Calvo supports 1 to 6 variables, which means up to 64 rows. K-maps are drawn for 2 to 6 variables: 2, 3 and 4 variables use a single map, while 5 and 6 variables use two or four 4-variable maps side by side."}}, {"@type": "Question", "name": "What is the difference between SOP and POS?", "acceptedAnswer": {"@type": "Answer", "text": "Sum of Products (SOP) is an OR of AND terms and comes from grouping the 1s of the function. Product of Sums (POS) is an AND of OR terms and comes from grouping the 0s. Both forms describe the same function; Calvo shows the minimal version of each."}}, {"@type": "Question", "name": "What are don't-care conditions in a K-map?", "acceptedAnswer": {"@type": "Answer", "text": "A don't-care (X) is an input combination that never occurs or whose output does not matter. In a K-map an X can be treated as 1 or as 0, whichever lets you make a bigger group, which gives a simpler expression."}}, {"@type": "Question", "name": "Which symbols can I type in the expression box?", "acceptedAnswer": {"@type": "Answer", "text": "AND: AB, A.B, A&B, A*B or A AND B. OR: A+B, A|B or A OR B. NOT: A', !A, ~A or NOT A. XOR: A^B or A XOR B. Also NAND, NOR, XNOR, implication (->) and equivalence (<->). Brackets can be (), [] or {}."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://calvoscientificcalculator.online/"}, {"@type": "ListItem", "position": 2, "name": "Truth Table & K-Map", "item": "https://calvoscientificcalculator.online/truth-table-kmap.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+<style>
+.km{border-collapse:separate;border-spacing:3px;margin:6px 0;}
+.km th{font-family:'Space Mono',monospace;font-size:12px;color:var(--brand-orange);font-weight:700;padding:4px 8px;text-align:center;white-space:nowrap;}
+.km th.corner{font-size:10px;color:var(--text-dim);}
+.kc{position:relative;display:flex;align-items:center;justify-content:center;width:56px;height:52px;border-radius:8px;background:#0d0d0f;border:1px solid var(--panel-border);color:#fff;font-family:'Space Mono',monospace;font-size:18px;font-weight:700;}
+button.kc{cursor:pointer;padding:0;}
+button.kc:hover{border-color:var(--brand-orange);}
+.kc i{position:absolute;top:2px;left:5px;font-size:9px;font-style:normal;font-weight:400;color:var(--text-dim);}
+.kc.v0{color:#7d786d;}.kc.v1{color:var(--brand-orange);}.kc.v2{color:#8ab4ff;}
+.kmwrap{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;overflow-x:auto;}
+.kmcap{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-dim);margin-bottom:2px;}
+.lg{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+.lg span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--panel-border);border-radius:20px;padding:3px 10px;font-size:12px;}
+.lg i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+table.tt{border-collapse:collapse;font-size:13px;margin:0;}
+table.tt th,table.tt td{border:1px solid var(--panel-border);padding:5px 10px;text-align:center;white-space:nowrap;}
+table.tt th{color:var(--brand-orange);font-weight:600;}
+table.tt td.idx{color:var(--text-dim);}
+table.tt .fcol{background:rgba(255,138,31,.07);}
+table.tt td.o1{color:var(--brand-orange);font-weight:700;}
+table.tt td.ox{color:#8ab4ff;}
+.ans.sm{font-size:14px;line-height:1.9;}
+.cpbtn{background:transparent;color:var(--text-dim);border:1px solid var(--panel-border);border-radius:20px;padding:1px 9px;font-family:inherit;font-size:11px;cursor:pointer;margin-left:8px;vertical-align:middle;}
+.cpbtn:hover{border-color:var(--brand-orange);color:var(--text);}
+.mono{font-family:'Space Mono',monospace;}
+.tool input.wide2{width:100%;font-size:15px;}
+@media(max-width:560px){.kc{width:44px;height:42px;font-size:16px;}.km th{padding:3px 4px;}}
+@media print{.kc{border:1px solid #444!important;background:#fff!important;color:#000!important}.kc i{color:#555!important}table.tt th,table.tt td,.km th{color:#000!important;border-color:#888!important}}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Truth Table &amp; <span>K-Map</span> Solver</h1>
+<p class="lead">Built for Computer Science and digital logic students. Type any Boolean expression to get its truth table, minterms, maxterms and the simplest SOP and POS form, or draw a Karnaugh map yourself and let Calvo find the best groups.</p>
+
+<div class="tool"><h3>1. Truth table generator</h3>
+<div class="chips"><span class="lbl">Insert:</span>
+<button type="button" data-ins="'">A&prime; NOT</button><button type="button" data-ins="&middot;">&middot; AND</button><button type="button" data-ins=" + ">+ OR</button><button type="button" data-ins=" &oplus; ">&oplus; XOR</button><button type="button" data-ins=" &rarr; ">&rarr; IMPLIES</button><button type="button" data-ins="(">(</button><button type="button" data-ins=")">)</button></div>
+<input type="text" id="expr" class="wide2" placeholder="e.g.  A'B + AB'   or   (A + B)(A' + C)   or   A XOR B XOR C" autocomplete="off" autocapitalize="off" spellcheck="false">
+<div class="chips" style="margin-top:10px"><span class="lbl">Examples:</span>
+<button type="button" data-ex="A'B + AB'">XOR form</button><button type="button" data-ex="(A + B)(A' + C)">POS form</button><button type="button" data-ex="AB + A'C + BC">Consensus</button><button type="button" data-ex="A XOR B XOR C">3-bit parity</button><button type="button" data-ex="(A B)' <-> A' + B'">De Morgan</button><button type="button" data-ex="A -> B">Implication</button><button type="button" data-ex="AB + A'C + BCD">4 variables</button></div>
+<div class="row"><label style="min-width:0"><input type="checkbox" id="steps" checked style="width:auto;margin-right:6px">Show intermediate columns</label></div>
+<div class="row"><button class="btn" id="go1">Generate truth table</button><button class="btn ghost" id="clr1">Clear</button></div>
+<div class="result empty" id="out1">The truth table, minterms and simplified expressions will appear here.</div></div>
+
+<div class="tool"><h3>2. Are two expressions equal?</h3>
+<p class="note" style="margin:0 0 8px">Check identities such as De Morgan&rsquo;s laws or verify that your simplified answer matches the original.</p>
+<input type="text" id="e1" class="wide2" placeholder="First expression, e.g. (A B)'" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-bottom:8px">
+<input type="text" id="e2" class="wide2" placeholder="Second expression, e.g. A' + B'" autocomplete="off" autocapitalize="off" spellcheck="false">
+<div class="row" style="margin-top:12px"><button class="btn" id="go2">Compare</button><button class="btn ghost" id="ex2">Load example</button></div>
+<div class="result empty" id="out2">The comparison result will appear here.</div></div>
+
+<div class="tool"><h3>3. K-map solver (minterms, maxterms &amp; don&rsquo;t-cares)</h3>
+<p class="note" style="margin:0 0 8px">Tap a cell to cycle <b>0 &rarr; 1 &rarr; X</b> (X = don&rsquo;t care), or type the lists below. Small numbers in each cell are the minterm numbers.</p>
+<div class="row"><label for="nv">Variables</label>
+<select id="nv"><option value="2">2 (A, B)</option><option value="3">3 (A&ndash;C)</option><option value="4" selected>4 (A&ndash;D)</option><option value="5">5 (A&ndash;E)</option><option value="6">6 (A&ndash;F)</option></select>
+<label for="lt" style="min-width:0">List type</label>
+<select id="lt"><option value="min">Minterms (1s)</option><option value="max">Maxterms (0s)</option></select></div>
+<div class="row"><label for="l1" id="l1lbl" style="min-width:70px">Minterms</label><input type="text" id="l1" class="wide2" style="flex:1" placeholder="e.g. 1, 3, 5-7" autocomplete="off"></div>
+<div class="row"><label for="l2" style="min-width:70px">Don&rsquo;t care</label><input type="text" id="l2" class="wide2" style="flex:1" placeholder="e.g. 0, 2 (optional)" autocomplete="off"></div>
+<div class="row"><button class="btn" id="go3">Simplify</button><button class="btn ghost" id="upd3">Update map from lists</button><button class="btn ghost" id="ex3">Load example</button><button class="btn ghost" id="clr3">Clear</button></div>
+<div class="modes" id="mode3"><button type="button" data-m="sop" class="active">Show groups of 1s (SOP)</button><button type="button" data-m="pos">Show groups of 0s (POS)</button></div>
+<div id="kmIn"></div><div id="lg3"></div>
+<div class="result empty" id="out3">Set the cells or type the lists, then press Simplify.</div></div>
+
+<h2>Operators you can type</h2>
+<div class="tbl-wrap"><table class="f"><tr><th>Operation</th><th>You can type</th><th>Meaning</th></tr>
+<tr><td>NOT</td><td>A' &nbsp; !A &nbsp; ~A &nbsp; NOT A</td><td>complement (inverts the value)</td></tr>
+<tr><td>AND</td><td>AB &nbsp; A.B &nbsp; A&amp;B &nbsp; A*B &nbsp; A AND B</td><td>1 only when both inputs are 1</td></tr>
+<tr><td>OR</td><td>A+B &nbsp; A|B &nbsp; A OR B</td><td>1 when at least one input is 1</td></tr>
+<tr><td>XOR</td><td>A^B &nbsp; A&oplus;B &nbsp; A XOR B</td><td>1 when the inputs are different</td></tr>
+<tr><td>NAND / NOR / XNOR</td><td>A NAND B &nbsp; A NOR B &nbsp; A XNOR B</td><td>the NOT of AND / OR / XOR</td></tr>
+<tr><td>Implication</td><td>A -&gt; B &nbsp; A &rarr; B</td><td>0 only when A = 1 and B = 0</td></tr>
+<tr><td>Equivalence</td><td>A &lt;-&gt; B &nbsp; A == B</td><td>1 when A and B are equal</td></tr></table></div>
+<p class="note">Order of evaluation: NOT first, then AND, XOR, OR, implication and finally equivalence. Use brackets when in doubt. Calvo shows how it read your expression, so you can confirm the precedence. Write multi-letter operators with spaces (A OR B), otherwise letters stuck together are read as separate variables (AB means A AND B).</p>
+
+<h2>How a truth table works</h2>
+<p>A Boolean function with <b>n</b> inputs has <b>2<sup>n</sup></b> input combinations. The truth table lists them in binary counting order (000, 001, 010 &hellip;) with the first variable as the most significant bit. The row number read in decimal is the <b>minterm number</b>. A <b>minterm</b> is a row where the output is 1 (written &Sigma;m), and a <b>maxterm</b> is a row where the output is 0 (written &Pi;M).</p>
+
+<h2>How to simplify with a K-map</h2>
+<ul><li>Cells are ordered in <b>Gray code</b> (00, 01, 11, 10), so neighbouring cells differ in exactly one variable.</li>
+<li>Group adjacent 1s in rectangles of size <b>1, 2, 4, 8 or 16</b>. Never group a number that is not a power of 2.</li>
+<li>Make every group as <b>large</b> as possible and use as few groups as possible. Groups may overlap.</li>
+<li>The map <b>wraps around</b>: the left and right edges touch, and so do the top and bottom edges.</li>
+<li>Don&rsquo;t-cares (X) may be included in a group if that makes it bigger, but you never have to cover them.</li>
+<li>In each group, keep the variables that do <b>not change</b>. A variable that is 1 throughout appears as A, one that is 0 throughout appears as A&prime;. Add the group terms with OR to get the SOP.</li>
+<li>For POS, group the 0s instead. Each group gives a sum term where the unchanging variables are <b>complemented</b>, and the terms are ANDed together.</li></ul>
+
+<h2>Worked example 1</h2>
+<p>Simplify F = A&prime;B + AB&prime; + AB. The truth table gives F = 1 for AB = 01, 10 and 11, so F = &Sigma;m(1, 2, 3). On the 2-variable map, the two 1s in the column B = 1 form one group (B), and the two 1s in the row A = 1 form another (A). So <b>F = A + B</b>.</p>
+
+<h2>Worked example 2 (with don&rsquo;t-cares)</h2>
+<p>F(A, B, C, D) = &Sigma;m(4, 8, 10, 11, 12, 15) + d(9, 14). Press <b>Load example</b> in tool 3 to see the groups:</p>
+<ul><li>m4 and m12 form a pair where B = 1, C = 0, D = 0, giving <b>BC&prime;D&prime;</b>.</li>
+<li>m8, m9, m10, m11 form a group of 4 (using the don&rsquo;t-care m9) where A = 1, B = 0, giving <b>AB&prime;</b>.</li>
+<li>m10, m11, m14, m15 form a group of 4 (using the don&rsquo;t-care m14) where A = 1, C = 1, giving <b>AC</b>.</li></ul>
+<p>Result: <b>F = BC&prime;D&prime; + AB&prime; + AC</b>.</p>
+
+<h2>Useful Boolean identities</h2>
+<div class="tbl-wrap"><table class="f"><tr><th>Law</th><th>Identity</th></tr>
+<tr><td>De Morgan</td><td>(AB)&prime; = A&prime; + B&prime; &nbsp;&nbsp; (A + B)&prime; = A&prime;B&prime;</td></tr>
+<tr><td>Complement</td><td>A + A&prime; = 1 &nbsp;&nbsp; AA&prime; = 0</td></tr>
+<tr><td>Identity / Null</td><td>A + 0 = A &nbsp; A &middot; 1 = A &nbsp; A + 1 = 1 &nbsp; A &middot; 0 = 0</td></tr>
+<tr><td>Idempotent</td><td>A + A = A &nbsp;&nbsp; AA = A</td></tr>
+<tr><td>Double negation</td><td>(A&prime;)&prime; = A</td></tr>
+<tr><td>Absorption</td><td>A + AB = A &nbsp;&nbsp; A(A + B) = A</td></tr>
+<tr><td>Distributive</td><td>A(B + C) = AB + AC &nbsp;&nbsp; A + BC = (A + B)(A + C)</td></tr>
+<tr><td>Consensus</td><td>AB + A&prime;C + BC = AB + A&prime;C</td></tr>
+<tr><td>XOR</td><td>A &oplus; B = A&prime;B + AB&prime;</td></tr></table></div>
+
+<h2>FAQ</h2>
+<details><summary>What is a truth table?</summary><p>A truth table lists every possible combination of input values (0 and 1) for a Boolean expression and shows the output for each combination. With n variables the table has 2^n rows.</p></details><details><summary>How many variables does the truth table generator support?</summary><p>Calvo supports 1 to 6 variables, which means up to 64 rows. K-maps are drawn for 2 to 6 variables: 2, 3 and 4 variables use a single map, while 5 and 6 variables use two or four 4-variable maps side by side.</p></details><details><summary>What is the difference between SOP and POS?</summary><p>Sum of Products (SOP) is an OR of AND terms and comes from grouping the 1s of the function. Product of Sums (POS) is an AND of OR terms and comes from grouping the 0s. Both forms describe the same function; Calvo shows the minimal version of each.</p></details><details><summary>What are don't-care conditions in a K-map?</summary><p>A don't-care (X) is an input combination that never occurs or whose output does not matter. In a K-map an X can be treated as 1 or as 0, whichever lets you make a bigger group, which gives a simpler expression.</p></details><details><summary>Which symbols can I type in the expression box?</summary><p>AND: AB, A.B, A&amp;B, A*B or A AND B. OR: A+B, A|B or A OR B. NOT: A', !A, ~A or NOT A. XOR: A^B or A XOR B. Also NAND, NOR, XNOR, implication (-&gt;) and equivalence (&lt;-&gt;). Brackets can be (), [] or {}.</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/fsc-computer-science-formulas.html">FSc Computer Science Formulas</a><a href="/hypothesis-test-calculator.html">Hypothesis Test (t, z, &chi;&sup2;)</a><a href="/anova-calculator.html">ANOVA Calculator</a><a href="/correlation-regression-calculator.html">Correlation &amp; Regression</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/average-calculator.html">Average Calculator</a><a href="/word-counter.html">Word Counter</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/logic-engine.js"></script>
+<script>
+var L=CalvoLogic;
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function card(v,l){return '<div class="stat"><b>'+v+'</b><span>'+l+'</span></div>'}
+function showErr(id,m){var o=$(id);o.className='result';o.style.whiteSpace='normal';o.innerHTML='<span class="err">'+esc(m)+'</span>'}
+function setOut(id,h){var o=$(id);o.className='result';o.style.whiteSpace='normal';o.innerHTML=h}
+function resetOut(id,msg){var o=$(id);o.className='result empty';o.style.whiteSpace='';o.textContent=msg}
+function cp(t){return '<button type="button" class="cpbtn" data-t="'+esc(t)+'">Copy</button>'}
+var COLORS=['#ff8a1f','#5fd38a','#4da3ff','#ff5d8f','#c58bff','#ffd23f','#2fd6d6','#ff7a59','#9be564','#ff9ecf','#7aa2ff','#e0b080'];
+
+/* ---------- shared renderers ---------- */
+function kmapHTML(n,vars,vals,groups,interactive){
+ var lay=L.kmapLayout(n),lb=lay.layerBits,rb=lay.rowBits;
+ var layerVars=vars.slice(0,lb),rowVars=vars.slice(lb,lb+rb),colVars=vars.slice(lb+rb);
+ var memb={};
+ groups.forEach(function(g,gi){g.cells.forEach(function(c){(memb[c]=memb[c]||[]).push(COLORS[gi%COLORS.length])})});
+ var h='<div class="kmwrap">';
+ lay.layers.forEach(function(ly,li){
+  h+='<div class="kmbox">';
+  if(lb)h+='<div class="kmcap">'+esc(layerVars.join(''))+' = '+lay.layerLabels[li]+'</div>';
+  h+='<table class="km"><tr><th class="corner">'+esc(rowVars.join(''))+' \\ '+esc(colVars.join(''))+'</th>';
+  lay.colLabels.forEach(function(c){h+='<th>'+c+'</th>'});
+  h+='</tr>';
+  ly.grid.forEach(function(row,ri){
+   h+='<tr><th>'+lay.rowLabels[ri]+'</th>';
+   row.forEach(function(m){
+    var v=vals[m],t=v===2?'X':String(v),cols=memb[m]||[],st='';
+    if(cols.length){
+     var sh=cols.map(function(c,k){return 'inset 0 0 0 '+(3+k*3)+'px '+c});
+     st=' style="box-shadow:'+sh.join(',')+';background:'+cols[0]+'26"';
+    }
+    h+='<td>'+(interactive?'<button type="button" class="kc v'+v+'" data-m="'+m+'" aria-label="cell '+m+' value '+t+'"'+st+'>':'<div class="kc v'+v+'"'+st+'>')+'<i>'+m+'</i>'+t+(interactive?'</button>':'</div>')+'</td>';
+   });
+   h+='</tr>';
+  });
+  h+='</table></div>';
+ });
+ return h+'</div>';
+}
+function legendHTML(groups,mode){
+ if(!groups.length)return '<div class="note">No groups to draw: the function is constant '+(mode==='sop'?'0':'1')+'.</div>';
+ return '<div class="lg">'+groups.map(function(g,i){return '<span><i style="background:'+COLORS[i%COLORS.length]+'"></i>'+esc(g.label)+'</span>'}).join('')+'</div>'
+  +'<div class="note">'+(mode==='sop'?'Each coloured group of 1s gives one product term; the answer is their OR.':'Each coloured group of 0s gives one sum term (unchanging variables are complemented); the answer is their AND.')+'</div>';
+}
+function solve(n,vars,vals){
+ var ones=[],zeros=[],dcs=[];
+ vals.forEach(function(v,i){(v===1?ones:v===0?zeros:dcs).push(i)});
+ var res=L.minimize(n,ones,dcs),resC=L.minimize(n,zeros,dcs);
+ return{n:n,vars:vars,ones:ones,zeros:zeros,dcs:dcs,res:res,resC:resC,sop:L.sopString(res,vars),pos:L.posString(resC,vars)};
+}
+function groupsFor(S,mode){
+ var r=mode==='sop'?S.res:S.resC,fn=mode==='sop'?L.sopTerm:L.posTerm;
+ if(r.constant===0)return[];
+ return r.chosen.map(function(i){var im=r.primes[i];return{cells:L.cellsOf(im,S.n),label:fn(im,S.vars)}});
+}
+function listStr(a){return a.length?a.join(', '):'&empty;'}
+function formsHTML(S){
+ var sig='F('+S.vars.join(', ')+')',h='';
+ h+='<div class="blk"><h4>Minterms &amp; maxterms</h4><div class="ans sm">'+esc(sig)+' = &Sigma;m('+listStr(S.ones)+')'+(S.dcs.length?' + d('+S.dcs.join(', ')+')':'')+'<br>'
+  +esc(sig)+' = &Pi;M('+listStr(S.zeros)+')'+(S.dcs.length?' &middot; d('+S.dcs.join(', ')+')':'')+'</div>';
+ if(!S.dcs.length)h+='<div class="note" style="margin-top:8px">Canonical SOP (sum of minterms)</div><div class="ans sm">F = '+esc(L.canonSOP(S.ones,S.vars))+'</div>'
+  +'<div class="note" style="margin-top:8px">Canonical POS (product of maxterms)</div><div class="ans sm">F = '+esc(L.canonPOS(S.zeros,S.vars))+'</div>';
+ h+='</div>';
+ h+='<div class="blk"><h4>Simplified (minimal) expressions</h4>'
+  +'<div class="note">Sum of products (SOP)</div><div class="ans">F = '+esc(S.sop)+cp('F = '+S.sop)+'</div>'
+  +'<div class="note" style="margin-top:8px">Product of sums (POS)</div><div class="ans">F = '+esc(S.pos)+cp('F = '+S.pos)+'</div>'
+  +(S.dcs.length?'<div class="note" style="margin-top:8px">Don&rsquo;t-care cells were used wherever they allowed a bigger group.</div>':'')+'</div>';
+ h+=primeBlock(S);
+ return h;
+}
+function primeTable(S,mode){
+ var r=mode==='sop'?S.res:S.resC,fn=mode==='sop'?L.sopTerm:L.posTerm,target=mode==='sop'?S.ones:S.zeros;
+ if(r.constant!==null||!r.primes.length)return '';
+ var rows=r.primes.map(function(im,i){
+  var cells=L.cellsOf(im,S.n).filter(function(c){return target.indexOf(c)>=0||S.dcs.indexOf(c)>=0});
+  var txt=cells.map(function(c){return S.dcs.indexOf(c)>=0?'('+c+')':c}).join(', ');
+  var ess=r.essential.indexOf(i)>=0,used=r.chosen.indexOf(i)>=0;
+  return '<tr><td class="mono">'+esc(fn(im,S.vars))+'</td><td>'+txt+'</td><td>'+(ess?'<span class="okmark">essential</span>':'')+'</td><td>'+(used?'<span class="okmark">&#10003;</span>':'')+'</td></tr>';
+ }).join('');
+ return '<div class="note" style="margin-top:8px">'+(mode==='sop'?'SOP: prime implicants (groups of 1s)':'POS: prime implicates (groups of 0s)')+'</div><div class="tbl-wrap nw"><table class="f"><tr><th>Term</th><th>Covers (don&rsquo;t-cares in brackets)</th><th>Type</th><th>Used</th></tr>'+rows+'</table></div>';
+}
+function primeBlock(S){
+ var a=primeTable(S,'sop'),b=primeTable(S,'pos');
+ if(!a&&!b)return '';
+ return '<div class="blk"><h4>How it was simplified</h4><div class="note">All maximal groups were found first (Quine&ndash;McCluskey). <b>Essential</b> groups are the only ones covering some cell, so they must be in the answer. The fewest extra groups were then added to cover the rest.</div>'+a+b+'</div>';
+}
+function ttHTML(vars,rows,out,subs,cols,fLabel){
+ var n=vars.length,h='<div class="tbl-wrap"><table class="tt"><tr><th>#</th>';
+ vars.forEach(function(v){h+='<th>'+esc(v)+'</th>'});
+ subs.forEach(function(s){h+='<th>'+esc(s.str)+'</th>'});
+ h+='<th class="fcol">'+esc(fLabel)+'</th></tr>';
+ for(var i=0;i<rows;i++){
+  h+='<tr><td class="idx">'+i+'</td>';
+  for(var b=0;b<n;b++)h+='<td>'+((i>>(n-1-b))&1)+'</td>';
+  for(var s=0;s<subs.length;s++)h+='<td>'+cols[s][i]+'</td>';
+  var v=out[i];
+  h+='<td class="fcol '+(v===1?'o1':v===2?'ox':'')+'">'+(v===2?'X':v)+'</td></tr>';
+ }
+ return h+'</table></div>';
+}
+
+/* ---------- tool 1: expression -> table ---------- */
+var S1=null,mode1='sop';
+function draw1(){
+ if(!S1)return;
+ var g=groupsFor(S1,mode1);
+ $('km1').innerHTML=kmapHTML(S1.n,S1.vars,S1.vals,g,false);
+ $('lg1').innerHTML=legendHTML(g,mode1);
+ Array.prototype.forEach.call($('km1m').children,function(b){b.className=b.getAttribute('data-m')===mode1?'active':''});
+}
+function run1(){
+ var src=$('expr').value,ast,vars;
+ try{
+  ast=L.parse(src);vars=L.varsOf(ast);
+  if(vars.length>L.MAXVARS)throw new Error('This expression uses '+vars.length+' variables ('+vars.join(', ')+'). Calvo supports up to '+L.MAXVARS+' variables (64 rows).');
+ }catch(e){showErr('out1',e.message);return}
+ var n=vars.length,T=L.table(ast,vars),leaf=(ast.t==='var'||ast.t==='const');
+ var subs=leaf?[]:T.subs.slice(0,-1),cols=leaf?[]:T.cols.slice(0,-1);
+ if(!$('steps').checked){subs=[];cols=[]}
+ var fLabel=L.toStr(ast);
+ var S=solve(n,vars,T.out);S.vals=T.out;S1=S;
+ var ones=S.ones.length,rows=T.rows;
+ var kind=ones===rows?'Tautology':ones===0?'Contradiction':'Contingency';
+ var h='<div class="note">Read as: <b class="mono">F = '+esc(fLabel)+'</b></div>';
+ h+='<div class="stats">'+card(n,'variables')+card(rows,'rows')+card(ones,'ones (minterms)')+card(S.zeros.length,'zeros (maxterms)')+card('<span style="font-size:15px">'+kind+'</span>','type')+'</div>';
+ h+='<div style="margin-top:10px" class="note">'+(kind==='Tautology'?'The output is 1 for every input, so the expression is a <b>tautology</b>.':kind==='Contradiction'?'The output is 0 for every input, so the expression is a <b>contradiction</b>.':'The output is 1 for some inputs and 0 for others (a <b>contingency</b>).')+'</div>';
+ h+='<div class="blk"><h4>Truth table</h4>'+ttHTML(vars,rows,T.out,subs,cols,'F = '+(fLabel.length>26?'output':fLabel))+'</div>';
+ h+=formsHTML(S);
+ if(n>=2)h+='<div class="blk"><h4>Karnaugh map</h4><div class="modes" id="km1m"><button type="button" data-m="sop" class="active">Group 1s (SOP)</button><button type="button" data-m="pos">Group 0s (POS)</button></div><div id="km1"></div><div id="lg1"></div></div>';
+ else h+='<div class="blk"><div class="note">A K-map needs at least 2 variables.</div></div>';
+ setOut('out1',h);
+ if(n>=2){mode1='sop';draw1()}
+}
+$('go1').onclick=run1;
+$('expr').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();run1()}};
+$('clr1').onclick=function(){$('expr').value='';S1=null;resetOut('out1','The truth table, minterms and simplified expressions will appear here.')};
+$('steps').onchange=function(){if($('out1').className==='result'&&$('expr').value.trim())run1()};
+$('out1').addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('#km1m button');
+ if(b){mode1=b.getAttribute('data-m');draw1()}
+});
+Array.prototype.forEach.call(document.querySelectorAll('[data-ex]'),function(b){b.onclick=function(){$('expr').value=b.getAttribute('data-ex');run1()}});
+Array.prototype.forEach.call(document.querySelectorAll('[data-ins]'),function(b){b.onclick=function(){
+ var el=$('expr'),t=b.getAttribute('data-ins'),s=el.selectionStart==null?el.value.length:el.selectionStart,e=el.selectionEnd==null?s:el.selectionEnd;
+ el.value=el.value.slice(0,s)+t+el.value.slice(e);el.focus();var p=s+t.length;try{el.setSelectionRange(p,p)}catch(x){}
+}});
+
+/* ---------- tool 2: equivalence ---------- */
+function run2(){
+ var a,b,va,vb,vars;
+ try{
+  if(!$('e1').value.trim()||!$('e2').value.trim())throw new Error('Type both expressions.');
+  a=L.parse($('e1').value);b=L.parse($('e2').value);
+  var set={};L.varsOf(a).concat(L.varsOf(b)).forEach(function(v){set[v]=1});
+  vars=Object.keys(set).sort();
+  if(vars.length>L.MAXVARS)throw new Error('Together the expressions use '+vars.length+' variables. Calvo supports up to '+L.MAXVARS+'.');
+ }catch(e){showErr('out2',e.message);return}
+ var n=vars.length,rows=1<<n,diff=[],o1=[],i;
+ for(i=0;i<rows;i++){var env=L.envFor(vars,i),x=L.evalNode(a,env),y=L.evalNode(b,env);o1.push(x);if(x!==y)diff.push({i:i,x:x,y:y})}
+ var h='<div class="note">Variables: <b class="mono">'+esc(vars.join(', ')||'none')+'</b> &nbsp;|&nbsp; '+rows+' row'+(rows>1?'s':'')+' checked</div>';
+ h+='<div style="margin-top:8px">'+esc('Expression 1 = '+L.toStr(a))+'<br>'+esc('Expression 2 = '+L.toStr(b))+'</div>';
+ if(!diff.length){
+  var S=solve(n,vars,o1);
+  h+='<div class="ans" style="margin-top:10px"><span class="okmark">Equivalent</span> &mdash; they give the same output for every input.</div>';
+  h+='<div class="note" style="margin-top:6px">Both simplify to: <b class="mono">F = '+esc(S.sop)+'</b></div>';
+ }else{
+  h+='<div class="ans" style="margin-top:10px"><span class="err">Not equivalent</span> &mdash; they differ in '+diff.length+' of '+rows+' rows.</div>';
+  h+='<div class="tbl-wrap"><table class="tt"><tr><th>#</th>'+vars.map(function(v){return '<th>'+esc(v)+'</th>'}).join('')+'<th>Expr 1</th><th>Expr 2</th></tr>'
+   +diff.slice(0,16).map(function(d){return '<tr><td class="idx">'+d.i+'</td>'+vars.map(function(v,k){return '<td>'+((d.i>>(n-1-k))&1)+'</td>'}).join('')+'<td>'+d.x+'</td><td>'+d.y+'</td></tr>'}).join('')+'</table></div>'
+   +(diff.length>16?'<div class="note">Showing the first 16 differing rows.</div>':'');
+ }
+ setOut('out2',h);
+}
+$('go2').onclick=run2;
+$('e1').onkeydown=$('e2').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();run2()}};
+$('ex2').onclick=function(){$('e1').value="(A B)'";$('e2').value="A' + B'";run2()};
+
+/* ---------- tool 3: K-map solver ---------- */
+var K={n:4,vals:[],mode:'sop',groups:[],solved:null};
+function kVars(){return L.names(null,K.n)}
+function kReset(n){K.n=n;K.vals=[];for(var i=0;i<(1<<n);i++)K.vals.push(0);K.groups=[];K.solved=null}
+function kDraw(){
+ $('kmIn').innerHTML=kmapHTML(K.n,kVars(),K.vals,K.groups,true);
+ $('lg3').innerHTML=K.solved?legendHTML(K.groups,K.mode):'';
+ Array.prototype.forEach.call($('mode3').children,function(b){b.className=b.getAttribute('data-m')===K.mode?'active':''});
+}
+function kWrite(){
+ var lt=$('lt').value,first=[],dc=[];
+ K.vals.forEach(function(v,i){if(v===2)dc.push(i);else if((lt==='min'&&v===1)||(lt==='max'&&v===0))first.push(i)});
+ $('l1').value=first.join(', ');$('l2').value=dc.join(', ');
+ $('l1lbl').textContent=lt==='min'?'Minterms':'Maxterms';
+}
+function kRead(){
+ var max=1<<K.n,lt=$('lt').value,a=L.parseNumList($('l1').value,max),b=L.parseNumList($('l2').value,max);
+ if(a.bad!==null)throw new Error('"'+a.bad+'" is not valid for '+K.n+' variables. Use numbers from 0 to '+(max-1)+' (ranges like 4-7 are allowed).');
+ if(b.bad!==null)throw new Error('Don\u2019t-care "'+b.bad+'" is not valid for '+K.n+' variables. Use numbers from 0 to '+(max-1)+'.');
+ var clash=a.list.filter(function(x){return b.list.indexOf(x)>=0});
+ if(clash.length)throw new Error('Cell '+clash[0]+' is listed both as a '+(lt==='min'?'minterm':'maxterm')+' and as a don\u2019t-care.');
+ var vals=[];for(var i=0;i<max;i++)vals.push(lt==='min'?0:1);
+ a.list.forEach(function(x){vals[x]=lt==='min'?1:0});
+ b.list.forEach(function(x){vals[x]=2});
+ K.vals=vals;K.groups=[];K.solved=null;
+}
+function k3Solve(){
+ try{kRead()}catch(e){showErr('out3',e.message);return}
+ var vars=kVars(),S=solve(K.n,vars,K.vals);
+ K.solved=S;K.groups=groupsFor(S,K.mode);kDraw();
+ var rows=1<<K.n;
+ var h='<div class="stats">'+card(K.n,'variables')+card(S.ones.length,'ones')+card(S.zeros.length,'zeros')+card(S.dcs.length,'don\u2019t cares')+'</div>';
+ h+=formsHTML(S);
+ h+='<div class="blk"><details><summary>Show truth table</summary>'+ttHTML(vars,rows,K.vals,[],[],'F')+'</details></div>';
+ setOut('out3',h);
+}
+function k3Switch(){
+ var n=+$('nv').value;kReset(n);kWrite();kDraw();resetOut('out3','Set the cells or type the lists, then press Simplify.');
+}
+$('nv').onchange=k3Switch;
+$('lt').onchange=function(){kWrite()};
+$('kmIn').addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('.kc');
+ if(!b||!b.getAttribute('data-m'))return;
+ var m=+b.getAttribute('data-m');
+ K.vals[m]=(K.vals[m]+1)%3;K.groups=[];K.solved=null;
+ kWrite();kDraw();resetOut('out3','Set the cells or type the lists, then press Simplify.');
+});
+$('mode3').addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('button');if(!b)return;
+ K.mode=b.getAttribute('data-m');
+ if(K.solved)K.groups=groupsFor(K.solved,K.mode);
+ kDraw();
+});
+$('go3').onclick=k3Solve;
+$('upd3').onclick=function(){try{kRead()}catch(e){showErr('out3',e.message);return}kDraw();resetOut('out3','Map updated. Press Simplify to find the groups.')};
+$('clr3').onclick=function(){kReset(K.n);kWrite();kDraw();resetOut('out3','Set the cells or type the lists, then press Simplify.')};
+$('ex3').onclick=function(){$('nv').value='4';$('lt').value='min';kReset(4);$('l1').value='4, 8, 10, 11, 12, 15';$('l2').value='9, 14';$('l1lbl').textContent='Minterms';k3Solve()};
+[$('l1'),$('l2')].forEach(function(el){el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();k3Solve()}}});
+kReset(4);kWrite();kDraw();
+
+/* ---------- copy buttons ---------- */
+document.addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('.cpbtn');if(!b)return;
+ var t=b.getAttribute('data-t');
+ function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+ function fb(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(x){}document.body.removeChild(ta)}
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fb)}else fb();
+});
+</script>
+</body>
+</html>
