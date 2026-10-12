@@ -688,7 +688,7 @@ const HOME_TOOL_GROUPS = [
     { go: 'matrix',       gl: '[ ]',  t: 'Matrix',        s: 'Matrix operations' },
     { go: 'stats',        gl: '\u03C3',    t: 'Statistics',    s: 'Statistical calculator' },
     { go: 'programmer',   gl: '</>',  t: 'Programmer',    s: 'Binary, octal and hex' },
-    { go: 'subjecttools', gl: 'H\u2082O',  t: 'Subject Tools', s: 'Chemistry, Physics, Biology, Commerce' },
+    { go: 'subjecttools', gl: 'H\u2082O',  t: 'Subject Tools', s: 'Chemistry, Physics, Biology, Finance and more' },
   ]},
   { title: 'Convert & Results', items: [
     { go: 'convert',    gl: '\u21C4',   t: 'Unit Converter',  s: 'Length, currency and more' },
@@ -742,6 +742,51 @@ function buildToolGroups(container, forMore) {
 }
 buildToolGroups(document.getElementById('homeTools'), false);
 buildToolGroups(document.getElementById('morePopTools'), true);
+
+/* The tile already draws its own icon, so drop the star / clock repeated in the label text */
+function stripLeadingGlyph(txt) { return String(txt || '').replace(/^[^\p{L}\p{N}]+/u, ''); }
+
+/* Search box above a tool list (Home + "More" popover): type to filter, Enter opens the first match */
+function attachToolSearch(container) {
+  if (!container || container.previousElementSibling?.classList.contains('tool-search-wrap')) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'tool-search-wrap';
+  wrap.innerHTML = '<svg class="tool-search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>';
+  const input = document.createElement('input');
+  input.type = 'search';
+  input.className = 'tool-search';
+  input.placeholder = 'Search tools (e.g. PDF, CGPA, resume)';
+  input.setAttribute('aria-label', 'Search tools');
+  input.autocomplete = 'off';
+  wrap.appendChild(input);
+  const empty = document.createElement('div');
+  empty.className = 'tool-empty';
+  empty.textContent = 'No tool found. Try another word, e.g. "pdf", "gpa" or "graph".';
+  container.parentNode.insertBefore(wrap, container);
+  container.parentNode.insertBefore(empty, container);
+  const apply = () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    container.querySelectorAll('.home-group').forEach(g => {
+      let any = false;
+      g.querySelectorAll('.tool-row').forEach(r => {
+        const hit = !q || r.textContent.toLowerCase().includes(q);
+        r.hidden = !hit;
+        if (hit) { any = true; shown++; }
+      });
+      g.hidden = !any;
+    });
+    empty.classList.toggle('show', !!q && shown === 0);
+  };
+  input.addEventListener('input', apply);
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const first = container.querySelector('.tool-row:not([hidden])');
+    if (first) first.click();
+  });
+}
+attachToolSearch(document.getElementById('homeTools'));
+attachToolSearch(document.getElementById('morePopTools'));
 
 /* "All tools" crumb above every tool page (everything except Calculator / Home) */
 document.querySelectorAll('.tab-panel').forEach(panel => {
@@ -1412,13 +1457,13 @@ function buildSubjectPills() {
 
   const favTile = document.createElement('div');
   favTile.className = 'subject-tile fav-tile';
-  favTile.innerHTML = `<div class="subject-tile-icon">★</div><div class="subject-tile-name">${t('favorites_pill')}</div><div class="subject-tile-count">${favFormulas.length}</div>`;
+  favTile.innerHTML = `<div class="subject-tile-icon">★</div><div class="subject-tile-name">${stripLeadingGlyph(t('favorites_pill'))}</div><div class="subject-tile-count">${favFormulas.length}</div>`;
   favTile.addEventListener('click', () => openSubjectDetail(FAV_SUBJECT_KEY, t('favorites_pill')));
   subjectGrid.appendChild(favTile);
 
   const recentTile = document.createElement('div');
   recentTile.className = 'subject-tile recent-tile';
-  recentTile.innerHTML = `<div class="subject-tile-icon">🕐</div><div class="subject-tile-name">${t('recent_pill')}</div><div class="subject-tile-count">${recentFormulas.length}</div>`;
+  recentTile.innerHTML = `<div class="subject-tile-icon">🕐</div><div class="subject-tile-name">${stripLeadingGlyph(t('recent_pill'))}</div><div class="subject-tile-count">${recentFormulas.length}</div>`;
   recentTile.addEventListener('click', () => openSubjectDetail(RECENT_SUBJECT_KEY, t('recent_pill')));
   subjectGrid.appendChild(recentTile);
 
