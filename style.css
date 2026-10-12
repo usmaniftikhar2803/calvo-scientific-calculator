@@ -4127,3 +4127,53 @@ button, a, .key, input, select, textarea, label { touch-action: manipulation; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ================= 3D styling (Oct 2026) =================
+   Raised "extruded" cards and buttons that press down when tapped,
+   plus a soft mouse tilt on desktop (set by script.js via --rx / --ry). */
+.home-big, .subject-tile {
+  transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0px));
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .16s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), inset 0 -2px 0 rgba(0,0,0,0.35), 0 6px 0 #08080a, 0 14px 26px rgba(0,0,0,0.55);
+}
+.home-big:hover, .home-big:focus-visible, .subject-tile:hover {
+  --ty: -4px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.35), 0 10px 0 #08080a, 0 22px 34px rgba(255,138,31,0.16), 0 18px 30px rgba(0,0,0,0.5);
+}
+.home-big:active, .subject-tile:active {
+  --ty: 4px; --rx: 0deg; --ry: 0deg;
+  transition-duration: .06s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 0 #08080a, 0 4px 10px rgba(0,0,0,0.5);
+}
+/* Icons float above the card surface */
+.home-ic, .subject-tile-icon {
+  transform: translateZ(26px);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -3px 0 rgba(0,0,0,0.22), 0 4px 0 var(--brand-orange-deep), 0 12px 18px rgba(255,138,31,0.3);
+}
+.home-big b, .home-big small, .subject-tile-name { transform: translateZ(12px); }
+.subject-tile.fav-tile .subject-tile-icon { box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -3px 0 rgba(0,0,0,0.22), 0 4px 0 #a82b5c, 0 12px 18px rgba(232,84,139,0.3); }
+.subject-tile.recent-tile .subject-tile-icon { box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -3px 0 rgba(0,0,0,0.22), 0 4px 0 #1f6fc4, 0 12px 18px rgba(58,157,255,0.3); }
+
+/* Tool list rows: raised glyph tile that presses in */
+.tool-gl { box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 3px 0 rgba(255,138,31,0.28), 0 6px 10px rgba(0,0,0,0.4); transition: transform .1s ease, box-shadow .1s ease; }
+.tool-row:hover .tool-gl { transform: translateY(-2px); }
+.tool-row:active .tool-gl { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 rgba(0,0,0,0); }
+
+/* Navbar: active tab is a raised pill; back / skip buttons get an edge */
+.topbar-tab.active { box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.45), 0 6px 12px rgba(0,0,0,0.35); }
+.topbar-menu-btn { box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 3px 0 rgba(0,0,0,0.5); }
+.tool-back, .home-skip { box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 3px 0 rgba(0,0,0,0.5); transition: transform .08s ease, box-shadow .08s ease, border-color .15s ease, color .15s ease; }
+.tool-back:active, .home-skip:active { transform: translateY(3px); box-shadow: none; }
+.tool-search { box-shadow: inset 0 3px 8px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.05); }
+
+/* Panels sit above the page */
+.formulas-card { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 0 rgba(0,0,0,0.35), 0 24px 50px rgba(0,0,0,0.5); }
+.lcd-bezel { box-shadow: inset 0 3px 8px rgba(0,0,0,0.45), inset 0 -1px 0 rgba(255,255,255,0.06), 0 0 16px var(--lcd-glow); }
+
+@media (hover: none) { .home-big:hover, .subject-tile:hover { --ty: 0px; } }
+@media (prefers-reduced-motion: reduce) {
+  .home-big, .subject-tile { transform: none !important; }
+  .home-ic, .subject-tile-icon, .home-big b, .home-big small, .subject-tile-name { transform: none; }
+}
