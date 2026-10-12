@@ -182,3 +182,30 @@ table.consts tr.row-click:hover td{background:rgba(255,138,31,.06);}
 .tool input.gname{width:160px;max-width:100%}
 .stats.cmp{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
 .stats.cmp .stat b{font-size:18px;word-break:break-word}
+/* ================= Usability pass (Oct 2026) ================= */
+/* Easier-to-read sans for body copy; headings, inputs, results and tables keep the mono look */
+.lead,.doc p,.doc li,.doc summary,.doc details p,.note,footer,.related a,.share,.back,.chips button,.chips .lbl,.row label,.cta,.btn{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
+.lead{font-size:14.5px;line-height:1.75;color:#aaa498;}
+p,li{line-height:1.75;}
+.note,footer{color:#aaa498;}
+
+/* Finger-sized tap targets (were 16-30px tall) */
+.brand{padding:12px 0;}
+.back{padding:10px 16px;font-size:13px;}
+.related a,.share{display:inline-flex;align-items:center;min-height:40px;padding:8px 14px;font-size:13px;}
+.chips button{min-height:36px;padding:8px 13px;font-size:13px;}
+.chips .lbl{font-size:13px;}
+.btn{min-height:44px;padding:11px 18px;font-size:14px;}
+.cta{min-height:44px;padding:12px 20px;font-size:14px;}
+input,select{min-height:44px;}
+.row label{font-size:13px;}
+summary{padding:6px 0;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Visible keyboard focus */
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--brand-orange);outline-offset:3px;border-radius:6px;}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(255,138,31,.45);outline-offset:1px;}
+
+/* Phones: 16px fields stop the browser zooming in when you tap one */
+@media(max-width:700px){input,select,textarea{font-size:16px;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}}
