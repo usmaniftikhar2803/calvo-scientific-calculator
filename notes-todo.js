@@ -40,8 +40,8 @@
     $('npItems').innerHTML = list.map(function (n) {
       var body = (n.body || '').replace(/\s+/g, ' ').trim();
       var title = (n.title || '').trim() || body.slice(0, 40) || 'Untitled';
-      return '<button type="button" class="np-item" data-id="' + esc(n.id) + '"><b>' + (n.pinned ? '\u{1F4CC} ' : '') + esc(title) + '</b>' +
-        '<span><small>' + fmt(n.updated || Date.now()) + '</small>' + esc(body.slice(0, 80) || 'No additional text') + '</span></button>';
+      return '<div class="np-row"><button type="button" class="np-item" data-id="' + esc(n.id) + '"><b>' + (n.pinned ? '\u{1F4CC} ' : '') + esc(title) + '</b>' +
+        '<span><small>' + fmt(n.updated || Date.now()) + '</small>' + esc(body.slice(0, 80) || 'No additional text') + '</span></button><button type="button" class="np-sh" data-share="' + esc(n.id) + '">Share</button></div>';
     }).join('');
   }
 
@@ -69,7 +69,29 @@
   }
 
   $('npNew').addEventListener('click', function () { openEditor({ id: uid(), title: '', body: '', updated: Date.now() }); });
+  function toast(m) {
+    var t = document.createElement('div'); t.className = 'np-toast'; t.textContent = m; document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2200);
+  }
+  function shareNote(title, body) {
+    title = (title || '').trim(); body = body || '';
+    var text = (title ? title + '\n' : '') + body;
+    if (!text.trim()) { toast('Note is empty'); return; }
+    if (navigator.share) {
+      navigator.share({ title: title || 'Note', text: text }).catch(function () {});
+      return;
+    }
+    var done = function () { toast('Copied. Paste it in WhatsApp or anywhere.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { toast('Could not copy'); });
+    else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (x) { toast('Could not copy'); } ta.remove(); }
+  }
+  $('npShare').addEventListener('click', function () {
+    var v = $('npBody').value, i = v.indexOf('\n');
+    shareNote(i < 0 ? v : v.slice(0, i), i < 0 ? '' : v.slice(i + 1));
+  });
   $('npItems').addEventListener('click', function (e) {
+    var sh = e.target.closest ? e.target.closest('.np-sh') : null;
+    if (sh) { var m = find(sh.getAttribute('data-share')); if (m) shareNote(m.title, m.body); return; }
     var b = e.target.closest ? e.target.closest('.np-item') : null;
     if (b) { var n = find(b.getAttribute('data-id')); if (n) openEditor(n); }
   });
