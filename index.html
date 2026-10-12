@@ -418,7 +418,8 @@
     </div>
 
     <div class="home-primary">
-      <button type="button" class="home-big" data-go="calc"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="3"/><rect x="7.5" y="6" width="9" height="3.5" rx="1"/><path d="M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01"/></svg></span><b>Calculator</b><small>Scientific calculator with history</small><i class="home-arrow">&rarr;</i></button>
+      <button type="button" class="home-big" data-go="calc" data-calcview-go="basic"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="3"/><rect x="7.5" y="6" width="9" height="3.5" rx="1"/><path d="M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01"/></svg></span><b>Basic Calculator</b><small>Simple + − × ÷ calculator</small><i class="home-arrow">&rarr;</i></button>
+      <button type="button" class="home-big" data-go="calc" data-calcview-go="scientific"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="3"/><rect x="7.5" y="6" width="9" height="3.5" rx="1"/><path d="M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01"/></svg></span><b>Scientific Calculator</b><small>sin, cos, log, history and more</small><i class="home-arrow">&rarr;</i></button>
       <a class="home-big" href="cgpa-calculator.html"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.5"/><path d="M22 9v6"/></svg></span><b>CGPA</b><small>Semester-wise CGPA calculator</small><i class="home-arrow">&rarr;</i></a>
       <button type="button" class="home-big" data-go="formulas"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span><b>Formulas</b><small>9500+ formulas across 19 subjects</small><i class="home-arrow">&rarr;</i></button>
       <button type="button" class="home-big" data-go="aisolver"><span class="home-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l2.3 6.2 6.2 2.3-6.2 2.3L12 19.5l-2.3-6.2L3.5 11l6.2-2.3z"/><path d="M19 3v4M17 5h4"/></svg></span><b>AI Solver</b><small>Step-by-step math solutions</small><i class="home-arrow">&rarr;</i></button>
@@ -461,7 +462,7 @@
 
       <!-- Basic / Scientific View Toggle -->
       <div class="calc-view-toggle" id="calcViewToggle">
-        <button class="calc-view-btn" data-calcview="basic" id="calcViewBasicBtn">Basic</button>
+        <button class="calc-view-btn" data-calcview="basic" id="calcViewBasicBtn">Basic (Simple)</button>
         <button class="calc-view-btn active" data-calcview="scientific" id="calcViewSciBtn">Scientific</button>
       </div>
 
