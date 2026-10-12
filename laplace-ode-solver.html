@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZGM4SCN6WZ');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laplace Transform &amp; Differential Equation Solver with Steps | Calvo</title>
+<meta name="description" content="Free Laplace transform, inverse Laplace and ODE solver with steps for engineering and BS Mathematics students. Solves linear differential equations with initial conditions and verifies every answer.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/laplace-ode-solver.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/laplace-ode-solver.html">
+<meta property="og:title" content="Laplace Transform &amp; Differential Equation Solver with Steps | Calvo">
+<meta property="og:description" content="Laplace, inverse Laplace and linear ODE solver with steps and initial conditions.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/og-banner.png">
+<meta property="og:site_name" content="Calvo">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Laplace Transform & Differential Equation Solver","url":"https://calvoscientificcalculator.online/laplace-ode-solver.html","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Laplace transform, inverse Laplace transform and linear ODE solver with step-by-step working."}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I solve a differential equation with the Laplace transform?","acceptedAnswer":{"@type":"Answer","text":"Transform both sides using L{y'} = sY - y(0) and L{y''} = s^2 Y - s y(0) - y'(0), solve the algebraic equation for Y(s), split it into partial fractions and take the inverse transform."}},{"@type":"Question","name":"What is the Laplace transform of sin(at)?","acceptedAnswer":{"@type":"Answer","text":"a / (s^2 + a^2)."}},{"@type":"Question","name":"What is the first shifting theorem?","acceptedAnswer":{"@type":"Answer","text":"If L{f(t)} = F(s) then L{e^(at) f(t)} = F(s - a)."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://calvoscientificcalculator.online/"},{"@type":"ListItem","position":2,"name":"Laplace & ODE Solver","item":"https://calvoscientificcalculator.online/laplace-ode-solver.html"}]}</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/tools.css">
+</head>
+<body>
+<div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
+<main class="doc">
+<h1>Laplace Transform <span>&amp; ODE Solver</span></h1>
+<p class="lead">Built for engineering and BS Mathematics students. Find Laplace and inverse Laplace transforms, or solve a linear differential equation with initial conditions, with every step shown and the final answer checked numerically.</p>
+<div class="tool">
+<div class="modes" id="modes"><button type="button" data-m="lap" class="active">Laplace L{f(t)}</button><button type="button" data-m="inv">Inverse L&#8315;&sup1;{F(s)}</button><button type="button" data-m="ode">Solve ODE</button></div>
+
+<div class="pane" id="p-lap">
+<div class="row"><input class="wide" id="f1" type="text" placeholder="f(t), e.g. t^2*e^(-3t) + sin(2t)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="f(t)"></div>
+<div class="chips"><span class="lbl">Try:</span><button type="button" data-a="t^2*e^(-3t)">t&sup2;e^(-3t)</button><button type="button" data-a="3sin(2t) + 5cos(t)">3sin2t+5cos t</button><button type="button" data-a="e^(2t)*cos(3t)">e^(2t)cos3t</button><button type="button" data-a="t*sin(2t)">t sin 2t</button><button type="button" data-a="sinh(2t) + 3t^2">sinh2t+3t&sup2;</button></div>
+</div>
+
+<div class="pane" id="p-inv" hidden>
+<div class="row"><label for="nn">N(s)</label><input id="nn" type="text" class="wide" placeholder="numerator, e.g. 2s+3" autocomplete="off" spellcheck="false" style="width:auto;flex:1"></div>
+<div class="row"><label for="dd">D(s)</label><input id="dd" type="text" class="wide" placeholder="denominator, e.g. s^2+2s+5" autocomplete="off" spellcheck="false" style="width:auto;flex:1"></div>
+<div class="chips"><span class="lbl">Try:</span><button type="button" data-n="1" data-d="(s+1)(s+2)">1/((s+1)(s+2))</button><button type="button" data-n="2s+3" data-d="s^2+2s+5">(2s+3)/(s&sup2;+2s+5)</button><button type="button" data-n="1" data-d="s^2(s+1)">1/(s&sup2;(s+1))</button><button type="button" data-n="1" data-d="(s^2+1)^2">1/(s&sup2;+1)&sup2;</button></div>
+</div>
+
+<div class="pane" id="p-ode" hidden>
+<div class="row"><input class="wide" id="eq" type="text" placeholder="e.g. y'' + 3y' + 2y = e^(-t)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Differential equation"></div>
+<div class="row"><label>Initial</label><input id="i0" type="text" placeholder="y(0)" style="width:84px" autocomplete="off"><input id="i1" type="text" placeholder="y'(0)" style="width:84px" autocomplete="off"><input id="i2" type="text" placeholder="y''(0)" style="width:84px" autocomplete="off"><span class="note">blank = 0</span></div>
+<div class="chips"><span class="lbl">Try:</span><button type="button" data-q="y'' + 3y' + 2y = 0" data-i="1,0">y''+3y'+2y=0</button><button type="button" data-q="y' + 2y = e^(-t)" data-i="1">y'+2y=e^(-t)</button><button type="button" data-q="y'' + 2y' + 5y = 10" data-i="0,0">damped + step</button><button type="button" data-q="y'' + y = sin(t)" data-i="0,0">resonance</button><button type="button" data-q="y'' - 4y' + 4y = e^(2t)" data-i="0,1">repeated root</button></div>
+</div>
+
+<div class="row"><button class="btn" id="go">Solve</button><button class="btn ghost" id="clr">Clear</button></div>
+<p class="note" style="margin:0">Use * for multiplication (2t and 3sin(2t) also work), ^ for powers, e^(...) or exp(), sin, cos, sinh, cosh. In ODEs write y', y'', y''' (up to third order, constant coefficients).</p>
+<div class="result empty" id="out">The answer and its steps will appear here.</div>
+</div>
+
+<h2>What it can solve</h2>
+<table class="f"><tr><th>Mode</th><th>Handles</th></tr>
+<tr><td>Laplace</td><td>Sums of t<sup>n</sup>, e<sup>at</sup>, sin, cos, sinh, cosh and their products, using the table, first shifting theorem and multiplication by t<sup>n</sup></td></tr>
+<tr><td>Inverse Laplace</td><td>Proper rational functions N(s)/D(s): real, repeated and complex roots via partial fractions</td></tr>
+<tr><td>ODE</td><td>Linear equations with constant coefficients up to order 3, any forcing term above, with initial conditions</td></tr></table>
+<h2>Worked example</h2>
+<p>Solve y&prime;&prime; + 3y&prime; + 2y = 0 with y(0) = 1, y&prime;(0) = 0. Transform: (s&sup2;Y &minus; s) + 3(sY &minus; 1) + 2Y = 0, hence Y = (s + 3)/((s+1)(s+2)) = 2/(s+1) &minus; 1/(s+2). Inverse: <b>y = 2e<sup>&minus;t</sup> &minus; e<sup>&minus;2t</sup></b>.</p>
+<h2>How the answer is checked</h2>
+<p>For equations the solution is differentiated and substituted back into the ODE at several values of t, and the initial conditions are tested. For inverse transforms the partial fractions are recombined and compared with F(s). A green &ldquo;verified&rdquo; badge means those tests passed.</p>
+<h2>Not supported yet</h2>
+<p>Unit step and Dirac delta functions, variable-coefficient equations, systems of equations, and non-linear equations. In those cases Calvo shows a message instead of guessing.</p>
+<h2>FAQ</h2>
+<details><summary>How do I solve a differential equation with the Laplace transform?</summary><p>Transform both sides using L{y'} = sY &minus; y(0) and L{y''} = s&sup2;Y &minus; s y(0) &minus; y'(0). Solve the algebraic equation for Y(s), split into partial fractions and take the inverse transform.</p></details>
+<details><summary>What is the Laplace transform of sin(at)?</summary><p>a / (s&sup2; + a&sup2;).</p></details>
+<details><summary>What is the first shifting theorem?</summary><p>If L{f(t)} = F(s) then L{e<sup>at</sup> f(t)} = F(s &minus; a).</p></details>
+<h2>More Calvo tools</h2>
+<div class="related"><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/limit-calculator.html">Limit Calculator</a><a href="/algebra-simplifier.html">Algebra Simplifier</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
+<p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
+</main>
+<footer>
+<a href="/blog/index.html">Blog</a> &middot; <a href="/how-to-use.html">How to Use</a> &middot; <a href="/contact.html">Contact</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a>
+<div>&copy; Calvo &mdash; Scientific Calculator &amp; Formulas</div>
+</footer>
+<script src="/ode-laplace-engine.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},C=window.CalvoODE,mode='lap',out=$('out');
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function steps(a){return '<div class="blk"><h4>Step by step</h4><div class="steps">'+a.map(function(s,i){return '<div class="stp top"><b>'+(i+1)+'.</b> '+s+'</div>'}).join('')+'</div></div>'}
+function show(h){out.className='result';out.innerHTML=h}
+function fail(m){show('<span class="err">'+esc(m)+'</span>')}
+function badge(v){return v?'<span class="okbadge">verified &#10003;</span>':''}
+function warn(v){return v?'':'<div class="warnbox">The numeric check could not confirm this answer. Please verify it by hand.</div>'}
+function run(){
+ if(mode==='lap'){var v=$('f1').value.trim();if(!v)return fail('Type f(t) first, for example t^2*e^(-3t).');
+  var r=C.laplace(v);if(!r.ok)return fail(r.error);
+  var s=steps(r.steps);if(!r.zero)s=s.replace('</div></div>','</div><div class="stp top"><b>'+(r.steps.length+1)+'.</b> Add the terms: F(s) = '+esc(r.F)+'</div></div>');
+  show('<div class="note">f(t) = '+esc(r.f||'0')+'</div><div class="ans">F(s) = '+esc(r.combined||r.F)+'</div>'+s);}
+ else if(mode==='inv'){var n=$('nn').value.trim(),d=$('dd').value.trim();if(!n||!d)return fail('Type both the numerator N(s) and the denominator D(s).');
+  var r=C.inverse(n,d);if(!r.ok)return fail(r.error);
+  var st=['Write F(s) = '+esc(r.Ftext),'Roots of the denominator: s = '+r.roots.join(', '),'Partial fractions: '+(r.pf.length?r.pf.join(' &nbsp;+&nbsp; '):'single term'),'Invert each piece with L&#8315;&sup1;{1/(s&minus;a)<sup>n</sup>} = t<sup>n&minus;1</sup>e<sup>at</sup>/(n&minus;1)! (complex pairs combine into e<sup>at</sup>cos bt and e<sup>at</sup>sin bt).'];
+  show('<div class="ans">f(t) = '+esc(r.text)+badge(r.verified)+'</div>'+warn(r.verified)+steps(st));}
+ else{var q=$('eq').value.trim();if(!q)return fail("Type an equation, for example y'' + 3y' + 2y = e^(-t).");
+  var r=C.solve(q,[$('i0').value,$('i1').value,$('i2').value]);if(!r.ok)return fail(r.error);
+  var ic=r.y0.map(function(v,i){return 'y'+Array(i+1).join("'")+'(0) = '+v}).join(', ');
+  var st=['Take the Laplace transform of both sides:<br>'+r.laps.map(esc).join('<br>')+'<br>and L{y} = Y(s), with right-hand side G(s) = '+esc(r.G),
+   'Insert the initial conditions ('+esc(ic)+'): ('+esc(r.Pfull)+') Y(s) = G(s) + ('+esc(r.Q)+')',
+   'Solve for Y(s) = ('+esc(r.YN)+') / ('+esc(r.YD)+')',
+   'Denominator roots: s = '+r.roots.join(', ')+(r.pf.length?'<br>Partial fractions: '+r.pf.join(' &nbsp;+&nbsp; '):''),
+   'Take the inverse Laplace transform term by term to get y(t).'];
+  show('<div class="ans">y(t) = '+esc(r.y)+badge(r.verified)+'</div>'+warn(r.verified)+steps(st));}
+}
+$('go').onclick=run;
+document.querySelectorAll('.tool input').forEach(function(i){i.addEventListener('keydown',function(e){if(e.key==='Enter')run()})});
+$('modes').onclick=function(e){var m=e.target.getAttribute('data-m');if(!m)return;mode=m;
+ [].forEach.call(this.children,function(b){b.className=b===e.target?'active':''});
+ ['lap','inv','ode'].forEach(function(k){$('p-'+k).hidden=k!==m});out.className='result empty';out.textContent='The answer and its steps will appear here.'};
+$('clr').onclick=function(){['f1','nn','dd','eq','i0','i1','i2'].forEach(function(i){$(i).value=''});out.className='result empty';out.textContent='The answer and its steps will appear here.'};
+document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){
+ if(b.hasAttribute('data-a'))$('f1').value=b.getAttribute('data-a');
+ if(b.hasAttribute('data-n')){$('nn').value=b.getAttribute('data-n');$('dd').value=b.getAttribute('data-d')}
+ if(b.hasAttribute('data-q')){$('eq').value=b.getAttribute('data-q');var v=(b.getAttribute('data-i')||'').split(',');['i0','i1','i2'].forEach(function(id,k){$(id).value=v[k]||''})}
+ run()}});
+})();
+</script>
+</body>
+</html>
