@@ -141,8 +141,8 @@
   ];
 
   var LABELS = {
-    en: { title: 'Solved example', q: 'Question', given: 'Given', find: 'Find', formula: 'Formula', sub: 'Substitute', ans: 'Answer', dir: 'ltr' },
-    ur: { title: 'حل شدہ مثال', q: 'سوال', given: 'دیا گیا', find: 'معلوم کریں', formula: 'فارمولا', sub: 'قدریں رکھیں', ans: 'جواب', dir: 'rtl' }
+    en: { step: 'Step', title: 'Solved example', q: 'Question', given: 'Given', find: 'Find', formula: 'Formula', sub: 'Substitute', ans: 'Answer', dir: 'ltr' },
+    ur: { step: 'مرحلہ', title: 'حل شدہ مثال', q: 'سوال', given: 'دیا گیا', find: 'معلوم کریں', formula: 'فارمولا', sub: 'قدریں رکھیں', ans: 'جواب', dir: 'rtl' }
   };
 
   var MAP = {};
@@ -163,7 +163,7 @@
     var L = LABELS[lang];
     var subs = Array.isArray(r[6]) ? r[6] : [r[6]];
     var step = function (n, label, body) {
-      return '<div class="sx-step"><span class="sx-num">' + n + '</span><div class="sx-body"><div class="sx-label">' + label +
+      return '<div class="sx-step"><div class="sx-body"><div class="sx-st" style="color:#ff8a1f;font-weight:700;font-size:0.85rem;">' + L.step + ' ' + n + '</div><div class="sx-label">' + label +
         '</div><div class="sx-math" dir="ltr">' + body + '</div></div></div>';
     };
     return '<div class="sx-pane" data-lang="' + lang + '" dir="' + L.dir + '"' + (lang === 'en' ? '' : ' lang="ur"') + '>' +
