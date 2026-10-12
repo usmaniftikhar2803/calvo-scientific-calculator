@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v84';
+const CACHE_VERSION = 'calvo-cache-v85';
 
 const CORE_ASSETS = [
   './',
@@ -59,6 +59,8 @@ const CORE_ASSETS = [
   './anova-calculator.html',
   './correlation-regression-calculator.html',
   './stats-engine.js',
+  './truth-table-kmap.html',
+  './logic-engine.js',
   './word-counter.html',
   './image-to-pdf.html',
   './compress-pdf.html',
