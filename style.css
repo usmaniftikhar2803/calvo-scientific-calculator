@@ -54,23 +54,47 @@ body[data-textsize="large"] { --app-text-zoom: 1.18; }
 
 /* ============================================
    LIGHT MODE
-   Uses a filter-invert technique instead of
-   remapping hundreds of hardcoded dark colors.
-   This is safe here because html/body are locked
-   to 100vh/100dvh with overflow:hidden (see above),
-   so the filtered box never exceeds the viewport
-   and position:fixed children stay correctly placed.
+   Base: filter-invert (flips every hardcoded dark surface
+   and text colour to light, so contrast always stays safe).
+   Problem with a plain invert: coloured parts turn muddy
+   (orange -> brown, LCD green -> dark olive, purple keys
+   drift). Fix: coloured elements are inverted a 2nd time
+   so they keep their REAL colours (orange, purple, LCD).
+   Only the OUTERMOST coloured element gets this - never
+   nest two of them or the colours flip back.
    ============================================ */
 html[data-mode="light"] body {
   filter: invert(1) hue-rotate(180deg);
 }
-/* Re-invert real images, ads, and video so they don't
-   render with inverted colors inside light mode. */
+/* Real images, ads, video: keep original colours. */
 html[data-mode="light"] img,
 html[data-mode="light"] video,
 html[data-mode="light"] .adsbygoogle,
-html[data-mode="light"] iframe {
+html[data-mode="light"] iframe,
+/* Coloured fills: keep brand orange / purple / LCD green. */
+html[data-mode="light"] :is(
+  .topbar-mark, .brand-mark, .topbar-tab.active, .calc-view-btn.active,
+  .lcd-frame, .mode-btn, .replay-btn, .key.orange, .key.purple, .key.equals,
+  .subject-tile-icon, .subject-pill.active, .pill-btn.active, .pill-btn.save-btn,
+  .grade-result-box, .ai-answer, .theme-fab, .quiz-progress-fill,
+  .periodic-detail-symbol, .ai-crop-handle, .gp-btn.active, .home-ic,
+  .sx-tab.active, .sx-num, .p-btn.primary, .prog-base-tag, .p-key,
+  .p-w-brand .mark
+),
+html[data-mode="light"] :is(.formulas-card, .stats-result-cell, .tab-panel .formulas-title)::before {
   filter: invert(1) hue-rotate(180deg);
+}
+html[data-mode="light"] .mode-btn.active {
+  filter: invert(1) hue-rotate(180deg) brightness(1.15);
+}
+/* Soft colour glow behind the home screen: show true orange/green
+   (not the inverted blue/pink blobs) and keep it subtle on white. */
+html[data-mode="light"] #tab-home::before,
+html[data-mode="light"] #tab-home::after,
+html[data-mode="light"] .tab-panel:not(#tab-calc):not(#tab-home)::before,
+html[data-mode="light"] .tab-panel:not(#tab-calc):not(#tab-home)::after {
+  filter: blur(90px) invert(1) hue-rotate(180deg);
+  opacity: .32;
 }
 [data-theme="midnight"] {
   --case-bg: #1a1a20; --case-border: #2a2a34;
