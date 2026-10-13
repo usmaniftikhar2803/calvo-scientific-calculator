@@ -437,3 +437,133 @@ footer a:hover { color: #fff !important; }
 @media (prefers-reduced-motion: reduce) {
   .tab-panel .quiz-option-btn, .tab-panel .subject-tile { transition: none; }
 }
+
+
+/* ==========================================================
+   3D KEYS, STUDENT WELCOME, "PICKED FOR YOU"
+   Pure CSS 3D (no libraries) so it stays smooth on cheap phones.
+   ========================================================== */
+
+/* ---------- Floating 3D keycaps ---------- */
+.p-scene { perspective: 900px; pointer-events: none; }
+.p-scene-inner {
+  position: absolute; inset: 0; transform-style: preserve-3d;
+  transform: rotateY(calc(var(--px, 0) * 10deg)) rotateX(calc(var(--py, 0) * -8deg));
+  transition: transform .25s ease-out;
+}
+.p-key {
+  position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%);
+  width: var(--s); height: var(--s); margin: calc(var(--s) * -.5) 0 0 calc(var(--s) * -.5);
+  display: grid; place-items: center; border-radius: calc(var(--s) * .26);
+  font: 700 calc(var(--s) * .38) var(--p-display); color: #fff3e2; line-height: 1;
+  background: linear-gradient(160deg, #ffb066, #ff8a1f 55%, #e2700a);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -4px 0 rgba(0,0,0,.16),
+              0 calc(var(--s) * .1) 0 #a8560a, 0 calc(var(--s) * .38) calc(var(--s) * .45) rgba(0,0,0,.45);
+  transform: translate3d(0, 0, var(--z)) rotateX(var(--rx)) rotateY(var(--ry));
+  animation: p-float var(--d) ease-in-out var(--dl) infinite alternate;
+  will-change: transform;
+}
+.p-key.dark {
+  color: var(--p-lcd);
+  background: linear-gradient(160deg, #4a4a54, #2e2e36 60%, #25252c);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.14), inset 0 -4px 0 rgba(0,0,0,.3),
+              0 calc(var(--s) * .1) 0 #0c0c10, 0 calc(var(--s) * .38) calc(var(--s) * .45) rgba(0,0,0,.5);
+}
+@keyframes p-float {
+  to { transform: translate3d(0, -16px, var(--z)) rotateX(calc(var(--rx) * -.6)) rotateY(calc(var(--ry) * -.6)); }
+}
+
+/* Hero: keys orbit the live calculator (desktop only; phones keep the hero clean) */
+.p-stage { position: relative; min-width: 0; }
+.p-stage .p-scene { position: absolute; inset: -34px; z-index: 0; }
+.p-stage .p-lcd { position: relative; z-index: 1; }
+@media (max-width: 860px) { .p-stage .p-scene { display: none; } }
+
+/* ---------- Student welcome ---------- */
+.p-welcome {
+  position: fixed; inset: 0; z-index: 3000; overflow: auto; outline: 0;
+  display: grid; place-items: center; padding: 20px;
+  background:
+    radial-gradient(60vmax 60vmax at 15% 10%, rgba(255,138,31,.28), transparent 60%),
+    radial-gradient(55vmax 55vmax at 90% 95%, rgba(120,170,90,.2), transparent 60%),
+    #0b0b0e;
+  transition: opacity .5s ease, transform .5s ease;
+}
+.p-welcome .p-scene { position: absolute; inset: 0; overflow: hidden; }
+.p-welcome.leaving { opacity: 0; transform: scale(1.04); pointer-events: none; }
+.p-w-card {
+  position: relative; z-index: 2; width: min(520px, 100%); border-radius: 28px; padding: 28px 24px 22px;
+  background: linear-gradient(165deg, rgba(255,255,255,.07), rgba(255,255,255,.02) 55%), rgba(19,19,24,.82);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  border: 1px solid var(--p-line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 40px 90px rgba(0,0,0,.6);
+  animation: p-rise .7s .1s cubic-bezier(.2,.7,.2,1) both;
+}
+.p-w-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; color: var(--p-paper); font: 800 1.1rem var(--p-display); }
+.p-w-brand .mark {
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #fff;
+  font: 700 .74rem 'JetBrains Mono', monospace;
+  background: linear-gradient(145deg, #ffa24a, var(--p-amber) 55%, #e2700a);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 6px 18px rgba(255,138,31,.35);
+}
+.p-w-card h2 { font: 800 clamp(1.6rem, 5.5vw, 2.15rem)/1.08 var(--p-display); letter-spacing: -0.03em; color: var(--p-paper); text-wrap: balance; }
+.p-w-card > p { margin-top: 10px; color: var(--p-mute); font-size: .95rem; line-height: 1.55; }
+.p-w-label { display: block; margin: 20px 0 8px; color: var(--p-paper); font: 600 .86rem 'Inter', sans-serif; }
+.p-w-input {
+  width: 100%; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--p-line); color: #fff;
+  background: rgba(0,0,0,.3); box-shadow: inset 0 2px 6px rgba(0,0,0,.35); font: 500 16px 'Inter', sans-serif; outline: 0;
+}
+.p-w-input::placeholder { color: #7d786c; }
+.p-w-input:focus { border-color: var(--p-amber); box-shadow: inset 0 2px 6px rgba(0,0,0,.35), 0 0 0 4px rgba(255,138,31,.16); }
+.p-levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.p-levels .p-level:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.p-level {
+  text-align: left; cursor: pointer; padding: 12px 14px; border-radius: 16px; color: var(--p-paper);
+  background: rgba(255,255,255,.04); border: 1px solid var(--p-line); font-family: 'Inter', sans-serif;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 3px 0 rgba(0,0,0,.35);
+  transition: transform .1s ease, border-color .15s ease, background .15s ease, box-shadow .1s ease;
+}
+.p-level b { display: block; font: 700 .92rem var(--p-display); }
+.p-level small { display: block; margin-top: 2px; color: var(--p-mute); font-size: .75rem; line-height: 1.35; }
+.p-level:hover { border-color: rgba(255,138,31,.5); }
+.p-level:active { transform: translateY(3px); box-shadow: none; }
+.p-level[aria-checked="true"] {
+  border-color: var(--p-amber); background: rgba(255,138,31,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 3px rgba(255,138,31,.18);
+}
+.p-w-go { width: 100%; justify-content: center; margin-top: 22px; }
+.p-w-skip { display: block; margin: 12px auto 0; background: none; border: 0; cursor: pointer; color: var(--p-mute); font: 600 .85rem 'Inter', sans-serif; padding: 6px 10px; }
+.p-w-skip:hover { color: #fff; }
+@keyframes p-rise { from { opacity: 0; transform: translateY(26px) scale(.97); } to { opacity: 1; transform: none; } }
+
+/* ---------- Picked for you (home) ---------- */
+.p-foryou { margin: 0 0 40px; }
+.p-fy-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.p-fy-head h3 { font: 800 1.35rem var(--p-display); letter-spacing: -0.02em; color: var(--p-paper); }
+.p-fy-head p { margin-top: 4px; color: var(--p-mute); font-size: .88rem; }
+.p-link { background: none; border: 0; cursor: pointer; color: var(--p-amber); font: 700 .85rem 'Inter', sans-serif; white-space: nowrap; padding: 6px 2px; }
+.p-link:hover { text-decoration: underline; }
+.p-fy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.p-pick {
+  --mx: 50%; --my: 0%;
+  display: block; width: 100%; text-align: left; text-decoration: none; cursor: pointer; color: var(--p-paper);
+  padding: 14px 16px; border-radius: 16px; border: 1px solid var(--p-line); font-family: 'Inter', sans-serif;
+  background:
+    radial-gradient(300px circle at var(--mx) var(--my), rgba(255,138,31,.15), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.28);
+  transition: border-color .15s ease, transform .15s ease, box-shadow .2s ease;
+}
+.p-pick:hover { border-color: rgba(255,138,31,.55); transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 34px rgba(255,138,31,.12); }
+.p-pick b { display: block; font: 700 .98rem var(--p-display); letter-spacing: -0.01em; }
+.p-pick small { display: block; margin-top: 3px; color: var(--p-mute); font-size: .76rem; line-height: 1.35; }
+@media (max-width: 860px) { .p-fy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Tool pages: the card rises in when you open a tool ---------- */
+.tab-panel:not(#tab-calc):not(#tab-home).active .formulas-card { animation: p-rise .45s cubic-bezier(.2,.7,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .p-key, .p-w-card, .tab-panel .formulas-card { animation: none !important; }
+  .p-scene-inner { transform: none !important; transition: none; }
+  .p-welcome { transition: none; }
+}
