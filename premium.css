@@ -208,11 +208,15 @@ footer a:hover { color: #fff !important; }
 @media (max-width: 860px) {
   .p-hero { grid-template-columns: 1fr; }
   .p-lcd { transform: none; }
-  #tab-home .home-wrap { padding: 22px 16px 56px; }
-  #tab-home .home-primary { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 460px) {
-  #tab-home .home-primary { grid-template-columns: 1fr; }
+  #tab-home .home-wrap { padding: 22px 14px 56px; }
+  /* Two tiles per row on every phone; an odd last tile spans the full row */
+  #tab-home .home-primary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  #tab-home .home-primary .home-big:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  #tab-home .home-big { padding: 16px 14px 14px; border-radius: 18px; }
+  #tab-home .home-ic { width: 42px; height: 42px; border-radius: 13px; margin-bottom: 8px; }
+  #tab-home .home-big b { font-size: 1rem; }
+  #tab-home .home-big small { font-size: .74rem; padding-right: 0; }
+  #tab-home .home-arrow { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
