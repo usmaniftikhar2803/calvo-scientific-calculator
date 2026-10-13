@@ -38,17 +38,18 @@
     run();
   }
 
-  /* ---- Cursor spotlight on tiles (sets --mx / --my, pure cosmetics) ---- */
+  /* ---- Cursor spotlight on tiles, links and result cells (sets --mx / --my, cosmetic only).
+          Delegated, so it also covers cards the app renders later. ---- */
+  var SPOT = '.home-big, .subject-tile, .merit-link, .subject-tool-row, .stats-result-cell';
   function initSpotlight() {
-    var wrap = document.querySelector('#tab-home .home-primary');
-    if (!wrap || !window.matchMedia('(hover: hover)').matches) return;
-    wrap.addEventListener('pointermove', function (e) {
-      var t = e.target.closest && e.target.closest('.home-big');
+    if (!window.matchMedia('(hover: hover)').matches) return;
+    document.addEventListener('pointermove', function (e) {
+      var t = e.target.closest && e.target.closest(SPOT);
       if (!t) return;
       var b = t.getBoundingClientRect();
       t.style.setProperty('--mx', (e.clientX - b.left) + 'px');
       t.style.setProperty('--my', (e.clientY - b.top) + 'px');
-    });
+    }, { passive: true });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initReadout(); initSpotlight(); });
