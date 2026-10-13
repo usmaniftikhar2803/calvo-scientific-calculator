@@ -613,7 +613,7 @@ function resetSubScreens(tab) {
 
 function closeOpenPopups() {
   let closed = false;
-  ['languagesOverlay', 'aboutOverlay', 'morePop', 'moreBackdrop'].forEach(id => {
+  ['languagesOverlay', 'aboutOverlay', 'morePop', 'moreBackdrop', 'themePanel', 'textSizePanel', 'topbarMenu'].forEach(id => {
     const el = document.getElementById(id);
     if (el && el.classList.contains('open')) { el.classList.remove('open'); closed = true; }
   });
@@ -622,13 +622,42 @@ function closeOpenPopups() {
   return closed;
 }
 
+/* ---------- Popups and the Back button ----------
+   Every popup (More, menu, Languages, About, Theme, Text size) gets its own
+   history entry while it is open. So Back only closes the popup and can never
+   throw the person out of the site. If a tool is picked from the popup, that
+   same entry is reused for the tool, so Back goes one step at a time. */
+const POPUP_SEL = '#morePop.open, #topbarMenu.open, #languagesOverlay.open, #aboutOverlay.open, #themePanel.open, #textSizePanel.open';
+let popupEntry = false;
+function syncPopupHistory() {
+  const open = !!document.querySelector(POPUP_SEL);
+  if (open && !popupEntry) {
+    popupEntry = true;
+    history.pushState({ tab: currentHistoryTab, sub: subDepth(currentHistoryTab), popup: 1 }, '', location.href);
+  } else if (!open && popupEntry) {
+    popupEntry = false;      // closed by tapping outside / X / Esc: drop its entry
+    history.back();
+  }
+}
+['morePop', 'topbarMenu', 'languagesOverlay', 'aboutOverlay', 'themePanel', 'textSizePanel'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el && typeof MutationObserver !== 'undefined') new MutationObserver(syncPopupHistory).observe(el, { attributes: true, attributeFilter: ['class'] });
+});
+
 function navigateToTab(tabName, remember) {
   // Opening a tool from outside always starts at its first screen, so the
   // history entries and the visible screen can never disagree.
   resetSubScreens(tabName);
-  if (tabName === currentHistoryTab) { activateTab(tabName, remember); return; }
+  const reuseEntry = popupEntry;      // a popup entry is on top of the stack
+  popupEntry = false;
+  if (tabName === currentHistoryTab) {
+    activateTab(tabName, remember);
+    if (reuseEntry) history.back();   // same screen: just remove the popup entry
+    return;
+  }
   activateTab(tabName, remember);
-  history.pushState({ tab: tabName, sub: 0 }, '', location.href);
+  if (reuseEntry) history.replaceState({ tab: tabName, sub: 0 }, '', location.href);
+  else history.pushState({ tab: tabName, sub: 0 }, '', location.href);
   currentHistoryTab = tabName;
 }
 
@@ -654,6 +683,11 @@ Object.keys(SUB_SCREENS).forEach(tab => {
 
 window.addEventListener('popstate', (e) => {
   // A popup is open: back only closes it, and we stay on the same screen.
+  if (popupEntry) {
+    popupEntry = false;
+    closeOpenPopups();
+    return;
+  }
   if (closeOpenPopups()) {
     history.pushState({ tab: currentHistoryTab, sub: subDepth(currentHistoryTab) }, '', location.href);
     return;
@@ -851,13 +885,27 @@ let restoredTab = 'home';
 try {
   if (/bot|crawl|spider|lighthouse|pagespeed|headless/i.test(navigator.userAgent)) restoredTab = 'calc';
 } catch (e) {}
+// Back/forward from another page of the site: reopen the tool the person left,
+// instead of dropping them on Home.
+let backState = null;
+try {
+  const nav = performance.getEntriesByType('navigation')[0];
+  const st = history.state;
+  if (nav && nav.type === 'back_forward' && st && st.tab && document.getElementById('tab-' + st.tab)) backState = st;
+} catch (e) {}
+if (backState) restoredTab = backState.tab;
 activateTab(restoredTab, false);
 currentHistoryTab = restoredTab;
-history.replaceState({ tab: 'home', sub: 0 }, '', location.href);
-if (restoredTab !== 'home') {
-  // Not on Home (bots only) - still push the one extra entry so the back
-  // button behaves the same as normal in-app navigation.
-  history.pushState({ tab: restoredTab, sub: 0 }, '', location.href);
+if (backState) {
+  if (backState.popup) history.back();   // a popup was open when the person left: step over that entry
+  else history.replaceState({ tab: restoredTab, sub: 0 }, '', location.href);
+} else {
+  history.replaceState({ tab: 'home', sub: 0 }, '', location.href);
+  if (restoredTab !== 'home') {
+    // Not on Home (bots only) - still push the one extra entry so the back
+    // button behaves the same as normal in-app navigation.
+    history.pushState({ tab: restoredTab, sub: 0 }, '', location.href);
+  }
 }
 
 /* ---------- DISPLAY ---------- */
