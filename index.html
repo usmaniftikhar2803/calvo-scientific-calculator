@@ -142,8 +142,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="premium.css">
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
@@ -409,12 +410,37 @@
 <!-- ========== HOME TAB (What do you want to do?) ========== -->
 <section class="tab-panel active" id="tab-home">
   <div class="home-wrap">
-    <div class="home-hero">
+    <div class="p-hero">
       <div>
-        <h2>What do you want to do?</h2>
-        <p>Pick a tool to get started. You can switch any time from the top bar.</p>
+        <h2>Type a problem.<span>Get the answer and the steps.</span></h2>
+        <p class="p-lede">A scientific calculator, 9500+ formulas, an AI math solver and the everyday PDF tools students need. Free, private, and it keeps working offline.</p>
+        <div class="p-cta">
+          <button type="button" class="p-btn primary" data-go="calc" data-calcview-go="scientific">Open the calculator</button>
+          <button type="button" class="p-btn ghost" data-go="aisolver">Try the AI Solver</button>
+        </div>
+        <div class="p-proof">
+          <div><b>9500+</b>formulas</div>
+          <div><b>19</b>subjects</div>
+          <div><b>0</b>sign-ups needed</div>
+          <div><b>Offline</b>after first visit</div>
+        </div>
       </div>
-      <button type="button" class="home-skip" data-go="calc">Skip to Calculator &rarr;</button>
+      <div class="p-lcd" aria-label="Live calculator">
+        <div class="p-screen">
+          <div class="p-screen-top"><span>CALVO</span><span>LIVE</span></div>
+          <div>
+            <input id="pIn" class="p-in" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Type an expression" placeholder="Try sqrt(144) + 2^3" value="sqrt(144) + 2^3">
+            <div id="pOut" class="p-out" aria-live="polite">20</div>
+          </div>
+        </div>
+        <div class="p-chips">
+          <button type="button" class="p-chip" data-expr="sin(pi/2)">sin(π/2)</button>
+          <button type="button" class="p-chip" data-expr="log(1000)">log(1000)</button>
+          <button type="button" class="p-chip" data-expr="200*15%">15% of 200</button>
+          <button type="button" class="p-chip" data-expr="9.8*2^2/2">½gt²</button>
+        </div>
+        <div class="p-hand"><span>Results update as you type.</span><button type="button" data-go="calc" data-calcview-go="scientific">Open full calculator</button></div>
+      </div>
     </div>
 
     <div class="home-primary">
@@ -430,6 +456,7 @@
     </div>
 
     <div class="home-all-title">All tools</div>
+    <p class="p-sub">Search, or browse by what you are trying to do.</p>
     <div class="home-groups" id="homeTools"></div>
   </div>
 </section>
@@ -1911,6 +1938,7 @@ Biology,10</textarea>
 <script src="question-bank.js"></script>
 <script src="subject-tools.js"></script>
 <script src="script.js"></script>
+<script src="premium.js"></script>
 <script src="ai-solver.js"></script>
 <script src="urdu-notes.js"></script>
 <script src="solved-examples.js"></script>
