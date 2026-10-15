@@ -1,0 +1,497 @@
+/* ==========================================================
+   CALVO — LIGHT MODE for tool, formula and blog pages
+   ("Indigo & Teal on cool white" — same palette as the main app)
+   Loaded ONLY when light mode is on, by /light-pages.js.
+   Print styles are left alone on purpose.
+   ========================================================== */
+html[data-mode="light"] {
+  --bg-void:#f3f5fb; --panel:#ffffff; --panel-border:#d9dfeb; --rule:#d9dfeb;
+  --text:#1e293b; --text-dim:#64748b;
+  --brand-orange:#4f46e5; --brand-orange-deep:#3730a3;
+  color-scheme: light;
+  background:#f3f5fb;
+}
+html[data-mode="light"] select, html[data-mode="light"] input, html[data-mode="light"] textarea { color-scheme: light; background:#ffffff; color:#1e293b; }
+html[data-mode="light"] .tool input[type=date], html[data-mode="light"] .tool textarea.wide { background:#ffffff; color:#1e293b; }
+html[data-mode="light"] ::placeholder { color:#94a3b8; }
+
+html[data-mode="light"] {
+  --bg-void: #f3f5fb;
+  --brand-orange: #4f46e5;
+  --brand-orange-deep: #3730a3;
+  --key-bg: #ffffff;
+  --panel: #ffffff;
+  --panel-border: #d9dfeb;
+  --rule: #d9dfeb;
+  --text: #1e293b;
+  --text-dim: #64748b;
+}
+:where(html[data-mode="light"]) body {
+  background: radial-gradient(ellipse 800px 500px at 50% -10%,rgba(79,70,229,.07),transparent 60%),var(--bg-void);
+}
+:where(html[data-mode="light"]) .brand-dot {
+  box-shadow: 0 0 8px rgba(79,70,229,.7);
+}
+:where(html[data-mode="light"]) b {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .tool {
+  background: #f8faff;
+}
+:where(html[data-mode="light"]) option {
+  background: #ffffff;
+  color: #1e293b;
+}
+:where(html[data-mode="light"]) input,
+:where(html[data-mode="light"]) select {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .btn {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .btn:hover {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .result {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .cta {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .cta:hover {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) summary {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .gp-overlay {
+  background: rgba(15,23,42,0.078);
+}
+:where(html[data-mode="light"]) .gp-box {
+  background: #ffffff;
+  border: 1px solid #d9dfeb;
+}
+:where(html[data-mode="light"]) .gp-title {
+  color: #64748b;
+}
+:where(html[data-mode="light"]) .gp-btn {
+  background: #f3f5fb;
+  color: #0f172a;
+  border: 1px solid #d9dfeb;
+}
+:where(html[data-mode="light"]) .gp-btn.active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+}
+:where(html[data-mode="light"]) .tool h3 {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .eqout {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .okmark {
+  color: #15803d;
+}
+:where(html[data-mode="light"]) .err {
+  color: #c2410c;
+}
+:where(html[data-mode="light"]) .ans {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .okbadge {
+  border: 1px solid #15803d;
+  color: #15803d;
+}
+:where(html[data-mode="light"]) .warnbox {
+  color: #c2410c;
+}
+:where(html[data-mode="light"]) .tool input[type=date] {
+  background: rgba(15,23,42,0.054);
+}
+:where(html[data-mode="light"]) .tool textarea.wide {
+  background: rgba(15,23,42,0.054);
+}
+:where(html[data-mode="light"]) .stat b {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .pt button {
+  border: 1px solid rgba(15,23,42,.18);
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .legend button {
+  border: 1px solid rgba(15,23,42,.25);
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .modes button.active {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .estbadge {
+  border: 1px solid #6366f1;
+  color: #6366f1;
+}
+:where(html[data-mode="light"]) .dnebadge {
+  border: 1px solid #c2410c;
+  color: #c2410c;
+}
+:where(html[data-mode="light"]) .ss-idea {
+  background: rgba(79,70,229,.08);
+}
+:where(html[data-mode="light"]) .ss-card {
+  background: #f8faff;
+}
+:where(html[data-mode="light"]) .ss-say {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .ss-math {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .ss-final {
+  border: 2px solid #15803d;
+}
+:where(html[data-mode="light"]) .ss-final-t {
+  color: #15803d;
+}
+:where(html[data-mode="light"]) .stat {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .plot {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) table.consts tr.row-click:hover td {
+  background: rgba(79,70,229,.06);
+}
+:where(html[data-mode="light"]) .tagx {
+  border: 1px solid #15803d;
+  color: #15803d;
+}
+:where(html[data-mode="light"]) .toast {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .lead {
+  color: #64748b;
+}
+:where(html[data-mode="light"]) .note,
+:where(html[data-mode="light"]) footer {
+  color: #64748b;
+}
+:where(html[data-mode="light"]) input:focus-visible,
+:where(html[data-mode="light"]) select:focus-visible,
+:where(html[data-mode="light"]) textarea:focus-visible {
+  outline: 2px solid rgba(79,70,229,.45);
+}
+:where(html[data-mode="light"]) .btn {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35),0 4px 0 var(--brand-orange-deep),0 9px 16px rgba(15,23,42,0.08);
+}
+:where(html[data-mode="light"]) .btn:active {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2),0 0 0 var(--brand-orange-deep),0 2px 4px rgba(15,23,42,0.08);
+}
+:where(html[data-mode="light"]) .btn.ghost {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #cbd5e1,0 9px 16px rgba(15,23,42,0.07);
+}
+:where(html[data-mode="light"]) .btn.ghost:active {
+  box-shadow: 0 0 0 #cbd5e1,0 2px 4px rgba(15,23,42,0.08);
+}
+:where(html[data-mode="light"]) .cta {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35),0 4px 0 var(--brand-orange-deep),0 9px 16px rgba(15,23,42,0.08);
+}
+:where(html[data-mode="light"]) .back,
+:where(html[data-mode="light"]) .related a,
+:where(html[data-mode="light"]) .share,
+:where(html[data-mode="light"]) .chips button {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07),0 3px 0 #cbd5e1;
+}
+:where(html[data-mode="light"]) .doc {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06),0 8px 0 rgba(15,23,42,0.08),0 26px 50px rgba(15,23,42,0.1);
+}
+:where(html[data-mode="light"]) .tool {
+  box-shadow: inset 0 3px 10px rgba(15,23,42,0.09),0 1px 0 rgba(255,255,255,.05);
+}
+:where(html[data-mode="light"]) .result {
+  box-shadow: inset 0 3px 8px rgba(15,23,42,0.1);
+}
+:where(html[data-mode="light"]) input,
+:where(html[data-mode="light"]) select {
+  box-shadow: inset 0 2px 6px rgba(15,23,42,0.09);
+}
+:where(html[data-mode="light"]) body {
+  background: radial-gradient(ellipse 800px 500px at 50% -10%, rgba(79,70,229,0.08), transparent 60%),
+      var(--bg-void);
+}
+:where(html[data-mode="light"]) .brand-dot {
+  box-shadow: 0 0 8px rgba(79,70,229,0.7);
+}
+:where(html[data-mode="light"]) .calc-icon {
+  box-shadow: 0 10px 40px rgba(79,70,229,0.25);
+}
+:where(html[data-mode="light"]) .calc-icon span {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .btn-primary {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) body {
+  background: radial-gradient(ellipse 800px 500px at 50% -10%, rgba(79,70,229,0.07), transparent 60%),
+      var(--bg-void);
+}
+:where(html[data-mode="light"]) li b,
+:where(html[data-mode="light"]) p b {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) form.contact-form button {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) form.contact-form button:hover {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .tool:target {
+  box-shadow: 0 0 0 1px rgba(79,70,229,.4);
+}
+:where(html[data-mode="light"]) .langbar button.on,
+:where(html[data-mode="light"]) .chips.cls button.on {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .badmark {
+  color: #c2410c;
+}
+:where(html[data-mode="light"]) .st h5 {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .mathblk {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) i.v {
+  color: #4338ca;
+}
+:where(html[data-mode="light"]) .ex {
+  background: #f8faff;
+}
+:where(html[data-mode="light"]) .ex .tag {
+  border: 1px solid rgba(79,70,229,.4);
+}
+:where(html[data-mode="light"]) .exeq {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .drop:hover,
+:where(html[data-mode="light"]) .drop.over {
+  background: rgba(79,70,229,.05);
+}
+:where(html[data-mode="light"]) .it {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .tool {
+  background: linear-gradient(165deg,rgba(79,70,229,.16),rgba(15,23,42,0.027) 55%),#f8faff;
+  border: 1px solid rgba(79,70,229,.35);
+  box-shadow: 0 10px 28px rgba(79,70,229,.10);
+}
+:where(html[data-mode="light"]) .drop {
+  background: rgba(79,70,229,.06);
+  border-color: rgba(79,70,229,.45);
+}
+:where(html[data-mode="light"]) .drop:hover,
+:where(html[data-mode="light"]) .drop.over {
+  background: rgba(79,70,229,.14);
+}
+:where(html[data-mode="light"]) .it {
+  background: rgba(15,23,42,0.042);
+  border-color: rgba(79,70,229,.22);
+}
+:where(html[data-mode="light"]) .stat {
+  background: rgba(15,23,42,0.042);
+  border-color: rgba(79,70,229,.22);
+}
+:where(html[data-mode="light"]) .cv-tpl {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .cv-tpl.on {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .cv-tabs button {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .cv-tabs button.on {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .cv-form details {
+  border: 1px solid rgba(79,70,229,.22);
+  background: rgba(15,23,42,0.034);
+}
+:where(html[data-mode="light"]) .cv-ent {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .cv-pp {
+  background: #ffffff;
+}
+:where(html[data-mode="light"]) .chk input {
+  accent-color: #4f46e5;
+}
+:where(html[data-mode="light"]) .cv-pages canvas {
+  box-shadow: 0 6px 24px rgba(15,23,42,0.12);
+}
+:where(html[data-mode="light"]) .cv-warn {
+  color: #4338ca;
+}
+:where(html[data-mode="light"]) .subj.lab {
+  background: rgba(79,70,229,.10);
+  border: 1px solid rgba(79,70,229,.55);
+  box-shadow: 0 0 0 1px rgba(79,70,229,.06) inset;
+}
+:where(html[data-mode="light"]) .subj.lab:focus-within {
+  background: rgba(79,70,229,.14);
+}
+:where(html[data-mode="light"]) li b {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .keycap {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .tip-box {
+  background: rgba(79,70,229,0.06);
+  border: 1px solid rgba(79,70,229,0.25);
+}
+:where(html[data-mode="light"]) .sc-stage {
+  background: #cbd5e1;
+  border: 1px solid rgba(79,70,229,.25);
+}
+:where(html[data-mode="light"]) .sc-stage canvas {
+  box-shadow: 0 6px 24px rgba(15,23,42,0.12);
+}
+:where(html[data-mode="light"]) .sc-nav {
+  background: rgba(15,23,42,0.066);
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .sc-adj {
+  border: 1px solid rgba(79,70,229,.22);
+  background: rgba(15,23,42,0.036);
+}
+:where(html[data-mode="light"]) .sc-adj input[type=range] {
+  accent-color: #4f46e5;
+}
+:where(html[data-mode="light"]) .sc-tools button {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .sc-t i {
+  background: rgba(15,23,42,0.084);
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .cr-overlay {
+  background: rgba(15,23,42,0.11);
+}
+:where(html[data-mode="light"]) .cr-stage canvas {
+  box-shadow: 0 6px 28px rgba(15,23,42,0.14);
+}
+:where(html[data-mode="light"]) .sub {
+  background: rgba(79,70,229,.10);
+  border: 1px solid rgba(79,70,229,.55);
+}
+:where(html[data-mode="light"]) .sub:focus-within {
+  background: rgba(79,70,229,.14);
+}
+:where(html[data-mode="light"]) .po-tabs button {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .po-tabs button.on {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .it {
+  border: 1px solid rgba(79,70,229,.22);
+  background: rgba(15,23,42,0.042);
+}
+:where(html[data-mode="light"]) .tiles {
+  border: 1px solid rgba(79,70,229,.18);
+  background: rgba(15,23,42,0.03);
+}
+:where(html[data-mode="light"]) .pg {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .pg .th {
+  background: #ffffff;
+}
+:where(html[data-mode="light"]) .pg.on::after {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .np {
+  background: #f8faff;
+}
+:where(html[data-mode="light"]) .np-item:active {
+  background: rgba(79,70,229,.08);
+}
+:where(html[data-mode="light"]) .np-sh:active {
+  background: rgba(79,70,229,.12);
+}
+:where(html[data-mode="light"]) .np-toast {
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .np-item small {
+  color: #64748b;
+}
+:where(html[data-mode="light"]) .np-fab {
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(79,70,229,.35);
+}
+:where(html[data-mode="light"]) .np-ed {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .np-bar .saved {
+  color: #64748b;
+}
+:where(html[data-mode="light"]) #ntMsg {
+  color: #4338ca;
+}
+:where(html[data-mode="light"]) .phview canvas {
+  border: 1px solid rgba(79,70,229,.55);
+  box-shadow: 0 6px 22px rgba(15,23,42,0.1);
+}
+:where(html[data-mode="light"]) .phctl input[type=range],
+:where(html[data-mode="light"]) #phTol {
+  accent-color: #4f46e5;
+}
+:where(html[data-mode="light"]) .sizes button {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .sizes button.on {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .phout img {
+  border: 1px solid rgba(79,70,229,.35);
+}
+:where(html[data-mode="light"]) .warn-box {
+  background: rgba(79,70,229,0.06);
+  border: 1px solid rgba(79,70,229,0.25);
+}
+:where(html[data-mode="light"]) .tp-tpl {
+  background: #f3f5fb;
+}
+:where(html[data-mode="light"]) .tp-tpl.on {
+  color: #ffffff;
+}
+:where(html[data-mode="light"]) .tp-prev canvas {
+  box-shadow: 0 6px 26px rgba(15,23,42,0.12);
+}
+:where(html[data-mode="light"]) .kc {
+  background: #f3f5fb;
+  color: #0f172a;
+}
+:where(html[data-mode="light"]) .kc.v0 {
+  color: #64748b;
+}
+:where(html[data-mode="light"]) .kc.v2 {
+  color: #3b5bdb;
+}
+:where(html[data-mode="light"]) table.tt .fcol {
+  background: rgba(79,70,229,.07);
+}
+:where(html[data-mode="light"]) table.tt td.ox {
+  color: #3b5bdb;
+}
+/* ghost buttons: keep dark text on a light surface (the filled .btn rule above makes text white) */
+html[data-mode="light"] .btn.ghost { background:#ffffff; color:#1e293b; border:1px solid #d9dfeb; }
+html[data-mode="light"] .btn.ghost:hover { background:#eef2ff; color:#3730a3; border-color:#4f46e5; }
+
+/* coloured chips / periodic-table cells keep white text on their own colour */
+html[data-mode="light"] .pt button, html[data-mode="light"] .pt button b, html[data-mode="light"] .pt button i, html[data-mode="light"] .legend button { color:#ffffff; }
+html[data-mode="light"] .pt button.sel { outline-color:#0f172a; }
+/* 404 secondary button */
+html[data-mode="light"] .btn-secondary { background:#ffffff; color:#1e293b; border:1px solid #d9dfeb; }
+html[data-mode="light"] .btn-secondary:hover { border-color:#4f46e5; color:#3730a3; }
+
