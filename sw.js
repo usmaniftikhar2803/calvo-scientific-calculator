@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v95';
+const CACHE_VERSION = 'calvo-cache-v96';
 
 const CORE_ASSETS = [
   './',
@@ -20,6 +20,8 @@ const CORE_ASSETS = [
   './style.css',
   './premium.css',
   './light-theme.css',
+  './light-pages.css',
+  './light-pages.js',
   './premium.js',
   './script.js',
   './i18n.js',
