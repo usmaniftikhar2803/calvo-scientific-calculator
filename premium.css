@@ -726,3 +726,10 @@ html[data-theme="lavender"] {
   --p-lcd: #d5d0e3; --p-lcd-dim: #88819d;
   --page-bg: #0d0c10; --page-bg-rgb: 13,12,16;
 }
+
+/* ---------- Static home text (crawlable HTML) ---------- */
+#tab-home .home-static { max-width: 860px; margin-top: 14px; color: var(--p-mute, #b9b5aa); font-size: .97rem; line-height: 1.8; }
+#tab-home .home-static p { margin: 0 0 14px; }
+#tab-home .home-static h3 { margin: 26px 0 8px; font-size: 1.08rem; color: var(--p-paper, #e8e5db); }
+#tab-home .home-static a { color: #ff8a1f; text-decoration: none; border-bottom: 1px solid rgba(255,138,31,.35); }
+#tab-home .home-static a:hover { border-bottom-color: #ff8a1f; }
