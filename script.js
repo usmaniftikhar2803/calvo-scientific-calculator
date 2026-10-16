@@ -501,12 +501,26 @@ if (languagesOverlay) {
     if (e.target === languagesOverlay) languagesOverlay.classList.remove('open');
   });
 }
+/* The language buttons are built here (not written in the HTML) so the home page
+   markup holds real content instead of a list of 25 language names. */
+const CALVO_LANGUAGES = [["en", "English"], ["ur", "اردو (Urdu)"], ["ar", "العربية (Arabic)"], ["fr", "Français (French)"], ["es", "Español (Spanish)"], ["hi", "हिन्दी (Hindi)"], ["zh", "中文 (Chinese)"], ["tr", "Türkçe (Turkish)"], ["de", "Deutsch (German)"], ["ru", "Русский (Russian)"], ["bn", "বাংলা (Bengali)"], ["fa", "فارسی (Persian / Farsi)"], ["ps", "پښتو (Pashto)"], ["pa", "پنجابی (Punjabi)"], ["id", "Bahasa Indonesia"], ["pt", "Português (Portuguese)"], ["ja", "日本語 (Japanese)"], ["ko", "한국어 (Korean)"], ["vi", "Tiếng Việt (Vietnamese)"], ["sw", "Kiswahili (Swahili)"], ["arz", "مصري (Egyptian Arabic)"], ["afb", "خليجي (Gulf Arabic)"], ["apc", "شامي (Levantine Arabic)"], ["ary", "دارجة (Maghrebi / Moroccan Arabic)"], ["acm", "عراقي (Iraqi Arabic)"]];
 if (languageList) {
-  languageList.querySelectorAll('.language-option').forEach(opt => {
-    opt.addEventListener('click', () => {
-      setLanguage(opt.dataset.lang);
-    });
+  CALVO_LANGUAGES.forEach(([code, label]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'language-option';
+    btn.dataset.lang = code;
+    const name = document.createElement('span');
+    name.textContent = label;
+    const check = document.createElement('span');
+    check.className = 'lang-check';
+    check.innerHTML = '&#10003;';
+    btn.appendChild(name);
+    btn.appendChild(check);
+    btn.addEventListener('click', () => setLanguage(code));
+    languageList.appendChild(btn);
   });
+  if (typeof updateLanguageModalUI === 'function') updateLanguageModalUI();
 }
 
 /* Share Feedback */
