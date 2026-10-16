@@ -268,6 +268,15 @@ const memIndicator = document.getElementById('memIndicator');
 })();
 
 /* ---------- LIGHT / DARK MODE ---------- */
+function updateMetaThemeColor() {
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (!m) return;
+  const root = document.documentElement;
+  if (root.getAttribute('data-mode') === 'light') { m.setAttribute('content', '#f3f5fb'); return; }
+  const c = root.hasAttribute('data-theme')
+    ? getComputedStyle(root).getPropertyValue('--accent').trim() : '';
+  m.setAttribute('content', c || '#ff9500');
+}
 const menuColorMode = document.getElementById('menuColorMode');
 const colorModeIcon = document.getElementById('colorModeIcon');
 const colorModeLabel = document.getElementById('colorModeLabel');
@@ -285,6 +294,7 @@ function applyColorMode(mode) {
     if (colorModeLabel) colorModeLabel.textContent = t('menu_color_mode') || 'Light Mode';
   }
   try { localStorage.setItem('calvo_color_mode', mode); } catch (e) {}
+  updateMetaThemeColor();
 }
 
 if (menuColorMode) {
@@ -359,6 +369,7 @@ function applyTheme(themeId) {
   }
   buildThemeGrid();
   try { localStorage.setItem('calvo_theme', themeId); } catch(e) {}
+  updateMetaThemeColor();
 }
 
 if (menuTheme) {
@@ -375,6 +386,9 @@ themeClose.addEventListener('click', () => {
 });
 
 document.addEventListener('click', (e) => {
+  // buildThemeGrid() re-creates the buttons on every pick, so the clicked
+  // button is already detached here: don't treat that as an outside click.
+  if (!e.target.isConnected) return;
   if (!themePanel.contains(e.target) && e.target !== menuTheme && !(menuTheme && menuTheme.contains(e.target))) {
     themePanel.classList.remove('open');
   }
