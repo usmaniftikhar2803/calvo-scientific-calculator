@@ -277,108 +277,7 @@ if(_t&&/^(midnight|ocean|rose|slate|forest|grape|mint|ember|sunflower|coral|lave
       <span data-i18n="languages_title">Choose Language</span>
       <button class="theme-close" id="languagesClose">&#10005;</button>
     </div>
-    <div class="language-list" id="languageList">
-      <button class="language-option active" data-lang="en">
-        <span>English</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ur">
-        <span>&#1575;&#1585;&#1583;&#1608; (Urdu)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ar">
-        <span>&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577; (Arabic)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="fr">
-        <span>Fran&#231;ais (French)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="es">
-        <span>Espa&#241;ol (Spanish)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="hi">
-        <span>&#2361;&#2367;&#2344;&#2381;&#2342;&#2368; (Hindi)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="zh">
-        <span>&#20013;&#25991; (Chinese)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="tr">
-        <span>T&#252;rk&#231;e (Turkish)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="de">
-        <span>Deutsch (German)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ru">
-        <span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081; (Russian)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="bn">
-        <span>&#2476;&#2494;&#2434;&#2482;&#2494; (Bengali)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="fa">
-        <span>&#1601;&#1575;&#1585;&#1587;&#1740; (Persian / Farsi)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ps">
-        <span>&#1662;&#1690;&#1578;&#1608; (Pashto)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="pa">
-        <span>&#1662;&#1606;&#1580;&#1575;&#1576;&#1740; (Punjabi)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="id">
-        <span>Bahasa Indonesia</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="pt">
-        <span>Portugu&#234;s (Portuguese)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ja">
-        <span>&#26085;&#26412;&#35486; (Japanese)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ko">
-        <span>&#54620;&#44397;&#50612; (Korean)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="vi">
-        <span>Ti&#7871;ng Vi&#7879;t (Vietnamese)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="sw">
-        <span>Kiswahili (Swahili)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="arz">
-        <span>&#1605;&#1589;&#1585;&#1610; (Egyptian Arabic)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="afb">
-        <span>&#1582;&#1604;&#1610;&#1580;&#1610; (Gulf Arabic)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="apc">
-        <span>&#1588;&#1575;&#1605;&#1610; (Levantine Arabic)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="ary">
-        <span>&#1583;&#1575;&#1585;&#1580;&#1577; (Maghrebi / Moroccan Arabic)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-      <button class="language-option" data-lang="acm">
-        <span>&#1593;&#1585;&#1575;&#1602;&#1610; (Iraqi Arabic)</span>
-        <span class="lang-check">&#10003;</span>
-      </button>
-    </div>
+    <div class="language-list" id="languageList"></div>
   </div>
 </div>
 
@@ -473,6 +372,32 @@ if(_t&&/^(midnight|ocean|rose|slate|forest|grape|mint|ember|sunflower|coral|lave
     <div class="home-all-title">All tools</div>
     <p class="p-sub">Search, or browse by what you are trying to do.</p>
     <div class="home-groups" id="homeTools"></div>
+
+    <div class="home-all-title" style="margin-top:56px;">About Calvo</div>
+    <section class="home-static" id="homeStatic">
+      <p>Calvo is a free study toolkit for students in Pakistan, from 9th class to university. It puts a scientific calculator, a formula library, a step-by-step math solver and the small tools students need every week (CGPA, merit aggregate, PDF and photo tools) on one website. Nothing needs an account, and the document tools run in your browser, so your files are not uploaded to a server.</p>
+
+      <h3>Calculators for marks, grades and admission</h3>
+      <p>Most Pakistani students need the same few calculations again and again. Calvo has a <a href="gpa-calculator.html">GPA calculator</a> based on the HEC table, a <a href="cgpa-calculator.html">CGPA calculator</a> for several semesters, a <a href="cgpa-to-percentage-calculator.html">CGPA to percentage converter</a> and a <a href="target-cgpa-calculator.html">target CGPA calculator</a> that tells you what GPA you need next semester. For admissions there are merit calculators for <a href="mdcat-aggregate-calculator.html">MDCAT</a>, <a href="ecat-aggregate-calculator.html">ECAT (UET)</a>, <a href="nust-aggregate-calculator.html">NUST</a> and <a href="fast-aggregate-calculator.html">FAST-NU</a>, and the <a href="aggregate-calculator.html">combined aggregate calculator</a> can also work backwards to the test marks you need. The <a href="attendance-calculator.html">attendance calculator</a> shows how many classes you can still miss while staying above 75%.</p>
+
+      <h3>Math with steps, not just answers</h3>
+      <p>The <a href="derivative-calculator.html">derivative</a>, <a href="integral-calculator.html">integral</a> and <a href="limit-calculator.html">limit</a> calculators show the rule used at each step and check the result numerically. The <a href="algebra-simplifier.html">algebra simplifier</a> expands, factorises and simplifies expressions, the <a href="quadratic-equation-solver.html">quadratic equation solver</a> shows the working, and <a href="matrix-calculator.html">matrix</a>, <a href="vector-calculator.html">vector</a> and <a href="complex-number-calculator.html">complex number</a> calculators cover the university topics. Engineering and BS Mathematics students can use the <a href="laplace-ode-solver.html">Laplace and ODE solver</a>, and statistics students have <a href="hypothesis-test-calculator.html">hypothesis tests</a>, <a href="anova-calculator.html">ANOVA</a> and <a href="correlation-regression-calculator.html">correlation and regression</a>.</p>
+
+      <h3>Science and formulas</h3>
+      <p>The formula library holds thousands of formulas that you can search by keyword, and many have a short Urdu explanation. If you study from the textbook, the <a href="class-wise-formulas.html">class-wise formula pages</a> are organised by 9th, 10th, 1st year and 2nd year, subject by subject. The <a href="chemical-equation-balancer.html">chemical equation balancer</a> gives a balanced equation with the steps, the <a href="molar-mass-calculator.html">molar mass calculator</a> breaks a formula down element by element, and there is an interactive <a href="periodic-table.html">periodic table</a>, a list of <a href="physical-constants.html">physical constants</a>, a <a href="trigonometry-cheat-sheet.html">trigonometry cheat sheet</a>, <a href="ohms-law-calculator.html">Ohm's law</a> and <a href="resistor-calculator.html">resistor</a> calculators, and a <a href="projectile-motion-calculator.html">projectile motion calculator</a>. Computer science students can generate a <a href="truth-table-kmap.html">truth table and K-map</a> from a Boolean expression.</p>
+
+      <h3>Document tools for forms and assignments</h3>
+      <p>Admission and scholarship forms usually ask for a small PDF or a photo at an exact size. The <a href="photo-resizer.html">photo resizer</a> crops to passport or CNIC size and compresses to a target size in KB, the <a href="image-to-pdf.html">document scanner</a> turns phone photos into one PDF, the <a href="compress-pdf.html">PDF compressor</a> reduces a file to fit an upload limit, and <a href="merge-split-pdf.html">merge and split PDF</a> joins or separates pages. You can also make an assignment <a href="title-page-generator.html">title page</a>, a <a href="cv-builder.html">CV</a>, and keep a homework list in <a href="notes-todo.html">Notes &amp; To-Do</a>.</p>
+
+      <h3>The AI math solver</h3>
+      <p>The AI Solver explains a problem step by step in plain language. It works with your own free Gemini API key, so your questions are sent from your browser using your key and not through a Calvo account. Use it to understand a method, then try the next problem yourself.</p>
+
+      <h3>Guides and the blog</h3>
+      <p>The <a href="blog/index.html">Calvo blog</a> has worked examples (quadratics, trigonometry, differentiation, physics numericals), explanations of GPA versus CGPA and Punjab versus Federal Board grading, and career guides for after Matric and after FSc. The <a href="how-to-use.html">How to Use</a> page explains every button in the calculator.</p>
+
+      <h3>Built by a student-focused developer</h3>
+      <p>Calvo is built and maintained by Hafiz Muhammad Usman, a software developer. Bug reports and suggestions go straight to the developer through the <a href="contact.html">contact page</a>, and the <a href="privacy.html">privacy policy</a> explains what data is and is not stored.</p>
+    </section>
   </div>
 </section>
 
