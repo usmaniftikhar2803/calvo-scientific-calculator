@@ -139,6 +139,12 @@
 <meta name="application-name" content="Calvo Scientific Calculator">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff9500">
+<script>
+/* Apply the saved light/dark mode + theme before first paint (no colour flash). */
+try{var _d=document.documentElement,_m=localStorage.getItem('calvo_color_mode'),_t=localStorage.getItem('calvo_theme');
+if(_m==='light')_d.setAttribute('data-mode','light');
+if(_t&&/^(midnight|ocean|rose|slate|forest|grape|mint|ember|sunflower|coral|lavender)$/.test(_t))_d.setAttribute('data-theme',_t);}catch(e){}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
