@@ -24,6 +24,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/tools.css">
 <script src="/light-pages.js"></script>
+<link rel="stylesheet" href="/tool3d.css">
 </head>
 <body>
 <div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
@@ -73,5 +74,6 @@ grid.addEventListener('click',function(ev){var b=ev.target.closest('button');if(
 lg.addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;var c=b.getAttribute('data-c');flt=flt===c?null:c;apply()});
 $('q').addEventListener('input',function(){apply();var q=this.value.trim().toLowerCase();if(!q)return;var m=EL.filter(function(e){return e[2].toLowerCase()===q||e[1].toLowerCase()===q||String(e[0])===q})[0];if(m)show(m[0])});
 </script>
+<script src="/tool3d.js" defer></script>
 </body>
 </html>
