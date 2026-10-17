@@ -24,6 +24,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/tools.css">
 <script src="/light-pages.js"></script>
+<link rel="stylesheet" href="/tool3d.css">
 </head>
 <body>
 <div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
@@ -78,5 +79,6 @@ if(op==='tr'){R=A.map(function(_,i){return A.map(function(r){return r[i]})});o.t
 if(op==='add'||op==='sub'){R=A.map(function(r,i){return r.map(function(v,j){return op==='add'?v+B[i][j]:v-B[i][j]})});o.textContent=(op==='add'?'A + B':'A − B')+' =\n'+fmt(R);return}
 R=[];for(var i=0;i<N;i++){R.push([]);for(var j=0;j<N;j++){var s=0;for(var k=0;k<N;k++)s+=A[i][k]*B[k][j];R[i].push(s)}}o.textContent='A × B =\n'+fmt(R)}});
 </script>
+<script src="/tool3d.js" defer></script>
 </body>
 </html>
