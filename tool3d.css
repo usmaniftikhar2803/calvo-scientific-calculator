@@ -190,3 +190,8 @@ html { scrollbar-color: rgba(var(--t3d-rgb), .55) transparent; scrollbar-width: 
   body::before, body::after, .t3d-progress { display: none; }
   .doc { background: #fff; box-shadow: none; backdrop-filter: none; }
 }
+
+/* wide tables scroll inside the card instead of pushing the page sideways */
+@media (max-width: 700px) {
+  .doc table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
