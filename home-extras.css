@@ -55,12 +55,13 @@ html[data-mode="light"]:not([data-nolight]) { --h-rgb: var(--lt-pre-rgb, var(--p
 
 /* 5. Formula ticker under the hero */
 .h-ticker {
-  position: relative; overflow: hidden; margin: 6px 0 40px; padding: 14px 0;
+  position: relative; overflow: hidden; margin: 6px 0 40px; height: 64px;
+  width: 100%; max-width: 100%; min-width: 0; contain: inline-size;
   border-top: 1px solid var(--p-line); border-bottom: 1px solid var(--p-line);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
           mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
-.h-track { display: flex; width: max-content; gap: 14px; animation: h-marquee 48s linear infinite; }
+.h-track { position: absolute; left: 0; top: 13px; display: flex; width: max-content; gap: 14px; animation: h-marquee 48s linear infinite; }
 .h-ticker:hover .h-track { animation-play-state: paused; }
 .h-track span {
   flex: none; padding: 8px 16px; border-radius: 999px; white-space: nowrap;
@@ -138,8 +139,12 @@ html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: th
 }
 @media (prefers-reduced-motion: reduce) {
   .p-hero h2 span, .p-btn.primary::after, .p-lcd::before, .p-screen::after { animation: none; }
-  .h-track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
-  .h-ticker { -webkit-mask-image: none; mask-image: none; }
+  .h-ticker { height: auto; padding: 12px 0; -webkit-mask-image: none; mask-image: none; }
+  .h-track { position: static; animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
   .h-cursor, .h-progress { display: none; }
   #tab-home .home-big, #tab-home .home-big:hover { transform: none; }
 }
+
+/* safety: the home column can never be wider than the screen */
+#tab-home .home-wrap { min-width: 0; max-width: min(1120px, 100%); box-sizing: border-box; }
+#tab-home { overflow-x: clip; }
