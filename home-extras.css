@@ -1,0 +1,145 @@
+/* =====================================================================
+   CALVO HOME: extra premium layer (headline shimmer, formula ticker,
+   glowing LCD border, tile tilt, cursor glow, count-up, progress bar).
+   Written in dark-mode colours: light mode inverts the page, like the rest.
+   ===================================================================== */
+:root { --h-rgb: var(--p-amber-rgb, 255,138,31); }
+html[data-mode="light"]:not([data-nolight]) { --h-rgb: var(--lt-pre-rgb, var(--p-amber-rgb, 255,138,31)); }
+@property --h-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+/* 1. Headline: second line shimmers with the theme colour */
+.p-hero h2 span {
+  background: linear-gradient(100deg, var(--p-mute) 0%, var(--p-amber-hi) 38%, #ffe2bd 50%, var(--p-amber) 62%, var(--p-mute) 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: h-shimmer 7s linear infinite;
+}
+@keyframes h-shimmer { to { background-position: -260% 0; } }
+
+/* 2. Primary button: shine sweep */
+.p-btn { position: relative; overflow: hidden; }
+.p-btn.primary::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -70%; width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-20deg); animation: h-shine 4.5s ease-in-out 1.2s infinite; pointer-events: none;
+}
+@keyframes h-shine { 0%, 62% { left: -70%; } 100% { left: 140%; } }
+
+/* 3. Trust numbers become small glass chips */
+.p-proof { border-top: 0; padding-top: 0; gap: 10px; }
+.p-proof div {
+  padding: 11px 16px; border-radius: 16px; min-width: 96px;
+  background: rgba(255,255,255,.035); border: 1px solid var(--p-line);
+  transition: transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.p-proof div:hover { transform: translateY(-3px); border-color: rgba(var(--h-rgb), .5); background: rgba(var(--h-rgb), .08); }
+.p-proof b { font-variant-numeric: tabular-nums; }
+
+/* 4. The LCD: rotating glow ring + moving glass sheen on the screen */
+.p-lcd::before {
+  content: ""; position: absolute; inset: -1px; z-index: 0; border-radius: 27px; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--h-ang), transparent 0 50%, rgba(var(--h-rgb), .95) 75%, rgba(255,226,189,.9) 82%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: h-spin 6s linear infinite;
+}
+@keyframes h-spin { to { --h-ang: 360deg; } }
+.p-screen { position: relative; overflow: hidden; }
+.p-screen::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 40%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: skewX(-18deg); animation: h-sheen 8s ease-in-out 2s infinite;
+}
+@keyframes h-sheen { 0%, 70% { left: -60%; } 100% { left: 150%; } }
+
+/* 5. Formula ticker under the hero */
+.h-ticker {
+  position: relative; overflow: hidden; margin: 6px 0 40px; padding: 14px 0;
+  border-top: 1px solid var(--p-line); border-bottom: 1px solid var(--p-line);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+.h-track { display: flex; width: max-content; gap: 14px; animation: h-marquee 48s linear infinite; }
+.h-ticker:hover .h-track { animation-play-state: paused; }
+.h-track span {
+  flex: none; padding: 8px 16px; border-radius: 999px; white-space: nowrap;
+  font: 600 .86rem 'JetBrains Mono', ui-monospace, monospace; color: var(--p-paper);
+  background: rgba(var(--h-rgb), .07); border: 1px solid rgba(var(--h-rgb), .2);
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.h-track span:nth-child(3n) { color: var(--p-amber-hi); }
+.h-track span:hover { background: rgba(var(--h-rgb), .18); border-color: rgba(var(--h-rgb), .6); transform: translateY(-2px); }
+@keyframes h-marquee { to { transform: translateX(-50%); } }
+
+/* 6. Tiles: 3D tilt toward the pointer + top accent line */
+#tab-home .home-big {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+  transition: transform .25s ease, border-color .2s ease, box-shadow .25s ease;
+}
+#tab-home .home-big.h-tilting { transition: transform .06s linear, border-color .2s ease, box-shadow .25s ease; }
+#tab-home .home-big:hover, #tab-home .home-big:focus-visible {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px) translateZ(0);
+}
+#tab-home .home-big:active { transform: perspective(900px) scale(.98); }
+#tab-home .home-big::before {
+  content: ""; position: absolute; left: 18px; right: 18px; top: 0; height: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--h-rgb), .9), transparent);
+  transform: scaleX(0); transition: transform .35s ease;
+}
+#tab-home .home-big:hover::before, #tab-home .home-big:focus-visible::before { transform: scaleX(1); }
+#tab-home .home-ic { transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
+#tab-home .home-big:hover .home-ic { transform: translateZ(0) rotate(-6deg) scale(1.1); }
+
+/* 7. Section titles get a glowing accent bar; group headings a glowing dot */
+#tab-home .home-all-title::after {
+  content: ""; display: block; width: 56px; height: 3px; margin-top: 10px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--p-amber), transparent);
+  box-shadow: 0 0 14px rgba(var(--h-rgb), .8);
+}
+#tab-home .home-group h3::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 9px 1px 0; border-radius: 50%;
+  background: var(--p-amber); box-shadow: 0 0 10px rgba(var(--h-rgb), .9);
+}
+#tab-home .tool-row { position: relative; }
+#tab-home .tool-row::before {
+  content: ""; position: absolute; left: 0; top: 22%; bottom: 22%; width: 3px; border-radius: 3px; pointer-events: none;
+  background: var(--p-amber); box-shadow: 0 0 10px rgba(var(--h-rgb), .9);
+  transform: scaleY(0); transition: transform .25s ease;
+}
+#tab-home .tool-row:hover::before { transform: scaleY(1); }
+
+/* 8. Soft glow that follows the cursor (mouse devices only) + scroll progress */
+.h-cursor {
+  position: fixed; left: 0; top: 0; width: 460px; height: 460px; margin: -230px 0 0 -230px;
+  z-index: 0; pointer-events: none; border-radius: 50%; opacity: 0; transition: opacity .4s ease;
+  background: radial-gradient(circle, rgba(var(--h-rgb), .14), transparent 65%);
+  will-change: transform;
+}
+.h-cursor.on { opacity: 1; }
+.h-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 99998; pointer-events: none;
+  transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--p-amber), #ffe2bd, var(--p-amber-lo));
+  box-shadow: 0 0 12px rgba(var(--h-rgb), .9);
+}
+
+/* 9. Nicer selection + scrollbar */
+::selection { background: rgba(var(--h-rgb), .35); }
+html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: rgba(var(--h-rgb), .5); border-radius: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@media (max-width: 860px) {
+  .h-cursor { display: none; }
+  .h-ticker { margin-bottom: 28px; }
+  .p-proof div { min-width: 0; padding: 9px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .p-hero h2 span, .p-btn.primary::after, .p-lcd::before, .p-screen::after { animation: none; }
+  .h-track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
+  .h-ticker { -webkit-mask-image: none; mask-image: none; }
+  .h-cursor, .h-progress { display: none; }
+  #tab-home .home-big, #tab-home .home-big:hover { transform: none; }
+}
