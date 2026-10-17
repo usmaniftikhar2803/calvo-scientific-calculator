@@ -1,0 +1,45 @@
+/* ---------- Real 3D (WebGL) hero layer ---------- */
+.p-hero { position: relative; }
+.c3d {
+  position: absolute; z-index: 0; pointer-events: none;
+  inset: -36px -24px -24px -24px;
+  opacity: 0; transition: opacity .9s ease;
+}
+.c3d.on { opacity: 1; }
+.c3d canvas { display: block; width: 100%; height: 100%; }
+.has-c3d .p-hero > div:not(.c3d) { position: relative; z-index: 1; }
+
+/* The CSS keys are the fallback; hide them once real 3D is running */
+#tab-home.has-c3d .p-stage .p-scene { display: none; }
+
+/* Phones and narrow windows: the 3D scene gets its own band above the headline */
+@media (max-width: 860px) {
+  #tab-home.has-c3d .p-hero { padding-top: 196px; }
+  .c3d {
+    inset: -10px -6px auto -6px; height: 214px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+  }
+}
+@media (max-width: 420px) {
+  #tab-home.has-c3d .p-hero { padding-top: 178px; }
+  .c3d { height: 194px; }
+}
+
+/* ---------- 3D reveal: blocks tilt up from the page as they scroll into view ---------- */
+.c3d-reveal {
+  opacity: 0;
+  transform: perspective(1100px) rotateX(14deg) translateY(34px);
+  transform-origin: 50% 0;
+  transition: opacity .7s ease, transform .95s cubic-bezier(.2, .7, .2, 1);
+}
+.c3d-reveal.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .c3d { transition: none; }
+  .c3d-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Light mode: the page inverts everything with a body filter, so undo it on the 3D canvas
+   and let the scene draw the real light-mode colours itself. */
+html[data-mode="light"]:not([data-nolight]) .c3d { filter: invert(1) hue-rotate(180deg); }
