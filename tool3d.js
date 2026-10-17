@@ -37,6 +37,8 @@
           raf = 0;
           var r = el.getBoundingClientRect();
           var x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+          el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+          el.style.setProperty('--my', (e.clientY - r.top) + 'px');
           el.classList.add('tilting');
           el.style.transform = 'perspective(900px) rotateX(' + (-y * 3.2).toFixed(2) + 'deg) rotateY(' + (x * 4).toFixed(2) + 'deg)';
         });
@@ -45,6 +47,23 @@
         el.classList.remove('tilting'); el.style.transform = '';
       });
     });
+  }
+
+  /* ---------- scroll progress bar ---------- */
+  if (!reduce) {
+    var bar = document.createElement('div');
+    bar.className = 't3d-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+    var pr = 0;
+    var upd = function () {
+      pr = 0;
+      var h = document.documentElement.scrollHeight - innerHeight;
+      bar.style.transform = 'scaleX(' + (h > 0 ? Math.min(1, scrollY / h) : 0) + ')';
+    };
+    addEventListener('scroll', function () { if (!pr) pr = requestAnimationFrame(upd); }, { passive: true });
+    addEventListener('resize', upd, { passive: true });
+    upd();
   }
 
   if (lite) return;
