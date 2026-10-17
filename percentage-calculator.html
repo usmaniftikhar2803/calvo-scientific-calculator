@@ -24,6 +24,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/tools.css">
 <script src="/light-pages.js"></script>
+<link rel="stylesheet" href="/tool3d.css">
 </head>
 <body>
 <div class="topbar"><a class="brand" href="/"><span class="brand-dot"></span>CALVO</a><a class="back" href="/">Full Calculator &rarr;</a></div>
@@ -70,5 +71,6 @@ $('b2').onclick=function(){var x=v('p2x'),y=v('p2y');show('o2',isNaN(x)||isNaN(y
 $('b3').onclick=function(){var x=v('p3x'),y=v('p3y');if(isNaN(x)||isNaN(y)||x===0){show('o3',null);return}var c=(y-x)/x*100;show('o3','Change: <span class="big">'+r(Math.abs(c))+'%</span> '+(c>=0?'increase':'decrease'))};
 $('b4').onclick=function(){var x=v('p4x'),y=v('p4y'),op=$('p4op').value;if(isNaN(x)||isNaN(y)){show('o4',null);return}show('o4','Result: <span class="big">'+r(op==='add'?x*(1+y/100):x*(1-y/100))+'</span>')};
 </script>
+<script src="/tool3d.js" defer></script>
 </body>
 </html>
