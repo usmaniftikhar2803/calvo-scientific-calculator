@@ -55,3 +55,138 @@
   .result:not(.empty) { animation: none; }
 }
 @media print { .t3d { display: none; } .t3d-reveal { opacity: 1; transform: none; } }
+
+/* =====================================================================
+   PREMIUM LOOK (aurora, glass, glow border, spotlight, gradient text)
+   ===================================================================== */
+:root { --t3d-rgb: var(--p-amber-rgb, 255,138,31); }
+html[data-mode="light"] { --t3d-rgb: var(--lt-p-rgb, 79,70,229); }
+@property --t3d-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+/* 1. Aurora background: slow drifting colour blobs behind the page */
+body { position: relative; }
+body::before {
+  content: ""; position: fixed; inset: -20vmax; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(38vmax 30vmax at 18% 12%, rgba(var(--t3d-rgb), .20), transparent 65%),
+    radial-gradient(34vmax 28vmax at 85% 28%, rgba(var(--t3d-rgb), .11), transparent 65%),
+    radial-gradient(40vmax 30vmax at 55% 95%, rgba(120, 90, 255, .10), transparent 65%);
+  filter: blur(30px);
+  animation: t3dAurora 26s ease-in-out infinite alternate;
+}
+/* faint dot grid that fades out toward the edges */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .55;
+  background-image: radial-gradient(rgba(var(--t3d-rgb), .22) 1px, transparent 1.2px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 25%, #000 10%, transparent 75%);
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 25%, #000 10%, transparent 75%);
+}
+html[data-mode="light"] body::before { opacity: .7; }
+html[data-mode="light"] body::after { opacity: .35; }
+@keyframes t3dAurora {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  100% { transform: translate3d(3vmax, 2vmax, 0) rotate(8deg) scale(1.12); }
+}
+
+/* 2. Glass card for the whole page + soft glow shadow */
+.doc {
+  background: color-mix(in srgb, var(--panel) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+          backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 30px 80px -40px rgba(var(--t3d-rgb), .45), 0 2px 0 rgba(255,255,255,.04) inset;
+}
+
+/* 3. Sticky glass top bar */
+.topbar {
+  position: sticky; top: 10px; z-index: 20;
+  padding: 8px 10px 8px 16px; border-radius: 40px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  border: 1px solid var(--panel-border);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.back { transition: transform .2s ease, border-color .2s, background .2s; }
+.back:hover { transform: translateX(3px); background: rgba(var(--t3d-rgb), .10); text-decoration: none; }
+
+/* 4. Gradient shimmer on the title accent + glowing h2 markers */
+h1 span {
+  background: linear-gradient(100deg, var(--brand-orange) 0%, var(--brand-orange-deep) 35%, #ffd9a8 50%, var(--brand-orange-deep) 65%, var(--brand-orange) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: t3dShimmer 6s linear infinite;
+}
+html[data-mode="light"] h1 span {
+  background-image: linear-gradient(100deg, var(--brand-orange) 0%, var(--brand-orange-deep) 50%, var(--brand-orange) 100%);
+}
+@keyframes t3dShimmer { to { background-position: -250% 0; } }
+.doc h2::before {
+  content: ""; display: inline-block; width: 18px; height: 3px; margin: 0 10px 3px 0; border-radius: 3px;
+  background: linear-gradient(90deg, var(--brand-orange), transparent);
+  box-shadow: 0 0 10px rgba(var(--t3d-rgb), .8);
+}
+
+/* 5. Tool card: animated glowing border + mouse spotlight */
+.tool { position: relative; isolation: isolate; }
+.tool::before {
+  content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: 13px; padding: 1.5px;
+  background: conic-gradient(from var(--t3d-ang), transparent 0 55%, rgba(var(--t3d-rgb), .95) 78%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity .35s ease; pointer-events: none;
+  animation: t3dSpin 5s linear infinite;
+}
+.tool:hover::before, .tool:focus-within::before { opacity: 1; }
+@keyframes t3dSpin { to { --t3d-ang: 360deg; } }
+.tool::after {
+  content: ""; position: absolute; inset: 0; border-radius: 12px; pointer-events: none; z-index: 0;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgba(var(--t3d-rgb), .13), transparent 70%);
+  opacity: 0; transition: opacity .3s ease;
+}
+.tool:hover::after { opacity: 1; }
+
+/* 6. Inputs, buttons, results */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(var(--t3d-rgb), .20), 0 0 18px -4px rgba(var(--t3d-rgb), .55);
+}
+.btn, .cta { position: relative; overflow: hidden; }
+.btn::after, .cta::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -80%; width: 50%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.38), transparent);
+  transform: skewX(-20deg); transition: left .6s ease; pointer-events: none;
+}
+.btn:hover::after, .cta:hover::after { left: 130%; }
+.result:not(.empty) { box-shadow: 0 0 0 1px rgba(var(--t3d-rgb), .35), 0 14px 40px -18px rgba(var(--t3d-rgb), .6); }
+.big { text-shadow: 0 0 22px rgba(var(--t3d-rgb), .45); }
+.related a:hover { background: rgba(var(--t3d-rgb), .10); box-shadow: 0 10px 24px -14px rgba(var(--t3d-rgb), .7); }
+details { transition: background .2s; }
+details[open] { background: linear-gradient(90deg, rgba(var(--t3d-rgb), .06), transparent 70%); }
+details[open] summary { color: var(--brand-orange); }
+table.f tr:hover td { background: rgba(var(--t3d-rgb), .07); }
+
+/* 7. Scroll progress bar, custom scrollbar, selection colour */
+.t3d-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 99998; pointer-events: none;
+  transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--brand-orange), #ffd9a8, var(--brand-orange-deep));
+  box-shadow: 0 0 12px rgba(var(--t3d-rgb), .9);
+}
+::selection { background: rgba(var(--t3d-rgb), .35); }
+html { scrollbar-color: rgba(var(--t3d-rgb), .55) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: rgba(var(--t3d-rgb), .5); border-radius: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, h1 span, .tool::before { animation: none; }
+  .btn::after, .cta::after { display: none; }
+  .t3d-progress { display: none; }
+}
+@media (max-width: 560px) {
+  body::after { display: none; }
+  .doc { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--panel); }
+}
+@media print {
+  body::before, body::after, .t3d-progress { display: none; }
+  .doc { background: #fff; box-shadow: none; backdrop-filter: none; }
+}
