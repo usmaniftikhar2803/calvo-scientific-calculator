@@ -64,3 +64,6 @@ html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;backgrou
 .f-aurora i:nth-child(n){opacity:.35;background:radial-gradient(closest-side,var(--c),transparent)}
 .f-aurora i:nth-child(1){--c:#ff8a1f}.f-aurora i:nth-child(2){--c:#6a5cff;opacity:.28}.f-aurora i:nth-child(3){--c:#00d4ff;opacity:.18}
 .topbar-mark{animation:none}.topbar-mark::after{display:none}}
+
+/* hold every splash animation until JS says the page is loaded */
+.f-splash:not(.go) *,.f-splash:not(.go) *::before,.f-splash:not(.go) *::after{animation-play-state:paused!important}
