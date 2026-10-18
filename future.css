@@ -54,3 +54,13 @@ html[data-mode="light"]:not([data-nolight]) .f-aurora,html[data-mode="light"]:no
 
 /* cover the page from the very first frame so the intro never shows the home page first */
 html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;background:#06060a}
+
+/* phones: keep only cheap, compositor-friendly effects */
+.f-splash.f-mob{clip-path:none;transition:opacity .5s ease}.f-splash.f-mob.out{opacity:0;clip-path:none}
+.f-mob .f-word span{filter:none}.f-mob .f-logo::after{display:none}.f-mob .f-logo i{animation:none}.f-mob .f-logo{box-shadow:0 0 50px rgba(255,138,31,.5)}
+@media(max-width:820px),(pointer:coarse){
+.f-grain{display:none}.topbar{-webkit-backdrop-filter:none;backdrop-filter:none}
+.f-aurora i{filter:none;animation:none}
+.f-aurora i:nth-child(n){opacity:.35;background:radial-gradient(closest-side,var(--c),transparent)}
+.f-aurora i:nth-child(1){--c:#ff8a1f}.f-aurora i:nth-child(2){--c:#6a5cff;opacity:.28}.f-aurora i:nth-child(3){--c:#00d4ff;opacity:.18}
+.topbar-mark{animation:none}.topbar-mark::after{display:none}}
