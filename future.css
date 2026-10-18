@@ -1,4 +1,4 @@
-/* CALVO 2035 layer: cinematic logo intro, living logo, aurora + liquid-glass styling. Additive only. */
+/* CALVO 2027 layer: cinematic logo intro, living logo, aurora + liquid-glass styling. Additive only. */
 .f-splash{position:fixed;inset:0;z-index:2147483000;background:#06060a;display:grid;place-items:center;overflow:hidden;clip-path:circle(150% at 50% 50%);transition:clip-path .9s cubic-bezier(.7,0,.2,1)}
 .f-splash.out{clip-path:circle(0% at 50% 42%)}
 .f-splash canvas{position:absolute;inset:0;width:100%;height:100%}
@@ -28,7 +28,7 @@
 .topbar-mark::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.7) 50%,transparent 65%);background-size:260% 100%;animation:f-sheen 4s 1s ease-in-out infinite}
 @keyframes f-breathe{50%{box-shadow:0 2px 0 var(--brand-orange-deep),0 0 22px rgba(255,138,31,.75)}}
 
-/* 2035 atmosphere: aurora + grain (dark mode only, light mode keeps its own look) */
+/* 2027 atmosphere: aurora + grain (dark mode only, light mode keeps its own look) */
 .f-aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .f-aurora i{position:absolute;width:55vmax;height:55vmax;border-radius:50%;filter:blur(90px);opacity:.28;animation:f-drift 22s ease-in-out infinite alternate}
 .f-aurora i:nth-child(1){background:#ff8a1f;left:-15vmax;top:-18vmax}
