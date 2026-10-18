@@ -1,11 +1,11 @@
-/* CALVO 2035 layer (cosmetic only; never touches calculator logic) */
+/* CALVO 2027 layer (cosmetic only; never touches calculator logic) */
 (function(){'use strict';
 var root=document.documentElement,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function add(c,h){var d=document.createElement('div');d.className=c;if(h)d.innerHTML=h;return d}
 /* atmosphere */
 document.body.appendChild(add('f-aurora','<i></i><i></i><i></i>'));root.appendChild(add('f-grain'));
 var hero=document.querySelector('#tab-home .p-hero>div');
-if(hero&&!hero.querySelector('.f-chip'))hero.insertBefore(add('f-chip','Calvo 2035 &middot; AI online'),hero.firstChild).className='f-chip';
+if(hero&&!hero.querySelector('.f-chip'))hero.insertBefore(add('f-chip','Calvo 2027 &middot; AI online'),hero.firstChild).className='f-chip';
 /* light follows cursor on tiles; tilt + glow on the logo */
 var brand=document.getElementById('topbarBrand'),mark=brand&&brand.querySelector('.topbar-mark');
 addEventListener('pointermove',function(e){var t=e.target.closest&&e.target.closest('.home-big');
