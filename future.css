@@ -51,3 +51,6 @@ html[data-mode="light"]:not([data-nolight]) .f-aurora,html[data-mode="light"]:no
 .f-chip{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px;padding:6px 14px;border-radius:99px;font:500 11px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#ffb066;border:1px solid rgba(255,138,31,.35);background:rgba(255,138,31,.08)}
 .f-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:#3dff9a;box-shadow:0 0 10px #3dff9a;animation:f-breathe 1.6s infinite}
 @media(prefers-reduced-motion:reduce){.f-aurora i,.topbar-mark,.topbar-mark::before,.topbar-mark::after{animation:none}}
+
+/* cover the page from the very first frame so the intro never shows the home page first */
+html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;background:#06060a}
