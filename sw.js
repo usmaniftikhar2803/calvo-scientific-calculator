@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v101';
+const CACHE_VERSION = 'calvo-cache-v102';
 
 const CORE_ASSETS = [
   './',
@@ -27,6 +27,8 @@ const CORE_ASSETS = [
   './hero3d.js',
   './home-extras.css',
   './home-extras.js',
+  './future.css',
+  './future.js',
   './tool3d.css',
   './tool3d.js',
   './vendor/calvo-3d.js',
