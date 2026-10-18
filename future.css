@@ -67,3 +67,7 @@ html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;backgrou
 
 /* hold every splash animation until JS says the page is loaded */
 .f-splash:not(.go) *,.f-splash:not(.go) *::before,.f-splash:not(.go) *::after{animation-play-state:paused!important}
+
+/* offline badge: truly hidden unless the device is actually offline (it used to peek through the glass topbar) */
+.offline-badge{visibility:hidden;opacity:0;transition:transform .25s ease,opacity .25s ease,visibility 0s .25s}
+.offline-badge.visible{visibility:visible;opacity:1;transition-delay:0s}
