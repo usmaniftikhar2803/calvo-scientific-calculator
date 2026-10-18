@@ -18,7 +18,7 @@ function intro(){
  var s=add('f-splash'),cv=document.createElement('canvas'),core=add('f-core'),i=0;
  core.innerHTML='<div class="f-logo"><i>=x</i></div><div class="f-word"></div><div class="f-tag">Calculate the future</div><div class="f-bar"><b></b></div>';
  'CALVO'.split('').forEach(function(c){var sp=document.createElement('span');sp.textContent=c;sp.style.animationDelay=(1.05+i++*.09)+'s';core.querySelector('.f-word').appendChild(sp)});
- s.appendChild(cv);s.appendChild(core);s.appendChild(add('f-skip','TAP TO SKIP'));root.appendChild(s);
+ s.appendChild(cv);s.appendChild(core);s.appendChild(add('f-skip','TAP TO SKIP'));root.appendChild(s);root.classList.remove('f-pre');
  var old=document.body.style.overflow;document.body.style.overflow='hidden';
  var x=cv.getContext('2d'),W,H,dpr=Math.min(devicePixelRatio||1,2),G='+-\u00D7\u00F7=\u221A\u03C0\u222B\u03A3\u03B8\u221E%x\u00B2\u0394'.split(''),P=[],t0=performance.now(),boom=false,done=false;
  function rs(){W=cv.width=innerWidth*dpr;H=cv.height=innerHeight*dpr}rs();
@@ -36,5 +36,6 @@ function intro(){
   if(t>3.1)end();else requestAnimationFrame(f)})(t0);
 }
 if(!reduce&&!sessionStorage.getItem('calvoIntro')){try{sessionStorage.setItem('calvoIntro','1')}catch(e){}intro()}
+root.classList.remove('f-pre');
 if(brand)brand.addEventListener('dblclick',function(){if(!document.querySelector('.f-splash'))intro()});
 })();
