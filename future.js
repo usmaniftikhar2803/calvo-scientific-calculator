@@ -1,0 +1,40 @@
+/* CALVO 2035 layer (cosmetic only; never touches calculator logic) */
+(function(){'use strict';
+var root=document.documentElement,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function add(c,h){var d=document.createElement('div');d.className=c;if(h)d.innerHTML=h;return d}
+/* atmosphere */
+document.body.appendChild(add('f-aurora','<i></i><i></i><i></i>'));root.appendChild(add('f-grain'));
+var hero=document.querySelector('#tab-home .p-hero>div');
+if(hero&&!hero.querySelector('.f-chip'))hero.insertBefore(add('f-chip','Calvo 2035 &middot; AI online'),hero.firstChild).className='f-chip';
+/* light follows cursor on tiles; tilt + glow on the logo */
+var brand=document.getElementById('topbarBrand'),mark=brand&&brand.querySelector('.topbar-mark');
+addEventListener('pointermove',function(e){var t=e.target.closest&&e.target.closest('.home-big');
+ if(t){var r=t.getBoundingClientRect();t.style.setProperty('--mx',e.clientX-r.left+'px');t.style.setProperty('--my',e.clientY-r.top+'px')}
+ if(mark){var b=mark.getBoundingClientRect(),dx=(e.clientX-b.left-b.width/2),dy=(e.clientY-b.top-b.height/2),d=Math.hypot(dx,dy);
+  if(d<140){var k=1-d/140;mark.style.transform='rotateY('+dx/6*k+'deg) rotateX('+-dy/6*k+'deg) scale('+(1+.18*k)+')'}else mark.style.transform=''}},{passive:true});
+document.querySelectorAll('.p-btn').forEach(function(b){b.addEventListener('pointermove',function(e){var r=b.getBoundingClientRect();b.style.transform='translate('+(e.clientX-r.left-r.width/2)/9+'px,'+(e.clientY-r.top-r.height/2)/6+'px)'});b.addEventListener('pointerleave',function(){b.style.transform=''})});
+/* cinematic logo intro: symbols are pulled into the logo, then it detonates */
+function intro(){
+ var s=add('f-splash'),cv=document.createElement('canvas'),core=add('f-core'),i=0;
+ core.innerHTML='<div class="f-logo"><i>=x</i></div><div class="f-word"></div><div class="f-tag">Calculate the future</div><div class="f-bar"><b></b></div>';
+ 'CALVO'.split('').forEach(function(c){var sp=document.createElement('span');sp.textContent=c;sp.style.animationDelay=(1.05+i++*.09)+'s';core.querySelector('.f-word').appendChild(sp)});
+ s.appendChild(cv);s.appendChild(core);s.appendChild(add('f-skip','TAP TO SKIP'));root.appendChild(s);
+ var old=document.body.style.overflow;document.body.style.overflow='hidden';
+ var x=cv.getContext('2d'),W,H,dpr=Math.min(devicePixelRatio||1,2),G='+-\u00D7\u00F7=\u221A\u03C0\u222B\u03A3\u03B8\u221E%x\u00B2\u0394'.split(''),P=[],t0=performance.now(),boom=false,done=false;
+ function rs(){W=cv.width=innerWidth*dpr;H=cv.height=innerHeight*dpr}rs();
+ for(var n=0;n<(innerWidth<700?55:110);n++){var a=Math.random()*6.283,r=Math.max(W,H)*(.55+Math.random()*.5);P.push({x:W/2+Math.cos(a)*r,y:H/2+Math.sin(a)*r,g:G[n%G.length],s:(14+Math.random()*22)*dpr,v:0,a:a,h:Math.random()})}
+ function end(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){s.remove();document.body.style.overflow=old},950)}
+ s.addEventListener('click',end);addEventListener('keydown',end,{once:true});
+ var shock=0;
+ (function f(now){if(done)return;var t=(now-t0)/1000;x.clearRect(0,0,W,H);
+  if(t>1.55&&!boom){boom=true;P.forEach(function(p){var a=Math.atan2(p.y-H/2,p.x-W/2);p.vx=Math.cos(a)*(6+Math.random()*14)*dpr;p.vy=Math.sin(a)*(6+Math.random()*14)*dpr;p.x=W/2+Math.cos(a)*40*dpr;p.y=H/2+Math.sin(a)*40*dpr})}
+  if(boom){shock+=(Math.max(W,H)-shock)*.07}
+  P.forEach(function(p){if(!boom){p.v+=.05*dpr;var dx=W/2-p.x,dy=H/2-p.y,d=Math.hypot(dx,dy)||1;p.x+=dx/d*p.v*(d/(Math.max(W,H)*.35)+.35)*3;p.y+=dy/d*p.v*(d/(Math.max(W,H)*.35)+.35)*3;x.globalAlpha=Math.min(.8,t/1.2)}
+   else{p.x+=p.vx;p.y+=p.vy;p.vx*=.96;p.vy*=.96;x.globalAlpha=Math.max(0,.9-(t-1.55)*.9)}
+   x.fillStyle=p.h>.6?'#ffb066':p.h>.3?'#fff':'#ff8a1f';x.font='700 '+p.s+'px JetBrains Mono,monospace';x.fillText(p.g,p.x,p.y)});
+  if(boom){x.globalAlpha=Math.max(0,.7-shock/Math.max(W,H));x.strokeStyle='#ff9a3a';x.lineWidth=3*dpr;x.beginPath();x.arc(W/2,H/2,shock,0,6.283);x.stroke()}
+  if(t>3.1)end();else requestAnimationFrame(f)})(t0);
+}
+if(!reduce&&!sessionStorage.getItem('calvoIntro')){try{sessionStorage.setItem('calvoIntro','1')}catch(e){}intro()}
+if(brand)brand.addEventListener('dblclick',function(){if(!document.querySelector('.f-splash'))intro()});
+})();
