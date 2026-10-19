@@ -3,7 +3,7 @@
   "short_name": "Calvo Scientific Calculator",
   "description": "Scientific calculator, unit converter, formula library, GPA/CGPA calculator and AI math solver.",
   "start_url": "./index.html",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#06060a",
   "theme_color": "#06060a",
   "icons": [
