@@ -13,8 +13,8 @@
 .f-word{display:flex;gap:.28em;font:800 clamp(30px,6vw,52px)/1 'Bricolage Grotesque','Inter',sans-serif;color:#fff;letter-spacing:.18em}
 .f-word span{opacity:0;transform:translateY(26px);filter:blur(10px);animation:f-rise .8s cubic-bezier(.2,.8,.2,1) forwards}
 .f-tag{font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.42em;color:#ff9a3a;text-transform:uppercase;opacity:0;animation:f-fade .8s 1.7s forwards}
-.f-bar{width:min(240px,60vw);height:2px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;opacity:0;animation:f-fade .4s 1s forwards}
-.f-bar b{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff8a1f,#fff);box-shadow:0 0 12px #ff8a1f;animation:f-load 2.1s 1s cubic-bezier(.5,0,.2,1) forwards}
+.f-bar{width:min(240px,60vw);height:2px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;opacity:0;animation:f-fade .4s .7s forwards}
+.f-bar b{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff8a1f,#fff);box-shadow:0 0 12px #ff8a1f;animation:f-load 1.4s .7s cubic-bezier(.5,0,.2,1) forwards}
 .f-skip{position:absolute;right:20px;bottom:18px;font:500 11px 'JetBrains Mono',monospace;letter-spacing:.2em;color:rgba(255,255,255,.4);z-index:2}
 @keyframes f-pop{to{opacity:1;transform:none}}@keyframes f-spin{to{transform:rotate(360deg)}}@keyframes f-sheen{to{background-position:-150% 0}}
 @keyframes f-rise{to{opacity:1;transform:none;filter:none}}@keyframes f-fade{to{opacity:1}}@keyframes f-load{to{width:100%}}
@@ -97,3 +97,6 @@ html[data-mode="light"]:not([data-nolight]) .f-aurora,html[data-mode="light"]:no
 }
 /* low-end phones: freeze the CSS fallback keys too */
 html.perf-lite .p-key,html.perf-lite .h-track,html.perf-lite .f-aurora i{animation:none!important}
+
+/* brief cover until the intro appears (JS removes it in a fraction of a second) */
+html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;background:#06060a}
