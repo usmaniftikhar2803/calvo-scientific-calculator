@@ -108,3 +108,10 @@ html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;backgrou
   .topbar-mark::before{animation:f-spin 3s linear infinite!important}
   .topbar-mark::after{animation:f-sheen 4s 1s ease-in-out infinite!important}
 }
+
+/* phones: no blur any more, so the bars must be solid or page content shows through them while scrolling */
+@media (max-width:860px),(pointer:coarse){
+  .topbar{background:rgb(var(--page-bg-rgb,18,18,22))!important}
+  #aboutOverlay .app-modal-header{background:rgb(var(--page-bg-rgb,18,18,22))!important}
+  .p-w-card{background:linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.02) 55%),rgb(19,19,24)!important}
+}
