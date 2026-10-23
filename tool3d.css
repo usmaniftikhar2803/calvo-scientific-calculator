@@ -207,7 +207,7 @@ html { scrollbar-color: rgba(var(--t3d-rgb), .55) transparent; scrollbar-width: 
   /* animations that repaint text/gradients/layout every frame -> off */
   .p-hero h2 span,h1 span{animation:none!important}
   .p-btn.primary::after,.p-screen::after{display:none!important}
-  .p-lcd::before,.tool::before,.topbar-mark::before,.topbar-mark::after,.f-chip::before{animation:none!important}
+  .p-lcd::before,.tool::before,.f-chip::before{animation:none!important}
   .p-lcd::before,.tool::before{display:none!important}
   .f-grain{display:none!important}
   /* formula ticker: keep the movement (GPU transform) but drop the mask */
