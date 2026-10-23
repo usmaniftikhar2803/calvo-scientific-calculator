@@ -29,7 +29,12 @@
     setTimeout(function () { blocks.forEach(function (b) { b.classList.add('in'); }); }, 4500); // safety net
   })();
 
-  if (lite) return;
+  /* Low-end phones (<=3 GB RAM or <=4 CPU cores): skip WebGL, it makes scrolling choppy */
+  var weak = (navigator.deviceMemory && navigator.deviceMemory <= 3) ||
+             (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4 && matchMedia('(pointer: coarse)').matches);
+  if (weak) document.documentElement.classList.add('perf-lite');
+
+  if (lite || weak) return;
 
   function hasGL() {
     try {
@@ -39,11 +44,12 @@
   }
   if (!hasGL()) return;
 
-  var host, canvas, ctl, heroVisible = true, tabOpen = true, docVisible = true;
+  var host, canvas, ctl, heroVisible = true, tabOpen = true, docVisible = true, scrolling = false, scrollT = 0;
+  var coarse = matchMedia('(pointer: coarse)').matches;
 
   function sync() {
     if (!ctl) return;
-    var go = heroVisible && tabOpen && docVisible;
+    var go = heroVisible && tabOpen && docVisible && !scrolling;
     if (go) { host.classList.add('on'); if (!reduce) ctl.start(); else ctl.renderOnce(); }
     else ctl.stop();
   }
@@ -82,6 +88,13 @@
       new IntersectionObserver(function (l) { heroVisible = l[0].isIntersecting; sync(); }, { threshold: 0 }).observe(hero);
     }
     document.addEventListener('visibilitychange', function () { docVisible = !document.hidden; sync(); });
+    if (coarse) {
+      addEventListener('scroll', function () {
+        if (!scrolling) { scrolling = true; sync(); }
+        clearTimeout(scrollT);
+        scrollT = setTimeout(function () { scrolling = false; sync(); }, 160);
+      }, { passive: true });
+    }
 
     // fonts for the key glyphs: draw once they are ready (the keys build after this anyway)
     sync();
@@ -99,8 +112,11 @@
   }
 
   function schedule() {
-    if ('requestIdleCallback' in window) requestIdleCallback(load, { timeout: 2500 });
-    else setTimeout(load, 900);
+    var wait = coarse ? 1500 : 0;
+    setTimeout(function () {
+      if ('requestIdleCallback' in window) requestIdleCallback(load, { timeout: 2500 });
+      else setTimeout(load, 900);
+    }, wait);
   }
   if (document.readyState === 'complete') schedule();
   else window.addEventListener('load', schedule, { once: true });
