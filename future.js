@@ -38,8 +38,8 @@ function intro(){
   if(boom&&!mob){x.globalAlpha=Math.max(0,.7-shock/Math.max(W,H));x.strokeStyle='#ff9a3a';x.lineWidth=3*dpr;x.beginPath();x.arc(W/2,H/2,shock,0,6.283);x.stroke()}
   if(t>2.5)end();else requestAnimationFrame(f)})(t0);
 }
-var seen=false;try{seen=!!sessionStorage.getItem('calvoIntro')||window.name.indexOf('calvoIntro')>-1}catch(e){}
-if(!reduce&&!seen){try{sessionStorage.setItem('calvoIntro','1');window.name+=' calvoIntro'}catch(e){}intro()}
+/* intro plays on every visit (skipped only for people who enabled 'reduce motion') */
+if(!reduce){intro()}
 root.classList.remove('f-pre');
 if(brand)brand.addEventListener('dblclick',function(){if(!document.querySelector('.f-splash'))intro()});
 })();
