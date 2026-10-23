@@ -195,3 +195,30 @@ html { scrollbar-color: rgba(var(--t3d-rgb), .55) transparent; scrollbar-width: 
 @media (max-width: 700px) {
   .doc table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
+/* ===== MOBILE SMOOTHNESS (phones/tablets) =====
+   Phones were janking because of: full-screen blur(90px) layers that drift forever,
+   backdrop-filter on many panels, and gradient/mask/`left` animations that repaint
+   every frame on the main thread. Desktop/laptop keep every effect untouched. */
+@media (max-width:860px),(pointer:coarse){
+  *,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  /* big blurred, forever-moving background blobs -> static soft gradients */
+  #tab-home::before,#tab-home::after,body::before{filter:none!important;animation:none!important}
+  .f-aurora i{animation:none!important;filter:none!important}
+  /* animations that repaint text/gradients/layout every frame -> off */
+  .p-hero h2 span,h1 span{animation:none!important}
+  .p-btn.primary::after,.p-screen::after{display:none!important}
+  .p-lcd::before,.tool::before,.topbar-mark::before,.topbar-mark::after,.f-chip::before{animation:none!important}
+  .p-lcd::before,.tool::before{display:none!important}
+  .f-grain{display:none!important}
+  /* formula ticker: keep the movement (GPU transform) but drop the mask */
+  .h-ticker{-webkit-mask-image:none!important;mask-image:none!important}
+  .h-track{will-change:transform}
+  /* scroll reveal: opacity + simple slide only (no perspective 3D) */
+  .c3d-reveal,.t3d-reveal{transform:translateY(22px)!important;transition:opacity .45s ease,transform .5s ease!important}
+  .c3d-reveal.in,.t3d-reveal.in{transform:none!important}
+  /* tiles: no hover-tilt 3D on touch */
+  #tab-home .home-big,#tab-home .home-big:hover{transform:none!important}
+  #tab-home .home-big:active{transform:scale(.98)!important}
+}
+/* low-end phones: freeze the CSS fallback keys too */
+html.perf-lite .p-key,html.perf-lite .h-track,html.perf-lite .f-aurora i{animation:none!important}
