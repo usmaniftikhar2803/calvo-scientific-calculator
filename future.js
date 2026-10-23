@@ -25,7 +25,7 @@ function intro(){
  for(var n=0;n<(mob?26:110);n++){var a=Math.random()*6.283,r=Math.max(W,H)*(.55+Math.random()*.5);P.push({x:W/2+Math.cos(a)*r,y:H/2+Math.sin(a)*r,g:G[n%G.length],s:(14+Math.random()*22)*dpr,v:0,a:a,h:Math.random()});var q=P[P.length-1],c=document.createElement('canvas'),k=c.getContext('2d');c.width=c.height=Math.ceil(q.s*1.5);k.font='700 '+q.s+'px JetBrains Mono,monospace';k.textBaseline='top';k.fillStyle=q.h>.6?'#ffb066':q.h>.3?'#fff':'#ff8a1f';k.fillText(q.g,2,2);q.c=c}
  function start(){if(go||done)return;go=true;s.classList.add('go');t0=performance.now()}
  function arm(){requestAnimationFrame(function(){requestAnimationFrame(start)})}
- if(document.readyState==='complete')arm();else{addEventListener('load',arm,{once:true});setTimeout(start,3500)}
+ start(); /* play immediately: no waiting for the page to finish loading */
  function end(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){s.remove();document.body.style.overflow=old},950)}
  s.addEventListener('click',end);addEventListener('keydown',end,{once:true});
  var shock=0;
@@ -36,9 +36,10 @@ function intro(){
    else{p.x+=p.vx;p.y+=p.vy;p.vx*=.96;p.vy*=.96;x.globalAlpha=Math.max(0,.9-(t-1.55)*.9)}
    x.drawImage(p.c,p.x,p.y)});
   if(boom&&!mob){x.globalAlpha=Math.max(0,.7-shock/Math.max(W,H));x.strokeStyle='#ff9a3a';x.lineWidth=3*dpr;x.beginPath();x.arc(W/2,H/2,shock,0,6.283);x.stroke()}
-  if(t>3.1)end();else requestAnimationFrame(f)})(t0);
+  if(t>2.5)end();else requestAnimationFrame(f)})(t0);
 }
-/* Intro no longer auto-plays: it held a black screen for 3-4s on every visit. Double-click the logo to replay it. */
+var seen=false;try{seen=!!sessionStorage.getItem('calvoIntro')||window.name.indexOf('calvoIntro')>-1}catch(e){}
+if(!reduce&&!seen){try{sessionStorage.setItem('calvoIntro','1');window.name+=' calvoIntro'}catch(e){}intro()}
 root.classList.remove('f-pre');
 if(brand)brand.addEventListener('dblclick',function(){if(!document.querySelector('.f-splash'))intro()});
 })();
