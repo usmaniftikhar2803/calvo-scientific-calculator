@@ -62,7 +62,7 @@ html[data-mode="light"]:not([data-nolight]) .f-aurora,html[data-mode="light"]:no
 .f-aurora i{filter:none;animation:none}
 .f-aurora i:nth-child(n){opacity:.35;background:radial-gradient(closest-side,var(--c),transparent)}
 .f-aurora i:nth-child(1){--c:#ff8a1f}.f-aurora i:nth-child(2){--c:#6a5cff;opacity:.28}.f-aurora i:nth-child(3){--c:#00d4ff;opacity:.18}
-.topbar-mark{animation:none}.topbar-mark::after{display:none}}
+}
 
 /* hold every splash animation until JS says the page is loaded */
 .f-splash:not(.go) *,.f-splash:not(.go) *::before,.f-splash:not(.go) *::after{animation-play-state:paused!important}
@@ -82,7 +82,7 @@ html[data-mode="light"]:not([data-nolight]) .f-aurora,html[data-mode="light"]:no
   /* animations that repaint text/gradients/layout every frame -> off */
   .p-hero h2 span,h1 span{animation:none!important}
   .p-btn.primary::after,.p-screen::after{display:none!important}
-  .p-lcd::before,.tool::before,.topbar-mark::before,.topbar-mark::after,.f-chip::before{animation:none!important}
+  .p-lcd::before,.tool::before,.f-chip::before{animation:none!important}
   .p-lcd::before,.tool::before{display:none!important}
   .f-grain{display:none!important}
   /* formula ticker: keep the movement (GPU transform) but drop the mask */
@@ -100,3 +100,11 @@ html.perf-lite .p-key,html.perf-lite .h-track,html.perf-lite .f-aurora i{animati
 
 /* brief cover until the intro appears (JS removes it in a fraction of a second) */
 html.f-pre::before{content:"";position:fixed;inset:0;z-index:2147482999;background:#06060a}
+
+/* Navbar logo keeps moving on phones that have "remove animations / reduce motion" on
+   (style.css freezes every animation there). It is a tiny 36px decorative mark, so it stays alive. */
+@media (prefers-reduced-motion: reduce){
+  .topbar-mark{animation:f-breathe 3.2s ease-in-out infinite!important}
+  .topbar-mark::before{animation:f-spin 3s linear infinite!important}
+  .topbar-mark::after{animation:f-sheen 4s 1s ease-in-out infinite!important}
+}
