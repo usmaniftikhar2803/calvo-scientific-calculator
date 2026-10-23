@@ -222,3 +222,8 @@ html { scrollbar-color: rgba(var(--t3d-rgb), .55) transparent; scrollbar-width: 
 }
 /* low-end phones: freeze the CSS fallback keys too */
 html.perf-lite .p-key,html.perf-lite .h-track,html.perf-lite .f-aurora i{animation:none!important}
+
+/* phones: no blur any more, so the top bar must be solid or page content shows through it while scrolling */
+@media (max-width:860px),(pointer:coarse){
+  .topbar{background:var(--panel)!important}
+}
