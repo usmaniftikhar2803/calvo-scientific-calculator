@@ -22,6 +22,10 @@
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<!-- Google Funding Choices (GDPR/CCPA consent messaging) -->
+<script async src="https://fundingchoicesmessages.google.com/i/pub-6621625782538547?ers=1"></script>
+<script>(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){var i=document.createElement('iframe');i.style='width:0;height:0;border:none;z-index:-1000;left:-1000px;top:-1000px;';i.style.display='none';i.name='googlefcPresent';document.body.appendChild(i);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();</script>
+
 <style>
   :root{
     --bg-void:#0d0d0f;
@@ -172,7 +176,7 @@
   <div class="doc">
     <div class="doc-head">
       <h1 class="doc-title">Privacy <span>Policy</span></h1>
-      <div class="doc-meta">Effective date: <span id="todayDate">August 9, 2026</span></div>
+      <div class="doc-meta">Effective date: October 26, 2026</div>
     </div>
 
     <p>This Privacy Policy explains how Calvo ("the app", "we", "us") handles information when you use our scientific calculator, unit converter, formula library, GPA/CGPA calculator, and AI math solver. Calvo is designed to run in your browser without requiring an account, and we do not operate any backend server that collects or stores your personal data.</p>
@@ -192,7 +196,7 @@
     <p>Certain optional features in Calvo communicate directly with third-party services, from your browser to theirs, without passing through any server we operate:</p>
     <ul>
       <li><b>Google Analytics</b> — we use Google Analytics to understand how many people visit Calvo and which pages or features they use, so we can improve the app. Google Analytics may use cookies or similar technologies and may collect information such as your approximate location, device/browser type, and pages visited. This information is processed by Google and is not linked to your name or email, since we never collect those. You can learn more, or opt out of Google Analytics tracking across all websites, via the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics Opt-out Browser Add-on</a>.</li>
-      <li><b>Google AdSense</b> — we show ads through Google AdSense, which may use cookies to serve ads based on your visits to this and other sites. You can review or adjust your ad personalization settings at <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a>.</li>
+      <li><b>Google AdSense</b> — we show ads through Google AdSense, which may use cookies to serve ads based on your visits to this and other sites. Google and its partners may use cookies and similar technologies for ad personalization, measurement and fraud prevention. You can review or adjust your ad personalization settings at <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a>, and learn how Google uses data from sites that use its services at <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">policies.google.com/technologies/partner-sites</a>.</li>
       <li><b>AI Math Solver</b> — uses your own Google Gemini API key, which you provide. Questions you type, and any photo you upload or capture to ask a question (including after cropping/rotating it), are sent directly from your browser to Google's Generative Language API. We do not receive, store, or have access to these questions or photos ourselves. This exchange is governed by <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener">Google's own terms and privacy practices</a>, not by us.</li>
       <li><b>Voice Input</b> — the microphone button on the AI Solver uses your browser's own built-in speech-recognition feature (the Web Speech API) to turn speech into text in the question box. Depending on your browser, this may send the audio to that browser vendor's own speech-recognition servers (for example, Google's, in Chrome) for transcription — it is never sent to us. If you'd rather not use this, simply type your question instead.</li>
       <li><b>Currency Converter</b> — fetches public exchange rates from the free ExchangeRate-API service (open.er-api.com). No personal or identifying data is sent with this request.</li>
@@ -216,10 +220,20 @@
       <li>Use the app without ever enabling the AI Solver or Currency Converter if you prefer not to contact any third-party service.</li>
     </ul>
 
-    <h2>7. Changes to This Policy</h2>
+    <h2>7. Cookies, Consent and Advertising (EEA, UK and Switzerland)</h2>
+    <p>Calvo uses Google Funding Choices, a consent management tool certified by Google, to ask for your consent where the law requires it. If you visit from the European Economic Area, the United Kingdom or Switzerland, you may see a consent message before ads or analytics cookies are used. Visitors from some other regions, such as certain US states, may see a message about their privacy choices as well.</p>
+    <ul>
+      <li>You can accept, decline or manage your choices in that message. Declining may mean you see ads that are less relevant to you, or non-personalised ads.</li>
+      <li>Google and its advertising partners may use cookies, device identifiers and similar technologies to show and measure ads. Google's own policies describe this at <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">policies.google.com/technologies/ads</a>.</li>
+      <li>You can change or withdraw your consent at any time: <a href="#" id="privacyChoices">review your privacy and cookie choices</a>. If the message does not open, clear this site's cookies and reload the page, or adjust your browser's cookie settings.</li>
+      <li>You can also opt out of personalised advertising through <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ads Settings</a> or <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info/choices</a>.</li>
+    </ul>
+    <p>Calvo does not receive your personal data from these services, and we do not sell personal information.</p>
+
+    <h2>8. Changes to This Policy</h2>
     <p>We may update this Privacy Policy from time to time to reflect changes in the app or applicable law. Any changes will be posted on this page with a revised effective date above. Continued use of Calvo after changes are posted means you accept the updated policy.</p>
 
-    <h2>8. Contact Us</h2>
+    <h2>9. Contact Us</h2>
     <p>If you have questions or concerns about this Privacy Policy, please reach out at <a href="mailto:usmaniftikhar2803@gmail.com">usmaniftikhar2803@gmail.com</a>.</p>
 
     <div class="doc-footer">
@@ -230,8 +244,22 @@
   </div>
 
   <script>
-    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
-  </script>
+  
+  (function(){
+    var a=document.getElementById('privacyChoices'); if(!a) return;
+    a.addEventListener('click',function(e){
+      e.preventDefault();
+      try{
+        window.googlefc=window.googlefc||{};
+        window.googlefc.callbackQueue=window.googlefc.callbackQueue||[];
+        window.googlefc.callbackQueue.push({'CONSENT_DATA_READY':function(){
+          if(typeof window.googlefc.showRevocationMessage==='function'){window.googlefc.showRevocationMessage();}
+        }});
+        if(typeof window.googlefc.showRevocationMessage==='function'){window.googlefc.showRevocationMessage();}
+      }catch(err){}
+    });
+  })();
+</script>
 
 </body>
 </html>
