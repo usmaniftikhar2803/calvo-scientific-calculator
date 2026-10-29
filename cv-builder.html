@@ -84,6 +84,49 @@
 .cv-pages canvas{width:100%;height:auto;background:#fff;border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.6)}
 .cv-warn{color:#ffb86b}
 .btn:disabled{opacity:.45;cursor:default}
+
+/* ===== CV builder: friendlier layout ===== */
+.topbar,.doc{max-width:1120px}
+.doc>p,.doc>h2,.doc>details,.doc>.related{max-width:760px}
+.cv-steps{list-style:none;display:flex;gap:8px;padding:0;margin:0 0 12px}
+.cv-steps li{flex:1;display:flex;align-items:center;gap:8px;margin:0;padding:8px 10px;border:1px solid var(--panel-border);border-radius:10px;font-size:12.5px;line-height:1.3;background:rgba(127,127,127,.08)}
+.cv-steps b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--brand-orange);color:#17171a;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.cv-quick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--text-dim)}
+.cv-quick .btn{min-height:34px;padding:5px 12px;font-size:12.5px;box-shadow:none}
+details.cv-style{border:1px solid var(--panel-border);border-radius:12px;padding:0 12px;margin-bottom:12px;background:rgba(127,127,127,.06)}
+details.cv-style>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--text)}
+details.cv-style>summary i,.cv-sec>summary i{font-style:normal;font-weight:400;color:var(--text-dim);margin-left:6px;font-size:12px}
+details.cv-style[open]>summary{margin-bottom:6px}
+.cv-style .cv-bar{margin:6px 0 10px}
+.cv-help{font-size:12.5px;color:var(--text-dim);margin:0 0 10px;line-height:1.5}
+.cv-form details.cv-sec>summary{display:flex;align-items:center;min-height:44px;margin:0;font-family:inherit;font-size:14.5px;font-weight:600;list-style:none}
+.cv-form details.cv-sec>summary::-webkit-details-marker{display:none}
+.cv-form details.cv-sec>summary::after{content:"+";margin-left:auto;font-size:20px;color:var(--brand-orange)}
+.cv-form details.cv-sec[open]>summary::after{content:"\2212"}
+.cv-form details.cv-sec[open]>summary{margin-bottom:8px}
+.cv-form input,.cv-form textarea,.cv-form select{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+.cv-form textarea{display:block;width:100%;min-height:84px;resize:vertical;line-height:1.5;padding:10px 12px;background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--panel-border);border-radius:10px;font-size:15px}
+.cv-form textarea::placeholder{color:var(--text-dim);opacity:.7}
+.cv-next{display:none;width:100%;margin-top:6px}
+.cv-dl{width:100%}
+.cv-tabs button{min-height:44px}
+@media(min-width:900px){
+  .cv-grid{grid-template-columns:minmax(0,1fr) 480px}
+  .cv-help{display:none}
+  .cv-pages{max-height:calc(100vh - 200px)}
+}
+@media(max-width:899px){
+  .cv-tabs{position:sticky;top:0;z-index:20;padding:8px 0;margin:0 0 10px;background:var(--panel)}
+  .cv-next{display:block}
+  .cv-grid[data-view=preview] .cv-next{display:none}
+}
+@media(max-width:600px){
+  .doc{padding:18px 12px}
+  .tool{padding:12px}
+  .cv-steps{gap:6px}
+  .cv-steps li{flex-direction:column;gap:4px;padding:8px 4px;text-align:center;font-size:11.5px}
+  .optgrid{grid-template-columns:1fr}
+}
 </style>
 <script src="/light-pages.js"></script>
 </head>
@@ -92,7 +135,10 @@
 <main class="doc">
 <h1>CV / Resume <span>Builder</span></h1>
 <p class="lead">Make a professional CV in minutes. Pick a design, fill in your details and download a clean PDF.</p>
-<div class="tool" id="cvApp"><h3>CV / Resume Builder</h3>
+<div class="tool" id="cvApp">
+<ol class="cv-steps"><li><b>1</b><span>Fill details</span></li><li><b>2</b><span>Check preview</span></li><li><b>3</b><span>Download PDF</span></li></ol>
+<div class="cv-quick"><span>Not sure what to write?</span><button class="btn ghost" id="cvExample" type="button">See an example</button><button class="btn ghost" id="cvClear" type="button">Clear all</button></div>
+<details class="cv-style" id="cvStyle"><summary>Design, colour and size <i>(optional)</i></summary>
 <div class="cv-bar">
 <div><label class="lbl2">Design</label><div class="cv-tpls"><button type="button" class="cv-tpl on" data-t="classic">Classic</button><button type="button" class="cv-tpl" data-t="modern">Modern</button><button type="button" class="cv-tpl" data-t="minimal">Minimal</button></div></div>
 <div><label class="lbl2">Colour</label><div class="cv-sws"><button type="button" class="cv-sw" data-c="#1f3a5f" style="background:#1f3a5f" aria-label="Colour #1f3a5f"></button><button type="button" class="cv-sw" data-c="#7a1f2b" style="background:#7a1f2b" aria-label="Colour #7a1f2b"></button><button type="button" class="cv-sw" data-c="#1f6b4a" style="background:#1f6b4a" aria-label="Colour #1f6b4a"></button><button type="button" class="cv-sw" data-c="#111111" style="background:#111111" aria-label="Colour #111111"></button><button type="button" class="cv-sw" data-c="#d9731a" style="background:#d9731a" aria-label="Colour #d9731a"></button><button type="button" class="cv-sw" data-c="#5b3e96" style="background:#5b3e96" aria-label="Colour #5b3e96"></button><button type="button" class="cv-sw" data-c="#0e7490" style="background:#0e7490" aria-label="Colour #0e7490"></button><input type="color" id="cvColor" value="#1f3a5f" aria-label="Custom colour"></div></div>
@@ -100,11 +146,13 @@
 <div><label class="lbl2" for="cvSize">Text size</label><select id="cvSize"><option value="compact">Compact</option><option value="normal" selected>Normal</option><option value="large">Large</option></select></div>
 <div><label class="lbl2" for="cvOrder">Order</label><select id="cvOrder"><option value="edu">Education first (freshers)</option><option value="exp">Experience first</option></select></div>
 </div>
-<div class="row" style="gap:8px;margin-bottom:12px"><button class="btn ghost" id="cvExample" type="button">Fill an example</button><button class="btn ghost" id="cvClear" type="button">Clear everything</button></div>
-<div class="cv-tabs"><button type="button" class="on" id="cvTabEdit">Edit</button><button type="button" id="cvTabPrev">Preview</button></div>
+</details>
+<div id="cvTop"></div>
+<div class="cv-tabs"><button type="button" class="on" id="cvTabEdit">Edit details</button><button type="button" id="cvTabPrev">Preview CV</button></div>
 <div class="cv-grid" id="cvGrid" data-view="edit">
 <div class="cv-form">
-<details open><summary>Personal details</summary>
+<p class="cv-help">Tap a section to open it. Sections you leave empty will not show on your CV.</p>
+<details class="cv-sec"><summary>1. Personal details</summary>
 <div class="optgrid"><div><label for="cvName">Full name</label><input type="text" id="cvName" placeholder="e.g. Ali Hassan" maxlength="60" autocomplete="name"></div>
 <div><label for="cvRole">Job title you want</label><input type="text" id="cvRole" placeholder="e.g. Junior Web Developer" maxlength="60"></div>
 <div><label for="cvEmail">Email</label><input type="email" id="cvEmail" placeholder="you@email.com" maxlength="80" autocomplete="email"></div>
@@ -113,24 +161,25 @@
 <div><label for="cvLink">LinkedIn / portfolio (optional)</label><input type="text" id="cvLink" placeholder="e.g. linkedin.com/in/yourname" maxlength="80"></div></div>
 <div class="cv-photo"><span class="cv-pp" id="cvPhotoPrev"></span><label class="btn ghost" for="cvPhoto">Add photo (optional)</label><input type="file" id="cvPhoto" accept="image/*" hidden><button class="btn ghost" id="cvPhotoClear" type="button" style="display:none">Remove photo</button></div>
 </details>
-<details open><summary>Profile summary</summary>
+<details class="cv-sec"><summary>2. About you <i>(short summary)</i></summary>
 <div class="optgrid one"><div><label for="cvSummary">2 to 3 lines about you</label><textarea id="cvSummary" rows="4" placeholder="e.g. Motivated graduate with hands-on experience in ... looking for ..." maxlength="600"></textarea></div></div></details>
-<details open><summary>Education</summary><div id="cvList_edu"></div><button class="btn ghost" id="cvAdd_edu" type="button">+ Add education</button></details>
-<details open><summary>Experience / internships</summary><div id="cvList_exp"></div><button class="btn ghost" id="cvAdd_exp" type="button">+ Add experience</button></details>
-<details open><summary>Projects</summary><div id="cvList_proj"></div><button class="btn ghost" id="cvAdd_proj" type="button">+ Add project</button></details>
-<details open><summary>Skills, languages and more</summary>
+<details class="cv-sec"><summary>3. Education</summary><div id="cvList_edu"></div><button class="btn ghost" id="cvAdd_edu" type="button">+ Add education</button></details>
+<details class="cv-sec"><summary>4. Experience / internships <i>(optional)</i></summary><div id="cvList_exp"></div><button class="btn ghost" id="cvAdd_exp" type="button">+ Add experience</button></details>
+<details class="cv-sec"><summary>5. Projects <i>(optional)</i></summary><div id="cvList_proj"></div><button class="btn ghost" id="cvAdd_proj" type="button">+ Add project</button></details>
+<details class="cv-sec"><summary>6. Skills, languages and more</summary>
 <div class="optgrid one"><div><label for="cvSkills">Skills (separate with commas)</label><textarea id="cvSkills" rows="2" placeholder="e.g. MS Office, JavaScript, Communication"></textarea></div>
 <div><label for="cvCerts">Certifications and achievements (one per line)</label><textarea id="cvCerts" rows="3" placeholder="e.g. Web Development Course - Sample Academy (2024)"></textarea></div>
 <div><label for="cvLangs">Languages (commas)</label><input type="text" id="cvLangs" placeholder="e.g. Urdu, English"></div>
 <div><label for="cvInterests">Interests (commas, optional)</label><input type="text" id="cvInterests" placeholder="e.g. Cricket, Reading"></div></div>
 <label class="chk"><input type="checkbox" id="cvRefs"> Add "References available on request"</label></details>
+<button class="btn cv-next" id="cvNext" type="button">Next: see my CV preview &rarr;</button>
 </div>
 <div class="cv-prev">
 <div class="cv-prev-h"><b>Live preview</b><span id="cvPageCount"></span></div>
+<button class="btn cv-dl" id="cvDl" type="button">Download PDF</button>
+<div class="note" id="cvMsg" style="margin:6px 0 10px;text-align:center"></div>
 <div id="cvPages" class="cv-pages"><div class="note">Your CV preview appears here as you type.</div></div>
 <div class="note cv-warn" id="cvWarn" style="display:none">Some characters, such as Urdu letters or special symbols, are not supported in the PDF and show as ?. Please use English letters.</div>
-<div class="row" style="margin-top:12px;justify-content:center"><button class="btn" id="cvDl" type="button">Download PDF</button></div>
-<div class="note" id="cvMsg" style="margin-top:8px;text-align:center"></div>
 </div>
 </div>
 <div class="note" style="margin-top:10px">Your details are saved on this device only, so you can come back and edit later. Nothing is uploaded.</div></div>
