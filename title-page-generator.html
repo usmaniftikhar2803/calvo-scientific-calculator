@@ -70,6 +70,48 @@
 .tp-prev canvas{display:block;width:100%;max-width:380px;margin:0 auto;height:auto;background:#fff;border-radius:3px;box-shadow:0 6px 26px rgba(0,0,0,.6)}
 .status{display:none;margin-top:10px;font-size:12px;color:var(--brand-orange);text-align:center}
 .btn:disabled{opacity:.45;cursor:default}
+
+/* ===== Title page: friendlier layout ===== */
+.topbar,.doc{max-width:1000px}
+.doc>p,.doc>h2,.doc>details,.doc>.related{max-width:760px}
+.tp-steps{list-style:none;display:flex;gap:8px;padding:0;margin:0 0 12px}
+.tp-steps li{flex:1;display:flex;align-items:center;gap:8px;margin:0;padding:8px 10px;border:1px solid var(--panel-border);border-radius:10px;font-size:12.5px;line-height:1.3;background:rgba(127,127,127,.08)}
+.tp-steps b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--brand-orange);color:#17171a;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.tp-quick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--text-dim)}
+.tp-quick .btn{min-height:34px;padding:5px 12px;font-size:12.5px;box-shadow:none}
+details.tp-style,details.tp-more{border:1px solid var(--panel-border);border-radius:12px;padding:0 12px;margin-bottom:12px;background:rgba(127,127,127,.06)}
+details.tp-style>summary,details.tp-more>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--text);line-height:1.35}
+details.tp-style>summary i,details.tp-more>summary i{font-style:normal;font-weight:400;color:var(--text-dim);margin-left:6px;font-size:12px}
+details.tp-style[open]>summary,details.tp-more[open]>summary{margin-bottom:6px}
+.tp-style .tp-top{margin:6px 0 10px}
+details.tp-more{margin-top:12px}
+details.tp-more .tp-logo{margin:4px 0 10px}
+details.tp-more .tp-merge{margin:4px 0 12px}
+.tp-help{font-size:12.5px;color:var(--text-dim);margin:0 0 6px;line-height:1.5}
+.tp-gh{font-size:13px;font-weight:700;color:var(--brand-orange);margin:14px 0 6px;font-family:'Space Mono',monospace}
+.tp-form input,.tp-form select{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+.tp-tabs{display:none;gap:6px;margin-bottom:10px}
+.tp-tabs button{flex:1;min-height:44px;background:#0d0d0f;color:var(--text-dim);border:1px solid var(--panel-border);border-radius:10px;padding:10px;font-family:inherit;font-size:13px;cursor:pointer}
+.tp-tabs button.on{background:var(--brand-orange);color:#17171a;border-color:var(--brand-orange);font-weight:700}
+.tp-next{display:none;width:100%;margin-top:6px}
+.tp-prev-h{font-size:12.5px;margin-bottom:8px}
+.tp-dlrow{display:flex;gap:8px}
+.tp-dlrow .btn{white-space:nowrap;padding-left:10px;padding-right:10px}.tp-dlrow .btn:first-child{flex:1.4}.tp-dlrow .btn:last-child{flex:1}
+.tp-prev .result{text-align:center}
+@media(min-width:880px){.tp-grid{grid-template-columns:minmax(0,1fr) 400px}}
+@media(max-width:879px){
+  .tp-tabs{display:flex;position:sticky;top:0;z-index:20;padding:8px 0;margin:0 0 10px;background:var(--panel)}
+  .tp-grid[data-view=edit] .tp-prev{display:none}
+  .tp-grid[data-view=preview] .tp-form{display:none}
+  .tp-next{display:block}
+}
+@media(max-width:600px){
+  .doc{padding:18px 12px}
+  .tool{padding:12px}
+  .tp-steps{gap:6px}
+  .tp-steps li{flex-direction:column;gap:4px;padding:8px 4px;text-align:center;font-size:11.5px}
+  .optgrid{grid-template-columns:1fr}
+}
 </style>
 <script src="/light-pages.js"></script>
 </head>
@@ -78,33 +120,46 @@
 <main class="doc">
 <h1>Title Page <span>Generator</span></h1>
 <p class="lead">Make a neat cover page for your assignment in a minute. Choose a design, fill in your details and download the PDF.</p>
-<div class="tool" id="tpApp"><h3>Assignment Title Page Generator</h3>
+<div class="tool" id="tpApp">
+<ol class="tp-steps"><li><b>1</b><span>Fill details</span></li><li><b>2</b><span>Check preview</span></li><li><b>3</b><span>Download PDF</span></li></ol>
+<div class="tp-quick"><span>Not sure what to write?</span><button class="btn ghost" id="tpExample" type="button">See an example</button><button class="btn ghost" id="tpReset" type="button">Clear all</button></div>
+<details class="tp-style" id="tpStyle"><summary>Design, colour and font <i>(optional)</i></summary>
 <div class="tp-top">
 <div><label class="lbl2">Design</label><div class="tp-tpls"><button type="button" class="tp-tpl on" data-t="classic">Classic</button><button type="button" class="tp-tpl" data-t="modern">Modern</button><button type="button" class="tp-tpl" data-t="minimal">Minimal</button><button type="button" class="tp-tpl" data-t="formal">Formal</button></div></div>
 <div><label class="lbl2">Colour</label><div class="tp-sws"><button type="button" class="tp-sw" data-c="#1f3a5f" style="background:#1f3a5f" aria-label="Colour #1f3a5f"></button><button type="button" class="tp-sw" data-c="#7a1f2b" style="background:#7a1f2b" aria-label="Colour #7a1f2b"></button><button type="button" class="tp-sw" data-c="#1f6b4a" style="background:#1f6b4a" aria-label="Colour #1f6b4a"></button><button type="button" class="tp-sw" data-c="#111111" style="background:#111111" aria-label="Colour #111111"></button><button type="button" class="tp-sw" data-c="#d9731a" style="background:#d9731a" aria-label="Colour #d9731a"></button><button type="button" class="tp-sw" data-c="#5b3e96" style="background:#5b3e96" aria-label="Colour #5b3e96"></button><button type="button" class="tp-sw" data-c="#0e7490" style="background:#0e7490" aria-label="Colour #0e7490"></button><input type="color" id="tpColor" value="#1f3a5f" aria-label="Custom colour"></div></div>
 <div><label class="lbl2" for="tpFont">Font</label><select id="tpFont"><option value="serif">Serif (formal)</option><option value="sans">Sans (modern)</option></select></div>
 </div>
-<div class="tp-grid">
+</details>
+<div id="tpTop"></div>
+<div class="tp-tabs"><button type="button" class="on" id="tpTabEdit">Edit details</button><button type="button" id="tpTabPrev">Preview page</button></div>
+<div class="tp-grid" id="tpGrid" data-view="edit">
 <div class="tp-form">
+<p class="tp-help">Fill what you know. Empty boxes are skipped, and the preview updates as you type.</p>
+<div class="tp-gh">The university</div>
 <div class="optgrid one"><div><label for="tpInst">University / college / school</label><input type="text" id="tpInst" placeholder="e.g. Government College University Faisalabad" maxlength="120"></div>
 <div><label for="tpDept">Department (optional)</label><input type="text" id="tpDept" placeholder="e.g. Department of Computer Science" maxlength="120"></div></div>
+<div class="tp-gh">The assignment</div>
 <div class="optgrid"><div><label for="tpDocType">Type</label><input type="text" id="tpDocType" list="tpTypes" value="Assignment" maxlength="40"><datalist id="tpTypes"><option value="Assignment"><option value="Report"><option value="Project"><option value="Lab Report"><option value="Case Study"><option value="Term Paper"><option value="Presentation"><option value="Thesis Proposal"></datalist></div>
 <div><label for="tpDate">Date</label><input type="date" id="tpDate"></div></div>
 <div class="optgrid one"><div><label for="tpTitle">Title / topic</label><input type="text" id="tpTitle" placeholder="e.g. Impact of AI on Education" maxlength="160"></div></div>
 <div class="optgrid"><div><label for="tpCourse">Course / subject</label><input type="text" id="tpCourse" placeholder="e.g. Data Structures" maxlength="80"></div>
 <div><label for="tpCode">Course code (optional)</label><input type="text" id="tpCode" placeholder="e.g. CS-201" maxlength="20"></div></div>
+<div class="tp-gh">About you</div>
 <div class="optgrid"><div><label for="tpName">Your name</label><input type="text" id="tpName" placeholder="e.g. Ahmed Raza" maxlength="60"></div>
 <div><label for="tpRoll">Roll no. / registration no.</label><input type="text" id="tpRoll" placeholder="e.g. 2024-CS-117" maxlength="30"></div></div>
 <div class="optgrid one"><div><label for="tpProgram">Class / program / semester / section</label><input type="text" id="tpProgram" placeholder="e.g. BS Computer Science, Semester 3" maxlength="100"></div>
 <div><label for="tpTeacher">Submitted to (teacher)</label><input type="text" id="tpTeacher" placeholder="e.g. Dr. Muhammad Asif" maxlength="80"></div></div>
+<details class="tp-more" id="tpMore"><summary>Extras: add a logo, or put this page in front of my PDF <i>(optional)</i></summary>
 <div class="tp-logo"><label class="btn ghost" for="tpLogo">Add logo (optional)</label><input type="file" id="tpLogo" accept="image/*" hidden><button class="btn ghost" id="tpLogoClear" type="button" style="display:none">Remove logo</button></div>
 <div class="tp-merge"><label class="lbl2">Put this title page in front of my own PDF (optional)</label><div class="row" style="gap:8px"><label class="btn ghost" for="tpMerge">Choose PDF</label><input type="file" id="tpMerge" accept="application/pdf,.pdf" hidden><span class="note" id="tpMergeName">No PDF chosen</span><button class="btn ghost" id="tpMergeClear" type="button" style="display:none">Clear</button></div></div>
+</details>
+<button class="btn tp-next" id="tpNext" type="button">Next: see my title page &rarr;</button>
 </div>
-<div class="tp-prev"><canvas id="tpCanvas" aria-label="Title page preview"></canvas>
-<div class="row" style="margin-top:12px;justify-content:center;gap:8px"><button class="btn" id="tpPdf" type="button">Download PDF</button><button class="btn ghost" id="tpJpg" type="button">Download JPG</button></div>
+<div class="tp-prev"><div class="tp-prev-h"><b>Live preview</b></div>
+<div class="tp-dlrow"><button class="btn" id="tpPdf" type="button">Download PDF</button><button class="btn ghost" id="tpJpg" type="button">Download JPG</button></div>
 <div class="status" id="tpStatus"></div>
-<div class="result empty" id="tpResult" style="margin-top:10px">Fill in your details, then download.</div>
-<div class="row" style="margin-top:8px;justify-content:center"><button class="btn ghost" id="tpReset" type="button">Clear my details</button></div>
+<div class="result empty" id="tpResult" style="margin:10px 0">Your file will download when you tap the button.</div>
+<canvas id="tpCanvas" aria-label="Title page preview"></canvas>
 </div></div>
 <div class="note" style="margin-top:10px">Your details are saved on this device only, so you do not have to type your name and roll number again. Nothing is uploaded.</div></div>
 <h2>How it works</h2>
