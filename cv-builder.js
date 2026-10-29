@@ -354,7 +354,7 @@
   $('cvDl').onclick = async function () {
     if (busy) return;
     var msg = $('cvMsg'); msg.textContent = '';
-    if (!(cv.name || '').trim()) { msg.textContent = 'Please enter your name first.'; $('cvName').focus(); return; }
+    if (!(cv.name || '').trim()) { msg.textContent = 'Please enter your name first.'; $('cvTabEdit').onclick(); var s1 = document.querySelector('.cv-sec'); if (s1) s1.open = true; $('cvName').focus(); return; }
     busy = true; $('cvDl').disabled = true; msg.textContent = 'Creating your CV...';
     try {
       var res = await makePdf(false), blob = new Blob([res.bytes], { type: 'application/pdf' });
@@ -375,8 +375,15 @@
     if (typeof confirm === 'function' && !confirm('Clear everything you have typed?')) return;
     var keep = { tpl: cv.tpl, accent: cv.accent, font: cv.font, size: cv.size, order: cv.order }; cv = Object.assign(blank(), keep); fillAll(); touch();
   };
-  $('cvTabEdit').onclick = function () { $('cvGrid').setAttribute('data-view', 'edit'); $('cvTabEdit').classList.add('on'); $('cvTabPrev').classList.remove('on'); };
-  $('cvTabPrev').onclick = function () { $('cvGrid').setAttribute('data-view', 'preview'); $('cvTabPrev').classList.add('on'); $('cvTabEdit').classList.remove('on'); renderPreview(); };
+  function toTop() { try { if (window.innerWidth < 900) $('cvTop').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+  $('cvTabEdit').onclick = function () { $('cvGrid').setAttribute('data-view', 'edit'); $('cvTabEdit').classList.add('on'); $('cvTabPrev').classList.remove('on'); toTop(); };
+  $('cvTabPrev').onclick = function () { $('cvGrid').setAttribute('data-view', 'preview'); $('cvTabPrev').classList.add('on'); $('cvTabEdit').classList.remove('on'); renderPreview(); toTop(); };
+  $('cvNext').onclick = function () { $('cvTabPrev').onclick(); };
+  /* On phones keep the form short: only the first section is open. On wide screens everything is open. */
+  (function () {
+    var wide = window.matchMedia('(min-width:900px)').matches;
+    Array.prototype.forEach.call(document.querySelectorAll('.cv-sec'), function (d, i) { d.open = wide || i === 0; });
+  })();
   function fillAll() { fillStatic(); Object.keys(LISTS).forEach(renderList); }
 
   load(); fillAll(); renderPreview();
