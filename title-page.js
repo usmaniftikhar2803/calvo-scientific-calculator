@@ -202,7 +202,8 @@
   var cv = $('tpCanvas'), raf = 0;
   cv.width = 892; cv.height = Math.round(892 * 842 / 595);
   function paint() { raf = 0; var d = data(); d.preview = true; drawTitlePage(cv, d, logo); }
-  function redraw() { if (!raf) raf = requestAnimationFrame(paint); save(); }
+  function clearHint() { var r = $('tpResult'); if (r && r.getAttribute('data-err')) { r.removeAttribute('data-err'); r.className = 'result empty'; r.textContent = 'Your file will download when you tap the button.'; } }
+  function redraw() { clearHint(); if (!raf) raf = requestAnimationFrame(paint); save(); }
 
   function syncUI() {
     Array.prototype.forEach.call(document.querySelectorAll('.tp-tpl'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === st.tpl); });
@@ -257,7 +258,13 @@
   }
   var busy = false;
   async function run(kind) {
-    if (busy) return; busy = true; ['tpPdf', 'tpJpg'].forEach(function (i) { $(i).disabled = true; });
+    if (busy) return;
+    var boxA = $('tpResult');
+    if (!($('tpInst').value.trim() || $('tpTitle').value.trim() || $('tpName').value.trim())) {
+      boxA.className = 'result empty'; boxA.setAttribute('data-err', '1'); boxA.textContent = 'Please fill in your university, title or name first.';
+      $('tpTabEdit').onclick(); $('tpInst').focus(); return;
+    }
+    busy = true; ['tpPdf', 'tpJpg'].forEach(function (i) { $(i).disabled = true; });
     var box = $('tpResult'); box.className = 'result empty'; box.textContent = 'Creating...';
     try {
       setStatus('Creating your title page...'); await new Promise(function (r) { setTimeout(r, 0); });
@@ -282,10 +289,10 @@
       var canShare = !!(file && navigator.canShare && navigator.canShare({ files: [file] }));
       box.className = 'result';
       box.innerHTML = '<div class="stats">' + rows.map(function (r) { return '<div class="stat"><b>' + esc(r[1]) + '</b><span>' + esc(r[0]) + '</span></div>'; }).join('') + '</div>' +
-        '<div class="row" style="margin-top:12px"><button class="btn" id="tpDl" type="button">Download ' + (kind === 'jpg' ? 'JPG' : 'PDF') + '</button>' + (canShare ? '<button class="btn ghost" id="tpSh" type="button">Share / Save</button>' : '') + '</div>';
+        '<div class="row" style="margin-top:12px"><button class="btn" id="tpDl" type="button">Download again (' + (kind === 'jpg' ? 'JPG' : 'PDF') + ')</button>' + (canShare ? '<button class="btn ghost" id="tpSh" type="button">Share / Save</button>' : '') + '</div>';
       $('tpDl').onclick = function () { download(url, name); };
+      download(url, name);
       if (canShare) $('tpSh').onclick = function () { navigator.share({ files: [file], title: name }).catch(function () {}); };
-      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       setStatus('');
     } catch (e) { box.className = 'result empty'; box.textContent = e && e.message ? e.message : 'Something went wrong.'; setStatus(''); }
     busy = false; ['tpPdf', 'tpJpg'].forEach(function (i) { $(i).disabled = false; });
@@ -294,9 +301,25 @@
   $('tpMerge').addEventListener('change', function () { var f = this.files && this.files[0]; $('tpMergeName').textContent = f ? f.name : 'No PDF chosen'; $('tpMergeClear').style.display = f ? '' : 'none'; });
   $('tpMergeClear').onclick = function () { $('tpMerge').value = ''; $('tpMergeName').textContent = 'No PDF chosen'; this.style.display = 'none'; };
   $('tpReset').onclick = function () {
+    if (typeof confirm === 'function' && !confirm('Clear everything you have typed?')) return;
     FIELDS.forEach(function (f) { if (f !== 'date') $('tp' + f.charAt(0).toUpperCase() + f.slice(1)).value = f === 'docType' ? 'Assignment' : ''; });
     logo = null; st.logoData = ''; syncUI(); redraw();
   };
+
+  /* example */
+  $('tpExample').onclick = function () {
+    var ex = { inst: 'Government College University Faisalabad', dept: 'Department of Computer Science', docType: 'Assignment', title: 'Impact of AI on Education', course: 'Data Structures', code: 'CS-201', teacher: 'Dr. Muhammad Asif', name: 'Ahmed Raza', roll: '2024-CS-117', program: 'BS Computer Science, Semester 3' };
+    var has = $('tpTitle').value.trim() || $('tpName').value.trim() || $('tpInst').value.trim();
+    if (has && typeof confirm === 'function' && !confirm('Replace what you typed with example details?')) return;
+    Object.keys(ex).forEach(function (f) { $('tp' + f.charAt(0).toUpperCase() + f.slice(1)).value = ex[f]; });
+    redraw();
+  };
+
+  /* Edit / Preview tabs (phones) */
+  function toTop() { try { if (window.innerWidth < 880) $('tpTop').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+  $('tpTabEdit').onclick = function () { $('tpGrid').setAttribute('data-view', 'edit'); $('tpTabEdit').classList.add('on'); $('tpTabPrev').classList.remove('on'); toTop(); };
+  $('tpTabPrev').onclick = function () { $('tpGrid').setAttribute('data-view', 'preview'); $('tpTabPrev').classList.add('on'); $('tpTabEdit').classList.remove('on'); paint(); toTop(); };
+  $('tpNext').onclick = function () { $('tpTabPrev').onclick(); };
 
   /* defaults */
   var now = new Date(); $('tpDate').value = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
