@@ -4204,3 +4204,29 @@ button, a, .key, input, select, textarea, label { touch-action: manipulation; }
   .home-big, .subject-tile { transform: none !important; }
   .home-ic, .subject-tile-icon, .home-big b, .home-big small, .subject-tile-name { transform: none; }
 }
+
+/* ---------- Converter: step-by-step solution ---------- */
+.convert-steps { margin-top: 16px; }
+.convert-steps:empty { display: none; }
+.convert-steps-title {
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em;
+  margin-bottom: 8px; opacity: 0.9;
+}
+.convert-steps-list {
+  list-style: decimal; margin: 0; padding: 10px 14px 10px 32px;
+  background: rgba(127,127,127,0.10); border-radius: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.convert-steps-list li { font-size: 0.82rem; line-height: 1.5; }
+.convert-steps-list .cs-text { opacity: 0.85; }
+.convert-steps-list .cs-math {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  font-size: 0.85rem; margin-top: 2px; overflow-wrap: anywhere;
+}
+.convert-steps-list .cs-math:empty { display: none; }
+.convert-steps-list .cs-why { font-size: 0.72rem; opacity: 0.6; margin-top: 2px; }
+.convert-steps-answer {
+  margin-top: 10px; padding: 10px 14px; border-radius: 12px;
+  background: rgba(127,127,127,0.16); font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace; overflow-wrap: anywhere;
+}
