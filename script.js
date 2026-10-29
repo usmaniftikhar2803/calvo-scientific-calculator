@@ -2147,6 +2147,7 @@ const convertToUnitEl = document.getElementById('convertToUnit');
 const convertSwapBtn = document.getElementById('convertSwapBtn');
 const convertHintEl = document.getElementById('convertHint');
 const convertAttributionEl = document.getElementById('convertAttribution');
+const convertStepsEl = document.getElementById('convertSteps');
 
 function buildConvertPills() {
   if (!convertCategoryPills) return;
@@ -2230,9 +2231,157 @@ function convertTemperature(val, from, to) {
   return celsius + 273.15;
 }
 
+
+/* ---- Step-by-step working shown under the converter result ---- */
+function convEsc(x) {
+  return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function convFmt(n) {
+  if (!isFinite(n)) return String(n);
+  if (n === 0) return '0';
+  const a = Math.abs(n);
+  if (a >= 1e12 || a < 1e-6) {
+    const p = n.toExponential(7).split('e');
+    return parseFloat(p[0]) + ' \u00d7 10<sup>' + parseInt(p[1], 10) + '</sup>';
+  }
+  return String(parseFloat(n.toPrecision(10)));
+}
+function convAns(n) {
+  const a = Math.abs(n);
+  return (a >= 1e12 || (a < 1e-6 && a !== 0)) ? convFmt(n) : String(n);
+}
+function convParen(n) { return n < 0 ? '(' + convFmt(n) + ')' : convFmt(n); }
+function convT(key, vars) {
+  let str = t(key);
+  if (vars) for (const k in vars) str = str.split('{' + k + '}').join(vars[k]);
+  return str;
+}
+function convStep(label, math, why) {
+  return '<div class="cs-text">' + label + '</div>' +
+    '<div class="cs-math">' + math + '</div>' +
+    (why ? '<div class="cs-why">' + why + '</div>' : '');
+}
+function renderConvertSteps(steps, answer) {
+  if (!convertStepsEl) return;
+  if (!steps || !steps.length) { convertStepsEl.innerHTML = ''; return; }
+  convertStepsEl.innerHTML =
+    '<div class="convert-steps-title">' + t('convert_sol_title') + '</div>' +
+    '<ol class="convert-steps-list">' + steps.map(x => '<li>' + x + '</li>').join('') + '</ol>' +
+    '<div class="convert-steps-answer"><b>' + t('convert_sol_answer') + ':</b> ' + answer + '</div>';
+}
+function convSameUnitSteps() {
+  return [convStep(t('convert_sol_same'), '', '')];
+}
+
+function buildFactorSteps(val, fromU, toU, units) {
+  if (fromU === toU) return convSameUnitSteps();
+  const baseName = Object.keys(units).find(u => units[u] === 1);
+  const ff = units[fromU], ft = units[toU];
+  const F = convEsc(fromU), T = convEsc(toU), B = convEsc(baseName);
+  const baseVal = val * ff;
+  const result = baseVal / ft;
+  const v = convParen(val);
+  const steps = [];
+  if (fromU === baseName) {
+    steps.push(convStep(convT('convert_sol_from_base', { base: B, to: T }),
+      v + ' \u00f7 ' + convFmt(ft) + ' = ' + convFmt(result) + ' ' + T,
+      convT('convert_sol_because', { a: '1 ' + T, b: convFmt(ft) + ' ' + B })));
+  } else if (toU === baseName) {
+    steps.push(convStep(convT('convert_sol_to_base', { from: F, base: B }),
+      v + ' \u00d7 ' + convFmt(ff) + ' = ' + convFmt(baseVal) + ' ' + B,
+      convT('convert_sol_because', { a: '1 ' + F, b: convFmt(ff) + ' ' + B })));
+  } else {
+    steps.push(convStep(convT('convert_sol_to_base', { from: F, base: B }),
+      v + ' \u00d7 ' + convFmt(ff) + ' = ' + convFmt(baseVal) + ' ' + B,
+      convT('convert_sol_because', { a: '1 ' + F, b: convFmt(ff) + ' ' + B })));
+    steps.push(convStep(convT('convert_sol_from_base', { base: B, to: T }),
+      convFmt(baseVal) + ' \u00f7 ' + convFmt(ft) + ' = ' + convFmt(result) + ' ' + T,
+      convT('convert_sol_because', { a: '1 ' + T, b: convFmt(ft) + ' ' + B })));
+  }
+  if (steps.length > 1) {
+    const k = ff / ft;
+    steps.push(convStep(t('convert_sol_shortcut'),
+      '1 ' + F + ' = ' + convFmt(k) + ' ' + T + ' &rarr; ' + v + ' \u00d7 ' + convFmt(k) + ' = ' + convFmt(result) + ' ' + T, ''));
+  }
+  return steps;
+}
+
+function buildTempSteps(val, from, to) {
+  if (from === to) return convSameUnitSteps();
+  const fl = t('convert_sol_formula');
+  const steps = [];
+  let c;
+  if (from === 'Celsius') c = val;
+  else if (from === 'Fahrenheit') {
+    c = (val - 32) * 5 / 9;
+    steps.push(convStep(fl + ': \u00b0C = (\u00b0F \u2212 32) \u00d7 5/9',
+      '(' + convFmt(val) + ' \u2212 32) \u00d7 5/9 = ' + convFmt(c) + ' \u00b0C', ''));
+  } else {
+    c = val - 273.15;
+    steps.push(convStep(fl + ': \u00b0C = K \u2212 273.15',
+      convParen(val) + ' \u2212 273.15 = ' + convFmt(c) + ' \u00b0C', ''));
+  }
+  if (to === 'Fahrenheit') {
+    steps.push(convStep(fl + ': \u00b0F = (\u00b0C \u00d7 9/5) + 32',
+      '(' + convParen(c) + ' \u00d7 9/5) + 32 = ' + convFmt(c * 9 / 5 + 32) + ' \u00b0F', ''));
+  } else if (to === 'Kelvin') {
+    steps.push(convStep(fl + ': K = \u00b0C + 273.15',
+      convParen(c) + ' + 273.15 = ' + convFmt(c + 273.15) + ' K', ''));
+  }
+  return steps;
+}
+
+function buildFuelSteps(val, from, to) {
+  if (from === to) return convSameUnitSteps();
+  const F = convEsc(from), T = convEsc(to);
+  const steps = [];
+  let kmpl = val;
+  if (from === 'Liters/100 km') {
+    kmpl = 100 / val;
+    steps.push(convStep(convT('convert_sol_to_base', { from: F, base: 'Kilometers/Liter' }),
+      '100 \u00f7 ' + convParen(val) + ' = ' + convFmt(kmpl) + ' km/L', ''));
+  } else if (from !== 'Kilometers/Liter') {
+    const f = from === 'Miles/Gallon (US)' ? 0.425143707 : 0.354006189;
+    kmpl = val * f;
+    steps.push(convStep(convT('convert_sol_to_base', { from: F, base: 'Kilometers/Liter' }),
+      convParen(val) + ' \u00d7 ' + f + ' = ' + convFmt(kmpl) + ' km/L',
+      convT('convert_sol_because', { a: '1 ' + F, b: f + ' km/L' })));
+  }
+  if (to === 'Liters/100 km') {
+    steps.push(convStep(convT('convert_sol_from_base', { base: 'Kilometers/Liter', to: T }),
+      '100 \u00f7 ' + convFmt(kmpl) + ' = ' + convFmt(100 / kmpl) + ' L/100 km', ''));
+  } else if (to !== 'Kilometers/Liter') {
+    const f = to === 'Miles/Gallon (US)' ? 0.425143707 : 0.354006189;
+    steps.push(convStep(convT('convert_sol_from_base', { base: 'Kilometers/Liter', to: T }),
+      convFmt(kmpl) + ' \u00f7 ' + f + ' = ' + convFmt(kmpl / f) + ' ' + T,
+      convT('convert_sol_because', { a: '1 ' + T, b: f + ' km/L' })));
+  }
+  return steps;
+}
+
+function buildCurrencySteps(val, fromU, toU, rf, rt) {
+  if (fromU === toU) return convSameUnitSteps();
+  const F = convEsc(fromU), T = convEsc(toU);
+  const steps = [];
+  const inUsd = val / rf;
+  const v = convParen(val);
+  if (fromU !== 'USD') {
+    steps.push(convStep(convT('convert_sol_to_base', { from: F, base: 'USD' }),
+      v + ' \u00f7 ' + convFmt(rf) + ' = ' + convFmt(inUsd) + ' USD',
+      convT('convert_sol_because', { a: '1 USD', b: convFmt(rf) + ' ' + F })));
+  }
+  if (toU !== 'USD') {
+    steps.push(convStep(convT('convert_sol_from_base', { base: 'USD', to: T }),
+      convFmt(inUsd) + ' \u00d7 ' + convFmt(rt) + ' = ' + convFmt(inUsd * rt) + ' ' + T,
+      convT('convert_sol_because', { a: '1 USD', b: convFmt(rt) + ' ' + T })));
+  }
+  steps.push(convStep(t('convert_sol_rates_note'), '', ''));
+  return steps;
+}
+
 function runConvert() {
   const val = parseFloat(convertFromEl.value);
-  if (isNaN(val)) { convertToEl.value = ''; convertHintEl.textContent = ''; return; }
+  if (isNaN(val)) { convertToEl.value = ''; convertHintEl.textContent = ''; renderConvertSteps(null); return; }
   const cat = convertData[activeConvertCategory];
   const fromU = convertFromUnitEl.value;
   const toU = convertToUnitEl.value;
@@ -2245,7 +2394,7 @@ function runConvert() {
   let result;
   if (cat.fuel) {
     result = convertFuelEconomy(val, fromU, toU);
-    if (!isFinite(result)) { convertToEl.value = ''; convertHintEl.textContent = ''; return; }
+    if (!isFinite(result)) { convertToEl.value = ''; convertHintEl.textContent = ''; renderConvertSteps(null); return; }
   } else if (cat.special) {
     result = convertTemperature(val, fromU, toU);
   } else {
@@ -2255,6 +2404,13 @@ function runConvert() {
   const rounded = Math.round(result * 1e8) / 1e8;
   convertToEl.value = rounded;
   convertHintEl.textContent = `${val} ${fromU} = ${rounded} ${toU}`;
+  let stepList;
+  try {
+    if (cat.fuel) stepList = buildFuelSteps(val, fromU, toU);
+    else if (cat.special) stepList = buildTempSteps(val, fromU, toU);
+    else stepList = buildFactorSteps(val, fromU, toU, cat.units);
+  } catch (e) { stepList = null; }
+  renderConvertSteps(stepList, convFmt(val) + ' ' + convEsc(fromU) + ' = ' + convAns(rounded) + ' ' + convEsc(toU));
 }
 
 function computeAndShowCurrency(val, fromU, toU) {
@@ -2264,6 +2420,9 @@ function computeAndShowCurrency(val, fromU, toU) {
   const rounded = Math.round(result * 1e6) / 1e6;
   convertToEl.value = rounded;
   convertHintEl.textContent = `${val} ${fromU} = ${rounded} ${toU}`;
+  let stepList;
+  try { stepList = buildCurrencySteps(val, fromU, toU, currencyRates[fromU], currencyRates[toU]); } catch (e) { stepList = null; }
+  renderConvertSteps(stepList, convFmt(val) + ' ' + convEsc(fromU) + ' = ' + convAns(rounded) + ' ' + convEsc(toU));
 }
 
 function runCurrencyConvert(val, fromU, toU) {
@@ -2272,6 +2431,7 @@ function runCurrencyConvert(val, fromU, toU) {
   } else {
     convertToEl.value = '';
     convertHintEl.textContent = t('convert_rates_loading');
+    renderConvertSteps(null);
   }
   Promise.all([fetchCurrencyRates(), fetchCryptoRates()])
     .then(() => {
