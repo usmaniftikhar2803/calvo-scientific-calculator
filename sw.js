@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v110';
+const CACHE_VERSION = 'calvo-cache-v111';
 
 const CORE_ASSETS = [
   './',
@@ -84,6 +84,8 @@ const CORE_ASSETS = [
   './pdf-tools.js',
   './doc-scanner.js',
   './photo-resizer.html',
+  './passport-photo-maker.html',
+  './passport-photo.js',
   './photo-tools.js',
   './merge-split-pdf.html',
   './pdf-organizer.js',
