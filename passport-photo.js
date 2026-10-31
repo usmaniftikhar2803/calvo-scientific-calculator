@@ -15,7 +15,7 @@
     view: { fx: 0, fy: 0, fh: 1, rot: 0 },
     bg: '#ffffff', keepBg: false, size: { w: 35, h: 45 },
     bright: 0, contrast: 0, light: 0, marks: 0, autoLight: 0, autoMarks: 0, soft: 1, grow: 0,
-    wc: null, wcPix: null, rt: null, ref: null, rollDeg: 0, flags: { straight: true, light: true, skin: true },
+    wc: null, wcPix: null, rollEst: null, rt: null, ref: null, rollDeg: 0, flags: { straight: true, light: true, skin: true },
     strokes: [], mode: 'erase', brush: 40, check: false, guide: true,
     tab: 'bg', busy: false, sheetDirty: true
   };
@@ -136,6 +136,23 @@
       le: p0, re: p1, nose: { x: L[2].x * W, y: L[2].y * H }, mouth: { x: L[3].x * W, y: L[3].y * H }
     };
   }
+  /* One measurement of the head tilt is not reliable (it can be 3-4 degrees off on a perfectly straight photo).
+     So measure it 6 times, at different sizes and mirrored, and take the middle value. */
+  async function measureRoll(fd, c, getLast, clearLast) {
+    var vals = [], plan = [[1, false], [1, true], [0.8, false], [0.8, true], [1.25, false], [1.25, true]];
+    for (var i = 0; i < plan.length; i++) {
+      var s = plan[i][0], mirror = plan[i][1], o = document.createElement('canvas');
+      o.width = Math.round(c.width * s); o.height = Math.round(c.height * s);
+      var g = o.getContext('2d'); if (mirror) { g.translate(o.width, 0); g.scale(-1, 1); }
+      g.drawImage(c, 0, 0, o.width, o.height); clearLast();
+      await withTimeout(fd.send({ image: o }), 60000, 'Face tool timed out');
+      var f = pickFace(getLast(), o.width, o.height); if (!f) continue;
+      var r = Math.atan2(f.re.y - f.le.y, f.re.x - f.le.x); vals.push(mirror ? -r : r);
+    }
+    if (vals.length < 3) return null;
+    vals.sort(function (a, b) { return a - b; }); var m = vals.length >> 1;
+    return vals.length % 2 ? vals[m] : (vals[m - 1] + vals[m]) / 2;
+  }
   /* finds the face. A sideways or upside-down photo is turned upright: the AI is most confident when the face is the right way up. */
   async function findFace(wc) {
     await lib('face', V + 'face/face_detection.js');
@@ -153,8 +170,12 @@
         if (!best || face.score > best.face.score + (best.q === 0 ? 0.05 : 0)) best = { face: face, q: q, canvas: c };
         if (q === 0 && face.score >= 0.9) break;   /* already upright and sure */
       }
+      if (best && best.roll === undefined) {
+        try { best.roll = await measureRoll(fd, best.canvas, function () { return last; }, function () { last = null; }); } catch (e) { best.roll = null; }
+      }
       try { fd.close(); } catch (e) { }
     }
+    if (best && best.roll === undefined) best.roll = null;
     return best;
   }
   /* fallback when the AI cannot start: treat the colour around the photo's edge as background */
@@ -231,8 +252,11 @@
       var head = chin - crown;
       fh = head / 0.72;
       var top = crown - 0.10 * fh, fy0 = top + fh / 2, fx0 = (eyeX + f.nose.x) / 2;
-      var roll = Math.atan2(f.re.y - f.le.y, f.re.x - f.le.x);
-      if (S.flags.straight && Math.abs(roll) > 0.012 && Math.abs(roll) < 0.7) rot = -roll;
+      /* Only turn the photo when the head is clearly tilted. A small tilt is usually measuring error, and a straight photo must never be turned. */
+      var rollEyes = Math.atan2(f.re.y - f.le.y, f.re.x - f.le.x);
+      var est = S.rollEst !== null && S.rollEst !== undefined ? S.rollEst : rollEyes, dead = (S.rollEst !== null && S.rollEst !== undefined) ? 0.06 : 0.12;
+      S.tiltInfo = { eyes: rollEyes * 180 / Math.PI, used: est * 180 / Math.PI };
+      if (S.flags.straight && Math.abs(est) >= dead && Math.abs(est) < 0.6) rot = -est;
       var d = eyeY - fy0;   /* keep the face where it should be even after the straightening rotation */
       fx = fx0 - d * Math.sin(rot); fy = eyeY - d * Math.cos(rot);
     } else {
@@ -507,7 +531,7 @@
       await step('face');
       if (ai) { try { fr = await findFace(S.wc); } catch (e) { ai = false; libs = {}; fr = null; } }
       if (fr && fr.q) setCanvases(rotateCanvas(S.src, fr.q), fr.canvas);
-      S.face = fr ? fr.face : null;
+      S.face = fr ? fr.face : null; S.rollEst = fr ? fr.roll : null;
       await step('bg');
       if (ai) { try { raw = await runSegmentation(S.wc); } catch (e) { ai = false; libs = {}; raw = null; } }
       if (!raw) raw = colourMask(S.wc);
@@ -666,6 +690,7 @@
   $('ppUp').onclick = function () { nudge(0, -1); }; $('ppDown').onclick = function () { nudge(0, 1); };
   $('ppLeft').onclick = function () { nudge(-1, 0); }; $('ppRight').onclick = function () { nudge(1, 0); };
   $('ppAutoFit').onclick = function () { autoFit(); draw(); };
+  $('ppRot0').onclick = function () { S.view.rot = 0; $('ppRot').value = 0; $('ppRotV').textContent = '0\u00b0'; draw(); };
   val('ppLight', function (v) { S.light = v; $('ppLightV').textContent = v; schedule(); });
   val('ppMarks', function (v) { S.marks = v; $('ppMarksV').textContent = v; scheduleRetouch(); });
   $('ppFaceAuto').onclick = function () { S.light = S.autoLight; S.marks = S.autoMarks; syncFace(); retouch(); draw(); };
