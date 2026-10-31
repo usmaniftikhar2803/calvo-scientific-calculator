@@ -61,7 +61,7 @@
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('a[href]')) save(); }, true);
 
   var nav; try { nav = performance.getEntriesByType('navigation')[0]; } catch (e) { }
-  if (!nav || (nav.type !== 'back_forward' && nav.type !== 'reload')) return;
+  if (!nav || nav.type !== 'back_forward') return;
   var d; try { d = JSON.parse(sessionStorage.getItem(pk()) || 'null'); } catch (e) { }
   if (!d || (!d.w && !d.e.length)) return;
   restoring = true;
