@@ -551,18 +551,27 @@ if (aboutOverlay) {
 
 /* ---------- TAB SWITCHING ---------- */
 const ACTIVE_TAB_KEY = 'calvo_active_tab';
+// Home keeps its scroll position when the person opens a tool/page and comes Back.
+let homeScrollY = 0, restoreHomeScroll = false;
+function saveHomeScroll() {
+  const h = document.getElementById('tab-home');
+  if (h && h.classList.contains('active')) { homeScrollY = h.scrollTop; try { sessionStorage.setItem('calvo_home_scroll', String(homeScrollY)); } catch (e) {} }
+}
+window.addEventListener('pagehide', saveHomeScroll);
+document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('a[href]')) saveHomeScroll(); }, true);
 
 function activateTab(tabName, remember) {
   const tabBtn = document.querySelector('.topbar-tab[data-tab="' + tabName + '"]');
   const tabPanel = document.getElementById('tab-' + tabName);
   if (!tabBtn || !tabPanel) return;
+  if (tabName !== 'home') saveHomeScroll();
   document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   tabBtn.classList.add('active');
   tabPanel.classList.add('active');
   const moreBtn = document.querySelector('.topbar-more');
   if (moreBtn) moreBtn.classList.toggle('active', tabBtn.classList.contains('secondary'));
-  if (tabName === 'home') tabPanel.scrollTop = 0;
+  if (tabName === 'home') { tabPanel.scrollTop = restoreHomeScroll ? homeScrollY : 0; restoreHomeScroll = false; }
   if (remember) {
     try { sessionStorage.setItem(ACTIVE_TAB_KEY, tabName); } catch (e) {}
   }
@@ -724,6 +733,7 @@ window.addEventListener('popstate', (e) => {
   if (!state || !state.tab) return;
   const tab = state.tab, sub = state.sub || 0;
   if (tab !== currentHistoryTab) {
+    if (tab === 'home') restoreHomeScroll = true;
     activateTab(tab, true);
     currentHistoryTab = tab;
     window.scrollTo(0, 0);
@@ -925,6 +935,17 @@ try {
 if (backState) restoredTab = backState.tab;
 activateTab(restoredTab, false);
 currentHistoryTab = restoredTab;
+if (backState && restoredTab === 'home') {
+  // Back from another page: put Home at the exact spot the person left (content may still be laying out, so retry briefly).
+  let y = 0; try { y = +sessionStorage.getItem('calvo_home_scroll') || 0; } catch (e) {}
+  const hp = document.getElementById('tab-home');
+  if (y && hp) {
+    homeScrollY = y; let n = 0; hp.style.overflowAnchor = 'none';
+    const stop = () => { clearInterval(iv); hp.style.overflowAnchor = ''; ['touchstart', 'wheel', 'pointerdown', 'keydown'].forEach(ev => window.removeEventListener(ev, stop, true)); };
+    const iv = setInterval(() => { hp.scrollTop = y; if (++n > 40) stop(); }, 50);
+    ['touchstart', 'wheel', 'pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, stop, true));
+  }
+}
 if (backState) {
   if (backState.popup) history.back();   // a popup was open when the person left: step over that entry
   else history.replaceState({ tab: restoredTab, sub: 0 }, '', location.href);
