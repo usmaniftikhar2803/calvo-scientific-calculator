@@ -553,6 +553,25 @@ if (aboutOverlay) {
 const ACTIVE_TAB_KEY = 'calvo_active_tab';
 // Home keeps its scroll position when the person opens a tool/page and comes Back.
 let homeScrollY = 0, restoreHomeScroll = false;
+// Every other screen too: remember the scroll of a tab / inner screen before it is hidden, put it back on Back.
+const tabSnap = {};
+let restoreTabScroll = false;
+function snapScroll(root) {
+  const out = [];
+  if (root.scrollTop > 0) out.push([root, root.scrollTop]);
+  root.querySelectorAll('*').forEach(el => { if (el.scrollTop > 0) out.push([el, el.scrollTop]); });
+  return out;
+}
+function applyScroll(items) {
+  if (!items || !items.length) return;
+  const evs = ['touchstart', 'wheel', 'pointerdown', 'keydown'];
+  let n = 0;
+  const run = () => items.forEach(it => { if (it[0].isConnected) it[0].scrollTop = it[1]; });
+  const stop = () => { clearInterval(iv); evs.forEach(ev => window.removeEventListener(ev, stop, true)); };
+  run();
+  const iv = setInterval(() => { run(); if (++n > 14) stop(); }, 50);
+  evs.forEach(ev => window.addEventListener(ev, stop, true));
+}
 function saveHomeScroll() {
   const h = document.getElementById('tab-home');
   if (h && h.classList.contains('active')) { homeScrollY = h.scrollTop; try { sessionStorage.setItem('calvo_home_scroll', String(homeScrollY)); } catch (e) {} }
@@ -565,6 +584,8 @@ function activateTab(tabName, remember) {
   const tabPanel = document.getElementById('tab-' + tabName);
   if (!tabBtn || !tabPanel) return;
   if (tabName !== 'home') saveHomeScroll();
+  const curPanel = document.querySelector('.tab-panel.active');
+  if (curPanel && curPanel !== tabPanel && curPanel.id !== 'tab-home') tabSnap[curPanel.id] = snapScroll(curPanel);
   document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   tabBtn.classList.add('active');
@@ -572,6 +593,8 @@ function activateTab(tabName, remember) {
   const moreBtn = document.querySelector('.topbar-more');
   if (moreBtn) moreBtn.classList.toggle('active', tabBtn.classList.contains('secondary'));
   if (tabName === 'home') { tabPanel.scrollTop = restoreHomeScroll ? homeScrollY : 0; restoreHomeScroll = false; }
+  else if (restoreTabScroll && tabSnap[tabPanel.id]) applyScroll(tabSnap[tabPanel.id]);
+  restoreTabScroll = false;
   if (remember) {
     try { sessionStorage.setItem(ACTIVE_TAB_KEY, tabName); } catch (e) {}
   }
@@ -647,6 +670,33 @@ function resetSubScreens(tab) {
   while (subDepth(tab) > 0 && guard-- > 0) { if (!closeOneSubScreen(tab)) break; }
   subDepthRecorded[tab] = subDepth(tab);
 }
+
+/* Opening a subject / list inside a tool and pressing Back: the list returns to the exact spot. */
+const subScrollStack = {}, subLastDepth = {};
+let pendingSubSnap = null;
+document.addEventListener('click', (e) => {
+  const p = e.target.closest && e.target.closest('.tab-panel.active');
+  pendingSubSnap = (p && SUB_SCREENS[p.id.slice(4)]) ? { tab: p.id.slice(4), items: snapScroll(p) } : null;
+}, true);
+Object.keys(SUB_SCREENS).forEach(tab => {
+  const panel = document.getElementById('tab-' + tab);
+  if (!panel || typeof MutationObserver === 'undefined') return;
+  subLastDepth[tab] = subDepth(tab);
+  new MutationObserver(() => {
+    const d = subDepth(tab), l = subLastDepth[tab];
+    if (d === l) return;
+    subLastDepth[tab] = d;
+    const st = subScrollStack[tab] || (subScrollStack[tab] = []);
+    if (d > l) {
+      for (let i = l; i < d; i++) st.push(pendingSubSnap && pendingSubSnap.tab === tab ? pendingSubSnap.items : []);
+    } else {
+      let items = [];
+      for (let i = l; i > d; i--) items = st.pop() || items;
+      if (d === 0) st.length = 0;
+      if (panel.classList.contains('active')) applyScroll(items);
+    }
+  }).observe(panel, { subtree: true, attributes: true, attributeFilter: ['style'] });
+});
 
 function closeOpenPopups() {
   let closed = false;
@@ -734,6 +784,7 @@ window.addEventListener('popstate', (e) => {
   const tab = state.tab, sub = state.sub || 0;
   if (tab !== currentHistoryTab) {
     if (tab === 'home') restoreHomeScroll = true;
+    restoreTabScroll = true;
     activateTab(tab, true);
     currentHistoryTab = tab;
     window.scrollTo(0, 0);
