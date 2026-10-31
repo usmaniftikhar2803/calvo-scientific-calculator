@@ -14,8 +14,7 @@
     proc: null, fin: null, face: null, auto: null,
     view: { fx: 0, fy: 0, fh: 1, rot: 0 },
     bg: '#ffffff', keepBg: false, size: { w: 35, h: 45 },
-    bright: 0, contrast: 0, light: 0, marks: 0, autoLight: 0, autoMarks: 0, soft: 1, grow: 0,
-    wc: null, wcPix: null, rollEst: null, rt: null, ref: null, rollDeg: 0, flags: { straight: true, light: true, skin: true },
+    bright: 0, contrast: 0, sat: 0, warm: 0, sharp: 0, peek: false, dpi: 300, fmt: 'jpg', head: 0, ai: true, soft: 1, grow: 0,
     strokes: [], mode: 'erase', brush: 40, check: false, guide: true,
     tab: 'bg', busy: false, sheetDirty: true
   };
@@ -25,7 +24,7 @@
 
   /* ---------- small helpers ---------- */
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
-  function status(msg, kind) { var s = $('ppStatus'); s.textContent = msg || ''; s.className = 'status' + (kind ? ' ' + kind : ''); }
+  function status(msg, kind) { var s = $('ppStatus'); s.textContent = msg || ''; s.className = 'status' + (kind ? ' ' + kind : (msg ? ' busy' : '')); }
   function loadScript(src) {
     return new Promise(function (res, rej) {
       var el = document.createElement('script'); el.src = src; el.onload = res;
@@ -51,7 +50,10 @@
     a.href = u; a.download = name; document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 1500);
   }
-  function mmToPx(mm) { return Math.round(mm / MM * DPI); }
+  function mmToPx(mm, d) { return Math.round(mm / MM * (d || DPI)); }
+  var HF = { '51x51': 0.60, '50x70': 0.48, '33x48': 0.64 }, RG = { '35x45': [64, 80], '51x51': [50, 69], '33x48': [55, 72], '50x70': [44, 52] };
+  function sk() { return S.size.w + 'x' + S.size.h; }
+  function hf() { return HF[sk()] || (S.size.w / S.size.h > 0.9 ? 0.62 : 0.72); }
 
   /* ---------- mask maths ---------- */
   function boxF(src, w, h, r) {
@@ -115,67 +117,27 @@
     try { ss.close(); } catch (e) { }
     return m;
   }
-  function rotateCanvas(c, q) {
-    var o = document.createElement('canvas'), same = q === 2;
-    o.width = same ? c.width : c.height; o.height = same ? c.height : c.width;
-    var g = o.getContext('2d');
-    if (q === 1) { g.translate(o.width, 0); g.rotate(Math.PI / 2); }
-    else if (q === 3) { g.translate(0, o.height); g.rotate(-Math.PI / 2); }
-    else { g.translate(o.width, o.height); g.rotate(Math.PI); }
-    g.drawImage(c, 0, 0); return o;
-  }
-  function pickFace(det, W, H) {
-    if (!det || !det.length) return null;
-    det.sort(function (a, b) { return b.boundingBox.width * b.boundingBox.height - a.boundingBox.width * a.boundingBox.height; });
-    var d = det[0], bb = d.boundingBox, L = d.landmarks;
-    var p0 = { x: L[0].x * W, y: L[0].y * H }, p1 = { x: L[1].x * W, y: L[1].y * H };
-    if (p0.x > p1.x) { var t = p0; p0 = p1; p1 = t; }
-    return {
-      score: (d.V && d.V[0] && d.V[0].ga) || 0.5,
-      bb: { x: (bb.xCenter - bb.width / 2) * W, y: (bb.yCenter - bb.height / 2) * H, w: bb.width * W, h: bb.height * H },
-      le: p0, re: p1, nose: { x: L[2].x * W, y: L[2].y * H }, mouth: { x: L[3].x * W, y: L[3].y * H }
-    };
-  }
-  /* One measurement of the head tilt is not reliable (it can be 3-4 degrees off on a perfectly straight photo).
-     So measure it 6 times, at different sizes and mirrored, and take the middle value. */
-  async function measureRoll(fd, c, getLast, clearLast) {
-    var vals = [], plan = [[1, false], [1, true], [0.8, false], [0.8, true], [1.25, false], [1.25, true]];
-    for (var i = 0; i < plan.length; i++) {
-      var s = plan[i][0], mirror = plan[i][1], o = document.createElement('canvas');
-      o.width = Math.round(c.width * s); o.height = Math.round(c.height * s);
-      var g = o.getContext('2d'); if (mirror) { g.translate(o.width, 0); g.scale(-1, 1); }
-      g.drawImage(c, 0, 0, o.width, o.height); clearLast();
-      await withTimeout(fd.send({ image: o }), 60000, 'Face tool timed out');
-      var f = pickFace(getLast(), o.width, o.height); if (!f) continue;
-      var r = Math.atan2(f.re.y - f.le.y, f.re.x - f.le.x); vals.push(mirror ? -r : r);
-    }
-    if (vals.length < 3) return null;
-    vals.sort(function (a, b) { return a - b; }); var m = vals.length >> 1;
-    return vals.length % 2 ? vals[m] : (vals[m - 1] + vals[m]) / 2;
-  }
-  /* finds the face. A sideways or upside-down photo is turned upright: the AI is most confident when the face is the right way up. */
-  async function findFace(wc) {
+  async function detectFace(wc) {
     await lib('face', V + 'face/face_detection.js');
-    var plans = [['short', [0, 1, 3, 2]], ['full', [0]]], best = null;
-    for (var pi = 0; pi < plans.length && !best; pi++) {
+    var best = null;
+    for (var pass = 0; pass < 2 && !best; pass++) {
       var fd = new FaceDetection({ locateFile: function (f) { return V + 'face/' + f; } });
-      fd.setOptions({ model: plans[pi][0], minDetectionConfidence: pi ? 0.4 : 0.5 });
-      var last = null; fd.onResults(function (r) { last = r.detections; });
+      fd.setOptions({ model: pass ? 'full' : 'short', minDetectionConfidence: pass ? 0.4 : 0.5 });
+      var det = null; fd.onResults(function (r) { det = r.detections; });
       await withTimeout(fd.initialize(), 60000, 'Face tool timed out');
-      for (var qi = 0; qi < plans[pi][1].length; qi++) {
-        var q = plans[pi][1][qi], c = q ? rotateCanvas(wc, q) : wc; last = null;
-        await withTimeout(fd.send({ image: c }), 60000, 'Face tool timed out');
-        var face = pickFace(last, c.width, c.height);
-        if (!face) continue;
-        if (!best || face.score > best.face.score + (best.q === 0 ? 0.05 : 0)) best = { face: face, q: q, canvas: c };
-        if (q === 0 && face.score >= 0.9) break;   /* already upright and sure */
-      }
-      if (best && best.roll === undefined) {
-        try { best.roll = await measureRoll(fd, best.canvas, function () { return last; }, function () { last = null; }); } catch (e) { best.roll = null; }
-      }
+      await withTimeout(fd.send({ image: wc }), 60000, 'Face tool timed out');
       try { fd.close(); } catch (e) { }
+      if (det && det.length) {
+        det.sort(function (a, b) { return b.boundingBox.width * b.boundingBox.height - a.boundingBox.width * a.boundingBox.height; });
+        var d = det[0], bb = d.boundingBox, L = d.landmarks, W = S.ww, H = S.wh;
+        var p0 = { x: L[0].x * W, y: L[0].y * H }, p1 = { x: L[1].x * W, y: L[1].y * H };
+        if (p0.x > p1.x) { var t = p0; p0 = p1; p1 = t; }
+        best = {
+          bb: { x: (bb.xCenter - bb.width / 2) * W, y: (bb.yCenter - bb.height / 2) * H, w: bb.width * W, h: bb.height * H },
+          le: p0, re: p1, nose: { x: L[2].x * W, y: L[2].y * H }, mouth: { x: L[3].x * W, y: L[3].y * H }
+        };
+      }
     }
-    if (best && best.roll === undefined) best.roll = null;
     return best;
   }
   /* fallback when the AI cannot start: treat the colour around the photo's edge as background */
@@ -242,7 +204,7 @@
     return null;
   }
   function autoFit() {
-    var A = S.size.w / S.size.h, k = S.iw / S.ww, f = S.face, fh, fx, fy, rot = 0;
+    var A = S.size.w / S.size.h, k = S.iw / S.ww, f = S.face, fh, fx, fy, rot = 0; S.head = 0;
     if (f) {
       var eyeY = (f.le.y + f.re.y) / 2, eyeX = (f.le.x + f.re.x) / 2;
       var chin = Math.max(f.bb.y + f.bb.h, f.mouth.y + (f.mouth.y - eyeY) * 0.5);
@@ -250,13 +212,10 @@
       var lo = eyeY - 1.55 * ec, hi = eyeY - 0.85 * ec;
       crown = crown === null ? eyeY - 1.05 * ec : clamp(crown, lo, hi);
       var head = chin - crown;
-      fh = head / 0.72;
+      fh = head / hf(); S.head = head * k;
       var top = crown - 0.10 * fh, fy0 = top + fh / 2, fx0 = (eyeX + f.nose.x) / 2;
-      /* Only turn the photo when the head is clearly tilted. A small tilt is usually measuring error, and a straight photo must never be turned. */
-      var rollEyes = Math.atan2(f.re.y - f.le.y, f.re.x - f.le.x);
-      var est = S.rollEst !== null && S.rollEst !== undefined ? S.rollEst : rollEyes, dead = (S.rollEst !== null && S.rollEst !== undefined) ? 0.06 : 0.12;
-      S.tiltInfo = { eyes: rollEyes * 180 / Math.PI, used: est * 180 / Math.PI };
-      if (S.flags.straight && Math.abs(est) >= dead && Math.abs(est) < 0.6) rot = -est;
+      var roll = Math.atan2(f.re.y - f.le.y, f.re.x - f.le.x);
+      if (Math.abs(roll) > 0.012 && Math.abs(roll) < 0.35) rot = -roll;
       var d = eyeY - fy0;   /* keep the face where it should be even after the straightening rotation */
       fx = fx0 - d * Math.sin(rot); fy = eyeY - d * Math.cos(rot);
     } else {
@@ -265,7 +224,6 @@
       if (x1 <= x0 || y1 <= y0) { x0 = 0; x1 = w; y0 = 0; y1 = h; }
       fh = Math.min((y1 - y0) * 1.1, h * 1.2); fx = (x0 + x1) / 2; fy = y0 - 0.08 * fh + fh / 2;
     }
-    S.rollDeg = rot * 180 / Math.PI;
     S.auto = { fx: fx * k, fy: fy * k, fh: fh * k, rot: rot };
     S.view = { fx: fx * k, fy: fy * k, fh: fh * k, rot: rot };
     syncSliders();
@@ -273,14 +231,18 @@
 
   /* ---------- drawing ---------- */
   function adjustPixels(g, w, h) {
-    var lv = S.light / 100, C = S.contrast * 2, f = (259 * (C + 255)) / (255 * (259 - C)) * (1 + 0.14 * lv);
-    var add = S.bright * 1.5, gm = 1 - 0.5 * lv, sat = 1 + 0.4 * lv, lut = new Uint8ClampedArray(256), i;
-    for (i = 0; i < 256; i++) lut[i] = f * (255 * Math.pow(i / 255, gm) - 128) + 128 + add;
-    var id = g.getImageData(0, 0, w, h), d = id.data;
+    var C = S.contrast * 2, f = (259 * (C + 255)) / (255 * (259 - C)), add = S.bright * 1.5, sat = 1 + S.sat / 100, wm = S.warm * 0.6;
+    var id = g.getImageData(0, 0, w, h), d = id.data, i, r, gg, b, l;
     for (i = 0; i < d.length; i += 4) {
-      var r = lut[d[i]], gg = lut[d[i + 1]], b = lut[d[i + 2]];
-      if (sat !== 1) { var y = 0.299 * r + 0.587 * gg + 0.114 * b; r = y + sat * (r - y); gg = y + sat * (gg - y); b = y + sat * (b - y); }
-      d[i] = r; d[i + 1] = gg; d[i + 2] = b;
+      r = d[i]; gg = d[i + 1]; b = d[i + 2];
+      if (S.sat) { l = 0.299 * r + 0.587 * gg + 0.114 * b; r = l + (r - l) * sat; gg = l + (gg - l) * sat; b = l + (b - l) * sat; }
+      d[i] = clamp(f * (r - 128) + 128 + add + wm, 0, 255);
+      d[i + 1] = clamp(f * (gg - 128) + 128 + add, 0, 255);
+      d[i + 2] = clamp(f * (b - 128) + 128 + add - wm, 0, 255);
+    }
+    if (S.sharp) {
+      var a = S.sharp / 100 * 0.9, s0 = new Uint8ClampedArray(d), x, y, c, q, w4 = w * 4;
+      for (y = 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) { q = (y * w + x) * 4; for (c = 0; c < 3; c++) d[q + c] = s0[q + c] * (1 + 4 * a) - a * (s0[q + c - 4] + s0[q + c + 4] + s0[q + c - w4] + s0[q + c + w4]); }
     }
     g.putImageData(id, 0, 0);
   }
@@ -293,27 +255,28 @@
     var k = H / S.view.fh, g1 = T1.getContext('2d', { willReadFrequently: true }), g2 = T2.getContext('2d');
     g1.setTransform(1, 0, 0, 1, 0, 0); g1.globalCompositeOperation = 'source-over'; g1.clearRect(0, 0, W, H);
     setT(g1, W, H, k); g1.imageSmoothingQuality = 'high'; g1.drawImage(S.src, 0, 0, S.iw, S.ih); g1.setTransform(1, 0, 0, 1, 0, 0);
-    if (S.bright || S.contrast || S.light) adjustPixels(g1, W, H);
-    if (!S.keepBg) {
+    if (S.bright || S.contrast || S.sat || S.warm || S.sharp) adjustPixels(g1, W, H);
+    var kb = S.keepBg || opt.peek;
+    if (!kb) {
       g2.setTransform(1, 0, 0, 1, 0, 0); g2.clearRect(0, 0, W, H);
       setT(g2, W, H, k); g2.imageSmoothingQuality = 'high'; g2.drawImage(S.fin, 0, 0, S.iw, S.ih); g2.setTransform(1, 0, 0, 1, 0, 0);
       g1.globalCompositeOperation = 'destination-in'; g1.drawImage(T2, 0, 0); g1.globalCompositeOperation = 'source-over';
     }
     var g = target.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
-    g.fillStyle = opt.check ? '#00e676' : (S.keepBg ? '#ffffff' : S.bg); g.fillRect(0, 0, W, H); g.drawImage(T1, 0, 0);
+    g.fillStyle = opt.check ? '#00e676' : (kb ? '#ffffff' : S.bg); g.fillRect(0, 0, W, H); g.drawImage(T1, 0, 0);
   }
   function previewDims() {
-    var W = mmToPx(S.size.w), H = mmToPx(S.size.h), s = Math.min(1, 640 / H);
+    var W = mmToPx(S.size.w), H = mmToPx(S.size.h), s = Math.min(1, 760 / H);
     return [Math.round(W * s), Math.round(H * s)];
   }
   function draw() {
     if (!S.src) return;
     var d = previewDims();
-    if (cv.width !== d[0] || cv.height !== d[1]) { cv.width = d[0]; cv.height = d[1]; }
-    render(cv, d[0], d[1], { check: S.check });
+    if (cv.width !== d[0] || cv.height !== d[1]) { cv.width = d[0]; cv.height = d[1]; fitCanvas(); }
+    render(cv, d[0], d[1], { check: S.check, peek: S.peek });
     var g = cv.getContext('2d'), W = d[0], H = d[1];
-    if (S.guide && (S.tab === 'adjust' || S.tab === 'size')) {
+    if (S.guide && !S.peek && (S.tab === 'adjust' || S.tab === 'size')) {
       g.save(); g.setLineDash([6, 5]);
       [['rgba(0,0,0,.55)', 3], ['rgba(255,255,255,.95)', 1.5]].forEach(function (s) {
         g.strokeStyle = s[0]; g.lineWidth = s[1];
@@ -328,7 +291,7 @@
       g.beginPath(); g.arc(cursor[0], cursor[1], brushPrev(), 0, 6.2832); g.stroke(); g.restore();
     }
     var dpi = S.size.w + ' x ' + S.size.h + ' mm  (' + mmToPx(S.size.w) + ' x ' + mmToPx(S.size.h) + ' px)';
-    $('ppSizeInfo').textContent = dpi;
+    $('ppSizeInfo').textContent = dpi; chips();
   }
   function schedule() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; draw(); }); S.sheetDirty = true; }
 
@@ -387,187 +350,105 @@
     S.tab = t;
     Array.prototype.forEach.call(document.querySelectorAll('#ppTabs button'), function (b) { b.classList.toggle('on', b.dataset.tab === t); });
     Array.prototype.forEach.call(document.querySelectorAll('.pp-panel'), function (p) { p.hidden = p.dataset.p !== t; });
-    cv.style.touchAction = (t === 'adjust' || t === 'edges') ? 'none' : 'pan-y';
+    cv.style.touchAction = 'none'; $('ppPanels').scrollTop = 0;
     cv.style.cursor = t === 'edges' ? 'none' : (t === 'adjust' ? 'grab' : 'default');
     if (t === 'sheet') drawSheetPreview();
     draw();
   }
   function setSize(w, h) {
     S.size = { w: w, h: h }; if (S.src) { autoFit(); draw(); }
-    $('ppCustom').hidden = $('ppSize').value !== 'custom'; S.sheetDirty = true; savePrefs();
+    $('ppCW').value = w; $('ppCH').value = h; S.sheetDirty = true; savePrefs();
+    Array.prototype.forEach.call(document.querySelectorAll('.pp-ps'), function (b) { b.classList.toggle('on', +b.dataset.w === w && +b.dataset.h === h); });
   }
-  function applySizeSelect() {
-    var v = $('ppSize').value;
-    if (v === 'custom') { setSize(clamp(+$('ppCW').value || 35, 10, 100), clamp(+$('ppCH').value || 45, 10, 130)); return; }
-    var p = v.split('x'); setSize(+p[0], +p[1]);
-  }
+  function applySizeSelect() { setSize(clamp(+$('ppCW').value || 35, 10, 100), clamp(+$('ppCH').value || 45, 10, 130)); }
   function setBg(c, keep) {
     S.bg = c || S.bg; S.keepBg = !!keep;
     Array.prototype.forEach.call(document.querySelectorAll('.pp-sw'), function (b) { b.classList.toggle('on', keep ? b.dataset.c === 'keep' : b.dataset.c === S.bg && !S.keepBg); });
-    if (!keep) { $('ppCustomBg').value = S.bg; $('ppCustomBg2').value = S.bg; }
     S.sheetDirty = true; savePrefs(); draw();
   }
   function nudge(dx, dy) {
     var st = S.view.fh * 0.02, c = Math.cos(S.view.rot), s = Math.sin(S.view.rot), mx = dx * st, my = dy * st;
     S.view.fx -= mx * c + my * s; S.view.fy -= -mx * s + my * c; draw();
   }
-  /* ---------- skin colour of the face, and spot / mark cleaning ---------- */
-  function median(a) { a.sort(function (x, y) { return x - y; }); return a[a.length >> 1]; }
-  function sstep(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
-  function ycc(r, g, b) { return [0.299 * r + 0.587 * g + 0.114 * b, 128 - 0.168736 * r - 0.331264 * g + 0.5 * b, 128 + 0.5 * r - 0.418688 * g - 0.081312 * b]; }
-  function faceStats() {
-    var f = S.face, d = S.wcPix, w = S.ww, h = S.wh, Y = [], B = [], R = [];
-    var cx = f.nose.x, cy = f.nose.y - f.bb.h * 0.02, rx = f.bb.w * 0.3, ry = f.bb.h * 0.2;
-    for (var y = Math.max(0, Math.floor(cy - ry)); y < Math.min(h, cy + ry); y += 2) {
-      for (var x = Math.max(0, Math.floor(cx - rx)); x < Math.min(w, cx + rx); x += 2) {
-        var u = (x - cx) / rx, v = (y - cy) / ry; if (u * u + v * v > 1) continue;
-        var j = (y * w + x) * 4, c = ycc(d[j], d[j + 1], d[j + 2]); Y.push(c[0]); B.push(c[1]); R.push(c[2]);
-      }
-    }
-    return Y.length < 20 ? null : { Y: median(Y), Cb: median(B), Cr: median(R) };
-  }
-  function toCanvas(w, h, data) { var c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').putImageData(new ImageData(data, w, h), 0, 0); return c; }
-  function upscale(c, w, h) { var o = document.createElement('canvas'); o.width = w; o.height = h; var g = o.getContext('2d', { willReadFrequently: true }); g.imageSmoothingQuality = 'high'; g.drawImage(c, 0, 0, w, h); return g.getImageData(0, 0, w, h).data; }
-  /* Replaces small dark or bright spots on the SKIN only (not eyes, brows, mouth or nose) with the colour of the skin around them. */
-  function retouch() {
-    var f = S.face, ref = S.ref; if (!f || !ref || !S.src) return;
-    var k = S.iw / S.ww, bb = f.bb, s = S.marks / 100;
-    if (!S.rt) {
-      var x0 = Math.max(0, Math.floor((bb.x - bb.w * 0.25) * k)), y0 = Math.max(0, Math.floor((bb.y - bb.h * 0.45) * k)),
-        x1 = Math.min(S.iw, Math.ceil((bb.x + bb.w * 1.25) * k)), y1 = Math.min(S.ih, Math.ceil((bb.y + bb.h * 1.25) * k));
-      var od = S.src.getContext('2d').getImageData(x0, y0, x1 - x0, y1 - y0);
-      S.rt = { x0: x0, y0: y0, w: x1 - x0, h: y1 - y0, orig: od, cv: toCanvas(x1 - x0, y1 - y0, new Uint8ClampedArray(od.data)) };
-    }
-    var R = S.rt, g = S.src.getContext('2d');
-    if (s <= 0) { g.putImageData(R.orig, R.x0, R.y0); S.sheetDirty = true; return; }
-    var sc = Math.min(1, 560 / Math.max(R.w, R.h)), lw = Math.max(16, Math.round(R.w * sc)), lh = Math.max(16, Math.round(R.h * sc)), n = lw * lh;
-    var lc = document.createElement('canvas'); lc.width = lw; lc.height = lh;
-    var lg = lc.getContext('2d', { willReadFrequently: true }); lg.imageSmoothingQuality = 'high'; lg.drawImage(R.cv, 0, 0, lw, lh);
-    var ld = lg.getImageData(0, 0, lw, lh).data;
-    function P(wx, wy) { return [(wx * k - R.x0) * sc, (wy * k - R.y0) * sc]; }
-    var bw = bb.w * k * sc, ce = P(bb.x + bb.w / 2, bb.y + bb.h * 0.38), erx = 0.62 * bb.w * k * sc, ery = 0.78 * bb.h * k * sc;
-    var feats = [[P(f.le.x, f.le.y - bb.w * 0.02), 0.22 * bw, 0.17 * bw], [P(f.re.x, f.re.y - bb.w * 0.02), 0.22 * bw, 0.17 * bw], [P(f.mouth.x, f.mouth.y), 0.30 * bw, 0.13 * bw], [P(f.nose.x, f.nose.y), 0.14 * bw, 0.12 * bw]];
-    var m = new Float32Array(n), cr = new Float32Array(n), cg = new Float32Array(n), cb = new Float32Array(n), i, x, y, q;
-    for (y = 0; y < lh; y++) for (x = 0; x < lw; x++) {
-      i = y * lw + x; var j = i * 4, c = ycc(ld[j], ld[j + 1], ld[j + 2]);
-      var dcr = c[2] - ref.Cr, v = 1 - sstep(9, 20, Math.hypot(c[1] - ref.Cb, dcr > 0 ? dcr * 0.4 : dcr));
-      v *= sstep(0.42 * ref.Y, 0.6 * ref.Y, c[0]);
-      v *= 1 - sstep(0.9, 1.1, Math.hypot((x - ce[0]) / erx, (y - ce[1]) / ery));
-      for (q = 0; q < 4; q++) { var ft = feats[q]; v *= sstep(0.8, 1.15, Math.hypot((x - ft[0][0]) / ft[1], (y - ft[0][1]) / ft[2])); }
-      m[i] = v; cr[i] = ld[j] * v; cg[i] = ld[j + 1] * v; cb[i] = ld[j + 2] * v;
-    }
-    function means(rad) {
-      var den = boxF(m, lw, lh, rad), a = boxF(cr, lw, lh, rad), b = boxF(cg, lw, lh, rad), c2 = boxF(cb, lw, lh, rad), o = new Uint8ClampedArray(n * 4);
-      for (var t = 0; t < n; t++) {
-        var u = t * 4, dn = den[t];
-        if (dn > 0.06) { o[u] = a[t] / dn; o[u + 1] = b[t] / dn; o[u + 2] = c2[t] / dn; } else { o[u] = ld[u]; o[u + 1] = ld[u + 1]; o[u + 2] = ld[u + 2]; }
-        o[u + 3] = 255;
-      }
-      return o;
-    }
-    var M1 = upscale(toCanvas(lw, lh, means(Math.max(2, Math.round(0.07 * bw)))), R.w, R.h);
-    var M2 = upscale(toCanvas(lw, lh, means(Math.max(1, Math.round(0.02 * bw)))), R.w, R.h);
-    var mk = new Uint8ClampedArray(n * 4); for (i = 0; i < n; i++) { mk[i * 4] = mk[i * 4 + 1] = mk[i * 4 + 2] = m[i] * 255; mk[i * 4 + 3] = 255; }
-    var MK = upscale(toCanvas(lw, lh, mk), R.w, R.h), od2 = new Uint8ClampedArray(R.orig.data), N = R.w * R.h;
-    for (i = 0; i < N; i++) {
-      var u2 = i * 4, kk = MK[u2] / 255; if (kk < 0.02) continue;
-      var r0 = od2[u2], g0 = od2[u2 + 1], b0 = od2[u2 + 2];
-      var dY = Math.abs((0.299 * r0 + 0.587 * g0 + 0.114 * b0) - (0.299 * M1[u2] + 0.587 * M1[u2 + 1] + 0.114 * M1[u2 + 2]));
-      var dCr = Math.abs((0.5 * r0 - 0.419 * g0 - 0.081 * b0) - (0.5 * M1[u2] - 0.419 * M1[u2 + 1] - 0.081 * M1[u2 + 2]));
-      var dCb = Math.abs((-0.169 * r0 - 0.331 * g0 + 0.5 * b0) - (-0.169 * M1[u2] - 0.331 * M1[u2 + 1] + 0.5 * M1[u2 + 2]));
-      var wt = sstep(4, 14, Math.max(dY, 1.1 * Math.max(dCr, dCb))) * kk * s;
-      var r1 = r0 + wt * (M1[u2] - r0), g1 = g0 + wt * (M1[u2 + 1] - g0), b1 = b0 + wt * (M1[u2 + 2] - b0), sm = 0.3 * s * kk;
-      od2[u2] = r1 + sm * (M2[u2] - r1); od2[u2 + 1] = g1 + sm * (M2[u2 + 1] - g1); od2[u2 + 2] = b1 + sm * (M2[u2 + 2] - b1);
-    }
-    g.putImageData(new ImageData(od2, R.w, R.h), R.x0, R.y0); S.sheetDirty = true;
-  }
-  var rtTimer = 0;
-  function scheduleRetouch() { clearTimeout(rtTimer); rtTimer = setTimeout(function () { retouch(); draw(); }, 140); }
-  function syncFace() {
-    $('ppLight').value = S.light; $('ppMarks').value = S.marks; $('ppLightV').textContent = S.light; $('ppMarksV').textContent = S.marks;
-    var none = !S.face; $('ppLight').disabled = none; $('ppMarks').disabled = none; $('ppFaceNone').hidden = !none;
+  function autoLight() {
+    var f = S.face, w = S.ww, h = S.wh, g = S.gray, sum = 0, n = 0, x0, x1, y0, y1;
+    if (f) { x0 = Math.max(0, f.bb.x | 0); x1 = Math.min(w, (f.bb.x + f.bb.w) | 0); y0 = Math.max(0, f.bb.y | 0); y1 = Math.min(h, (f.bb.y + f.bb.h) | 0); }
+    else { x0 = w * 0.3 | 0; x1 = w * 0.7 | 0; y0 = h * 0.15 | 0; y1 = h * 0.5 | 0; }
+    for (var y = y0; y < y1; y += 2) for (var x = x0; x < x1; x += 2) { sum += g[y * w + x]; n++; }
+    var mean = n ? sum / n * 255 : 130;
+    S.bright = clamp(Math.round((140 - mean) / 1.5), -40, 40); S.contrast = 6;
+    $('ppBright').value = S.bright; $('ppContrast').value = S.contrast; $('ppBrightV').textContent = S.bright; $('ppContrastV').textContent = S.contrast; draw();
   }
 
-  /* ---------- progress card shown while the AI works ---------- */
-  var STEPS = ['open', 'ai', 'face', 'bg', 'fix', 'skin'];
-  function tick() { return new Promise(function (r) { requestAnimationFrame(function () { setTimeout(r, 30); }); }); }
-  function step(key) {
-    var i = STEPS.indexOf(key), li = document.querySelectorAll('#ppPSteps li');
-    Array.prototype.forEach.call(li, function (el, n) { el.className = n < i ? 'done' : (n === i ? 'now' : ''); });
-    $('ppBarFill').style.width = Math.round((i + 0.6) / STEPS.length * 100) + '%';
-    $('ppProgCount').textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length;
-    return tick();
+  function fitCanvas() {
+    var w = $('ppCWrap'); if (!w || !cv.width) return;
+    var aw = w.clientWidth - 20, ah = w.clientHeight - 56; if (aw < 40 || ah < 40) return;
+    var s = Math.min(aw / cv.width, ah / cv.height); cv.style.width = Math.floor(cv.width * s) + 'px'; cv.style.height = Math.floor(cv.height * s) + 'px';
   }
+  function chips() {
+    if (!S.src) return; var h = $('ppChipHead'), m = $('ppChipMode');
+    if (S.head) {
+      var pc = Math.round(S.head / S.view.fh * 100), r = RG[sk()], ok = r && pc >= r[0] && pc <= r[1];
+      h.textContent = 'Head ' + pc + '%' + (r ? (ok ? ' \u2713' : ' (aim ' + r[0] + '-' + r[1] + '%)') : ''); h.className = 'chip ' + (r ? (ok ? 'ok' : 'warn') : '');
+    } else { h.textContent = 'No face found: use Fit tab'; h.className = 'chip warn'; }
+    m.textContent = S.ai ? 'AI cutout' : 'Quick mode'; m.className = 'chip' + (S.ai ? '' : ' warn');
+  }
+  var tt = 0;
+  function toast(m) { var t = $('ppToast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove('on'); }, 3800); }
+  function syncLight() {
+    [['Bright', 'bright'], ['Contrast', 'contrast'], ['Sat', 'sat'], ['Warm', 'warm'], ['Sharp', 'sharp']].forEach(function (a) { $('pp' + a[0]).value = S[a[1]]; $('pp' + a[0] + 'V').textContent = S[a[1]]; });
+  }
+  function resetLight() { S.bright = S.contrast = S.sat = S.warm = S.sharp = 0; syncLight(); draw(); }
+  function resetAll() { S.bright = S.contrast = S.sat = S.warm = S.sharp = 0; S.strokes = []; syncLight(); rebuildFinal(); autoFit(); draw(); }
+  function closeEditor() { $('ppEditor').hidden = true; document.documentElement.classList.remove('pp-lock'); $('ppStart').hidden = false; S.src = null; status(''); }
 
   /* ---------- loading a photo ---------- */
-  function setCanvases(src, wc) {
-    S.src = src; S.iw = src.width; S.ih = src.height; S.wc = wc; S.ww = wc.width; S.wh = wc.height;
-    S.wcPix = wc.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S.ww, S.wh).data;
-    S.gray = new Float32Array(S.ww * S.wh);
-    for (var i = 0; i < S.gray.length; i++) S.gray[i] = (0.299 * S.wcPix[i * 4] + 0.587 * S.wcPix[i * 4 + 1] + 0.114 * S.wcPix[i * 4 + 2]) / 255;
-    S.proc = document.createElement('canvas'); S.proc.width = S.ww; S.proc.height = S.wh;
-    S.fin = document.createElement('canvas'); S.fin.width = S.ww; S.fin.height = S.wh;
-    S.strokes = []; S.rt = null; S.ref = null; S.face = null;
-  }
   async function handleFile(file) {
     if (!file || S.busy) return;
-    S.busy = true;
-    S.flags = { straight: $('ppOptStraight').checked, light: $('ppOptLight').checked, skin: $('ppOptSkin').checked };
-    $('ppEditor').hidden = true; $('ppStart').hidden = true; status(''); $('ppProgress').hidden = false;
-    $('ppProgress').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    var ai = true, raw = null, fr = null;
+    S.busy = true; $('ppEditor').hidden = true;
     try {
-      await step('open');
+      status('Opening your photo...');
       var im = await loadImage(file);
-      var sc = Math.min(1, SRC_MAX / Math.max(im.naturalWidth, im.naturalHeight)), src = document.createElement('canvas');
-      src.width = Math.round(im.naturalWidth * sc); src.height = Math.round(im.naturalHeight * sc);
-      src.getContext('2d').drawImage(im, 0, 0, src.width, src.height);
-      var ws = Math.min(1, WORK / Math.max(src.width, src.height)), wc = document.createElement('canvas');
-      wc.width = Math.round(src.width * ws); wc.height = Math.round(src.height * ws);
-      wc.getContext('2d').drawImage(src, 0, 0, wc.width, wc.height);
-      setCanvases(src, wc);
-      await step('ai');
-      try { await lib('seg', V + 'selfie/selfie_segmentation.js'); await lib('face', V + 'face/face_detection.js'); } catch (e) { ai = false; libs = {}; }
-      await step('face');
-      if (ai) { try { fr = await findFace(S.wc); } catch (e) { ai = false; libs = {}; fr = null; } }
-      if (fr && fr.q) setCanvases(rotateCanvas(S.src, fr.q), fr.canvas);
-      S.face = fr ? fr.face : null; S.rollEst = fr ? fr.roll : null;
-      await step('bg');
-      if (ai) { try { raw = await runSegmentation(S.wc); } catch (e) { ai = false; libs = {}; raw = null; } }
-      if (!raw) raw = colourMask(S.wc);
-      S.mG = guided(S.gray, raw, S.ww, S.wh, Math.max(4, Math.round(Math.max(S.ww, S.wh) * 0.006)), 0.0004);
-      S.bright = 0; S.contrast = 0; S.soft = +$('ppSoft').value; S.grow = +$('ppGrow').value;
-      $('ppBright').value = 0; $('ppContrast').value = 0; $('ppBrightV').textContent = '0'; $('ppContrastV').textContent = '0';
-      rebuildProc();
-      await step('fix');
-      autoFit();
-      S.ref = S.face ? faceStats() : null;
-      S.light = (S.flags.light && S.ref) ? clamp(Math.round((128 - S.ref.Y) / 55 * 100), 0, 75) : 0; S.autoLight = S.light;
-      await step('skin');
-      S.marks = (S.flags.skin && S.ref) ? 70 : 0; S.autoMarks = S.marks; retouch(); syncFace();
-      var notes = ['background removed'];
-      if (S.face) {
-        if (fr && fr.q) notes.push('photo turned upright');
-        if (S.flags.straight && Math.abs(S.rollDeg) >= 1) notes.push('straightened by ' + Math.round(Math.abs(S.rollDeg)) + '\u00b0');
-        if (S.light > 0) notes.push('dark face made lighter');
-        if (S.marks > 0) notes.push('marks on the face cleaned');
+      var sc = Math.min(1, SRC_MAX / Math.max(im.naturalWidth, im.naturalHeight));
+      S.iw = Math.round(im.naturalWidth * sc); S.ih = Math.round(im.naturalHeight * sc);
+      S.src = document.createElement('canvas'); S.src.width = S.iw; S.src.height = S.ih;
+      S.src.getContext('2d').drawImage(im, 0, 0, S.iw, S.ih);
+      var ws = Math.min(1, WORK / Math.max(S.iw, S.ih)); S.ww = Math.round(S.iw * ws); S.wh = Math.round(S.ih * ws);
+      var wc = document.createElement('canvas'); wc.width = S.ww; wc.height = S.wh;
+      var wg = wc.getContext('2d', { willReadFrequently: true }); wg.drawImage(S.src, 0, 0, S.ww, S.wh);
+      var id = wg.getImageData(0, 0, S.ww, S.wh).data; S.gray = new Float32Array(S.ww * S.wh);
+      for (var i = 0; i < S.gray.length; i++) S.gray[i] = (0.299 * id[i * 4] + 0.587 * id[i * 4 + 1] + 0.114 * id[i * 4 + 2]) / 255;
+      S.proc = document.createElement('canvas'); S.proc.width = S.ww; S.proc.height = S.wh;
+      S.fin = document.createElement('canvas'); S.fin.width = S.ww; S.fin.height = S.wh;
+      S.strokes = []; S.face = null; var raw = null, ai = true;
+      try {
+        status('Loading the AI tools (about 12 MB, only the first time)...');
+        await lib('seg', V + 'selfie/selfie_segmentation.js'); await lib('face', V + 'face/face_detection.js');
+        status('Removing the background...');
+        raw = await runSegmentation(wc);
+        status('Fitting your face to the passport frame...');
+        try { S.face = await detectFace(wc); } catch (e) { S.face = null; }
+      } catch (e) {
+        ai = false; libs = {}; status('The AI could not start on this device, so quick mode is being used...');
+        raw = colourMask(wc);
       }
-      $('ppProgress').hidden = true; $('ppEditor').hidden = false;
-      $('ppBadge').className = 'pp-badge ' + (S.face ? 'ok' : 'warn');
-      $('ppBadge').textContent = !ai ? 'Quick mode: works best with a plain wall. Use Fix edges to clean up.'
-        : (S.face ? 'Done! The AI did this: ' + notes.join(', ') + '. Check the photo and change anything in the tabs.'
-          : 'Background removed, but no face was found. Please move and zoom the photo yourself (Adjust tab).');
-      setTab(S.face ? 'bg' : 'adjust'); draw(); $('ppEditor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var r = Math.max(4, Math.round(Math.max(S.ww, S.wh) * 0.006));
+      S.mG = guided(S.gray, raw, S.ww, S.wh, r, 0.0004);
+      S.bright = 0; S.contrast = 0; S.sat = 0; S.warm = 0; S.sharp = 0; S.soft = +$('ppSoft').value; S.grow = +$('ppGrow').value;
+      syncLight();
+      rebuildProc(); autoFit();
+      S.ai = ai; $('ppStart').hidden = true; $('ppEditor').hidden = false; document.documentElement.classList.add('pp-lock'); status('');
+      setTab(S.face ? 'bg' : 'adjust'); fitCanvas(); draw();
+      toast(!ai ? 'Quick mode: works best with a plain wall. Use Edges to clean up.' : (S.face ? 'Done! Face found. Check the photo and change anything you like.' : 'Background removed, but no face was found. Move and zoom it yourself in the Fit tab.'));
     } catch (e) {
-      $('ppProgress').hidden = true; $('ppStart').hidden = false; S.src = null;
       status(e && e.message === 'open' ? 'That photo could not be opened. Please try a JPG or PNG photo.' : 'Something went wrong. Please try again with another photo.', 'bad');
     }
     S.busy = false;
   }
 
   /* ---------- download single photo ---------- */
-  function photoCanvas() {
-    var W = mmToPx(S.size.w), H = mmToPx(S.size.h), c = document.createElement('canvas'); c.width = W; c.height = H; render(c, W, H, {}); return c;
+  function photoCanvas(d) {
+    var W = mmToPx(S.size.w, d), H = mmToPx(S.size.h, d), c = document.createElement('canvas'); c.width = W; c.height = H; render(c, W, H, {}); return c;
   }
   async function encodeJpeg(c, maxKB) {
     if (!maxKB) return { blob: await toBlob(c, 'image/jpeg', 0.95), w: c.width, h: c.height };
@@ -585,13 +466,20 @@
     }
     return { blob: await toBlob(cur, 'image/jpeg', 0.35), w: cur.width, h: cur.height };
   }
+  async function jfifDpi(b, d) {
+    var u = new Uint8Array(await b.arrayBuffer());
+    if (u[2] === 255 && u[3] === 224 && u[6] === 74 && u[7] === 70) { u[13] = 1; u[14] = d >> 8; u[15] = d & 255; u[16] = d >> 8; u[17] = d & 255; }
+    return new Blob([u], { type: 'image/jpeg' });
+  }
   async function downloadPhoto() {
-    var btn = $('ppDl'); btn.disabled = true; var note = $('ppDlNote'); note.textContent = 'Creating your photo...';
+    var btn = $('ppDl'); btn.disabled = true; toast('Creating your photo...');
     try {
-      var r = await encodeJpeg(photoCanvas(), +$('ppMax').value);
-      download(r.blob, 'passport-photo-' + S.size.w + 'x' + S.size.h + 'mm.jpg');
-      note.textContent = 'Saved: ' + r.w + ' x ' + r.h + ' px, ' + Math.round(r.blob.size / 1024) + ' KB.' + (r.w !== mmToPx(S.size.w) ? ' It was made smaller to fit your limit.' : '');
-    } catch (e) { note.textContent = 'Could not create the photo. Please try again.'; }
+      var png = S.fmt === 'png', c = photoCanvas(S.dpi), r;
+      if (png) r = { blob: await toBlob(c, 'image/png'), w: c.width, h: c.height };
+      else { r = await encodeJpeg(c, +$('ppMax').value); r.blob = await jfifDpi(r.blob, S.dpi); }
+      download(r.blob, 'passport-photo-' + S.size.w + 'x' + S.size.h + 'mm.' + (png ? 'png' : 'jpg'));
+      toast('Saved: ' + r.w + ' x ' + r.h + ' px, ' + Math.round(r.blob.size / 1024) + ' KB' + (r.w !== c.width ? ' (made smaller to fit your limit)' : ''));
+    } catch (e) { toast('Could not create the photo. Please try again.'); }
     btn.disabled = false;
   }
 
@@ -655,14 +543,15 @@
 
   /* ---------- saved preferences (settings only, never photos) ---------- */
   function savePrefs() {
-    try { localStorage.setItem('calvo_pp', JSON.stringify({ bg: S.bg, keep: S.keepBg, size: $('ppSize').value, cw: $('ppCW').value, ch: $('ppCH').value, paper: $('ppPaper').value, copies: $('ppCopies').value })); } catch (e) { }
+    try { localStorage.setItem('calvo_pp', JSON.stringify({ bg: S.bg, keep: S.keepBg, cw: S.size.w, ch: S.size.h, paper: $('ppPaper').value, copies: $('ppCopies').value, fmt: S.fmt, dpi: S.dpi, max: $('ppMax').value })); } catch (e) { }
   }
   function loadPrefs() {
     try {
       var p = JSON.parse(localStorage.getItem('calvo_pp') || 'null'); if (!p) return;
       if (p.bg) S.bg = p.bg; S.keepBg = !!p.keep;
-      if (p.size) $('ppSize').value = p.size; if (p.cw) $('ppCW').value = p.cw; if (p.ch) $('ppCH').value = p.ch;
+      if (p.cw && p.ch) S.size = { w: +p.cw, h: +p.ch };
       if (p.paper) $('ppPaper').value = p.paper; if (p.copies) $('ppCopies').value = p.copies;
+      if (p.fmt) { S.fmt = p.fmt; $('ppFmt').value = p.fmt; } if (p.dpi) { S.dpi = +p.dpi; $('ppDpi').value = p.dpi; } if (p.max) $('ppMax').value = p.max;
     } catch (e) { }
   }
 
@@ -677,9 +566,22 @@
   Array.prototype.forEach.call(document.querySelectorAll('.pp-sw'), function (b) {
     b.onclick = function () { b.dataset.c === 'keep' ? setBg(null, true) : setBg(b.dataset.c, false); };
   });
-  ['ppCustomBg', 'ppCustomBg2'].forEach(function (id) { $(id).addEventListener('input', function () { setBg(this.value, false); }); });
-  $('ppSize').addEventListener('change', applySizeSelect);
+  $('ppCustomBg').addEventListener('input', function () { setBg(this.value, false); });
+  Array.prototype.forEach.call(document.querySelectorAll('.pp-ps'), function (b) { b.onclick = function () { setSize(+b.dataset.w, +b.dataset.h); }; });
   $('ppCW').addEventListener('change', applySizeSelect); $('ppCH').addEventListener('change', applySizeSelect);
+  val('ppSat', function (v) { S.sat = v; $('ppSatV').textContent = v; schedule(); });
+  val('ppWarm', function (v) { S.warm = v; $('ppWarmV').textContent = v; schedule(); });
+  val('ppSharp', function (v) { S.sharp = v; $('ppSharpV').textContent = v; schedule(); });
+  $('ppResetLight').onclick = resetLight; $('ppResetAll').onclick = resetAll;
+  var pk = $('ppPeek');
+  pk.addEventListener('pointerdown', function (e) { e.preventDefault(); S.peek = true; draw(); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { pk.addEventListener(ev, function () { if (S.peek) { S.peek = false; draw(); } }); });
+  pk.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  $('ppOpt').onclick = function () { $('ppModal').hidden = false; }; $('ppOptDone').onclick = function () { $('ppModal').hidden = true; savePrefs(); };
+  $('ppFmt').onchange = function () { S.fmt = this.value; $('ppMax').disabled = S.fmt === 'png'; savePrefs(); };
+  $('ppDpi').onchange = function () { S.dpi = +this.value; savePrefs(); };
+  $('ppCam').addEventListener('change', function () { handleFile(this.files[0]); this.value = ''; });
+  if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe($('ppCWrap')); window.addEventListener('resize', fitCanvas);
   val('ppZoom', function (v) { S.view.fh = S.auto.fh / (v / 100); $('ppZoomV').textContent = v + '%'; schedule(); });
   val('ppRot', function (v) { S.view.rot = v * Math.PI / 180; $('ppRotV').textContent = v + '\u00b0'; schedule(); });
   val('ppBright', function (v) { S.bright = v; $('ppBrightV').textContent = v; schedule(); });
@@ -690,11 +592,7 @@
   $('ppUp').onclick = function () { nudge(0, -1); }; $('ppDown').onclick = function () { nudge(0, 1); };
   $('ppLeft').onclick = function () { nudge(-1, 0); }; $('ppRight').onclick = function () { nudge(1, 0); };
   $('ppAutoFit').onclick = function () { autoFit(); draw(); };
-  $('ppRot0').onclick = function () { S.view.rot = 0; $('ppRot').value = 0; $('ppRotV').textContent = '0\u00b0'; draw(); };
-  val('ppLight', function (v) { S.light = v; $('ppLightV').textContent = v; schedule(); });
-  val('ppMarks', function (v) { S.marks = v; $('ppMarksV').textContent = v; scheduleRetouch(); });
-  $('ppFaceAuto').onclick = function () { S.light = S.autoLight; S.marks = S.autoMarks; syncFace(); retouch(); draw(); };
-  $('ppFaceOff').onclick = function () { S.light = 0; S.marks = 0; syncFace(); retouch(); draw(); };
+  $('ppAutoLight').onclick = autoLight;
   $('ppGuide').onchange = function () { S.guide = this.checked; draw(); };
   $('ppCheck').onchange = function () { S.check = this.checked; draw(); };
   $('ppErase').onclick = function () { S.mode = 'erase'; $('ppErase').classList.add('on'); $('ppRestore').classList.remove('on'); };
@@ -702,12 +600,12 @@
   $('ppUndo').onclick = function () { S.strokes.pop(); rebuildFinal(); draw(); };
   $('ppResetMask').onclick = function () { S.strokes = []; rebuildFinal(); draw(); };
   $('ppDl').onclick = downloadPhoto;
-  $('ppGoSheet').onclick = function () { setTab('sheet'); $('ppTabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-  $('ppNew').onclick = function () { $('ppEditor').hidden = true; $('ppProgress').hidden = true; $('ppStart').hidden = false; S.src = null; status(''); window.scrollTo({ top: $('ppApp').offsetTop - 10, behavior: 'smooth' }); };
+  $('ppGoSheet').onclick = function () { setTab('sheet'); };
+  $('ppNew').onclick = closeEditor;
   ['ppPaper', 'ppCopies', 'ppGap', 'ppCut'].forEach(function (id) { $(id).addEventListener('change', drawSheetPreview); });
   $('ppShPdf').onclick = downloadSheetPdf; $('ppShJpg').onclick = downloadSheetJpg;
 
-  loadPrefs(); applySizeSelect(); $('ppCustom').hidden = $('ppSize').value !== 'custom';
+  loadPrefs(); setSize(S.size.w, S.size.h); $('ppMax').disabled = S.fmt === 'png';
   setBg(S.bg, S.keepBg); setTab('bg'); $('ppEditor').hidden = true;
   window.__pp = S; /* handy for testing */
 })();
