@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGM4SCN6WZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZGM4SCN6WZ');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistics Calculator: Mean, Median, Standard Deviation, Quartiles | Calvo</title>
+<meta name="description" content="Paste your data and get mean, median, mode, variance, standard deviation, quartiles, skewness, confidence interval and more. Free and works offline.">
+<link rel="canonical" href="https://calvoscientificcalculator.online/statistics-calculator.html">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calvoscientificcalculator.online/statistics-calculator.html">
+<meta property="og:title" content="Statistics Calculator: Mean, Median, Standard Deviation, Quartiles | Calvo">
+<meta property="og:description" content="Paste your data and get mean, median, mode, variance, standard deviation, quartiles, skewness, confidence interval and more. Free and works offline.">
+<meta property="og:image" content="https://calvoscientificcalculator.online/icon-512.png">
+<meta property="og:site_name" content="Calvo">
+
+<style>
+  :root{
+    --bg-void:#0d0d0f;
+    --panel:#17171a;
+    --panel-border:#2a2a30;
+    --text:#e8e5db;
+    --text-dim:#9c968a;
+    --rule:#2a2a30;
+    --brand-orange:#ff8a1f;
+    --brand-orange-deep:#d9650c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,138,31,0.07), transparent 60%),
+      var(--bg-void);
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    min-height:100vh;
+    padding:48px 16px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .topbar{
+    width:100%; max-width:760px;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:32px; font-family:'Space Mono', monospace;
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:10px; color:var(--text);
+    font-weight:700; letter-spacing:0.06em; text-decoration:none; font-size:14px; }
+  .brand-dot{ width:9px;height:9px;border-radius:2px; background:var(--brand-orange);
+    box-shadow:0 0 8px rgba(255,138,31,0.7); }
+  .topbar-links{ display:flex; gap:10px; }
+  .topbar a.back{ color:var(--text-dim); text-decoration:none; font-size:12px;
+    letter-spacing:0.04em; border:1px solid var(--panel-border); padding:6px 12px;
+    border-radius:20px; transition:border-color .15s, color .15s; }
+  .topbar a.back:hover{ color:var(--text); border-color:var(--brand-orange); }
+  .doc{ width:100%; max-width:760px; background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:16px; padding:40px 36px 36px; }
+  .doc-head{ margin-bottom:24px; }
+  .doc-title{ font-family:'Space Mono', monospace; font-weight:700; font-size:26px;
+    letter-spacing:0.01em; margin:0 0 8px; line-height:1.3; }
+  .doc-title span{ color:var(--brand-orange); }
+  .doc-meta{ font-size:11.5px; color:var(--text-dim); letter-spacing:0.03em; }
+  hr.rule{ border:none; border-top:1px solid var(--rule); margin:24px 0; }
+  h2{ font-family:'Space Mono', monospace; font-size:15px; letter-spacing:0.04em;
+    text-transform:uppercase; color:var(--brand-orange); margin:28px 0 12px; }
+  h2:first-of-type{ margin-top:4px; }
+  p{ font-size:14px; line-height:1.9; color:var(--text); margin:0 0 14px; }
+  ul,ol{ margin:0 0 14px; padding-left:22px; }
+  li{ font-size:14px; line-height:1.9; color:var(--text); margin-bottom:8px; }
+  li b, p b{ color:#fff; }
+  a{ color:var(--brand-orange); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .doc-footer{ margin-top:32px; padding-top:20px; border-top:1px solid var(--rule);
+    font-size:12px; color:var(--text-dim); text-align:center; line-height:1.8; }
+  .cta{ display:inline-block; margin-top:6px; background:var(--brand-orange); color:#17171a;
+    font-weight:700; padding:10px 18px; border-radius:10px; font-size:13px; text-decoration:none; }
+  .cta:hover{ background:var(--brand-orange-deep); text-decoration:none; color:#fff; }
+  .tag{ display:inline-block; font-size:11px; color:var(--brand-orange); border:1px solid var(--panel-border);
+    padding:3px 10px; border-radius:20px; margin:2px 6px 2px 0; }
+  .blog-card{ display:block; padding:22px 24px; border:1px solid var(--panel-border); border-radius:14px;
+    margin-bottom:16px; text-decoration:none; color:var(--text); transition:border-color .15s; }
+  .blog-card:hover{ border-color:var(--brand-orange); text-decoration:none; }
+  .blog-card h3{ font-family:'Space Mono', monospace; color:var(--text); font-size:16px; margin:0 0 8px; }
+  .blog-card p{ margin:0; color:var(--text-dim); font-size:13px; line-height:1.7; }
+  form.contact-form{ display:flex; flex-direction:column; gap:14px; margin-top:10px; }
+  form.contact-form label{ font-size:12px; color:var(--text-dim); letter-spacing:0.03em; margin-bottom:4px; display:block; }
+  form.contact-form input, form.contact-form textarea{
+    width:100%; background:var(--bg-void); border:1px solid var(--panel-border); border-radius:10px;
+    padding:12px 14px; color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:13px; }
+  form.contact-form textarea{ min-height:120px; resize:vertical; }
+  form.contact-form button{ align-self:flex-start; background:var(--brand-orange); color:#17171a; font-weight:700;
+    border:none; padding:12px 22px; border-radius:10px; font-size:13px; cursor:pointer; font-family:'Space Mono', monospace; }
+  form.contact-form button:hover{ background:var(--brand-orange-deep); color:#fff; }
+  @media (max-width:480px){ .doc{ padding:28px 20px 24px; } }
+
+  .doc h2{ font-family:'Space Mono',monospace; font-size:17px; margin:30px 0 10px; color:var(--text); }
+  .doc p, .doc li{ font-size:14px; line-height:1.85; color:var(--text); }
+  .doc ul{ padding-left:20px; margin:8px 0 14px; }
+  .doc a{ color:var(--brand-orange); text-decoration:none; border-bottom:1px solid rgba(255,138,31,.35); }
+  .doc a:hover{ border-bottom-color:var(--brand-orange); }
+  .facts{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:18px 0 6px; }
+  .facts div{ background:rgba(255,255,255,0.03); border:1px solid var(--panel-border); border-radius:10px; padding:12px 14px; font-size:12px; color:var(--text-dim); }
+  .facts b{ display:block; font-family:'Space Mono',monospace; font-size:20px; color:var(--brand-orange); margin-bottom:2px; }
+  .card{ background:rgba(255,255,255,0.03); border:1px solid var(--panel-border); border-radius:12px; padding:16px 18px; margin:16px 0; }
+  .card p{ margin:4px 0; }
+</style>
+<style>
+  .doc ol{ padding-left:22px; margin:8px 0 14px; }
+  .doc ol li{ margin-bottom:8px; }
+  .doc details{ background:rgba(255,255,255,0.03); border:1px solid var(--panel-border); border-radius:10px; padding:12px 16px; margin:0 0 8px; }
+  .doc summary{ cursor:pointer; font-size:14px; font-weight:600; color:var(--text); line-height:1.6; }
+  .doc details p{ margin:10px 0 0; color:var(--text-dim); }
+  .doc .example h3{ font-family:'Space Mono',monospace; font-size:14px; margin:0 0 8px; color:var(--brand-orange); }
+  .doc .example p, .doc .example li{ color:var(--text); }
+  .doc .example ul{ margin:6px 0 0; }
+  .doc .cta-row{ margin:14px 0 6px; }
+  .doc .cta{ border-bottom:none; }
+  .doc .cta:hover{ border-bottom:none; }
+  .doc-meta a{ color:var(--text-dim); text-decoration:underline; border-bottom:none; }
+  .author-box{ margin:28px 0 8px; padding:18px 20px; border:1px solid var(--panel-border); border-radius:12px; }
+  .author-box .ab-label{ font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-dim); margin:0 0 6px; }
+  .author-box .ab-name{ font-family:'Space Mono', monospace; font-weight:700; font-size:15px; margin:0 0 4px; }
+  .author-box p{ font-size:13px; line-height:1.8; margin:0 0 8px; }
+  .author-box .ab-updated{ font-size:12px; color:var(--text-dim); margin:0; }
+  .tool-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin:10px 0 18px; }
+  .tool-grid a{ display:block; padding:14px 16px; border:1px solid var(--panel-border); border-radius:12px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--panel-border); color:var(--text); }
+  .tool-grid a:hover{ border-color:var(--brand-orange); }
+  .tool-grid b{ display:block; font-family:'Space Mono',monospace; font-size:13px; color:var(--brand-orange); margin-bottom:4px; }
+  .tool-grid span{ font-size:12.5px; line-height:1.7; color:var(--text-dim); }
+</style>
+<script src="/light-pages.js"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://calvoscientificcalculator.online/statistics-calculator.html#page",
+      "name": "Statistics Calculator: Mean, Median, Standard Deviation, Quartiles | Calvo",
+      "url": "https://calvoscientificcalculator.online/statistics-calculator.html",
+      "description": "Paste your data and get mean, median, mode, variance, standard deviation, quartiles, skewness, confidence interval and more. Free and works offline.",
+      "dateModified": "2026-11-01",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "Calvo",
+        "url": "https://calvoscientificcalculator.online/"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Hafiz Muhammad Usman",
+        "url": "https://calvoscientificcalculator.online/author.html"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Calvo",
+          "item": "https://calvoscientificcalculator.online/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "All tools",
+          "item": "https://calvoscientificcalculator.online/all-tools.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Statistics Calculator",
+          "item": "https://calvoscientificcalculator.online/statistics-calculator.html"
+        }
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Calvo Statistics Calculator",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any (web browser)",
+      "url": "https://calvoscientificcalculator.online/index.html?tab=stats",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Hafiz Muhammad Usman",
+        "url": "https://calvoscientificcalculator.online/author.html"
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6621625782538547" crossorigin="anonymous"></script>
+<!-- Google Funding Choices (GDPR/CCPA consent messaging) -->
+<script async src="https://fundingchoicesmessages.google.com/i/pub-6621625782538547?ers=1"></script>
+<script>(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){var i=document.createElement('iframe');i.style='width:0;height:0;border:none;z-index:-1000;left:-1000px;top:-1000px;';i.style.display='none';i.name='googlefcPresent';document.body.appendChild(i);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();</script>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-dot"></span> CALVO
+    </a>
+    <div class="topbar-links">
+      <a class="back" href="all-tools.html">All tools</a>
+      <a class="back" href="index.html">&larr; Calculator</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="doc-head">
+      <h1 class="doc-title">Statistics <span>Calculator</span></h1>
+      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 1 November 2026 · From mean and median to skewness and confidence intervals</div>
+    </div>
+    <hr class="rule">
+
+    <p>Paste or type a list of numbers, pick the statistic you want (or choose All Statistics), and read the results. It is quick for homework, lab reports and checking a spreadsheet.</p>
+    <p>Population and sample versions of variance and standard deviation are listed separately so you can use the one your question asks for.</p>
+    <p class="cta-row"><a class="cta" href="index.html?tab=stats">Open the Statistics Calculator &rarr;</a></p>
+
+    <h2>What it can do</h2>
+    <ul>
+      <li><b>Centre and spread:</b> count, sum, mean, median, mode, range, minimum and maximum, midrange.</li>
+      <li><b>Variation:</b> population and sample standard deviation and variance, coefficient of variation, mean and median absolute deviation, standard error of the mean.</li>
+      <li><b>Position:</b> quartiles and IQR, 10th and 90th percentiles, and an outlier count using the 1.5 × IQR rule.</li>
+      <li><b>Shape and other means:</b> skewness, excess kurtosis, geometric mean, harmonic mean and root mean square.</li>
+      <li><b>Inference:</b> a 95% confidence interval for the mean.</li>
+    </ul>
+
+    <h2>How to use it</h2>
+    <ol>
+      <li>Enter your numbers separated by commas, for example 4, 8, 15, 16, 23, 42.</li>
+      <li>Choose a single statistic or All Statistics.</li>
+      <li>Press calculate and read each result.</li>
+      <li>For two variables or hypothesis tests, use the dedicated tools linked below.</li>
+    </ol>
+
+    <div class="card example">
+      <h3>Worked check with 2, 4, 4, 4, 5, 5, 7, 9</h3>
+      <p>The mean is 40 ÷ 8 = <b>5</b>. The squared deviations from the mean add up to 32. Population variance is 32 ÷ 8 = <b>4</b>, so the population standard deviation is <b>2</b>. Sample variance is 32 ÷ 7 ≈ <b>4.571</b>, so the sample standard deviation is about <b>2.138</b>. The median is (4 + 5) ÷ 2 = <b>4.5</b>, the mode is <b>4</b> and the range is <b>7</b>.</p>
+    </div>
+
+    <h2>Tips for better results</h2>
+    <ul>
+      <li>Use population formulas when you have the whole group, and sample formulas when your data is a sample of a larger group.</li>
+      <li>Check for typing mistakes. One extra digit can change the mean a lot.</li>
+    </ul>
+
+    <h2>Frequently asked questions</h2>
+    <details><summary>Sample or population: which do I choose?</summary><p>If the data is every member of the group, use population. If it is a sample used to estimate a larger group, use sample (n − 1).</p></details>
+    <details><summary>Can it do regression or ANOVA?</summary><p>Yes, with the <a href="correlation-regression-calculator.html">correlation and regression</a>, <a href="anova-calculator.html">ANOVA</a> and <a href="hypothesis-test-calculator.html">hypothesis test</a> calculators.</p></details>
+    <details><summary>Does it work offline?</summary><p>Yes. The calculations run in your browser.</p></details>
+
+    <h2>Related tools</h2>
+    <ul>
+      <li><a href="correlation-regression-calculator.html">Correlation &amp; regression</a></li>
+      <li><a href="anova-calculator.html">ANOVA calculator</a></li>
+      <li><a href="hypothesis-test-calculator.html">Hypothesis test calculator</a></li>
+      <li><a href="average-calculator.html">Average calculator</a></li>
+      <li><a href="function-grapher.html">Function grapher (histograms, box plots)</a></li>
+    </ul>
+    <h2>Guides to read next</h2>
+    <ul>
+      <li><a href="blog/statistics-calculator-guide.html">Statistics calculator guide</a></li>
+    </ul>
+    <p class="cta-row"><a class="cta" href="index.html?tab=stats">Open the Statistics Calculator &rarr;</a></p>
+
+    <div class="author-box">
+      <p class="ab-label">About the author</p>
+      <p class="ab-name"><a href="author.html">Hafiz Muhammad Usman</a></p>
+      <p>Software developer (BS Computer Science), and the creator and maintainer of Calvo. I write and check the guides on this site. If you spot a mistake, <a href="contact.html">tell me</a> and I will correct the page. <a href="author.html">More about the author</a>.</p>
+      <p class="ab-updated">Last updated: 1 November 2026</p>
+    </div>
+
+    <div class="doc-footer">
+      Calvo — Scientific Calculator &amp; Formulas<br>
+      <a href="index.html">Back to Calculator</a> ·
+      <a href="all-tools.html">All Tools</a> ·
+      <a href="about.html">About</a> ·
+      <a href="author.html">Author</a> ·
+      <a href="blog/index.html">All Articles</a> ·
+      <a href="contact.html">Contact</a> ·
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+  </div>
+
+</body>
+</html>
