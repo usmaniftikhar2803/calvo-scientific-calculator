@@ -148,3 +148,11 @@ html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: th
 /* safety: the home column can never be wider than the screen */
 #tab-home .home-wrap { min-width: 0; max-width: min(1120px, 100%); box-sizing: border-box; }
 #tab-home { overflow-x: clip; }
+/* Guide cards on the Home tab ("Explore the tools") */
+#tab-home .home-guides { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; max-width: 860px; margin-top: 14px; }
+#tab-home .home-guides a { display: block; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--case-border, #2a2a30); background: rgba(255,255,255,.03); text-decoration: none; border-bottom-width: 1px; }
+#tab-home .home-guides a:hover { border-color: #ff8a1f; }
+#tab-home .home-guides b { display: block; font-size: .92rem; color: #ff8a1f; margin-bottom: 4px; }
+#tab-home .home-guides span { font-size: .85rem; line-height: 1.65; color: var(--p-mute, #b9b5aa); }
+#tab-home .home-more { max-width: 860px; margin: 14px 0 0; font-size: .95rem; line-height: 1.8; color: var(--p-mute, #b9b5aa); }
+#tab-home .home-more a { color: #ff8a1f; text-decoration: none; border-bottom: 1px solid rgba(255,138,31,.35); }
