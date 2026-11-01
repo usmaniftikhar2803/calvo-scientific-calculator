@@ -50,11 +50,45 @@
 <li><b>Transpose:</b> swap rows and columns.</li>
 <li><b>Multiplication:</b> each entry is the dot product of a row of A with a column of B. Order matters: A&times;B is usually not equal to B&times;A.</li></ul>
 <p>Worked example: for A = [[1, 2], [3, 4]], det = 1&times;4 &minus; 2&times;3 = <b>&minus;2</b>, and the inverse is (1/&minus;2) &times; [[4, &minus;2], [&minus;3, 1]] = [[&minus;2, 1], [1.5, &minus;0.5]].</p>
+<h2>What a matrix is</h2>
+<p>A matrix is a rectangular table of numbers arranged in rows and columns. A 2&times;2 matrix has two rows and two columns, and a 3&times;3 matrix has three of each. Matrices are used to solve systems of linear equations, to describe transformations in geometry and graphics, and in statistics, physics and computer science. They appear in the maths syllabus of FSc, ICS, A level and in first-year BS courses.</p>
+<h2>Using this calculator</h2>
+<p>Pick the size, then type the values of Matrix A (and Matrix B for operations that need two matrices). The boxes start as an identity matrix, with 1 on the diagonal and 0 elsewhere. Empty boxes count as 0. Then press the operation you need. Results are rounded to six decimal places.</p>
+<h2>A 3&times;3 determinant, step by step</h2>
+<p>Take A = [[1, 2, 3], [0, 1, 4], [5, 6, 0]]. Expand along the first row, using the sign pattern + &minus; +:</p>
+<p>det(A) = 1 &times; (1&times;0 &minus; 4&times;6) &minus; 2 &times; (0&times;0 &minus; 4&times;5) + 3 &times; (0&times;6 &minus; 1&times;5)<br>
+= 1 &times; (&minus;24) &minus; 2 &times; (&minus;20) + 3 &times; (&minus;5)<br>
+= &minus;24 + 40 &minus; 15 = <b>1</b>.</p>
+<p>Because the determinant is not 0, the inverse exists. For this matrix it is [[&minus;24, 18, 5], [20, &minus;15, &minus;4], [&minus;5, 4, 1]]. Type A into the calculator and press A&sup1; to check it.</p>
+<h2>A matrix with no inverse</h2>
+<p>For [[1, 2], [2, 4]] the determinant is 1&times;4 &minus; 2&times;2 = 0. The second row is exactly twice the first, so the rows are not independent and no inverse exists. Such a matrix is called singular.</p>
+<h2>Multiplication depends on order</h2>
+<p>Let A = [[1, 2], [3, 4]] and B = [[0, 1], [1, 0]]. Then A &times; B = [[2, 1], [4, 3]], but B &times; A = [[3, 4], [1, 2]]. The two answers are different, so always keep the order the question gives you.</p>
+<h2>Solving equations with the inverse</h2>
+<p>The system 2x + y = 5 and x + y = 3 can be written as A X = C, where A = [[2, 1], [1, 1]] and C = [5, 3]. Here det(A) = 1 and A&sup1; = [[1, &minus;1], [&minus;1, 2]]. Then X = A&sup1; C gives x = 1&times;5 &minus; 1&times;3 = 2 and y = &minus;1&times;5 + 2&times;3 = 1. Checking: 2(2) + 1 = 5 and 2 + 1 = 3.</p>
+<h2>Useful properties</h2>
+<ul>
+<li>Multiplying any matrix by the identity matrix leaves it unchanged: A &times; I = A.</li>
+<li>det(Aᵀ) = det(A), and det(A &times; B) = det(A) &times; det(B).</li>
+<li>(A &times; B)ᵀ = Bᵀ &times; Aᵀ. The order reverses.</li>
+<li>For a 2&times;2 matrix, |det| is the area of the parallelogram formed by its two rows. A determinant of 0 means that area collapses to a line.</li>
+</ul>
+<h2>Common mistakes</h2>
+<ul>
+<li>Multiplying entry by entry. Matrix multiplication uses row-by-column dot products.</li>
+<li>Getting the signs wrong in the cofactor expansion. The pattern is + &minus; + along the first row.</li>
+<li>Trying to invert a matrix whose determinant is 0.</li>
+<li>Adding matrices of different sizes. Addition and subtraction need the same size.</li>
+</ul>
 <h2>FAQ</h2>
 <details><summary>When does a matrix have no inverse?</summary><p>When its determinant is 0. Such a matrix is called singular.</p></details>
 <details><summary>Can I multiply matrices of different sizes?</summary><p>In general yes if the columns of A equal the rows of B, but this page uses square matrices of the same size. Use the full Calvo calculator's Matrix tab for more.</p></details>
 <details><summary>Why is A×B different from B×A?</summary><p>Matrix multiplication is not commutative. The row-by-column rule gives different results when the order changes.</p></details>
 <details><summary>Does it support 4×4?</summary><p>The full Calvo calculator supports up to 4×4. This page focuses on 2×2 and 3×3.</p></details>
+<details><summary>What is an identity matrix?</summary><p>A square matrix with 1 on the main diagonal and 0 everywhere else. It acts like the number 1 in multiplication.</p></details>
+<details><summary>What does the determinant tell me?</summary><p>It tells you whether the matrix can be inverted (determinant not 0) and, for a 2&times;2 matrix, how much it scales area.</p></details>
+<details><summary>Are the results exact?</summary><p>The calculator works in decimals and rounds to six places, so a value like 1/3 appears as 0.333333.</p></details>
+<details><summary>What does the transpose do?</summary><p>It swaps rows and columns. The first row of A becomes the first column of Aᵀ.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/percentage-calculator.html">Percentage Calculator</a><a href="/ohms-law-calculator.html">Ohm's Law Calculator</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
