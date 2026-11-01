@@ -472,7 +472,7 @@ const translations = {
     about_tag: "Scientific Calculator & Formulas",
     about_p1: "Calvo is a full-featured scientific calculator built for students from 9th class through MS level. It brings together a real calculator engine, a searchable formula library across six subjects, a unit converter, and a percentage / GPA-CGPA calculator — all in one place.",
     about_p2: "Built with care to make studying and quick calculations faster, our goal is to be the one tool you keep open in a browser tab all semester.",
-    about_contact: "Questions or suggestions? Reach us at",
+    about_contact: "Questions or suggestions? Reach me at",
     about_privacy_link: "Privacy Policy",
     formulas_title: "Formula Library",
     formulas_subtitle: "9th Class to MS Level — All Subjects",
