@@ -1,3 +1,28 @@
+/* ---------- LAZY SCRIPT LOADER ----------
+   Heavy, tab-specific files (Subject Tools, practice-question bank, Urdu notes,
+   solved examples, share card) are not downloaded on first load. They are fetched
+   the first time they are needed (or when the browser is idle), which keeps the
+   first visit light on phones. */
+window.calvoLoadScript = window.calvoLoadScript || (function () {
+  const pending = {};
+  return function (src) {
+    if (pending[src]) return pending[src];
+    pending[src] = new Promise(function (resolve, reject) {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = function () { resolve(); };
+      s.onerror = function () { delete pending[src]; s.remove(); reject(new Error('Could not load ' + src)); };
+      document.head.appendChild(s);
+    });
+    return pending[src];
+  };
+})();
+window.calvoWhenIdle = window.calvoWhenIdle || function (fn, timeout) {
+  if ('requestIdleCallback' in window) requestIdleCallback(fn, { timeout: timeout || 4000 });
+  else setTimeout(fn, 1500);
+};
+
 /* ============================================
    CALVO SCIENTIFIC CALCULATOR + FORMULAS
    Full Math Engine + 12 Themes + Formula Library
@@ -134,8 +159,9 @@ const alphaIndicator = document.getElementById('alphaIndicator');
 const hypIndicator = document.getElementById('hypIndicator');
 const memIndicator = document.getElementById('memIndicator');
 
-/* ---------- SUBJECT TOOLS (Chemistry/Physics/Biology/Commerce/Math) ---------- */
-(function () {
+/* ---------- SUBJECT TOOLS (Chemistry/Physics/Biology/Commerce/Math) ----------
+   subject-tools.js (the big data file) is loaded the first time this tab opens. */
+function initSubjectTools() {
   const categoryGrid = document.getElementById('subjectToolsCategoryGrid');
   const categoryView = document.getElementById('subjectToolsCategoryView');
   const listView = document.getElementById('subjectToolsListView');
@@ -251,7 +277,21 @@ const memIndicator = document.getElementById('memIndicator');
       renderToolBody();
     }
   };
-})();
+}
+
+let subjectToolsState = 0; // 0 = not started, 1 = loading, 2 = ready
+function ensureSubjectTools() {
+  if (subjectToolsState) return;
+  subjectToolsState = 1;
+  const ready = function () { initSubjectTools(); subjectToolsState = 2; };
+  if (window.CalvoSubjectTools) { ready(); return; }
+  const grid = document.getElementById('subjectToolsCategoryGrid');
+  if (grid && !grid.children.length) grid.innerHTML = '<p class="subject-loading" style="opacity:.7;padding:12px 4px">Loading tools\u2026</p>';
+  window.calvoLoadScript('subject-tools.js').then(ready).catch(function () {
+    subjectToolsState = 0;
+    if (grid) grid.innerHTML = '<p style="opacity:.8;padding:12px 4px">Could not load Subject Tools. Check your connection and open this tab again.</p>';
+  });
+}
 
 /* ---------- OFFLINE MODE INDICATOR ---------- */
 (function () {
@@ -590,6 +630,11 @@ function activateTab(tabName, remember) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   tabBtn.classList.add('active');
   tabPanel.classList.add('active');
+  // fetch tab-specific files the first time they are needed
+  if (tabName === 'subjecttools') ensureSubjectTools();
+  else if (tabName === 'quiz') window.calvoLoadScript('question-bank.js').catch(function () {});
+  else if (tabName === 'formulas') { window.calvoLoadScript('urdu-notes.js').catch(function () {}); window.calvoLoadScript('solved-examples.js').catch(function () {}); }
+  else if (tabName === 'percentage') window.calvoLoadScript('share-card.js').catch(function () {});
   const moreBtn = document.querySelector('.topbar-more');
   if (moreBtn) moreBtn.classList.toggle('active', tabBtn.classList.contains('secondary'));
   if (tabName === 'home') { tabPanel.scrollTop = restoreHomeScroll ? homeScrollY : 0; restoreHomeScroll = false; }
@@ -984,6 +1029,13 @@ try {
   if (nav && (nav.type === 'back_forward' || nav.type === 'reload') && st && st.tab && document.getElementById('tab-' + st.tab)) backState = st;
 } catch (e) {}
 if (backState) restoredTab = backState.tab;
+// Landing pages link here with ?tab=graph, ?tab=quiz ... to open that tool directly.
+if (!backState) {
+  try {
+    const wantTab = new URLSearchParams(location.search).get('tab');
+    if (wantTab && /^[a-z]+$/.test(wantTab) && wantTab !== 'home' && document.getElementById('tab-' + wantTab) && document.querySelector('.topbar-tab[data-tab="' + wantTab + '"]')) restoredTab = wantTab;
+  } catch (e) {}
+}
 activateTab(restoredTab, false);
 currentHistoryTab = restoredTab;
 if (backState && restoredTab === 'home') {
@@ -2899,7 +2951,8 @@ if (shareCgpaImgBtn) {
   shareCgpaImgBtn.addEventListener('click', () => {
     const v = calcCgpa();
     const m = lastCgpaMeta;
-    if (!m || !m.totalCredits || !window.CalvoShareCard) { showToast(t('share_card_need_data')); return; }
+    if (!m || !m.totalCredits) { showToast(t('share_card_need_data')); return; }
+    if (!window.CalvoShareCard) { window.calvoLoadScript('share-card.js').then(function () { shareCgpaImgBtn.click(); }).catch(function () { showToast(t('share_card_need_data')); }); return; }
     const scaleVals = Object.values(gradeScales[cgpaScaleEl.value] || { A: 4 });
     const scaleMax = Math.max.apply(null, scaleVals);
     const scaleName = cgpaScaleEl.options[cgpaScaleEl.selectedIndex].text.split(' (')[0];
@@ -3551,6 +3604,11 @@ setTimeout(() => {
   }
 
   function setQuizMode(mode) {
+    if (mode === 'practice' && typeof practiceQuestionBank === 'undefined') {
+      // the question bank is a separate file: load it, then open practice mode
+      window.calvoLoadScript('question-bank.js').then(function () { setQuizMode(mode); }).catch(function () { showToast('Could not load practice questions. Check your connection.'); });
+      return;
+    }
     quizMode = mode;
     quizSubject = 'All';
     quizDifficulty = 'All';
