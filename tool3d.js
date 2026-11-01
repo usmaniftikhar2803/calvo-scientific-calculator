@@ -67,6 +67,8 @@
   }
 
   if (lite) return;
+  /* Phones: the 3D backdrop is decorative and costs ~125 KB plus GPU time, so small touch screens skip it. */
+  if (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700) { document.documentElement.classList.add('perf-lite'); return; }
 
   /* ---------- WebGL banner ---------- */
   function hasGL() {
