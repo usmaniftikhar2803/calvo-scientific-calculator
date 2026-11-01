@@ -48,6 +48,23 @@
 <h2>Example</h2>
 <p>For 12 and 18: 12 = 2&sup2; &times; 3 and 18 = 2 &times; 3&sup2;. HCF = 2 &times; 3 = <b>6</b>. LCM = 2&sup2; &times; 3&sup2; = <b>36</b>. Check: 6 &times; 36 = 216 = 12 &times; 18.</p>
 <p>Also handy: the <a href="/fraction-calculator.html">fraction calculator</a>, which uses HCF to simplify answers.</p>
+<h2>Prime factorisation: a worked comparison</h2>
+<p>Take 84 and 90. Factorising gives 84 = 2&sup2; &times; 3 &times; 7 and 90 = 2 &times; 3&sup2; &times; 5. For the <b>HCF</b>, take each common prime with its <i>smallest</i> power: 2 &times; 3 = <b>6</b>. For the <b>LCM</b>, take every prime that appears with its <i>largest</i> power: 2&sup2; &times; 3&sup2; &times; 5 &times; 7 = <b>1,260</b>.</p>
+<p>Check with the key relationship for two numbers: <b>HCF &times; LCM = a &times; b</b>. Here 6 &times; 1,260 = 7,560 = 84 &times; 90. This identity does not hold for three or more numbers, so do not use it there.</p>
+<h2>Euclid's algorithm for large numbers</h2>
+<p>When the numbers are too big to factorise by hand, divide repeatedly and keep the remainder. For 252 and 105: 252 = 2 &times; 105 + 42; 105 = 2 &times; 42 + 21; 42 = 2 &times; 21 + 0. The last non-zero remainder, <b>21</b>, is the HCF. Then LCM = (252 &times; 105) &divide; 21 = <b>1,260</b>.</p>
+<h2>Word problems: which one do I need?</h2>
+<table class="f"><tr><th>Clue in the question</th><th>Use</th><th>Example</th></tr>
+<tr><td>"Together again", "at the same time", "next meeting"</td><td>LCM</td><td>Bells ring every 12, 18 and 30 minutes. They ring together again after LCM = 180 minutes (3 hours).</td></tr>
+<tr><td>"Largest", "greatest size", "equal groups", "cut into"</td><td>HCF</td><td>A 480 cm &times; 360 cm floor is covered with the largest square tiles: HCF = 120 cm.</td></tr>
+<tr><td>"Smallest number divisible by..."</td><td>LCM</td><td>Smallest number divisible by 4, 6 and 10 is 60.</td></tr>
+<tr><td>"Greatest number that divides... leaving remainder"</td><td>HCF of the differences</td><td>Subtract the remainder from each number first, then take the HCF.</td></tr></table>
+<h2>Adding fractions</h2>
+<p>The LCM of the denominators is the least common denominator. For 5/12 + 7/18, the LCM of 12 and 18 is 36, so the sum is 15/36 + 14/36 = 29/36. The HCF is used to simplify: 18/24 simplifies by dividing both parts by their HCF 6 to give 3/4.</p>
+<h2>Common mistakes</h2>
+<ul><li>Taking the <i>largest</i> power for the HCF or the <i>smallest</i> for the LCM. It is the other way round.</li>
+<li>Forgetting that coprime numbers (HCF = 1) have an LCM equal to their product, such as 8 and 15 giving 120.</li>
+<li>Using HCF &times; LCM = a &times; b with three numbers.</li></ul>
 <h2>FAQ</h2>
 <details><summary>How do I find the HCF of two numbers?</summary><p>Use Euclid's algorithm: divide the larger by the smaller, then repeat with the remainder until it is 0. The last non-zero remainder is the HCF.</p></details>
 <details><summary>How do I find the LCM?</summary><p>For two numbers, LCM = (a × b) ÷ HCF. For more numbers, find the LCM of two, then with the next, and so on.</p></details>
