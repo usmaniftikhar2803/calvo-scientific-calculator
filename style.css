@@ -53,7 +53,16 @@
    ============================================ */
 body[data-textsize="small"] { --app-text-zoom: 0.88; }
 body[data-textsize="large"] { --app-text-zoom: 1.18; }
-.tab-panel:not(#tab-calc) { zoom: var(--app-text-zoom); }
+.tab-panel:not(#tab-calc) {
+  zoom: var(--app-text-zoom);
+  /* `zoom` also scales the panel's own height + top margin, so at "Small"
+     (0.88) the panel stopped ~12% short of the screen bottom and the FAQ /
+     footer line parked below the fold peeked in. Dividing by the zoom
+     factor cancels that out: the panel always fills exactly the screen. */
+  height: calc((100vh - 52px) / var(--app-text-zoom));
+  height: calc((100dvh - 52px) / var(--app-text-zoom));
+  margin-top: calc(52px / var(--app-text-zoom));
+}
 
 /* ============================================
    LIGHT MODE
