@@ -47,11 +47,37 @@
 <h2>Worked examples</h2>
 <p><b>Find current:</b> a 12 V battery across a 4 &Omega; resistor. I = 12 &divide; 4 = <b>3 A</b>, and P = 12 &times; 3 = <b>36 W</b>.<br><b>Find resistance:</b> 230 V and 2 A. R = 230 &divide; 2 = <b>115 &Omega;</b>.<br><b>Find voltage:</b> 0.5 A through 100 &Omega;. V = 0.5 &times; 100 = <b>50 V</b>.</p>
 <p>Ohm's law holds for ohmic conductors at constant temperature. Devices like diodes and filament bulbs do not follow it. Find more electrical formulas in the Formula Library of the <a href="/">full Calvo calculator</a>.</p>
+<h2>The Ohm's law triangle</h2>
+<p>Draw a triangle with V on top and I and R at the bottom. Cover the quantity you want and read what is left: cover V and you see I &times; R, cover I and you see V over R, cover R and you see V over I. This is a simple way to remember all three forms of V = IR in an exam.</p>
+<h2>Which formula to use for power</h2>
+<table class="f"><tr><th>You know</th><th>Power formula</th></tr>
+<tr><td>Voltage and current</td><td>P = V &times; I</td></tr>
+<tr><td>Current and resistance</td><td>P = I&sup2; &times; R</td></tr>
+<tr><td>Voltage and resistance</td><td>P = V&sup2; &divide; R</td></tr></table>
+<p>This calculator shows the power for you after it finds the missing value, so you can check your hand working.</p>
+<h2>Use base units</h2>
+<p>The boxes expect volts, amps and ohms. Convert prefixes first: 20 mA = 0.02 A, 4.7 k&Omega; = 4700 &Omega;, and 500 mV = 0.5 V. A very common mistake is typing milliamps into the amps box and getting an answer that is 1000 times too large.</p>
+<h2>Worked examples</h2>
+<p><b>Resistor for an LED.</b> A 5 V supply, an LED that drops 2 V and a wanted current of 20 mA. The resistor must drop 5 &minus; 2 = 3 V. R = 3 &divide; 0.02 = <b>150 &Omega;</b>. Its power is I&sup2;R = 0.0004 &times; 150 = 0.06 W, so a small quarter-watt resistor is enough.</p>
+<p><b>Series circuit.</b> Resistors of 100 &Omega; and 200 &Omega; in series on 12 V. Total resistance = 300 &Omega;, current = 12 &divide; 300 = 0.04 A (40 mA). The voltage across the 100 &Omega; resistor is 4 V and across the 200 &Omega; resistor is 8 V, which add up to 12 V.</p>
+<p><b>Parallel circuit.</b> 6 &Omega; and 3 &Omega; in parallel on 12 V. The equivalent resistance is (6 &times; 3) &divide; (6 + 3) = 2 &Omega;. The branch currents are 12 &divide; 6 = 2 A and 12 &divide; 3 = 4 A, so the total is 6 A, which matches 12 &divide; 2.</p>
+<p><b>A heater.</b> A 2200 W heater on a 220 V supply draws I = P &divide; V = 10 A. Its resistance is R = V &divide; I = 22 &Omega;.</p>
+<h2>Energy, not just power</h2>
+<p>Power is how fast energy is used. Energy in kilowatt-hours is power in kilowatts multiplied by hours. A 1000 W heater running for 2 hours uses 1 kW &times; 2 h = 2 kWh, and that is the figure your electricity bill is based on.</p>
+<h2>When Ohm's law does not apply</h2>
+<p>A filament bulb gets hotter as current flows, and its resistance rises, so V and I are not in a straight-line relationship. Diodes, LEDs and thermistors are also non-ohmic. In AC circuits with coils and capacitors, resistance is replaced by impedance. Use Ohm's law with these only as an approximation at one operating point.</p>
+<p>To read the value of a resistor from its colour bands, use the <a href="/resistor-calculator.html">resistor colour code calculator</a>.</p>
+<h2>Safety note</h2>
+<p>This page does calculations only. Real circuits have component ratings, heat and wiring limits to respect. Mains voltage can kill, so work on mains wiring should be done by a qualified person.</p>
 <h2>FAQ</h2>
 <details><summary>What is Ohm's law?</summary><p>Ohm's law states that the current through a conductor is directly proportional to the voltage across it, so V = IR.</p></details>
 <details><summary>What unit is resistance measured in?</summary><p>Resistance is measured in ohms (Ω), current in amperes (A) and voltage in volts (V).</p></details>
 <details><summary>How do I calculate electrical power?</summary><p>Use P = V × I, or equivalently P = I²R or P = V²/R. The result is in watts.</p></details>
 <details><summary>Does Ohm's law work for all components?</summary><p>No. It applies to ohmic conductors such as metal wires and resistors at constant temperature.</p></details>
+<details><summary>Why does the calculator ask for exactly two values?</summary><p>V = IR links three quantities. When you give two, the third is fixed. If you enter all three, or only one, there is nothing to solve, so it asks you to fix the entries.</p></details>
+<details><summary>What if I know the power but not the current?</summary><p>Use I = P &divide; V if you know the voltage, or I = &radic;(P &divide; R) if you know the resistance. Then enter the values in the calculator.</p></details>
+<details><summary>Why can't I find current when resistance is 0?</summary><p>Dividing by zero is undefined. In real life a resistance of almost zero makes the current extremely large, which is why short circuits are dangerous.</p></details>
+<details><summary>What is the difference between watts and kilowatt-hours?</summary><p>Watts measure power at an instant. Kilowatt-hours measure energy used over time, which is power in kilowatts multiplied by hours.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Equation Solver</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/percentage-calculator.html">Percentage Calculator</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
