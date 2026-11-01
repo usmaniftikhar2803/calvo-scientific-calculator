@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v117';
+const CACHE_VERSION = 'calvo-cache-v118';
 
 /* The app shell is cached right away at install. Everything else (other tools, formula data,
    big scripts) is cached later, when the page is idle and the visitor is not on data-saver,
