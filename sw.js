@@ -12,11 +12,8 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v120';
+const CACHE_VERSION = 'calvo-cache-v114';
 
-/* The app shell is cached right away at install. Everything else (other tools, formula data,
-   big scripts) is cached later, when the page is idle and the visitor is not on data-saver,
-   so a first visit on a phone is not slowed down by a multi-megabyte background download. */
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -34,36 +31,17 @@ const CORE_ASSETS = [
   './future.js',
   './tool3d.css',
   './tool3d.js',
+  './vendor/calvo-3d.js',
   './script.js',
   './i18n.js',
-  './ai-solver.js',
-  './voice-reader.js',
-  './manifest.json',
-  './favicon.ico',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png',
-  './i18n/ur.js',
-];
-
-const EXTRA_ASSETS = [
-  './scientific-calculator.html',
-  './formula-library.html',
-  './unit-converter.html',
-  './ai-math-solver.html',
-  './formula-quiz.html',
-  './function-grapher.html',
-  './equation-solver.html',
-  './programmer-calculator.html',
-  './statistics-calculator.html',
-  './study-timer.html',
-  './subject-tools.html',
-  './all-tools.html',
   './question-bank.js',
   './subject-tools.js',
+  './ai-solver.js',
+  './voice-reader.js',
   './urdu-notes.js',
   './solved-examples.js',
   './share-card.js',
+  './manifest.json',
   './privacy.html',
   './how-to-use.html',
   './tools.css',
@@ -108,7 +86,6 @@ const EXTRA_ASSETS = [
   './photo-resizer.html',
   './passport-photo-maker.html',
   './passport-photo.js',
-  './scroll-keeper.js',
   './photo-tools.js',
   './merge-split-pdf.html',
   './pdf-organizer.js',
@@ -133,9 +110,13 @@ const EXTRA_ASSETS = [
   './percentage-calculator.html',
   './marks-percentage-calculator.html',
   './ohms-law-calculator.html',
+  './favicon.ico',
   './favicon-16x16.png',
   './favicon-32x32.png',
   './favicon-48x48.png',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png',
   './10th-class-chemistry-formulas.html',
   './1st-year-math-formulas.html',
   './9th-10th-class-biology-formulas.html',
@@ -177,7 +158,6 @@ const EXTRA_ASSETS = [
   './data/formulas/software-engineering.json',
   './data/formulas/statistics.json',
   './data/formulas/textile-engineering.json',
-  './vendor/calvo-3d.js',
 ];
 
 self.addEventListener('install', (event) => {
@@ -187,22 +167,6 @@ self.addEventListener('install', (event) => {
       .catch(() => { /* don't block install if one asset 404s */ })
   );
   self.skipWaiting();
-});
-
-// The page asks for the rest of the offline files once it is idle (see index.html).
-self.addEventListener('message', (event) => {
-  if (!event.data || event.data.type !== 'calvo-warm-cache') return;
-  const saver = !!(self.navigator && self.navigator.connection && self.navigator.connection.saveData);
-  if (saver) return;
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then(async (cache) => {
-      for (let i = 0; i < EXTRA_ASSETS.length; i += 6) {
-        await Promise.allSettled(EXTRA_ASSETS.slice(i, i + 6).map((u) =>
-          cache.match(u).then((hit) => hit || cache.add(u))
-        ));
-      }
-    })
-  );
 });
 
 self.addEventListener('activate', (event) => {
