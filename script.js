@@ -1526,13 +1526,13 @@ document.addEventListener('keydown', (e) => {
    FORMULA_MANIFEST is tiny and gives names + counts instantly, so the
    subject grid renders with no network request at all. */
 const FORMULA_MANIFEST = {
-  "Mathematics": { file: 'data/formulas/mathematics.json', count: 500 },
-  "Physics": { file: 'data/formulas/physics.json', count: 500 },
-  "Chemistry": { file: 'data/formulas/chemistry.json', count: 500 },
-  "Biology": { file: 'data/formulas/biology.json', count: 500 },
-  "Statistics": { file: 'data/formulas/statistics.json', count: 500 },
+  "Mathematics": { file: 'data/formulas/mathematics.json', count: 490 },
+  "Physics": { file: 'data/formulas/physics.json', count: 487 },
+  "Chemistry": { file: 'data/formulas/chemistry.json', count: 484 },
+  "Biology": { file: 'data/formulas/biology.json', count: 493 },
+  "Statistics": { file: 'data/formulas/statistics.json', count: 495 },
   "Commerce": { file: 'data/formulas/commerce.json', count: 500 },
-  "Computer Science": { file: 'data/formulas/computer-science.json', count: 500 },
+  "Computer Science": { file: 'data/formulas/computer-science.json', count: 496 },
   "Accounting & Finance": { file: 'data/formulas/accounting-finance.json', count: 500 },
   "Cost Accounting": { file: 'data/formulas/cost-accounting.json', count: 284 },
   "Psychology": { file: 'data/formulas/psychology.json', count: 500 },
@@ -1541,12 +1541,12 @@ const FORMULA_MANIFEST = {
   "Electrical Engineering": { file: 'data/formulas/electrical-engineering.json', count: 500 },
   "Mechanical Engineering": { file: 'data/formulas/mechanical-engineering.json', count: 500 },
   "Civil Engineering": { file: 'data/formulas/civil-engineering.json', count: 500 },
-  "Data Science": { file: 'data/formulas/data-science.json', count: 500 },
-  "Pharmacy & Pharmacology": { file: 'data/formulas/pharmacy-pharmacology.json', count: 500 },
+  "Data Science": { file: 'data/formulas/data-science.json', count: 495 },
+  "Pharmacy & Pharmacology": { file: 'data/formulas/pharmacy-pharmacology.json', count: 494 },
   "Environmental Science": { file: 'data/formulas/environmental-science.json', count: 500 },
   "Chemical Engineering": { file: 'data/formulas/chemical-engineering.json', count: 500 },
   "Software Engineering": { file: 'data/formulas/software-engineering.json', count: 500 },
-  "Textile Engineering": { file: 'data/formulas/textile-engineering.json', count: 500 }
+  "Textile Engineering": { file: 'data/formulas/textile-engineering.json', count: 496 }
 };
 const formulaData = {};      // subject -> array of {cat, name, expr}; filled on demand
 const formulaLoading = {};   // subject -> in-flight Promise (avoids duplicate fetches)
