@@ -65,12 +65,33 @@
 <p>After finding an answer with exact rules, Calvo puts in numbers very close to the point (from both sides, or very large values for infinity) and compares. If a limit cannot be found exactly it says so and shows a clearly marked numerical estimate instead of guessing.</p>
 <h2>What is not supported</h2>
 <p>One variable only. Piecewise functions, limits of sequences defined by sums, and expressions with several letters are not supported. Trigonometric limits at special points are found by L&rsquo;H&ocirc;pital or numerically.</p>
+<h2>Standard limits worth memorising</h2>
+<ul>
+<li>lim (x → 0) sin x / x = <b>1</b> (with x in radians)</li>
+<li>lim (x → 0) (1 − cos x) / x² = <b>1/2</b></li>
+<li>lim (x → 0) (eˣ − 1) / x = <b>1</b> and lim (x → 0) ln(1 + x) / x = <b>1</b></li>
+<li>lim (x → ∞) (1 + 1/x)ˣ = <b>e</b></li>
+</ul>
+<h2>L'Hôpital applied twice</h2>
+<p>Find lim (x → 0) (eˣ − 1 − x) / x². Substituting gives 0/0. Differentiate top and bottom: (eˣ − 1) / (2x), which is still 0/0. Differentiate again: eˣ / 2. At x = 0 the value is <b>1/2</b>. The rule may be used more than once as long as the form stays 0/0 or ∞/∞ each time.</p>
+<h2>Limits at infinity</h2>
+<p>For a fraction of polynomials, compare the highest powers. (3x² + 2x) / (5x² − 1): divide top and bottom by x² to get (3 + 2/x) / (5 − 1/x²), which approaches <b>3/5</b> as x grows. If the top has a higher power than the bottom the limit is infinite, and if it has a lower power the limit is 0.</p>
+<h2>One-sided limits</h2>
+<p>As x → 0 from the right, 1/x grows without bound toward +∞, and from the left it falls toward −∞. Because the two sides disagree, the two-sided limit does not exist. A limit exists only when both one-sided limits exist and are equal.</p>
+<h2>Mistakes to avoid</h2>
+<ul>
+<li><b>Using L'Hôpital when the form is not indeterminate.</b> For lim (x → 0) (x + 1)/(x + 2) the answer is 1/2 by direct substitution. Differentiating top and bottom would give 1, which is wrong.</li>
+<li><b>Mixing degrees and radians.</b> sin x / x → 1 only when x is in radians.</li>
+<li><b>Cancelling terms instead of factors</b> when simplifying 0/0 expressions.</li>
+</ul>
 <h2>FAQ</h2>
 <details><summary>How do I find a limit step by step?</summary><p>First substitute the value. If you get a number, that is the limit. If you get 0/0 or infinity/infinity, factor and cancel, use L'Hopital's rule, or compare the highest powers for limits at infinity. Calvo shows each step.</p></details>
 <details><summary>What is L'Hopital's rule?</summary><p>If a limit gives 0/0 or infinity/infinity, the limit of f/g equals the limit of f'/g' (differentiate the top and bottom separately), provided that limit exists.</p></details>
 <details><summary>What is the limit of sin(x)/x as x approaches 0?</summary><p>It is 1. Substitution gives 0/0, and L'Hopital's rule gives cos(x)/1, which equals 1 at x = 0.</p></details>
 <details><summary>When does a limit not exist?</summary><p>When the left-hand and right-hand limits are different, or when the function oscillates without settling. For example, 1/x as x approaches 0 has a left limit of minus infinity and a right limit of plus infinity.</p></details>
 <details><summary>How do I find a limit at infinity?</summary><p>For a fraction of polynomials compare degrees: smaller top degree gives 0, equal degrees give the ratio of leading coefficients, and larger top degree gives infinity. Other functions use L'Hopital's rule or a numerical check.</p></details>
+<details><summary>When can I use L'Hôpital's rule?</summary><p>Only when substitution gives 0/0 or ∞/∞ and the derivatives exist. Check the form before differentiating, every time you apply it.</p></details>
+<details><summary>What does it mean when the limit does not exist?</summary><p>Either the left and right limits differ, the values grow without bound, or the function oscillates without settling on one number. The steps show which case occurs.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/derivative-calculator.html">Derivative Calculator (steps)</a><a href="/integral-calculator.html">Integral Calculator (steps)</a><a href="/laplace-ode-solver.html">Laplace &amp; ODE Solver</a><a href="/algebra-simplifier.html">Algebra Simplifier (expand, factor, partial fractions)</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
