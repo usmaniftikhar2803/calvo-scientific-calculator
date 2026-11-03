@@ -154,7 +154,7 @@
       "name": "Free Online Function Grapher: 2D, 3D, Polar, Parametric & Charts | Calvo",
       "url": "https://calvoscientificcalculator.online/function-grapher.html",
       "description": "Plot functions, polar, parametric and 3D graphs, inequalities, conics, slope fields and statistical charts like histograms and box plots. Free and works on mobile.",
-      "dateModified": "2026-11-01",
+      "dateModified": "2026-11-03",
       "isPartOf": {
         "@type": "WebSite",
         "name": "Calvo",
@@ -231,7 +231,7 @@
   <div class="doc">
     <div class="doc-head">
       <h1 class="doc-title">Function <span>Grapher</span></h1>
-      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 1 November 2026 · From y = x² to 3D surfaces and box plots</div>
+      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 3 November 2026 · From y = x² to 3D surfaces and box plots</div>
     </div>
     <hr class="rule">
 
@@ -268,12 +268,28 @@
       <li>For trigonometric graphs, check whether the angle mode is degrees or radians.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Reading a graph as a set of transformations</h2>
+<p>Many graphs are a familiar shape that has been moved or stretched. For y = f(x − h) + k, the graph of f shifts h units right and k units up. For y = a·f(x), the graph stretches vertically by a factor of a, and a negative a flips it. For y = f(−x) the graph reflects across the y-axis. So y = (x − 2)² + 3 is the parabola y = x² with its vertex moved to <b>(2, 3)</b>.</p>
+<h2>Using two graphs to solve equations</h2>
+<p>Plot f(x) = x² and g(x) = x + 2 together. They cross where x² = x + 2, that is x² − x − 2 = 0, so x = −1 and x = 2. The tool's comparison feature lets you confirm an algebraic solution visually. The same approach finds approximate roots when no exact method exists: plot the function and look where it crosses the x-axis.</p>
+<h2>Connecting a function with its derivative</h2>
+<p>Plot f(x) = x³ − 3x and its derivative f′(x) = 3x² − 3. The derivative is zero at x = −1 and x = 1, which are the turning points of f. At x = −1 the function has a local maximum f(−1) = 2, and at x = 1 a local minimum f(1) = −2. Seeing both curves on the same axes makes the rule “positive derivative means rising, negative means falling” easy to remember.</p>
+<h2>Area under a curve</h2>
+<p>For f(x) = x² between x = 0 and x = 2, the shaded area is ∫₀² x² dx = 2³/3 = 8/3 ≈ <b>2.667</b>. Compare this with the number the grapher shows to confirm your integration.</p>
+<h2>Domain and asymptotes</h2>
+<ul>
+<li>ln(x) exists only for x &gt; 0, and √x only for x ≥ 0, so their graphs stop at those values.</li>
+<li>1/x has a vertical asymptote at x = 0 and approaches the x-axis as x grows.</li>
+<li>In polar form, r = 2cos θ is a circle of radius 1 centred at (1, 0), and in parametric form x = cos t, y = sin t draws the unit circle.</li>
+</ul>
+<h2>Frequently asked questions</h2>
     <details><summary>Can I plot 3D graphs?</summary><p>Yes. Choose 3D Surface to plot a function of x and y.</p></details>
     <details><summary>Can it graph data, not just functions?</summary><p>Yes. Bar, scatter, line, area, pie, histogram, box plot and regression charts take your own numbers.</p></details>
     <details><summary>Does it work offline?</summary><p>Yes, after your first visit.</p></details>
 
-    <h2>Related tools</h2>
+    <details><summary>Why does my graph have gaps or spikes?</summary><p>Functions like tan x and 1/x are undefined at certain points and shoot to very large values nearby. The gaps and spikes show asymptotes, not an error.</p></details>
+<details><summary>How do I find where two curves meet?</summary><p>Plot both and zoom in on the crossing. For an exact value, set the two functions equal and solve the equation, then compare with the graph.</p></details>
+<h2>Related tools</h2>
     <ul>
       <li><a href="equation-solver.html">Equation solver</a></li>
       <li><a href="scientific-calculator.html">Scientific calculator</a></li>
@@ -292,7 +308,7 @@
       <p class="ab-label">About the author</p>
       <p class="ab-name"><a href="author.html">Hafiz Muhammad Usman</a></p>
       <p>Software developer (BS Computer Science), and the creator and maintainer of Calvo. I write and check the guides on this site. If you spot a mistake, <a href="contact.html">tell me</a> and I will correct the page. <a href="author.html">More about the author</a>.</p>
-      <p class="ab-updated">Last updated: 1 November 2026</p>
+      <p class="ab-updated">Last updated: 3 November 2026</p>
     </div>
 
     <div class="doc-footer">
