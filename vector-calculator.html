@@ -50,8 +50,27 @@
 <tr><td>Projection of A on B</td><td>[(A &middot; B)/|B|&sup2;] B</td></tr></table>
 <h2>Worked example</h2>
 <p>A = (1, 2, 3), B = (4, &minus;1, 2). A &middot; B = 4 &minus; 2 + 6 = <b>8</b>. A &times; B = (2&middot;2 &minus; 3&middot;(&minus;1), 3&middot;4 &minus; 1&middot;2, 1&middot;(&minus;1) &minus; 2&middot;4) = <b>(7, 10, &minus;9)</b>. |A| = &radic;14 &asymp; 3.7417.</p>
+<h2>What the dot and cross product tell you</h2>
+<p>The dot product gives a single number and measures how much two vectors point the same way. If it is zero, the vectors are perpendicular. For example, (2, 3) · (−3, 2) = −6 + 6 = 0, so those two vectors meet at a right angle. The cross product gives a new vector perpendicular to both, and its length equals the area of the parallelogram the two vectors form.</p>
+<h2>Worked examples</h2>
+<ul>
+<li><b>Angle between vectors:</b> A = (1, 0, 0) and B = (1, 1, 0). A · B = 1, |A| = 1, |B| = √2, so cos θ = 1/√2 and θ = <b>45°</b>.</li>
+<li><b>Area from a cross product:</b> A = (3, 0, 0) and B = (0, 4, 0) give A × B = (0, 0, 12). The parallelogram has area <b>12</b> and the triangle on the same two sides has area <b>6</b>.</li>
+<li><b>Work done by a force:</b> W = F · d. With F = (10, 5) N and displacement d = (3, 4) m, W = 30 + 20 = <b>50 J</b>.</li>
+<li><b>Projection:</b> the projection of A = (3, 4) onto B = (1, 0) is [(A · B)/|B|²] B = 3 × (1, 0) = <b>(3, 0)</b>, the part of A that lies along the x-axis.</li>
+</ul>
+<h2>Physics situations where each one appears</h2>
+<p>Work and power use the dot product, since only the part of a force along the motion does work. Torque (τ = r × F) and the magnetic force on a moving charge use the cross product. Resolving a force into components is a projection. Whenever a physics formula contains a “cos θ”, a dot product is usually hiding behind it, and a “sin θ” usually means a cross product.</p>
+<h2>Mistakes to avoid</h2>
+<ul>
+<li>The cross product is not commutative: A × B = −(B × A). Swapping the order flips the direction.</li>
+<li>The dot product needs vectors with the same number of components, and the standard cross product exists only in 3D. For 2D input the tool shows the single z-component.</li>
+<li>Angle formulas give degrees or radians depending on the setting, so check which one your problem expects.</li>
+</ul>
 <h2>FAQ</h2>
 <details><summary>How do I find the dot product?</summary><p>Multiply matching components and add them. For (1,2,3) and (4,-1,2) it is 1*4 + 2*(-1) + 3*2 = 8.</p></details><details><summary>What does the cross product give?</summary><p>A vector perpendicular to both A and B, defined in 3D. Its length is the area of the parallelogram they span.</p></details><details><summary>How do I enter a 2D vector?</summary><p>Type two numbers such as 3, 4. For 2D vectors Calvo shows the scalar z-part of the cross product.</p></details><details><summary>How is the angle found?</summary><p>From the dot product: the angle is the inverse cosine of A dot B divided by the product of the magnitudes.</p></details><details><summary>What if a vector is zero?</summary><p>Angle, unit vector and projection are undefined for a zero vector, and Calvo tells you so.</p></details>
+<details><summary>How do I know two vectors are parallel?</summary><p>Their cross product is the zero vector, or one vector is a constant multiple of the other. For example (2, 4, 6) and (1, 2, 3) are parallel.</p></details>
+<details><summary>What is a unit vector used for?</summary><p>It keeps only the direction. Dividing a vector by its magnitude gives a vector of length 1, useful for describing directions such as the axis of a force.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/projectile-motion-calculator.html">Projectile Motion Calculator</a><a href="/resistor-calculator.html">Resistor Calculator</a><a href="/physical-constants.html">Physical Constants</a><a href="/age-calculator.html">Age Calculator</a><a href="/date-difference-calculator.html">Date Difference</a><a href="/attendance-calculator.html">Attendance Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/word-counter.html">Word Counter</a><a href="/periodic-table.html">Periodic Table</a><a href="/trigonometry-cheat-sheet.html">Trig Identities &amp; Unit Circle</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
