@@ -78,6 +78,24 @@
 <table class="cctable" id="cctab"><tr><th>Colour</th><th>Digit</th><th>Multiplier</th><th>Tolerance</th><th>Temp. (ppm/&deg;C)</th></tr></table>
 <h2>How to read the bands</h2>
 <p>For 4 bands: the first two are digits, the third is the multiplier, the fourth is the tolerance. For 5 bands the first three are digits. A sixth band gives the temperature coefficient. Example: brown, black, red, gold = 1, 0, &times;100, &plusmn;5% = <b>1 k&Omega; &plusmn;5%</b>.</p>
+<h2>Series and parallel worked examples</h2>
+<ul>
+<li><b>Two in parallel:</b> 100 Ω and 220 Ω give R = (100 × 220) ÷ (100 + 220) = <b>68.75 Ω</b>, which is below the smaller value, as it must be.</li>
+<li><b>Equal resistors:</b> three 30 Ω resistors in parallel give 30 ÷ 3 = <b>10 Ω</b>.</li>
+<li><b>Mixed circuit:</b> a 100 Ω resistor in series with two 200 Ω resistors in parallel: the parallel pair is 100 Ω, so the total is <b>200 Ω</b>.</li>
+</ul>
+<h2>A voltage divider with 330 Ω and 470 Ω on 9 V</h2>
+<p>Total resistance = 800 Ω, so the current is I = 9 ÷ 800 = 11.25 mA. The voltage across the 470 Ω resistor is 11.25 mA × 470 ≈ <b>5.29 V</b> and across the 330 Ω resistor about 3.71 V. The power in the 330 Ω resistor is I²R = (0.01125)² × 330 ≈ <b>0.042 W</b>, so even a ¼ W resistor runs comfortably.</p>
+<h2>Reading colour bands</h2>
+<p>For a 5-band resistor, the first three bands are digits, the fourth is the multiplier and the fifth is the tolerance. Brown, black, black, red, brown means 1, 0, 0, × 10² and ±1%, which is <b>10 kΩ ±1%</b>. Gold means ±5% and silver ±10%. Start reading from the side where the bands are grouped closely, and the tolerance band is the one separated by a larger gap.</p>
+<h2>Choosing real component values</h2>
+<p>Resistors are made in standard series. The E12 series, common for ±10% parts, includes 10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68 and 82, repeated in each decade. If your calculation gives 305 Ω, pick the nearest standard value, such as 330 Ω, and check the circuit still works.</p>
+<h2>Common mistakes</h2>
+<ul>
+<li>Reading the bands backwards. If the first band would be gold or silver, flip the resistor.</li>
+<li>Forgetting power rating. The resistor must handle P = I²R or V²/R with a safety margin.</li>
+<li>Adding resistors in parallel as if they were in series.</li>
+</ul>
 <h2>FAQ</h2>
 <details><summary>How do I calculate resistors in series?</summary><p>Add them: R = R1 + R2 + R3. For example 100 ohm, 220 ohm and 330 ohm in series give 650 ohm.</p></details>
 <details><summary>How do I calculate resistors in parallel?</summary><p>Add the reciprocals and flip the result: 1/R = 1/R1 + 1/R2 + ... For two resistors, R = R1 x R2 / (R1 + R2). The total is always smaller than the smallest resistor.</p></details>
@@ -85,6 +103,8 @@
 <details><summary>What does a 5-band resistor mean?</summary><p>The first three bands are digits, the fourth is the multiplier and the fifth is the tolerance. It shows three digits, so it is more precise than a 4-band resistor.</p></details>
 <details><summary>What are the resistor colour code values?</summary><p>Black 0, brown 1, red 2, orange 3, yellow 4, green 5, blue 6, violet 7, grey 8, white 9. Gold and silver as multipliers are x0.1 and x0.01, and as tolerance +/-5 and +/-10 percent.</p></details>
 <details><summary>What does 4k7 mean on a resistor?</summary><p>It is the electronics way of writing 4.7 kilo-ohm, with the letter k in the place of the decimal point. In the same way 2M2 is 2.2 mega-ohm and 4R7 is 4.7 ohm.</p></details>
+<details><summary>Why is the parallel total always smaller than the smallest resistor?</summary><p>Each extra path gives the current another way to flow, so the overall resistance falls. Two equal resistors in parallel give exactly half the value.</p></details>
+<details><summary>What does tolerance mean?</summary><p>It is the allowed manufacturing error. A 1 kΩ resistor with ±5% tolerance may measure anywhere from 950 Ω to 1,050 Ω.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/projectile-motion-calculator.html">Projectile Motion Calculator</a><a href="/physical-constants.html">Physical Constants & SI Prefixes</a><a href="/10th-class-physics-formulas.html">10th Class Physics Formulas</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
