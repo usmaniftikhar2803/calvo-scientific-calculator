@@ -66,6 +66,16 @@
 <p>A ball is kicked at 20 m/s at 45&deg; from the ground (g = 9.81). Then v<sub>x</sub> = v<sub>y</sub> = 14.14 m/s. Time to the top = 14.14 / 9.81 = 1.44 s, so the total time is 2.88 s. Maximum height = 14.14&sup2; / (2 &times; 9.81) = 10.19 m. Range = 14.14 &times; 2.88 = <b>40.77 m</b>.</p>
 <h2>Useful facts</h2>
 <p>On level ground the longest range is at <b>45&deg;</b>. Two angles that add up to 90&deg; (like 30&deg; and 60&deg;) give the same range, but the higher angle stays in the air longer. On the Moon, with gravity about six times smaller, the same throw goes about six times farther.</p>
+<h2>Where the range formula comes from</h2>
+<p>Split the motion into two independent parts. Horizontally the speed stays constant at v₀ cos θ. Vertically the body rises and falls under gravity with initial speed v₀ sin θ. The time of flight on level ground is 2v₀ sin θ / g, and multiplying by the horizontal speed gives R = v₀² (2 sin θ cos θ) / g = <b>v₀² sin 2θ / g</b>. The maximum range occurs when sin 2θ = 1, which means θ = 45°.</p>
+<h2>Thrown sideways from a cliff</h2>
+<p>A ball is thrown horizontally at 15 m/s from a height of 20 m, using g = 9.81 m/s². Horizontally there is no initial vertical speed, so the time to fall is T = √(2h/g) = √(40 ÷ 9.81) ≈ <b>2.02 s</b>. The horizontal distance is 15 × 2.02 ≈ <b>30.3 m</b>. At landing the vertical speed is gT ≈ 19.8 m/s, so the landing speed is √(15² + 19.8²) ≈ <b>24.9 m/s</b>.</p>
+<h2>Complementary angles</h2>
+<p>At 20 m/s, a throw at 30° and one at 60° both travel R = 400 × sin 60° ÷ 9.81 ≈ <b>35.3 m</b>. They take different times though: 2 × 20 × sin 30° ÷ 9.81 ≈ 2.04 s for 30°, and 2 × 20 × sin 60° ÷ 9.81 ≈ 3.53 s for 60°. The steeper throw climbs higher and stays in the air longer.</p>
+<h2>The same throw on the Moon</h2>
+<p>With g = 1.62 m/s² the range of a 20 m/s throw at 45° is 400 ÷ 1.62 ≈ <b>247 m</b>, about six times the Earth value of 40.8 m, because the range varies inversely with g.</p>
+<h2>What the ideal model leaves out</h2>
+<p>The formulas ignore air resistance. In real conditions, drag shortens the range and lowers the best angle below 45°, which is why a javelin or a football is thrown or kicked at a lower angle than the textbook value. Wind, spin and the height of release also matter, so treat the results as a good model for exam problems and a first estimate in real life.</p>
 <h2>FAQ</h2>
 <details><summary>How do you find the range of a projectile?</summary><p>From level ground use R = v0^2 x sin(2 theta) / g. If it starts from a height h0, find the time of flight T = (vy + sqrt(vy^2 + 2 g h0)) / g and then R = vx x T.</p></details>
 <details><summary>What angle gives the maximum range?</summary><p>45 degrees, when the ball starts and lands at the same height and air resistance is ignored. Launching from a height makes the best angle a little smaller than 45 degrees.</p></details>
@@ -73,6 +83,8 @@
 <details><summary>What is the maximum height of a projectile?</summary><p>H = h0 + (v0 sin(theta))^2 / (2 g). The ball is highest when its upward speed becomes zero.</p></details>
 <details><summary>Does mass change the path of a projectile?</summary><p>No. Without air resistance every object follows the same path, whatever its mass, because gravity speeds up all objects equally.</p></details>
 <details><summary>Can I use it for objects thrown downwards or off a cliff?</summary><p>Yes. Use a negative angle to throw downwards, or enter a starting height for a cliff or table. Angle 0 means thrown straight sideways.</p></details>
+<details><summary>Why is 45° the best angle?</summary><p>Range depends on sin 2θ, which is largest when 2θ = 90°. This holds on level ground with no air resistance.</p></details>
+<details><summary>What if the object starts from a height?</summary><p>The best angle becomes less than 45°, and the time of flight is longer because the object has further to fall. The calculator handles this with the starting-height field.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/physical-constants.html">Physical Constants & SI Prefixes</a><a href="/resistor-calculator.html">Resistor Calculator (series, parallel, colour code)</a><a href="/1st-year-physics-formulas.html">1st Year Physics Formulas</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
