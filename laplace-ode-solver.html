@@ -70,10 +70,34 @@
 <p>For equations the solution is differentiated and substituted back into the ODE at several values of t, and the initial conditions are tested. For inverse transforms the partial fractions are recombined and compared with F(s). A green &ldquo;verified&rdquo; badge means those tests passed.</p>
 <h2>Not supported yet</h2>
 <p>Unit step and Dirac delta functions, variable-coefficient equations, systems of equations, and non-linear equations. In those cases Calvo shows a message instead of guessing.</p>
+<h2>The transforms you need most</h2>
+<ul>
+<li>L{1} = 1/s and L{tⁿ} = n!/sⁿ⁺¹</li>
+<li>L{e^(at)} = 1/(s − a)</li>
+<li>L{sin bt} = b/(s² + b²) and L{cos bt} = s/(s² + b²)</li>
+<li>L{sinh bt} = b/(s² − b²) and L{cosh bt} = s/(s² − b²)</li>
+<li><b>First shifting theorem:</b> L{e^(at) f(t)} = F(s − a)</li>
+<li><b>Derivatives:</b> L{y′} = sY − y(0) and L{y″} = s²Y − s·y(0) − y′(0)</li>
+</ul>
+<h2>Worked transforms</h2>
+<p>L{t² e^(−3t)}: start with L{t²} = 2/s³, then shift s to s + 3 to get <b>2/(s + 3)³</b>. L{e^(2t) cos 3t}: start with s/(s² + 9) and replace s by s − 2 to get <b>(s − 2)/((s − 2)² + 9)</b>.</p>
+<h2>Inverse transform by partial fractions</h2>
+<p>To invert 1/(s(s + 1)), write it as 1/s − 1/(s + 1). Then L⁻¹ gives <b>1 − e^(−t)</b>. When the denominator has a repeated root, include one term for each power: for 1/(s²(s + 1)) you need A/s + B/s² + C/(s + 1).</p>
+<h2>A first-order ODE from start to finish</h2>
+<p>Solve y′ + 2y = e^(−t) with y(0) = 0. Transform: sY + 2Y = 1/(s + 1), so Y = 1/((s + 1)(s + 2)). Partial fractions give 1/(s + 1) − 1/(s + 2). Inverting: <b>y = e^(−t) − e^(−2t)</b>. Check the initial condition: y(0) = 1 − 1 = 0. ✓ Check the equation at t = 0: y′(0) = −1 + 2 = 1, and y′ + 2y = 1 + 0 = 1 = e⁰. ✓</p>
+<h2>Common mistakes</h2>
+<ul>
+<li>Leaving out the initial-condition terms when transforming y′ or y″.</li>
+<li>Shifting in the wrong direction: e^(at) replaces s by s − a, so e^(−3t) replaces s by s + 3.</li>
+<li>Forgetting the extra partial-fraction terms for a repeated root.</li>
+</ul>
+<p>Laplace methods turn differential equations into algebra, which is why they are used for electrical circuits, control systems and vibrations in engineering courses.</p>
 <h2>FAQ</h2>
 <details><summary>How do I solve a differential equation with the Laplace transform?</summary><p>Transform both sides using L{y'} = sY &minus; y(0) and L{y''} = s&sup2;Y &minus; s y(0) &minus; y'(0). Solve the algebraic equation for Y(s), split into partial fractions and take the inverse transform.</p></details>
 <details><summary>What is the Laplace transform of sin(at)?</summary><p>a / (s&sup2; + a&sup2;).</p></details>
 <details><summary>What is the first shifting theorem?</summary><p>If L{f(t)} = F(s) then L{e<sup>at</sup> f(t)} = F(s &minus; a).</p></details>
+<details><summary>Why use Laplace transforms instead of direct methods?</summary><p>They handle initial conditions automatically and make forcing terms such as steps and impulses easy to include. The price is that you must be comfortable with partial fractions to get back to a function of t.</p></details>
+<details><summary>What does the numerical check mean?</summary><p>After finding an exact answer, the solver substitutes it back into the equation at several values of t. If the two sides agree, the answer is shown as verified.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/limit-calculator.html">Limit Calculator</a><a href="/algebra-simplifier.html">Algebra Simplifier</a><a href="/matrix-calculator.html">Matrix Calculator</a><a href="/complex-number-calculator.html">Complex Numbers</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
