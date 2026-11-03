@@ -128,9 +128,8 @@
   .doc .example p, .doc .example li{ color:var(--text); }
   .doc .example ul{ margin:6px 0 0; }
   .doc .cta-row{ margin:14px 0 6px; }
-  .doc .cta{ color:#17171a; border-bottom:none; }
-  .doc .cta:hover{ color:#fff; border-bottom:none; }
-  html[data-mode="light"] .doc .cta{ color:#fff; }
+  .doc .cta{ border-bottom:none; color:#17171a; }
+  .doc .cta:hover{ border-bottom:none; color:#fff; }
   .doc-meta a{ color:var(--text-dim); text-decoration:underline; border-bottom:none; }
   .author-box{ margin:28px 0 8px; padding:18px 20px; border:1px solid var(--panel-border); border-radius:12px; }
   .author-box .ab-label{ font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-dim); margin:0 0 6px; }
@@ -155,7 +154,7 @@
       "name": "Statistics Calculator: Mean, Median, Standard Deviation, Quartiles | Calvo",
       "url": "https://calvoscientificcalculator.online/statistics-calculator.html",
       "description": "Paste your data and get mean, median, mode, variance, standard deviation, quartiles, skewness, confidence interval and more. Free and works offline.",
-      "dateModified": "2026-11-01",
+      "dateModified": "2026-11-03",
       "isPartOf": {
         "@type": "WebSite",
         "name": "Calvo",
@@ -232,7 +231,7 @@
   <div class="doc">
     <div class="doc-head">
       <h1 class="doc-title">Statistics <span>Calculator</span></h1>
-      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 1 November 2026 · From mean and median to skewness and confidence intervals</div>
+      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 3 November 2026 · From mean and median to skewness and confidence intervals</div>
     </div>
     <hr class="rule">
 
@@ -268,12 +267,27 @@
       <li>Check for typing mistakes. One extra digit can change the mean a lot.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Mean versus median</h2>
+<p>The mean is pulled by extreme values and the median is not. For the data 10, 12, 13, 15, 100 the sum is 150, so the mean is 150 ÷ 5 = <b>30</b>, but the median is <b>13</b>. The single large value drags the mean far above what most of the numbers look like. When the mean and median differ a lot, the data is skewed or has outliers, and the median is usually the fairer description of a typical value.</p>
+<h2>Population versus sample</h2>
+<p>If your numbers are the whole group you care about, use the population formulas, which divide by n. If they are a sample taken from a larger group, use the sample formulas, which divide by n − 1 to correct for the bias of estimating from a small set. In the worked check above, the same data gives a population standard deviation of 2 and a sample standard deviation of about 2.138. Read the question: “a class of 8 students” is a population, while “8 students chosen from a school” is a sample.</p>
+<h2>Measures built from the basics</h2>
+<ul>
+<li><b>Coefficient of variation</b> = standard deviation ÷ mean × 100. For 2, 4, 4, 4, 5, 5, 7, 9 it is 2 ÷ 5 × 100 = <b>40%</b>, useful for comparing spread between datasets with different units.</li>
+<li><b>Standard error of the mean</b> = s ÷ √n. With s ≈ 2.138 and n = 8 it is about <b>0.756</b>.</li>
+<li><b>Geometric mean</b> suits growth rates: the geometric mean of 2 and 8 is √16 = 4.</li>
+<li><b>Harmonic mean</b> suits averages of rates: driving equal distances at 40 and 60 km/h gives an average speed of 2 ÷ (1/40 + 1/60) = <b>48 km/h</b>, not 50.</li>
+</ul>
+<h2>Spotting outliers</h2>
+<p>The 1.5 × IQR rule flags a value as a possible outlier when it lies more than 1.5 × IQR below the first quartile or above the third quartile. It marks values worth checking, not values to delete automatically. A typing error should be fixed, but a genuine extreme value is part of the data. Different textbooks calculate quartiles slightly differently, so small differences from your book are normal.</p>
+<h2>Frequently asked questions</h2>
     <details><summary>Sample or population: which do I choose?</summary><p>If the data is every member of the group, use population. If it is a sample used to estimate a larger group, use sample (n − 1).</p></details>
     <details><summary>Can it do regression or ANOVA?</summary><p>Yes, with the <a href="correlation-regression-calculator.html">correlation and regression</a>, <a href="anova-calculator.html">ANOVA</a> and <a href="hypothesis-test-calculator.html">hypothesis test</a> calculators.</p></details>
     <details><summary>Does it work offline?</summary><p>Yes. The calculations run in your browser.</p></details>
 
-    <h2>Related tools</h2>
+    <details><summary>When should I use the sample standard deviation?</summary><p>Whenever your numbers are a sample drawn from a bigger group and you want to estimate the spread of that group. Use the population version only when you have every member of the group.</p></details>
+<details><summary>Why do quartiles differ between books?</summary><p>There are several accepted ways to compute quartiles for small datasets. They agree for large datasets but can differ by a little on small ones.</p></details>
+<h2>Related tools</h2>
     <ul>
       <li><a href="correlation-regression-calculator.html">Correlation &amp; regression</a></li>
       <li><a href="anova-calculator.html">ANOVA calculator</a></li>
@@ -291,7 +305,7 @@
       <p class="ab-label">About the author</p>
       <p class="ab-name"><a href="author.html">Hafiz Muhammad Usman</a></p>
       <p>Software developer (BS Computer Science), and the creator and maintainer of Calvo. I write and check the guides on this site. If you spot a mistake, <a href="contact.html">tell me</a> and I will correct the page. <a href="author.html">More about the author</a>.</p>
-      <p class="ab-updated">Last updated: 1 November 2026</p>
+      <p class="ab-updated">Last updated: 3 November 2026</p>
     </div>
 
     <div class="doc-footer">
