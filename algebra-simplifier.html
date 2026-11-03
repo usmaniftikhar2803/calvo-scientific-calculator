@@ -54,12 +54,34 @@
 <p>Every factorisation is multiplied back out with exact fractions and must equal the original. Expand, Simplify and Partial fractions answers are also compared with the original expression at several test values.</p>
 <h2>What is not supported</h2>
 <p>Only polynomials and fractions of polynomials: no sin, ln, e<sup>x</sup> or square roots. Factoring is over the rational numbers, so x&sup2; &minus; 2 is left as it is. Partial fractions needs one letter and a denominator whose factors are linear or quadratic.</p>
+<h2>Identities worth knowing by heart</h2>
+<ul>
+<li>(a + b)² = a² + 2ab + b² and (a − b)² = a² − 2ab + b²</li>
+<li>a² − b² = (a − b)(a + b)</li>
+<li>a³ + b³ = (a + b)(a² − ab + b²) and a³ − b³ = (a − b)(a² + ab + b²)</li>
+</ul>
+<h2>A factoring routine that rarely fails</h2>
+<ol>
+<li>Take out any common factor first.</li>
+<li>Check for a difference of two squares or a perfect square.</li>
+<li>For ax² + bx + c, find two numbers that multiply to ac and add to b.</li>
+<li>If there are four terms, try grouping.</li>
+</ol>
+<p>Example: x³ − 8 = (x − 2)(x² + 2x + 4). For 6x² + 5x − 6, ac = −36 and the numbers 9 and −4 add to 5, so 6x² + 9x − 4x − 6 = 3x(2x + 3) − 2(2x + 3) = <b>(3x − 2)(2x + 3)</b>.</p>
+<h2>Simplifying fractions: cancel factors, not terms</h2>
+<p>Simplify (x² − 9)/(x² + x − 6). Factor both parts: (x − 3)(x + 3) over (x + 3)(x − 2). Cancelling the common factor gives <b>(x − 3)/(x − 2)</b>, valid for x ≠ −3 and x ≠ 2. A very common error is to cancel terms, such as (x + 4)/4 = x + 1. That is wrong: only a factor that multiplies the whole numerator and the whole denominator can be cancelled.</p>
+<h2>Partial fractions with a repeated factor</h2>
+<p>Split 1/(x²(x + 1)) as A/x + B/x² + C/(x + 1). Then 1 = Ax(x + 1) + B(x + 1) + Cx². Put x = 0 to get B = 1. Put x = −1 to get C = 1. Matching the x² coefficients gives A + C = 0, so A = −1. The result is <b>−1/x + 1/x² + 1/(x + 1)</b>. Check at x = 1: the original is 1/2, and −1 + 1 + 1/2 = 1/2. ✓</p>
+<h2>Sign errors to watch</h2>
+<p>When a minus sign sits in front of a bracket it changes every term inside: −(x − 3) = −x + 3. This is the single most common reason an expansion does not match the answer in the book.</p>
 <h2>FAQ</h2>
 <details><summary>How do I factor a quadratic step by step?</summary><p>Take out any common factor, then look for two numbers that multiply to ac and add to b, or use the rational root test. Calvo shows the root it finds and the division that follows.</p></details>
 <details><summary>How do I expand (x+2)^3?</summary><p>Use the binomial theorem: x^3 + 3x^2(2) + 3x(2^2) + 2^3 = x^3 + 6x^2 + 12x + 8.</p></details>
 <details><summary>How do I simplify an algebraic fraction?</summary><p>Factor the top and the bottom, cancel the common factors, and remember the cancelled factor cannot be zero in the original expression.</p></details>
 <details><summary>What are partial fractions?</summary><p>A way to split one fraction into simpler ones, such as 1/(x^2-1) = 1/(2(x-1)) - 1/(2(x+1)). It is used for integration and in solving equations.</p></details>
 <details><summary>Does it factor expressions with two letters?</summary><p>Yes. It handles common factors, differences of squares and cubes, perfect squares and factoring by grouping, for example xy + 2x + 3y + 6 = (x + 3)(y + 2).</p></details>
+<details><summary>Why does the simplifier mention restrictions such as x ≠ 2?</summary><p>If a cancelled factor would make the original denominator zero, that value of x is not allowed in the original expression. The simplified form is equal only where the original is defined.</p></details>
+<details><summary>Why is x² − 2 left unfactored?</summary><p>Factoring here is over the rational numbers. x² − 2 would need √2, which is not rational, so it stays as it is.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/derivative-calculator.html">Derivative Calculator (steps)</a><a href="/integral-calculator.html">Integral Calculator (steps)</a><a href="/limit-calculator.html">Limit Calculator (steps)</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
