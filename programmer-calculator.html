@@ -154,7 +154,7 @@
       "name": "Programmer Calculator: Binary, Hex, Bitwise & Two's Complement | Calvo",
       "url": "https://calvoscientificcalculator.online/programmer-calculator.html",
       "description": "Convert between binary, octal, decimal and hex and run AND, OR, XOR, shifts, rotates and bit tools for 8, 16 and 32-bit values. Free and mobile friendly.",
-      "dateModified": "2026-11-01",
+      "dateModified": "2026-11-03",
       "isPartOf": {
         "@type": "WebSite",
         "name": "Calvo",
@@ -231,7 +231,7 @@
   <div class="doc">
     <div class="doc-head">
       <h1 class="doc-title">Programmer <span>Calculator</span></h1>
-      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 1 November 2026 · BIN, OCT, DEC, HEX and bitwise tools</div>
+      <div class="doc-meta">By <a href="author.html">Hafiz Muhammad Usman</a> · Last updated 3 November 2026 · BIN, OCT, DEC, HEX and bitwise tools</div>
     </div>
     <hr class="rule">
 
@@ -266,12 +266,28 @@
       <li>Hex digits map to 4 bits each, which makes hex a compact way to read binary.</li>
     </ul>
 
-    <h2>Frequently asked questions</h2>
+    <h2>Reading numbers in other bases</h2>
+<p>Computers store numbers in binary, and hexadecimal is a compact way to write them because each hex digit stands for exactly four bits. The decimal number 255 is <b>11111111</b> in binary, <b>FF</b> in hex and <b>377</b> in octal. To convert by hand, multiply each digit by its place value: hex 2F is 2 × 16 + 15 = <b>47</b>, and binary 101101 is 32 + 8 + 4 + 1 = <b>45</b>.</p>
+<h2>Useful bit tricks</h2>
+<ul>
+<li><b>Masking:</b> AND with a mask keeps only chosen bits. 0xAB AND 0x0F = 0x0B, which extracts the low four bits.</li>
+<li><b>Shifts:</b> a left shift by 1 doubles a value and a right shift halves it, ignoring the remainder. 13 &lt;&lt; 2 = 52, and 13 &gt;&gt; 1 = 6.</li>
+<li><b>Power of two test:</b> a positive n is a power of two exactly when n AND (n − 1) = 0.</li>
+<li><b>Gray code:</b> n XOR (n &gt;&gt; 1). For 5 (101), 101 XOR 010 = 111, which is 7.</li>
+<li><b>Hamming distance:</b> the number of bit positions where two values differ. Between 1011 and 1001 it is 1.</li>
+</ul>
+<h2>Why the bit width matters</h2>
+<p>With two's complement, the range depends on the width: 8 bits hold −128 to 127, 16 bits hold −32,768 to 32,767, and 32 bits hold −2,147,483,648 to 2,147,483,647. Overflow wraps around: in 8 bits, 127 + 1 gives 10000000, which reads as −128. To find the negative of a number, invert all bits and add 1, which is why the tool asks you to choose a width before showing two's complement.</p>
+<h2>Where these topics appear in courses</h2>
+<p>Number systems and logic gates appear in computer science from 9th class onward, and bitwise operations and two's complement become important in programming, computer architecture and digital logic courses at university.</p>
+<h2>Frequently asked questions</h2>
     <details><summary>What is two&#x27;s complement?</summary><p>It is the usual way computers store negative integers: invert the bits and add one.</p></details>
     <details><summary>Does it handle very large numbers?</summary><p>It works within the selected bit width, up to 32 bits.</p></details>
     <details><summary>Will it help with my computer science course?</summary><p>It is useful for number systems, logic and low-level topics. Pair it with the <a href="truth-table-kmap.html">truth table and K-map tool</a> for logic gates.</p></details>
 
-    <h2>Related tools</h2>
+    <details><summary>Why does hexadecimal use letters?</summary><p>Base 16 needs sixteen symbols. After 0 to 9, the letters A to F stand for 10 to 15.</p></details>
+<details><summary>What is the difference between a logical and an arithmetic right shift?</summary><p>A logical shift fills the left with zeros. An arithmetic shift copies the sign bit, so negative numbers stay negative. Which one applies depends on the language and data type.</p></details>
+<h2>Related tools</h2>
     <ul>
       <li><a href="truth-table-kmap.html">Truth table &amp; K-map</a></li>
       <li><a href="lcm-hcf-calculator.html">LCM &amp; HCF calculator</a></li>
@@ -284,7 +300,7 @@
       <p class="ab-label">About the author</p>
       <p class="ab-name"><a href="author.html">Hafiz Muhammad Usman</a></p>
       <p>Software developer (BS Computer Science), and the creator and maintainer of Calvo. I write and check the guides on this site. If you spot a mistake, <a href="contact.html">tell me</a> and I will correct the page. <a href="author.html">More about the author</a>.</p>
-      <p class="ab-updated">Last updated: 1 November 2026</p>
+      <p class="ab-updated">Last updated: 3 November 2026</p>
     </div>
 
     <div class="doc-footer">
