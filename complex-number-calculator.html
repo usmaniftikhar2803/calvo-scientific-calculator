@@ -52,8 +52,29 @@
 <tr><td>De Moivre</td><td>z<sup>n</sup> = r<sup>n</sup>(cos n&theta; + i sin n&theta;)</td></tr></table>
 <h2>Worked example</h2>
 <p>(3 + 4i)(1 &minus; 2i) = (3&middot;1 &minus; 4&middot;(&minus;2)) + (3&middot;(&minus;2) + 4&middot;1)i = <b>11 &minus; 2i</b>. The modulus of 3 + 4i is &radic;(9 + 16) = 5.</p>
+<h2>What a complex number means</h2>
+<p>A complex number a + bi has a real part a and an imaginary part b, where i is defined by i² = −1. It can be drawn as a point (a, b) on a plane, called the Argand diagram, with the real axis across and the imaginary axis up. The modulus |z| is the distance from the origin, and the argument θ is the angle from the positive real axis. This picture explains most of the rules: adding complex numbers is like adding vectors, and multiplying them multiplies the moduli and adds the angles.</p>
+<h2>Worked example: division with the conjugate</h2>
+<p>Divide (3 + 4i) by (1 − 2i). Multiply top and bottom by the conjugate of the denominator, 1 + 2i.</p>
+<ul>
+<li>Numerator: (3 + 4i)(1 + 2i) = 3 + 6i + 4i + 8i² = 3 + 10i − 8 = <b>−5 + 10i</b></li>
+<li>Denominator: (1 − 2i)(1 + 2i) = 1 + 4 = <b>5</b></li>
+<li>Result: (−5 + 10i) ÷ 5 = <b>−1 + 2i</b></li>
+</ul>
+<p>Check by multiplying back: (−1 + 2i)(1 − 2i) = −1 + 2i + 2i − 4i² = −1 + 4i + 4 = 3 + 4i. ✓</p>
+<h2>Powers and roots in polar form</h2>
+<p>For z = 1 + i, the modulus is √2 and the angle is 45°. De Moivre's theorem gives z⁸ = (√2)⁸ (cos 360° + i sin 360°) = 16 × 1 = <b>16</b>. You can confirm it by squaring repeatedly: (1 + i)² = 2i, (1 + i)⁴ = (2i)² = −4, (1 + i)⁸ = 16. For square roots, √(−4) = ±2i, and √(3 + 4i) = ±(2 + i), because (2 + i)² = 4 + 4i − 1 = 3 + 4i.</p>
+<h2>Mistakes to avoid</h2>
+<ul>
+<li><b>Forgetting i² = −1</b> when multiplying. The i² term turns into a real number.</li>
+<li><b>Wrong quadrant for the angle.</b> For z = −1 − i the angle is −135° (or 225°), not 45°. A plain arctangent of b/a loses the quadrant, which is why the calculator uses atan2.</li>
+<li><b>Dividing without the conjugate.</b> You cannot leave i in the denominator of a final answer.</li>
+</ul>
+<p>Complex numbers appear in the intermediate maths course and, later, in electrical engineering, where impedance such as R + jωL is a complex quantity, and in signals and control systems.</p>
 <h2>FAQ</h2>
 <details><summary>How do I multiply complex numbers?</summary><p>Use (a + bi)(c + di) = (ac - bd) + (ad + bc)i, because i squared is -1.</p></details><details><summary>How do I divide complex numbers?</summary><p>Multiply the top and bottom by the conjugate of the denominator, then divide by c squared plus d squared.</p></details><details><summary>What is the modulus of a complex number?</summary><p>The distance from the origin: square root of a squared plus b squared.</p></details><details><summary>What angle does Calvo give?</summary><p>The principal argument between -180 and 180 degrees, also shown in radians.</p></details><details><summary>Does the square root show both roots?</summary><p>Yes. A non-zero complex number has two square roots, the principal one and its negative.</p></details>
+<details><summary>Why does the angle use atan2 instead of arctan?</summary><p>arctan(b/a) cannot tell (1, 1) from (−1, −1), since both give b/a = 1. atan2(b, a) looks at the signs of both and returns the correct angle between −180° and 180°.</p></details>
+<details><summary>Is i the same as j?</summary><p>Yes. Mathematics uses i and electrical engineering uses j so that i can stay free for current. The rules are identical.</p></details>
 <h2>More Calvo tools</h2>
 <div class="related"><a href="/age-calculator.html">Age Calculator</a><a href="/date-difference-calculator.html">Date Difference</a><a href="/attendance-calculator.html">Attendance Calculator</a><a href="/vector-calculator.html">Vector Calculator</a><a href="/word-counter.html">Word Counter</a><a href="/periodic-table.html">Periodic Table</a><a href="/trigonometry-cheat-sheet.html">Trig Identities &amp; Unit Circle</a><a href="/derivative-calculator.html">Derivative Calculator</a><a href="/integral-calculator.html">Integral Calculator</a><a href="/cgpa-calculator.html">CGPA Calculator</a><a href="/aggregate-calculator.html">Aggregate Calculator</a><a href="/molar-mass-calculator.html">Molar Mass Calculator</a><a href="/quadratic-equation-solver.html">Quadratic Solver</a></div>
 <p style="margin-top:22px"><a class="cta" href="/">Open the full Calvo Scientific Calculator</a></p>
