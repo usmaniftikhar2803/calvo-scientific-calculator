@@ -1520,7 +1520,7 @@ document.addEventListener('keydown', (e) => {
 
 /* ---------- FORMULA DATA (9th to MS Level) ---------- */
 /* ---------- FORMULA DATA (9th to MS Level) — LAZY-LOADED ----------
-   The formula library (~1.4 MB, 10,000+ formulas) used to live inside this
+   The formula library (~1.4 MB, 10,000+ entries: formulas and concepts) used to live inside this
    file. It now lives in data/formulas/<subject>.json and each subject is
    downloaded only when a student opens it (or starts a quiz on it).
    FORMULA_MANIFEST is tiny and gives names + counts instantly, so the
