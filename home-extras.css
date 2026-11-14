@@ -156,3 +156,22 @@ html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: th
 #tab-home .home-guides span { font-size: .85rem; line-height: 1.65; color: var(--p-mute, #b9b5aa); }
 #tab-home .home-more { max-width: 860px; margin: 14px 0 0; font-size: .95rem; line-height: 1.8; color: var(--p-mute, #b9b5aa); }
 #tab-home .home-more a { color: #ff8a1f; text-decoration: none; border-bottom: 1px solid rgba(255,138,31,.35); }
+
+/* =====================================================================
+   FAQ + site footer: real, visible content at the end of the home page
+   (replaces the old off-screen block). Dark-mode colours; light mode
+   inverts the page like everything else.
+   ===================================================================== */
+#tab-home .home-faq { max-width: 960px; margin: 56px auto 0; }
+#tab-home .home-faq-title { font-family: var(--p-display, inherit); font-size: 1.2rem; letter-spacing: -0.01em; margin: 0 0 16px; color: var(--p-paper, #e8e5db); }
+#tab-home .home-faq details { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+#tab-home .home-faq summary { cursor: pointer; font-size: .97rem; font-weight: 600; color: var(--p-paper, #e8e5db); }
+#tab-home .home-faq details p { margin: 10px 0 0; font-size: .93rem; line-height: 1.75; color: var(--p-mute, #b9b5aa); }
+#tab-home .home-faq details p a { color: #ff8a1f; }
+#tab-home .home-footer { max-width: 960px; margin: 48px auto 0; padding: 28px 0 8px; border-top: 1px solid rgba(255,255,255,.12); color: #9c968a; font-size: .9rem; }
+#tab-home .home-footer .hf-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+#tab-home .home-footer h3 { margin: 0 0 10px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--p-paper, #e8e5db); }
+#tab-home .home-footer nav a { display: block; padding: 5px 0; color: #ff8a1f; text-decoration: none; }
+#tab-home .home-footer nav a:hover { color: #fff; text-decoration: underline; }
+#tab-home .home-footer .hf-copy { margin: 26px 0 0; text-align: center; font-size: .8rem; }
+@media (max-width: 560px) { #tab-home .home-footer .hf-cols { grid-template-columns: 1fr 1fr; } }

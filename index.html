@@ -265,6 +265,14 @@ if(_t&&/^(midnight|ocean|rose|slate|forest|grape|mint|ember|sunflower|coral|lave
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"></path><path d="M22 6l-10 7L2 6"></path></svg>
         <span>Contact</span>
       </a>
+      <a class="topbar-menu-item" href="privacy.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Privacy Policy</span>
+      </a>
+      <a class="topbar-menu-item" href="terms.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Terms</span>
+      </a>
     </div>
   </div>
 </nav>
@@ -427,6 +435,72 @@ if(_t&&/^(midnight|ocean|rose|slate|forest|grape|mint|ember|sunflower|coral|lave
       <a href="subject-tools.html"><b>Subject Tools</b><span>Over 450 subject calculators in nine groups: chemistry, physics, biology, commerce, math, finance, vectors, calculus and probability.</span></a>
     </div>
     <p class="home-more">Looking for something else? <a href="all-tools.html">Browse all Calvo tools</a>, including GPA and CGPA, merit aggregate, calculus, statistics, PDF and photo tools.</p>
+
+    <section class="home-faq" id="homeFaq" aria-labelledby="homeFaqTitle">
+      <h2 class="home-faq-title" id="homeFaqTitle">Frequently Asked Questions</h2>
+      <details open>
+        <summary>Is Calvo free to use?</summary>
+        <p>Yes, Calvo is completely free. There's no sign-up, no subscription, and no hidden charges — you can use the scientific calculator, formula library, unit converter and every other tool right away.</p>
+      </details>
+      <details open>
+        <summary>Does Calvo work offline?</summary>
+        <p>Yes. Calvo is a Progressive Web App (PWA), so once you've visited it once, most features keep working even without an internet connection.</p>
+      </details>
+      <details open>
+        <summary>Is Calvo available as an Android app?</summary>
+        <p>Yes, Calvo is available on the Google Play Store as an Android app, alongside this website which you can also add to your home screen directly from your browser.</p>
+      </details>
+      <details open>
+        <summary>What subjects and tools does Calvo support?</summary>
+        <p>Calvo covers a scientific calculator, graphing, programmer and statistics modes, a formula library with 5,500+ formulas and 4,000+ concepts across 21 subjects, including math, physics, chemistry, biology, statistics, commerce, computer science, engineering and pharmacy, a GPA/CGPA calculator, unit converter, AI math solver, and subject-specific tools for Chemistry, Physics, Biology and Commerce.</p>
+      </details>
+      <details open>
+        <summary>Do I need to create an account to use Calvo?</summary>
+        <p>No sign-up is required. Just open the website or app and start calculating right away.</p>
+      </details>
+      <details open>
+        <summary>Does Calvo store or share my calculations?</summary>
+        <p>Your calculations stay on your own device. Calvo doesn't require an account and doesn't collect your calculation history on its servers. See our <a href="privacy.html">Privacy Policy</a> for full details.</p>
+      </details>
+    </section>
+
+    <footer class="home-footer" id="homeFooter">
+      <div class="hf-cols">
+        <nav aria-label="Popular tools">
+          <h3>Popular tools</h3>
+          <a href="scientific-calculator.html">Scientific Calculator</a>
+          <a href="cgpa-calculator.html">CGPA Calculator</a>
+          <a href="aggregate-calculator.html">Merit Aggregate Calculator</a>
+          <a href="unit-converter.html">Unit Converter</a>
+          <a href="ai-math-solver.html">AI Math Solver</a>
+          <a href="all-tools.html">All Tools</a>
+        </nav>
+        <nav aria-label="Everyday calculators">
+          <h3>Everyday calculators</h3>
+          <a href="percentage-calculator.html">Percentage Calculator</a>
+          <a href="fraction-calculator.html">Fraction Calculator</a>
+          <a href="lcm-hcf-calculator.html">LCM &amp; HCF Calculator</a>
+          <a href="average-calculator.html">Average Calculator</a>
+        </nav>
+        <nav aria-label="Learn">
+          <h3>Learn</h3>
+          <a href="formula-library.html">Formula Library</a>
+          <a href="class-wise-formulas.html">Class-wise Formulas</a>
+          <a href="formula-quiz.html">Formula Quiz &amp; Flashcards</a>
+          <a href="blog/index.html">Blog</a>
+          <a href="how-to-use.html">How to Use</a>
+        </nav>
+        <nav aria-label="About Calvo">
+          <h3>About Calvo</h3>
+          <a href="about.html">About</a>
+          <a href="author.html">Author</a>
+          <a href="contact.html">Contact Us</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+        </nav>
+      </div>
+      <p class="hf-copy">&copy; <span id="footerYear"></span> Calvo — Scientific Calculator &amp; Formulas</p>
+    </footer>
 
   </div>
 </section>
@@ -1817,114 +1891,6 @@ Biology,10</textarea>
   </div>
 </div>
 
-<!-- FAQ + footer links: kept just below the visible screen so they can never peek in when the text size changes -->
-<div id="seoBelowFold" style="position:absolute;top:100vh;top:100dvh;left:0;width:100%;">
-<!-- FAQ Section -->
-<section style="width:100%;max-width:900px;margin:32px auto 0;padding:0 16px;font-family:'IBM Plex Mono',monospace;">
-  <h2 style="font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:#ff8a1f;margin:0 0 14px;text-align:center;">Frequently Asked Questions</h2>
-
-  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
-    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Is Calvo free to use?</summary>
-    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Yes, Calvo is completely free. There's no sign-up, no subscription, and no hidden charges — you can use the scientific calculator, formula library, unit converter and every other tool right away.</p>
-  </details>
-
-  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
-    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Does Calvo work offline?</summary>
-    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Yes. Calvo is a Progressive Web App (PWA), so once you've visited it once, most features keep working even without an internet connection.</p>
-  </details>
-
-  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
-    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Is Calvo available as an Android app?</summary>
-    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Yes, Calvo is available on the Google Play Store as an Android app, alongside this website which you can also add to your home screen directly from your browser.</p>
-  </details>
-
-  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
-    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">What subjects and tools does Calvo support?</summary>
-    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Calvo covers a scientific calculator, graphing, programmer and statistics modes, a formula library with 5,500+ formulas and 4,000+ concepts across 21 subjects, including math, physics, chemistry, biology, statistics, commerce, computer science, engineering and pharmacy, a GPA/CGPA calculator, unit converter, AI math solver, and subject-specific tools for Chemistry, Physics, Biology and Commerce.</p>
-  </details>
-
-  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
-    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Do I need to create an account to use Calvo?</summary>
-    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">No sign-up is required. Just open the website or app and start calculating right away.</p>
-  </details>
-
-  <details style="background:#17171a;border:1px solid #2a2a30;border-radius:10px;padding:14px 16px;">
-    <summary style="cursor:pointer;font-size:13.5px;color:#e8e5db;font-weight:600;">Does Calvo store or share my calculations?</summary>
-    <p style="font-size:13px;line-height:1.8;color:#c9c5ba;margin:10px 0 0;">Your calculations stay on your own device. Calvo doesn't require an account and doesn't collect your calculation history on its servers. See our <a href="privacy.html" style="color:#ff8a1f;">Privacy Policy</a> for full details.</p>
-  </details>
-</section>
-
-<footer style="width:100%;max-width:900px;margin:40px auto 0;padding:20px 16px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#9c968a;border-top:1px solid #2a2a30;">
-  <div style="margin-bottom:14px;line-height:2.2;">
-    <a href="scientific-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Scientific Calculator</a> ·
-    <a href="formula-library.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Formula Library</a> ·
-    <a href="unit-converter.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Unit Converter</a> ·
-    <a href="ai-math-solver.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">AI Math Solver</a> ·
-    <a href="formula-quiz.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Formula Quiz &amp; Flashcards</a> ·
-    <a href="function-grapher.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Function Grapher</a> ·
-    <a href="equation-solver.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Equation Solver</a> ·
-    <a href="programmer-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Programmer Calculator</a> ·
-    <a href="statistics-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Statistics Calculator</a> ·
-    <a href="study-timer.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Study Timer</a> ·
-    <a href="subject-tools.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Subject Tools</a> ·
-    <a href="all-tools.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">All Tools</a> ·
-    <a href="cgpa-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">CGPA Calculator</a> ·
-    <a href="cgpa-to-percentage-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">CGPA to Percentage</a> ·
-    <a href="target-cgpa-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Target CGPA</a> ·
-    <a href="aggregate-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Aggregate Calculator</a> ·
-    <a href="mdcat-aggregate-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">MDCAT Aggregate</a> ·
-    <a href="ecat-aggregate-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">ECAT Aggregate</a> ·
-    <a href="nust-aggregate-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">NUST Aggregate</a> ·
-    <a href="fast-aggregate-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">FAST Aggregate</a> ·
-    <a href="chemical-equation-balancer.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Chemical Equation Balancer</a> ·
-    <a href="molar-mass-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Molar Mass Calculator</a> ·
-    <a href="derivative-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Derivative Calculator</a> ·
-    <a href="integral-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Integral Calculator</a> ·
-    <a href="limit-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Limit Calculator</a> ·
-    <a href="algebra-simplifier.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Algebra Simplifier</a> ·
-    <a href="laplace-ode-solver.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Laplace &amp; ODE Solver</a> ·
-    <a href="age-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Age Calculator</a> ·
-    <a href="date-difference-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Date Difference</a> ·
-    <a href="attendance-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Attendance Calculator</a> ·
-    <a href="complex-number-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Complex Numbers</a> ·
-    <a href="vector-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Vector Calculator</a> ·
-    <a href="hypothesis-test-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Hypothesis Test Calculator</a> ·
-    <a href="anova-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">ANOVA Calculator</a> ·
-    <a href="correlation-regression-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Correlation &amp; Regression</a> ·
-    <a href="truth-table-kmap.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Truth Table &amp; K-Map</a> ·
-    <a href="word-counter.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Word Counter</a> ·
-    <a href="image-to-pdf.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Image to PDF</a> ·
-    <a href="compress-pdf.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Compress PDF</a> ·
-    <a href="passport-photo-maker.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Passport Photo</a> ·
-    <a href="photo-resizer.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Photo Resizer</a> ·
-    <a href="merge-split-pdf.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Merge &amp; Split PDF</a> ·
-    <a href="title-page-generator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Title Page</a> ·
-    <a href="cv-builder.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">CV Builder</a> ·
-    <a href="notes-todo.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Notes &amp; To-Do</a> ·
-    <a href="class-wise-formulas.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Class-wise Formulas</a> ·
-    <a href="periodic-table.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Periodic Table</a> ·
-    <a href="projectile-motion-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Projectile Motion Calculator</a> ·
-    <a href="resistor-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Resistor Calculator</a> ·
-    <a href="physical-constants.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Physical Constants</a> ·
-    <a href="trigonometry-cheat-sheet.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Trig Cheat Sheet</a> ·
-    <a href="quadratic-equation-solver.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Quadratic Equation Solver</a> ·
-    <a href="matrix-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Matrix Calculator</a> ·
-    <a href="percentage-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Percentage Calculator</a> ·
-    <a href="ohms-law-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Ohm's Law Calculator</a> ·
-    <a href="lcm-hcf-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">LCM &amp; HCF Calculator</a> ·
-    <a href="fraction-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Fraction Calculator</a> ·
-    <a href="average-calculator.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Average Calculator</a>
-  </div>
-  <a href="blog/index.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Blog</a> ·
-  <a href="about.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">About</a> ·
-  <a href="author.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Author</a> ·
-  <a href="contact.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Contact Us</a> ·
-  <a href="how-to-use.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">How to Use</a> ·
-  <a href="privacy.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Privacy Policy</a> ·
-  <a href="terms.html" style="color:#ff8a1f;text-decoration:none;margin:0 10px;">Terms &amp; Conditions</a>
-  <div style="margin-top:10px;">&copy; <span id="footerYear"></span> Calvo — Scientific Calculator &amp; Formulas</div>
-</footer>
-</div>
 <script>document.getElementById('footerYear').textContent = new Date().getFullYear();</script>
 <script src="future.js"></script>
 <script src="i18n.js"></script>
