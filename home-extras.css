@@ -162,12 +162,6 @@ html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: th
    (replaces the old off-screen block). Dark-mode colours; light mode
    inverts the page like everything else.
    ===================================================================== */
-#tab-home .home-faq { max-width: 960px; margin: 56px auto 0; }
-#tab-home .home-faq-title { font-family: var(--p-display, inherit); font-size: 1.2rem; letter-spacing: -0.01em; margin: 0 0 16px; color: var(--p-paper, #e8e5db); }
-#tab-home .home-faq details { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
-#tab-home .home-faq summary { cursor: pointer; font-size: .97rem; font-weight: 600; color: var(--p-paper, #e8e5db); }
-#tab-home .home-faq details p { margin: 10px 0 0; font-size: .93rem; line-height: 1.75; color: var(--p-mute, #b9b5aa); }
-#tab-home .home-faq details p a { color: #ff8a1f; }
 #tab-home .home-footer { max-width: 960px; margin: 48px auto 0; padding: 28px 0 8px; border-top: 1px solid rgba(255,255,255,.12); color: #9c968a; font-size: .9rem; }
 #tab-home .home-footer .hf-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
 #tab-home .home-footer h3 { margin: 0 0 10px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--p-paper, #e8e5db); }
@@ -176,10 +170,32 @@ html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: th
 #tab-home .home-footer .hf-copy { margin: 26px 0 0; text-align: center; font-size: .8rem; }
 @media (max-width: 560px) { #tab-home .home-footer .hf-cols { grid-template-columns: 1fr 1fr; } }
 
-/* Visible intro text directly under the hero / live calculator */
-#tab-home .home-intro { max-width: 860px; margin: 36px 0 8px; }
-#tab-home .home-intro h2 { font-family: var(--p-display, inherit); font-size: 1.35rem; line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 14px; color: var(--p-paper, #e8e5db); }
-#tab-home .home-intro strong { color: var(--p-paper, #e8e5db); }
-#tab-home .home-intro ol { margin: 0 0 14px; padding-left: 22px; }
-#tab-home .home-intro li { margin: 0 0 8px; }
-#tab-home .home-intro em { font-style: normal; color: var(--p-paper, #e8e5db); }
+
+/* =====================================================================
+   Calculator tab = the page people land on. The calculator keeps exactly
+   one screen; the guide text, FAQ and footer sit below it and are reached
+   by scrolling. Dark-mode colours (light mode inverts the page).
+   ===================================================================== */
+#tab-calc { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--case-border) transparent; }
+#tab-calc .calc-wrap { flex: 0 0 auto; height: calc(100vh - 52px); height: calc(100dvh - 52px); }
+#calcAbout { width: 100%; max-width: 860px; margin: 0 auto; padding: 36px 18px 40px; box-sizing: border-box; color: #b9b5aa; font-size: .97rem; line-height: 1.8; zoom: var(--app-text-zoom, 1); }
+#calcAbout p { margin: 0 0 14px; }
+#calcAbout h2 { font-size: 1.4rem; line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 14px; color: #e8e5db; }
+#calcAbout h3 { margin: 26px 0 8px; font-size: 1.08rem; color: #e8e5db; }
+#calcAbout strong, #calcAbout em { color: #e8e5db; font-style: normal; }
+#calcAbout a { color: #ff8a1f; text-decoration: none; border-bottom: 1px solid rgba(255,138,31,.35); }
+#calcAbout a:hover { border-bottom-color: #ff8a1f; }
+#calcAbout ol { margin: 0 0 14px; padding-left: 22px; }
+#calcAbout li { margin: 0 0 8px; }
+#calcAbout .ca-faq { margin-top: 44px; }
+#calcAbout .ca-faq-title { margin: 0 0 16px; }
+#calcAbout .ca-faq details { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+#calcAbout .ca-faq summary { cursor: pointer; font-size: .97rem; font-weight: 600; color: #e8e5db; }
+#calcAbout .ca-faq details p { margin: 10px 0 0; font-size: .93rem; line-height: 1.75; }
+#calcAbout .ca-footer { margin-top: 44px; padding: 28px 0 8px; border-top: 1px solid rgba(255,255,255,.12); color: #9c968a; font-size: .9rem; line-height: 1.5; }
+#calcAbout .ca-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+#calcAbout .ca-footer h3 { margin: 0 0 10px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+#calcAbout .ca-footer nav a { display: block; padding: 5px 0; border-bottom: 0; }
+#calcAbout .ca-footer nav a:hover { color: #fff; text-decoration: underline; }
+#calcAbout .ca-copy { margin: 26px 0 0; text-align: center; font-size: .8rem; }
+@media (max-width: 560px) { #calcAbout .ca-cols { grid-template-columns: 1fr 1fr; } #calcAbout { padding-top: 28px; } }
