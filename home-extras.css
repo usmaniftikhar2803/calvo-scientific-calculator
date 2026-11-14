@@ -175,3 +175,11 @@ html { scrollbar-color: rgba(var(--h-rgb), .55) transparent; scrollbar-width: th
 #tab-home .home-footer nav a:hover { color: #fff; text-decoration: underline; }
 #tab-home .home-footer .hf-copy { margin: 26px 0 0; text-align: center; font-size: .8rem; }
 @media (max-width: 560px) { #tab-home .home-footer .hf-cols { grid-template-columns: 1fr 1fr; } }
+
+/* Visible intro text directly under the hero / live calculator */
+#tab-home .home-intro { max-width: 860px; margin: 36px 0 8px; }
+#tab-home .home-intro h2 { font-family: var(--p-display, inherit); font-size: 1.35rem; line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 14px; color: var(--p-paper, #e8e5db); }
+#tab-home .home-intro strong { color: var(--p-paper, #e8e5db); }
+#tab-home .home-intro ol { margin: 0 0 14px; padding-left: 22px; }
+#tab-home .home-intro li { margin: 0 0 8px; }
+#tab-home .home-intro em { font-style: normal; color: var(--p-paper, #e8e5db); }
