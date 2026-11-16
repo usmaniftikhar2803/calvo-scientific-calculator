@@ -12,7 +12,7 @@
 /* Bump this version string every time you deploy
    a new version of the app so old caches get
    cleared and users pick up the update. */
-const CACHE_VERSION = 'calvo-cache-v118';
+const CACHE_VERSION = 'calvo-cache-v119';
 
 const CORE_ASSETS = [
   './',
@@ -96,6 +96,8 @@ const CORE_ASSETS = [
   './cv-builder.js',
   './notes-todo.html',
   './notes-todo.js',
+  './citation-generator.html',
+  './citation-generator.js',
   './class-wise-formulas.html',
   './periodic-table.html',
   './projectile-motion-calculator.html',
