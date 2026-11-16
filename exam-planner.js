@@ -3,7 +3,8 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var KEY = 'calvo_exams_v1', DUR = 3;
-  var S = { title: '', exams: [] }, editId = null, showDone = false, toastT;
+  var LEADS = [0, 15, 30, 60, 180, 720, 1440];
+  var S = { title: '', exams: [], alarm: { on: true, lead: 30, notify: false, wake: false } }, editId = null, showDone = false, toastT;
 
   function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -55,7 +56,7 @@
     else if (n.time) { var p = parts(st.ms); inner = box(p.d, 'Days') + box(pad(p.h), 'Hours') + box(pad(p.m), 'Minutes') + box(pad(p.s), 'Seconds'); }
     else inner = box(st.dd, st.dd === 1 ? 'Day' : 'Days');
     return '<div class="ep-hl">Next exam</div><div class="ep-hs">' + esc(n.subject) + '</div><div class="ep-hd">' + esc(fmtDate(n)) +
-      (n.time ? ' &middot; ' + fmtTime(n.time) : '') + (n.venue ? ' &middot; ' + esc(n.venue) : '') + '</div><div class="ep-bx">' + inner + '</div>';
+      (n.time ? ' &middot; ' + fmtTime(n.time) : '') + (n.venue ? ' &middot; ' + esc(n.venue) : '') + '</div>' + alarmLine(n, now) + '<div class="ep-bx">' + inner + '</div>';
   }
 
   function rowHtml(e, prev, now) {
@@ -70,7 +71,7 @@
       '<div class="ep-m"><b>' + esc(e.subject) + '</b><span>' + esc(fmtDate(e)) + (e.time ? ' &middot; ' + fmtTime(e.time) : '') + (e.venue ? ' &middot; ' + esc(e.venue) : '') + '</span>' +
       (e.notes ? '<span class="ep-n">' + esc(e.notes) + '</span>' : '') + (gap ? '<span class="ep-g">' + gap + '</span>' : '') + '</div>' +
       '<div class="ep-r"><span class="ep-cd" data-id="' + e.id + '" data-k="' + k + '">' + label(e, now) + '</span>' +
-      '<span class="ep-bt ep-np"><button type="button" data-act="edit" data-id="' + e.id + '">Edit</button><button type="button" class="del" data-act="del" data-id="' + e.id + '">Delete</button></span></div></div>';
+      '<span class="ep-bt ep-np"><button type="button" data-act="bell" data-id="' + e.id + '" aria-pressed="' + (e.alarm !== false) + '">' + (e.alarm !== false ? 'Alarm on' : 'Alarm off') + '</button><button type="button" data-act="edit" data-id="' + e.id + '">Edit</button><button type="button" class="del" data-act="del" data-id="' + e.id + '">Delete</button></span></div></div>';
   }
 
   function render() {
@@ -106,6 +107,7 @@
       if (k !== els[i].getAttribute('data-k')) { changed = true; break; }
       var t = label(e, now); if (els[i].textContent !== t) els[i].textContent = t;
     }
+    checkAlarms(now);
     if (changed) { render(); return; }
     $('epHero').innerHTML = heroHtml(now);
   }
@@ -114,7 +116,9 @@
   function load() {
     try {
       var v = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (v && Array.isArray(v.exams)) { S.title = String(v.title || ''); S.exams = v.exams.filter(function (e) { return e && e.id && e.subject && /^\d{4}-\d{2}-\d{2}$/.test(e.date); }); }
+      if (v && Array.isArray(v.exams)) { S.title = String(v.title || '');
+        if (v.alarm && typeof v.alarm === 'object') { S.alarm.on = v.alarm.on !== false; S.alarm.lead = LEADS.indexOf(+v.alarm.lead) > -1 ? +v.alarm.lead : 30; S.alarm.notify = !!v.alarm.notify; S.alarm.wake = !!v.alarm.wake; }
+        S.exams = v.exams.filter(function (e) { return e && e.id && e.subject && /^\d{4}-\d{2}-\d{2}$/.test(e.date); }); }
     } catch (e) {}
   }
   function toast(m) { var el = $('epMsg'); el.textContent = m; clearTimeout(toastT); toastT = setTimeout(function () { el.textContent = ''; }, 2600); }
@@ -128,8 +132,9 @@
     if (!subject) return toast('Please enter the subject name.');
     if (!date) return toast('Please choose the exam date.');
     var rec = { subject: subject, date: date, time: $('epTime').value, venue: $('epVenue').value.trim(), notes: $('epNotes').value.trim() };
-    if (editId) { var e = byId(editId); if (e) { for (var k in rec) e[k] = rec[k]; e.done = false; } toast('Exam updated'); }
-    else { rec.id = Date.now() + '' + Math.floor(Math.random() * 1000); rec.done = false; S.exams.push(rec); toast('Exam added'); }
+    var nowS = new Date();
+    if (editId) { var e = byId(editId); if (e) { for (var k in rec) e[k] = rec[k]; e.done = false; e.fired = nowS >= alarmAt(e); } toast('Exam updated'); }
+    else { rec.id = Date.now() + '' + Math.floor(Math.random() * 1000); rec.done = false; rec.alarm = true; rec.fired = nowS >= alarmAt(rec); S.exams.push(rec); toast('Exam added'); }
     save(); clearForm(); render();
   }
   function plain() {
@@ -171,8 +176,97 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
   }
 
+
+  /* ---------- alarm ---------- */
+  var ctx = null, ring = null, ringStop = null, wl = null;
+  function leadText(m) { return m === 0 ? 'at the start' : m < 60 ? m + ' minutes before' : m < 1440 ? (m / 60) + ' hour' + (m === 60 ? '' : 's') + ' before' : '1 day before'; }
+  function alarmAt(e) {
+    var b = when(e); if (!e.time) b = new Date(b.getFullYear(), b.getMonth(), b.getDate(), 9, 0, 0);
+    return new Date(b.getTime() - S.alarm.lead * 60000);
+  }
+  function alarmLine(n, now) {
+    if (!S.alarm.on || n.alarm === false) return '<div class="ep-hd ep-al">Alarm is off for this exam</div>';
+    var a = alarmAt(n), same = dayDiff(a, now) === 0;
+    var t = a.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase();
+    return '<div class="ep-hd ep-al">Alarm ' + (a > now ? 'rings ' + (same ? 'today' : a.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })) + ' at ' + t : 'already rang') + ' (' + leadText(S.alarm.lead) + ')</div>';
+  }
+  function resync() { var now = new Date(); S.exams.forEach(function (e) { e.fired = now >= alarmAt(e); }); }
+  function unlock() {
+    try {
+      if (!ctx) { var C = window.AudioContext || window.webkitAudioContext; if (C) ctx = new C(); }
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+    } catch (e) {}
+  }
+  function beep(t0, f, d) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.45, t0 + 0.02); g.gain.linearRampToValueAtTime(0, t0 + d);
+    o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0 + d + 0.05);
+  }
+  function pattern() {
+    try { if (ctx) { var t = ctx.currentTime; beep(t, 880, 0.18); beep(t + 0.25, 880, 0.18); beep(t + 0.5, 1175, 0.32); } } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) {}
+  }
+  function stopRing() {
+    clearInterval(ring); clearTimeout(ringStop); ring = ringStop = null;
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
+    $('epAlarm').hidden = true;
+  }
+  function startRing(title, sub) {
+    unlock(); stopRing();
+    $('epAlT').textContent = title; $('epAlS').textContent = sub; $('epAlarm').hidden = false;
+    pattern(); ring = setInterval(pattern, 1600); ringStop = setTimeout(stopRing, 60000);
+  }
+  function fire(e, now) {
+    var t = when(e), sub;
+    if (e.time) { var m = Math.round((t - now) / 60000); sub = m > 0 ? 'starts in ' + (m >= 60 ? Math.floor(m / 60) + ' h ' + (m % 60) + ' min' : m + ' min') : 'has started'; }
+    else { var dd = dayDiff(t, now); sub = dd <= 0 ? 'is today' : dd === 1 ? 'is tomorrow' : 'is in ' + dd + ' days'; }
+    startRing('Exam: ' + e.subject, fmtDate(e) + (e.time ? ', ' + fmtTime(e.time) : '') + ' \u2013 ' + sub);
+    try { if (S.alarm.notify && window.Notification && Notification.permission === 'granted') new Notification('Exam: ' + e.subject, { body: sub.charAt(0).toUpperCase() + sub.slice(1) }); } catch (x) {}
+  }
+  function checkAlarms(now) {
+    if (!S.alarm.on || ring) return;
+    for (var i = 0; i < S.exams.length; i++) {
+      var e = S.exams[i];
+      if (e.done || e.alarm === false || e.fired) continue;
+      if (now >= alarmAt(e)) {
+        e.fired = true; save();
+        if (!finished(e, now)) { fire(e, now); }
+        return;
+      }
+    }
+  }
+  function wake() {
+    try {
+      if (S.alarm.on && S.alarm.wake && navigator.wakeLock && document.visibilityState === 'visible' && !wl) {
+        navigator.wakeLock.request('screen').then(function (l) { wl = l; l.addEventListener('release', function () { wl = null; }); }, function () {});
+      } else if (!S.alarm.wake && wl) { wl.release(); wl = null; }
+    } catch (e) {}
+  }
+  function bindAlarm() {
+    $('epAlOn').checked = S.alarm.on; $('epAlLead').value = String(S.alarm.lead);
+    $('epAlNotify').checked = S.alarm.notify; $('epAlWake').checked = S.alarm.wake;
+    $('epAlOn').addEventListener('change', function () { S.alarm.on = this.checked; if (S.alarm.on) { unlock(); resync(); } else stopRing(); save(); render(); wake(); });
+    $('epAlLead').addEventListener('change', function () { S.alarm.lead = +this.value; resync(); save(); render(); });
+    $('epAlNotify').addEventListener('change', function () {
+      S.alarm.notify = this.checked; save();
+      if (this.checked) {
+        if (!window.Notification) { toast('Notifications are not supported on this browser.'); this.checked = false; S.alarm.notify = false; save(); }
+        else if (Notification.permission === 'default') Notification.requestPermission();
+        else if (Notification.permission === 'denied') { toast('Notifications are blocked in your browser settings.'); }
+      }
+    });
+    $('epAlWake').addEventListener('change', function () { S.alarm.wake = this.checked; save(); wake(); });
+    $('epAlTest').addEventListener('click', function () { startRing('Test alarm', 'If you can hear this, your alarm will work.'); });
+    $('epAlStop').addEventListener('click', stopRing);
+    document.addEventListener('visibilitychange', wake);
+    document.addEventListener('click', unlock);
+    document.addEventListener('touchstart', unlock, { passive: true });
+  }
+
   function init() {
     load();
+    bindAlarm();
     $('epTitle').value = S.title;
     $('epTitle').addEventListener('input', function () { S.title = this.value.trim(); save(); $('epPrintTitle').textContent = S.title || 'Exam Datesheet'; });
     $('epAdd').addEventListener('click', submit);
@@ -184,6 +278,7 @@
       var act = t.getAttribute && t.getAttribute('data-act'), id = t.getAttribute && t.getAttribute('data-id');
       if (!act || act === 'done') return;
       var e = byId(id); if (!e) return;
+      if (act === 'bell') { e.alarm = (e.alarm === false); e.fired = new Date() >= alarmAt(e); save(); render(); unlock(); return; }
       if (act === 'del') { if (confirm('Delete "' + e.subject + '"?')) { S.exams = S.exams.filter(function (x) { return x.id !== id; }); save(); render(); } }
       if (act === 'edit') {
         editId = id; $('epSubject').value = e.subject; $('epDate').value = e.date; $('epTime').value = e.time || '';
