@@ -1,0 +1,36 @@
+/* Full-screen layout for the main tool pages (CV Builder, Title Page,
+   Passport Photo, Image to PDF, Notes). Replaces the narrow centred box. */
+body.fs-tool{padding:0 0 40px;align-items:stretch}
+body.fs-tool .topbar{
+  max-width:none;width:100%;margin:0;
+  padding:10px clamp(12px,2.5vw,32px);
+  position:sticky;top:0;z-index:30;border-radius:0;
+  background:color-mix(in srgb,var(--panel) 92%,transparent);
+  border:0;border-bottom:1px solid var(--panel-border);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+body.fs-tool .doc{
+  max-width:none;width:100%;margin:0;
+  min-height:calc(100vh - 56px);min-height:calc(100dvh - 56px);
+  border:0;border-radius:0;box-shadow:none;
+  padding:clamp(14px,2.5vw,32px) clamp(12px,3vw,40px);
+}
+body.fs-tool .doc::before,body.fs-tool .doc::after{border-radius:0}
+/* long reading text stays comfortable, but is centred, not stuck left */
+body.fs-tool .doc>p,body.fs-tool .doc>h1,body.fs-tool .doc>h2,body.fs-tool .doc>h3,
+body.fs-tool .doc>details,body.fs-tool .doc>.related,body.fs-tool .doc>ul,
+body.fs-tool .doc>ol:not(.pp-steps),body.fs-tool .doc>table{
+  max-width:900px;margin-left:auto;margin-right:auto;
+}
+body.fs-tool footer{max-width:none;width:100%;padding:0 14px}
+@media(min-width:900px){
+  body.fs-tool .cv-grid{grid-template-columns:minmax(0,1fr) minmax(480px,42%)}
+}
+@media(max-width:600px){
+  body.fs-tool .topbar{padding:8px 12px}
+  body.fs-tool .doc{padding:14px 12px}
+}
+@media print{body.fs-tool .topbar{position:static}}
+/* sticky bits inside the pages must sit below the sticky top bar (~56px) */
+body.fs-tool .tp-prev{top:68px}
+@media(max-width:899px){body.fs-tool .cv-tabs{top:50px}}
